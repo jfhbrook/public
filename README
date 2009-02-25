@@ -1,1 +1,12 @@
-At this point? Read the report pdf.
+A Quick Series of Notes on Things:
+
+1) Everything here's on the wtfpl.
+
+2) report\report.pdf should have pretty much anything interesting regarding How
+Shit Works. It should also clear up the "why" aspect of things.
+
+3) Yeah, there are a lot of useless files here. >_<
+
+4) The interesting files to actually Check Out are sfbe.py and
+sfbe_plotter.(gnumeric|xls) . promblems.py uses sfbe.py to run some example
+problems.
