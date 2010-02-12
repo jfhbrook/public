@@ -31,6 +31,7 @@ def textable(columns,titles):
         print ' & '.join(strrow), r'\\'
     print r'\end{tabular}','\n'
 
+
 #data excel formatting
 #saves to file
 #UNTESTED
@@ -141,4 +142,3 @@ def dv2cP(reading,model,number,rpm):
 
     return reading*table[model][number-1][ \\
     [0.5,1.,2.,2.5,4.,5.,10.,20.,50.,100.].index(rpm)]
-
