@@ -1,5 +1,5 @@
 from math import pi
-import xlwt, xlrd
+import xlrd #, xlwt
 import csv
 
 ###data input
@@ -56,13 +56,20 @@ def subset(set,n):
     return sub
 
 #sphere geometry
-class sphere:
-    def __init__(self,d):
-        self.d=d
-        self.r=d/2.0
-        self.xsect=pi*self.r**2.0
-        self.sarea=4.0*self.xsect
-        self.vol=(4.0/3.0)*pi*self.r**3.0
+class geometry:
+    def __init__(self,geometry,lc):
+        self.geom=geometry
+        if self.geom=="sphere":
+            self.d=lc
+            self.r=lc/2.0
+            self.xsect=pi*self.r**2.0
+            self.sarea=4.0*self.xsect
+            self.vol=(4.0/3.0)*pi*self.r**3.0
+        elif self.geom=="rod":
+            self.d=lc
+            self.r=lc/2.0
+            self.xsect=pi*self.r**2.0
+            self.p=pi*lc
 
 #a shit-ton of heat transfer params
 class htparams:
@@ -93,10 +100,10 @@ class htparams:
         self.emiss=args.get('emiss',1.0)
         self.thermexp=args.get('thermexp',1.0/self.Tinf)
 
-    def biot(self)
+    def biot(self):
         return h*l/k_s
 
-    def nusselt(self)
+    def nusselt(self):
         return h*l/k_f
 
     def rayleigh(self,Tf):
@@ -114,16 +121,19 @@ class htparams:
     def Tfilm(self,Tzero,Tfinal):
         return 0.25*(Tzero+Tfinal)+0.5*self.Tinf
 
-    #specific to metal sphere
-    def hc(self,Tzero,Tfinal):
-        #Incropera and Dewitt's empirical equation for hc
-        Tf=self.Tfilm(Tzero,Tfinal)
-        return (2+(0.589*(self.rayleigh(Tf))**0.25)/(1+(0.469/self.prandtl(Tf))**(9.0/16.0))**(4.0/9.0))*(self.k_f/self.l)
-
     def hr(self,Tsurf):
         #Don't forget to use absolute temps!
         stefboltz=0.1714e-8/3600.0 #courtesy cengel
         return self.emiss*stefboltz*(Tsurf**4.0-self.Tinf**4.0)/(Tsurf-self.Tinf)
+
+    def hc(self,Tf, geom):
+        #Tf is for "Tfilm" and is a hangover from how the first assignment was specified.
+        if geom=="sphere":
+            #Incropera and Dewitt's empirical equation for hc
+            return (2+(0.589*(self.rayleigh(Tf))**0.25)/(1+(0.469/self.prandtl(Tf))**(9.0/16.0))**(4.0/9.0))*(self.k_f/self.l)
+        if geom=="rod":
+            #Courtesy Cengel
+            return (self.k_f/self.l)*((0.387*(self.rayleigh(Tf)**(1.0/6.0)))/(1.0 + (0.559/self.prandtl(Tf))**(9/16))**(8.0/27.0))**2.0
 
 #returns viscosity in centipoise based on params from DV-1 viscometer
 def dv2cP(reading,model,number,rpm):
@@ -140,5 +150,4 @@ def dv2cP(reading,model,number,rpm):
     [4000,2000,800,400,200,100,40,20],
     [20000,10000,4000,2000,1000,500,200,100]]}
 
-    return reading*table[model][number-1][ \\
-    [0.5,1.,2.,2.5,4.,5.,10.,20.,50.,100.].index(rpm)]
+    return reading*table[model][number-1][[0.5,1.,2.,2.5,4.,5.,10.,20.,50.,100.].index(rpm)]
