@@ -1,4 +1,4 @@
 libtsl.py contains objects and scripts and stuff from ME 415 - Thermal Systems
 Laboratory.
 
-Not included are my lab scripts, data or lab reports--just the tools to do it yourself, which is most of the work already.
+Not all of my work is included. I left out a few scripts that call libtsl and my lab reports. This is mostly because I don't want to give away all the answers to TSL. Not that it matters anyway.
