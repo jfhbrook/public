@@ -1,4 +1,10 @@
-libtsl.py contains objects and scripts and stuff from ME 415 - Thermal Systems
+libtsl contains objects and scripts and stuff from ME 415 - Thermal Systems
 Laboratory.
 
-Not all of my work is included. I left out a few scripts that call libtsl and my lab reports. This is mostly because I don't want to give away all the answers to TSL. Not that it matters anyway.
+My original goal was to build up a single-file library (libtsl.py) that would have everything I ever used in it. I ran into 2 problems with that:
+
+1) I quickly because bothered by the original layout of everything I did, but am way too lazy to rewrite everything when I'm barely reusing any code anyway.
+
+2) I decided to write code I needed for the class in obscure languages in order to be obnoxious (lolcode, "like, python," etc).
+
+The lolcode needs a lolcode interpreter--I used my modified version, but the original, which I forked from, should work fine because I didn't use any of the things I added (powr and lolg).
