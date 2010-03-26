@@ -1,0 +1,115 @@
+Entry_ID: (required)
+Entry_Title: Populated Places
+Group: Data_Set_Citation
+  Originator(s): ADCED and ADNR
+  Title: Populated Places
+  Publication: cultural
+  Publication_Date: 1998
+  Publication_Place: Anchorage, AK
+  Publisher: ADNR, LRIS
+  Data_Presentation_Form: vector digital data
+  URL: Server=rex.dnr.state.ak.us; Service=5152; User=gis_base; Version=SDE.DEFAULT
+End_Group
+Keyword: towns
+Keyword: communities
+Keyword: cities
+Keyword: villages
+Keyword: Second Class City
+Keyword: Unified Home Rule Municipality
+Keyword: First Class City
+Keyword: Municipalities
+Keyword: Home Rule City
+Group: Temporal_Coverage
+  Start_date: 19970701
+  Stop_date: 19970701
+End_Group
+Data_Set_Progress: Complete
+Group: Spatial_Coverage
+  Southernmost_Latitude: 49.536219
+  Northernmost_Latitude: 71.309136
+  Westernmost_Longitude: -179.999361
+  Easternmost_Longitude: 179.993059
+End_Group
+Location: Alaska
+Group: Data_Resolution
+  Latitude_Resolution: 0.010000
+  Longitude_Resolution: 0.010000
+  Altitude_Resolution: 1.000000
+End_Group
+  Access_Constraints: To ensure distribution of the most current public information, please refer requests for data or products to the Alaska Department of Natural Resources, Land Records Information Section.
+  Use_Constraints: It is not recommended the data be used at a scale larger than 1:250,000. Any hardcopies or published datasets utilizing these data sets shall clearly indicate their source.  If the user has modified the data in any way they are obligated to describe the types of modifications they have performed.  User specifically agrees not to misrepresent these data sets, nor to imply that changes they made were approved by the Alaska Department of Natural Resources.
+Originating_Center: (required)
+Group: Data_Center
+  Data_Center_Name: Alaska Department of Natural Resources - Land Records Information Section
+  Dataset_ID: Downloadable Data
+Group: Data_Center_Contact
+  Last_name: Alaska Department of Natural Resources - Land Records Information Section
+  First_name: N/A
+  Phone: 907 269 8833
+  Group: Address
+    550 W. 7th Suite 706
+    Anchorage, AK 99501
+    USA
+  End_Group
+End_Group
+End_Group
+  Storage_Medium: Microsoft Windows 2000 Version 5.1 (Build 2600) Service Pack 1; ESRI ArcCatalog 8.3.0.800
+Group: Distribution
+  Distribution_Media: online
+  Distribution_Format : compressed Arc/Info interchange file
+  Distribution_Size: 0.8
+  Fees: none
+End_Group
+Group: Multimedia_Sample
+  URL: http://www.asgdc.state.ak.us/metagraphs/cultural/towns.jpg
+  Format: JPG
+  Caption: Basic map of town locations and populations.
+End_Group
+Group: Reference
+End_Group
+Group: Summary
+  Cartographic representation.
+  
+  Locations of statewide towns and villages were entered by
+  latitude-longitude, digitized from USGS 1:250,000 quadrangle maps,
+  and heads-up digitizing from USGS 1:250,000 maps based on relative
+  positioning of digital hydrography and digital township lines.  Many
+  locations were later updated by snapping them to points in the
+  USGSNAMES coverage obtained from USGS.
+  (null)
+  List of populated places were acquired from Alaska Department of
+  Community and Regional Affairs (DCRA).
+  (null)
+  The classifications of cities is determined by the Department of
+  Community and Regional Affairs.  An excellent description of city
+  classifications was prepared by the Local Boundary Commission Staff
+  of the Alaska Department of Community & Regional Affairs.  This
+  white paper can be found online by selecting the "Local Boundary
+  Commission" button from the main Community and Regional Affairs
+  page, then selecting "Local Government In Alaska" from the LBC
+  Publications and Reports section.
+  <URL:http://www.comregaf.state.ak.us/MRAD_LBC.htm>
+  The document is in PDF format.
+  
+  Procedures_Used:
+  Town locations eyeballed from 1:250000 maps
+  and township grid.
+  Updated 9/19/90 J. Tam
+  annolevel  size   content
+  1         15000   water body names
+  4000       4000   town names (statewide maps)
+  6000       6000   "
+  8000       8000   "
+End_Group
+Group: DIF_Author
+  Last_name: Martin
+  First_name: Marty
+  Email: marty_martin@dnr.state.ak.us
+  Phone: 907 269 8837
+  Group: Address
+    550 W 7th Ave., Suite 706
+    Anchorage, AK 99501
+  End_Group
+End_Group
+DIF_Revision_Date: 20040407
+Science_Review_Date: 

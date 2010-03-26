@@ -1,0 +1,141 @@
+Entry_ID: (required)
+Entry_Title: Rivers, 1 to 1,000,000
+Group: Data_Set_Citation
+  Originator(s): AK Department of Natural Resources, Land Records Information Section
+  Title: Rivers, 1 to 1,000,000
+  Publication: physical_feature
+  Publication_Date: 1998
+  Publication_Place: Anchorage, AK
+  Publisher: ADNR, LRIS
+  Data_Presentation_Form: vector digital data
+  URL: Server=rex.dnr.state.ak.us; Service=5152; User=gis_base; Version=SDE.DEFAULT
+End_Group
+Keyword: Rivers
+Keyword: Streams
+Keyword: drainage
+Keyword: water bodies
+Keyword: Hydrography
+Keyword: DCW
+Keyword: Digital Chart of the World
+Keyword: perennial
+Keyword: Operational Navigation Chart
+Group: Temporal_Coverage
+  Start_date: 1991
+  Stop_date: 1991
+End_Group
+Data_Set_Progress: Complete
+Group: Spatial_Coverage
+  Southernmost_Latitude: 48.159364
+  Northernmost_Latitude: 72.030119
+  Westernmost_Longitude: -179.914419
+  Easternmost_Longitude: 179.937949
+End_Group
+Location: Alaska
+Group: Data_Resolution
+  Latitude_Resolution: 0.010000
+  Longitude_Resolution: 0.010000
+  Altitude_Resolution: 1.000000
+End_Group
+  Access_Constraints: To ensure distribution of the most current public information, please refer requests for data or products to the Alaska Department of Natural Resources, Land Records Information Section.
+  Use_Constraints: It is not recommended the data be used at a scale larger than 1:1,000,000. Any hardcopies utilizing these data sets shall clearly indicate their source.  If the user has modified the data in any way they are obligated to describe the types of modifications they have performed on the hardcopy map.  User specifically agrees not to misrepresent these data sets, nor to imply that changes they made were approved by Alaska Department of Natural Resources. ESRI License Agreement: http://www.asgdc.state.ak.us/homehtml/esri.htm
+Originating_Center: (required)
+Group: Data_Center
+  Data_Center_Name: Alaska Department of Natural Resources - Land Records Information Section
+  Dataset_ID: Downloadable Data
+Group: Data_Center_Contact
+  Last_name: Alaska Department of Natural Resources - Land Records Information Section
+  First_name: N/A
+  Phone: 907 269 8833
+  Group: Address
+    550 W. 7th Suite 706
+    Anchorage, AK 99501
+    USA
+  End_Group
+End_Group
+End_Group
+  Storage_Medium: Microsoft Windows 2000 Version 5.1 (Build 2600) Service Pack 1; ESRI ArcCatalog 8.3.0.800
+Group: Distribution
+  Distribution_Media: online
+  Distribution_Format : compressed Arc/Info interchange file
+  Distribution_Size: 4.52 MB
+  Fees: none
+End_Group
+Group: Reference
+End_Group
+Group: Summary
+  ANDR's prupose for modifying this information was for mapping a
+  physical base at 1:1,000,000.
+  
+  The Alaska Department of Natural Resources (ADNR) has combined
+  rivers for several Digital Chart of the World (DCW) tiles
+  into one coverage.  Some edits were made where arcs were missing
+  (Taku River, near Juneau).  The coverage was clipped to the State
+  of Alaska boundary.  The islands and river polygons were reselected
+  out of the coverage for simplification.
+  (null)
+  The river data were combined from the DNNET
+  coverages comprising the following 5 degree by 5 degree tiles
+  for Alaska:
+  (null)
+  AK 12,22,23,32,33
+  AL 21,31,32
+  BK 12,13,22,23,33
+  BL 11,12,13,21,22,23,31,32,33
+  CK 12,23,33
+  CL 11,12,13,21,22,23,31
+  DK 12,13,22,23
+  ZK 22,32
+  (null)
+  Please note:  Portions of this product include intellectual property
+  of ESRI and are used herin with permission.  Copyright (c) 1992
+  Environmental Systems Research Institute, Inc. All rights reserved.
+  (null)
+  License Agreement: http://www.asgdc.state.ak.us/homehtml/esri.htm
+  
+  Procedures_Used:
+  This coverage was taken from ESRI's Digital Chart of the World.  It is
+  clipped to the State of Alaska.  This data was extracted from the
+  DNNET coverage for each tile that covers Alaska.   For more info
+  see - DCW Data Dictionary
+  (null)
+  Revisions:
+  02/25/98 - D. Mortenson
+  Renamed from dcw_rivers or $DCW_RIVERS to rvr1mil.
+  (null)
+  01/10/97 - M. Gorham
+  Performed a clean on cover.
+  (null)
+  12/18/96 - D. Mortenson
+  Taku River (near Juneau) was missing some of its arcs.  Added some
+  arcs to fill in where it should be.
+  (null)
+  Notes:
+  Date Received: 8/93
+  Verified: E. Kenning
+  Documented by: E. Kenning 6/94
+  To use the ARCs for this coverage:
+  ----------------------------------
+  UNSEL $DCW_RIVERS line dnlntype = 99
+  (this will remove all connectors between rivers-lakes
+  and oceans)
+  (null)
+  To use the POLYs for this coverage:
+  -----------------------------------
+  RESEL $DCW_RIVERS poly type  =  R
+  (this will select all the RIVER polys)
+  (null)
+  UNSEL $DCW_RIVERS poly type  =  I
+  (this will unselect all the ISLAND polys)
+End_Group
+Group: DIF_Author
+  Last_name: Martin
+  First_name: Marty
+  Email: marty_martin@dnr.state.ak.us
+  Phone: 907 269 8837
+  Group: Address
+    550 W 7th Ave., Suite 706
+    Anchorage, AK 99501
+  End_Group
+End_Group
+DIF_Revision_Date: 20040422
+Science_Review_Date: 
