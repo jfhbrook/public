@@ -38,7 +38,23 @@ for n in xrange(20):
         A=vstack((A,Apart))
     A=vstack((A,hstack((zeros(len(x)-1),1)) ))
     b=vstack((b,Tinf))
+    #Matrix solution is supposedly not finite difference according to Bargar >_<
     T=linalg.solve(A,b)
+
+    '''
+    After wrestling with this thing for a long time, I finally figured out
+    how Doc Bargar wanted us to solve it. He's not very good at explaining things!
+    basically, he wants us to, for i in [2..8], solve for T_i using T_{i-1} and T_{i+1}.
+    In other words, while T_0 and T_11 get left alone (this is good! They're BCs!), the other
+    T_i are weighted-averaged on down the line.
+
+    Of course, the solution after cycling through i in [2..8] will be far from exact, but
+    that's okay because it wasn't gonna be exact anyway with h and all. You just have
+    to iterate!  ...a lot.
+
+    Upshot: Bargar wasn't talking out of his ass after all.
+    Downshot: This method may have some pretty crummy convergence properties.
+    '''
 
 x=x*12.0 #back to inches
 T=T-459.67 #back to F
