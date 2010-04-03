@@ -6,8 +6,6 @@ def frictionfactor(Re,relrough):
     """
     try:
         regime = _flowregime(Re,relrough)
-    except RegimeError:
-        raise
     else:
         if regime=='laminar':
             return _laminar(Re)
