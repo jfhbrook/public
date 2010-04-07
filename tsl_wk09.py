@@ -4,7 +4,8 @@ import quantities as units
 from mr_darcy import *
 from xlrd import open_workbook
 from math import pi
-from numpy import array, zeros
+from numpy import array, zeros, hstack
+from scipy import log
 
 def main():
     # Specific gravity of manometer fluid, from apparatus manual
@@ -14,36 +15,74 @@ def main():
     # open_workbook is supposed to support the with/as thing, but, u noe :S
     f = open_workbook('thursday_data.xls', 'rb')
     sheet = f.sheet_by_index(0)
-    mdot_w = array(sheet.col_values(2,8,15)) * units.lb/units.minute
-    temp_w_i = array(sheet.col_values(3,8,15))
-    temp_w_o = array(sheet.col_values(4,8,15))
-    temp_a_i = array(sheet.col_values(5,8,15))
-    temp_a_o = array(sheet.col_values(6,8,15))
-    temp_pipe_i = array(sheet.col_values(7,8,15))
-    temp_pipe_o = array(sheet.col_values(8,8,15))
-    phead = array(sheet.col_values(9,8,15)) * units.inch/s
+    mdot_w = array(sheet.col_values(2,8,16)) * units.lb/units.minute
+    temp_w_i = array(sheet.col_values(3,8,16)) * units.degF
+    temp_w_o = array(sheet.col_values(4,8,16)) * units.degF
+    temp_a_i = array(sheet.col_values(5,8,16)) * units.degF
+    temp_a_o = array(sheet.col_values(6,8,16)) * units.degF
+    temp_pipe_i = array(sheet.col_values(7,8,16)) * units.degF
+    temp_pipe_o = array(sheet.col_values(8,8,16)) * units.degF
+    phead = array(sheet.col_values(9,8,16)) * units.inch/s
 
     # Air speed and flow rate
-    v = zeros(phead.shape)
-    Q = zeros(phead.shape)
+    print "air velocity:"
     v_a = [airv(h) for h in phead]
-    #print v_a
+    v_a = clean_quantities(v_a)
+    print v_a
+    print "air flow rate:"
     Q_a = [(0.25*pi*(0.75*units.inch)**2*vel).rescale('ft^3/s') for vel in v_a]
-    #print Q_a
+    Q_a = clean_quantities(Q_a)
+    print Q_a
 
     # Water speed and flow rate
     Q_w = (mdot_w / (1000.0*units.kg/(units.m)**3)).rescale('ft^3/s')
+    Q_w = clean_quantities(Q_w)
+    print "water flow rate:"
     print Q_w
     # The apparatus manual claims a bore of 1".
     # I wasn't sure what to make of it.
     # I'll measure the apparatus later.
+    print "water velocity in hose:"
     v_w = Q_w/(0.25*pi*(1.00*units.inch)**2)
+    print v_w
 
-    # TODO: Calculate LMTD -- Note method slightly different for
+    # Calculate LMTD -- Note method slightly different for
     # parallel flow and counter-flow!
-    # TODO: Calculate H.T. rate (mdot*cp*delT)
-    # TODO: Calculate some kinda theoretical maximum (???)
-    # TODO: Calculate effectiveness (easy given HT rate and theoretical max)
+    print "LMTDs:"
+    lmtd_ll = lmtd(temp_a_o[0:4]-temp_w_i[0:4],temp_a_i[0:4]-temp_w_o[0:4])
+    lmtd_xf = lmtd(temp_a_o[4:8]-temp_w_i[4:8],temp_a_i[4:8]-temp_w_o[4:8])
+    print "parallel,"
+    print lmtd_ll
+    print "counter-flow,"
+    print lmtd_xf
+
+    # Calculate H.T. rate (mdot*cp*delT)
+    print "Heat transfer rate action:"
+    cp_w = 4.184 * units.J/units.gram/units.celsius
+    cpv_a = 0.001297 * units.J/(units.cm**3)/units.degC
+    Cwater = (cp_w*mdot_w).rescale("W/degC")
+    Cair = (cpv_a*Q_a).rescale('W/degC')
+    print "by water,"
+    htr8s = (Cwater*(temp_w_o-temp_w_i)).rescale("watts")
+    print htr8s
+    print "by air,"
+    htr8s = (Cair*(temp_a_i-temp_a_o)).rescale("watts")
+    print htr8s
+
+    # Calculate the theoretical maximum--same deal really 
+    print "Ideal heat transfer rate action:"
+    #print Cwater
+    #print Cair
+    #calculates the minimum C for each case.
+    cmin = clean_quantities(map(lambda a: min(a[0],a[1]),zip(Cwater,Cair)))
+    #print cmin
+    htr8s_max = (cmin*(temp_a_i-temp_w_i)).rescale("watts")
+    print htr8s_max 
+
+    # Calculate effectiveness (easy given HT rate and theoretical max)
+    print "effectiveness (%)"
+    effectiveness = array(htr8s/htr8s_max)*100. 
+    print effectiveness
 
 def airv(delp):
     # Value for air at about 150 F. Cengel, A-15
@@ -64,6 +103,15 @@ def airv(delp):
         # and constant height, and assuming delhl=delp_head.
         v = ((2*delp*d*g)/(frictionfactor(vold*d/nu,roughness/d)*length))**0.5
     return v.rescale("ft/s")
+
+def lmtd(delTa,delTb):
+    return (delTa-delTb)/log(delTa/delTb)
+
+def clean_quantities(dirty):
+    #This pulls quantities out of an array and pops them on the outside
+    unittypes=[val.units for val in dirty]
+    # Should do sanity check and throw errors, but I don't care atm
+    return array(dirty) * unittypes[0]
 
 if __name__ == "__main__":
     main()
