@@ -28,23 +28,23 @@ def main():
     print "air velocity:"
     v_a = [airv(h) for h in phead]
     v_a = clean_quantities(v_a)
-    print v_a
+    printzor(v_a)
     print "air flow rate:"
     Q_a = [(0.25*pi*(0.75*units.inch)**2*vel).rescale('ft^3/s') for vel in v_a]
     Q_a = clean_quantities(Q_a)
-    print Q_a
+    printzor(Q_a)
 
     # Water speed and flow rate
     Q_w = (mdot_w / (1000.0*units.kg/(units.m)**3)).rescale('ft^3/s')
     Q_w = clean_quantities(Q_w)
     print "water flow rate:"
-    print Q_w
+    printzor(Q_w)
     # The apparatus manual claims a bore of 1".
     # I wasn't sure what to make of it.
     # I'll measure the apparatus later.
     print "water velocity in hose:"
     v_w = Q_w/(0.25*pi*(1.00*units.inch)**2)
-    print v_w
+    printzor(v_w)
 
     # Calculate LMTD -- Note method slightly different for
     # parallel flow and counter-flow!
@@ -52,9 +52,9 @@ def main():
     lmtd_ll = lmtd(temp_a_o[0:4]-temp_w_i[0:4],temp_a_i[0:4]-temp_w_o[0:4])
     lmtd_xf = lmtd(temp_a_o[4:8]-temp_w_i[4:8],temp_a_i[4:8]-temp_w_o[4:8])
     print "parallel,"
-    print lmtd_ll
+    printzor(lmtd_ll)
     print "counter-flow,"
-    print lmtd_xf
+    printzor(lmtd_xf)
 
     # Calculate H.T. rate (mdot*cp*delT)
     print "Heat transfer rate action:"
@@ -64,10 +64,21 @@ def main():
     Cair = (cpv_a*Q_a).rescale('W/degC')
     print "by water,"
     htr8s = (Cwater*(temp_w_o-temp_w_i)).rescale("watts")
-    print htr8s
+    printzor(htr8s)
     print "by air,"
     htr8s = (Cair*(temp_a_i-temp_a_o)).rescale("watts")
-    print htr8s
+    printzor(htr8s)
+
+    # Calculate heat transfer coefficients
+    # surface areas from heat exchanger lab
+    As_i = 169.668
+    As_o = 185.9561
+    htcoeffs_o = htr8s/As_o/hstack((lmtd_ll,lmtd_xf))
+    htcoeffs_i = htr8s/As_i/hstack((lmtd_ll,lmtd_xf))
+    print "inside,"
+    printzor(htcoeffs_i)
+    print "outside,"
+    printzor(htcoeffs_o)
 
     # Calculate the theoretical maximum--same deal really 
     print "Ideal heat transfer rate action:"
@@ -77,12 +88,12 @@ def main():
     cmin = clean_quantities(map(lambda a: min(a[0],a[1]),zip(Cwater,Cair)))
     #print cmin
     htr8s_max = (cmin*(temp_a_i-temp_w_i)).rescale("watts")
-    print htr8s_max 
+    printzor(htr8s_max)
 
     # Calculate effectiveness (easy given HT rate and theoretical max)
     print "effectiveness (%)"
     effectiveness = array(htr8s/htr8s_max)*100. 
-    print effectiveness
+    printzor(effectiveness)
 
 def airv(delp):
     # Value for air at about 150 F. Cengel, A-15
@@ -112,6 +123,11 @@ def clean_quantities(dirty):
     unittypes=[val.units for val in dirty]
     # Should do sanity check and throw errors, but I don't care atm
     return array(dirty) * unittypes[0]
+
+def printzor(array):
+    for i, val in enumerate(array):
+        print repr(i)+ ": " + str(val)
+    print ""
 
 if __name__ == "__main__":
     main()
