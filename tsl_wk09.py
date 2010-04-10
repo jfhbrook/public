@@ -71,14 +71,18 @@ def main():
 
     # Calculate heat transfer coefficients
     # surface areas from heat exchanger lab
-    As_i = 169.668
-    As_o = 185.9561
-    htcoeffs_o = htr8s/As_o/hstack((lmtd_ll,lmtd_xf))
-    htcoeffs_i = htr8s/As_i/hstack((lmtd_ll,lmtd_xf))
+    print "Heat transfer coefficients"
+    As_i = 169.668 *units.inch**2
+    As_o = 185.9561 *units.inch**2
+    print hstack((lmtd_ll,lmtd_xf))
+    # (hstack drops units :S)
+    # I see potential for a decorator here <_<
+    htcoeffs_o = htr8s/As_o/hstack((lmtd_ll,lmtd_xf))/units.degF
+    htcoeffs_i = htr8s/As_i/hstack((lmtd_ll,lmtd_xf))/units.degF
     print "inside,"
-    printzor(htcoeffs_i)
+    printzor(htcoeffs_i.rescale("W/m/m/degF"))
     print "outside,"
-    printzor(htcoeffs_o)
+    printzor(htcoeffs_o.rescale("W/m/m/degF"))
 
     # Calculate the theoretical maximum--same deal really 
     print "Ideal heat transfer rate action:"
