@@ -75,4 +75,6 @@ So what about surfaces? You wouldn't want to represent them this way! Heavens! P
 This leads to the other problem of looking up property b using property a, which is something that isn't a problem with the other one. I feel like this is something sql does, but I don't really understand that too well. Maybe I could use SQLite to do it? But that doesn't seem like it'd work well with interpolation action (which would be hella useful, u noe)
 One way to deal with this would be to choose a column as the "key" column, and relate everything back to this single value. Then, to get answer, go the long way around. XD On one hand, there are two steps, but otoh, gathering God knows how many 1-d functions it would take to cover everything.
 
+(Why not data[col2][value from data[col1]]) ? Seems to do what I was talkin' 'bout right? 'cept index is now the key column. Which is probably good.
+
 Then again, maybe the way to go is to use each row as a datapoint and do a curve fit against them? But then what? Is this better? I'll have to think about that some more.
