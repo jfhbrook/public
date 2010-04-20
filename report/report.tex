@@ -20,7 +20,9 @@
 
 stuff
 
-\section{Methodology}
+\section{Methodology \& Background}
+
+\subsection{Mathematics}
 
 The basis of this analysis is the Log Mean Temperature Difference method, or LMTD method, which relies on the relation in equations \ref{eq:lmtd}, \ref{eq:cpdt} and \ref{eq:lmtd_def}, where \(T_i\) is the ith temperature, \(A_s\) is the surface area over which heat transfer is occuring, and \(U\) is the total heat transfer coefficient for the apparatus.
 
@@ -108,7 +110,7 @@ Due to the first law of thermodynamics and assuming adiabatic heat transfer (whi
 
 \begin{equation}
 \label{eq:firstlaw}
-\left(\dot{m} c_P \Delta T \right)_{\textrm{hot}} \left(\dot{m} c_P \Delta T \right)_{\textrm{cold}}
+\left(\dot{m} c_P \Delta T \right)_{\textrm{hot}} = \left(\dot{m} c_P \Delta T \right)_{\textrm{cold}}
 \end{equation}
 
 Since all the \(\Delta T\)s are known, \(\dot{m}_{\textrm{hot}}\) may be calculated by dividing \(\dot{Q}_{\textrm{hot}}\) by \(\rho\), and \(c_P\) is a function of temperature, one may solve for \(\dot{m}_{\textrm{hot}}\), which may be converted back to \(\dot{Q}_{\textrm{cold}}\) and consequently to \(v\).
@@ -124,4 +126,16 @@ Referring back to equation \ref{eq:flow2vel}, notice that \(l_z\) is a function 
 
 Hence, given dimensions of a plate heat exchanger (with dimensions \(l_x\) and \(l_y\)) and the inlet and outlet temperatures of both the hot and the cold side, the number of plates required to achieve the required heat exchanger performance may be calculated.
 
+\subsection{Software Implementation}
+
+\begin{itemize}
+\item find UA using mcpdt, lmtd and correction factor function
+\item Solve for N using zeros relation
+\end{itemize}
+
+\subsection{TODO:}
+\begin{itemize}
+\item Figure out how to deal with stochastic data
+\item Actually implement everything
+\end{itemize}
 \end{document}
