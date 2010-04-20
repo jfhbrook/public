@@ -30,12 +30,21 @@ class Tparams():
         return (self.T_c_out-self.T_c_in)/(self.T_h_in-T_c_in)
 
 
-def h(cp,density,dvisc,k,l,vel):
-    #assumes flat plate
-    re = density*vel*l/dvisc
-    pr = dvisc*cp/k
-    return 0.037*(re**0.8)*(pr**(1./3.))*k/l
+class Htxrparams():
+    def __init__(lx,ly,lz_0,del_lz,As_plate,del_W,density):
+        self.lx=lx
+        self.ly=ly
+        self.lz_0=lz_0
+        self.del_lz=del_lz
+        self.As_plate=As_plate
+        self.del_W=del_W
+        self.density=density
 
-def u(h,rsteel,asurf):
-    #rsteel is thickness/ksteek
-    return (2*/(h) +asurf*rsteel)**-1.
+    def t_plate(self):
+        return self.del_W/density/As_plate
+
+    def t_gap(self):
+        return self.del_lz-self.t_plate
+
+    def lz(self,N):
+        return self.lz_0+self.del_lz*N
