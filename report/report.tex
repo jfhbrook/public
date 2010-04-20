@@ -57,7 +57,7 @@ U = \left(\frac{2}{h} + \frac{A_{s, \textrm{plate}} t_{\textrm{plate}}}{k_{\text
 
 This means that not only must \(A_s\) be known, but so must the thickness of the plates, the material the exchanger is made of, and the convective heat transfer coefficient across the plates, which is in turn a function of the geometry of the heat exchanger, the material properties of the fluid, and the velocity of the fluids through the exchanger.
 
-For this design, I decided to start with pre-fabricated plates designed for brased plate heat exchangers. This gives a good starting point for the design of the heat exchanger, removing a lot of the design variables, while still requiring the basic calculations required to actually design a heat exchanger. Moreover, while the plates might be already-designed in real life, specifications on them detailed enough to base the entire design are not easily-obtained. Therefore, basic released knowledge of plate designs will be used to make reasonable calculations for this purpose.
+For this design, I decided to start with pre-fabricated plates designed for brazed plate heat exchangers. This gives a good starting point for the design of the heat exchanger, removing a lot of the design variables, while still requiring the basic calculations required to actually design a heat exchanger. Moreover, while the plates might be already-designed in real life, specifications on them detailed enough to base the entire design are not easily-obtained. Therefore, basic released knowledge of plate designs will be used to make reasonable calculations for this purpose.
 
 Due to their prominence on the Google search page, I chose to work with Schmidt's line of brazed plate heat exchangers. Figure\ref{tab:schmidt}, which depicts a table from Schmidt's literature, mostly concerns itself with dimensions. Otherwise, Schmidt reveals that the primary material for their plates is 316 stainless steel. Looking up the properties of 316 stainless steel reveals a density of \(0.29\) lbm/in\textsuperscript{3} and a heat conductivity of \(9.4\) Btu/hr/ft\textsuperscript{2}/ft/\textsuperscript{o} F .
 
@@ -112,6 +112,8 @@ Due to the first law of thermodynamics and assuming adiabatic heat transfer (whi
 \end{equation}
 
 Since all the \(\Delta T\)s are known, \(\dot{m}_{\textrm{hot}}\) may be calculated by dividing \(\dot{Q}_{\textrm{hot}}\) by \(\rho\), and \(c_P\) is a function of temperature, one may solve for \(\dot{m}_{\textrm{hot}}\), which may be converted back to \(\dot{Q}_{\textrm{cold}}\) and consequently to \(v\).
+
+(Not that, assuming equal \(c_P\) values for both fluids, the outgoing volumetric flow rate should be roughly 25 and consequently plate sizes 1, 2, 22 and 24 may be safely ruled out.)
 
 Referring back to equation \ref{eq:flow2vel}, notice that \(l_z\) is a function of \(N\), or the number of plates on the heat exchanger as can be seen in figure \ref{tab:schmidt}. This means that, ultimately, \(U\) and \(A_s\) are both functions of \(N\), and due to the functional nature of the material properties of the brines used, finding an analytical solution to this problem is nearly impossible.  Instead, this may be solved as a zero-finding problem. In other words, the \(N\) which satisfies this equation is the solution to equation \ref{eq:zeros}.
 
