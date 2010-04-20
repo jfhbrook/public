@@ -27,8 +27,8 @@ class 2dtable(filename):
         #This is where you'd enter in x,y and get z
         return self.function(x,y)
 
-#should work for the fluid data (kinda), htx selection data and fluid props table.
-class Propstable(filename):
+#Propstable should insist on floatcasting, while Discretetable shouldn't have a call() fxn.
+class Continuoustable(filename):
     def __init__(filename):
         with open(filename) as datafile:
             reader = csv.reader(datafile)
@@ -36,19 +36,34 @@ class Propstable(filename):
             axis=map(float,reader.next())
             data=[]
             #grab values
+            data.append(map(float,row))
+    #At the moment, you'll only be able to go from the left-most foward.
+    self.functions=[]
+    cols=zip(*data)
+    for col in cols:
+        self.functions.append(scipy.interpolate.interp1d(cols[0],col)
+    #TODO: Make up a good way to find any xi with any xj if functions 1:1
+    def __call__(x,outval):
+        i=self.axis.index(outval)
+        return self.functions[i](x)
+
+#Propstable should insist on floatcasting, while Discretetable shouldn't have a call() fxn.
+class Discretetable(filename):
+    def __init__(filename):
+        with open(filename) as datafile:
+            reader = csv.reader(datafile)
+            #get the labels
+            axis=map(float,reader.next())
+            self.data=[]
+            #grab values
             for row in reader:
                 for value in row:
                     try:
                         value = float(value)
                     except (ValueError):
                         pass
-                data.append(row)
-    #At the moment, you'll only be able to go from the left-most foward.
-    self.functions=[]
-    cols=zip(*data)
-    for col in cols:
-        self.functions.append(scipy.interpolate.interp1d(cols[0],col)
-    #TODO: Make up a good way to find any xi with any xj
-    def __call__(x,outval):
+                self.data.append(row)
+
+    def __getitem__(x,outval):
         i=self.axis.index(outval)
-        return self.unctions[i](x)
+        return self.data[x,i]
