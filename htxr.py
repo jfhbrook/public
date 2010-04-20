@@ -26,16 +26,39 @@ class 2dtable(filename):
         return self.function(x,y)
 
 
-class Heatexchanger():
-    def __init__(self,T_h_in,T_h_out,T_c_in,T_c_out):
-        self.T_h_in = T_h_in
-        self.T_h_out = T_h_out
-        self.T_c_in = T_c_in
-        self.T_c_out = T_c_out
-        #self.As_i = As_i
-        #self.As_o = As_o
-        #self.cp=cp
-        #self.htxtype=htxtype
+class Propstable(filename):
+    def __init__(filename):
+        with open(filename) as datafile:
+            reader = csv.reader(datafile)
+            #get the "x" coordinates"
+            axis=map(float,reader.next())
+            data=[]
+            #grab "y" coordinates and "z" values
+            for row in reader:
+                data.append(map(float,row))
+
+    #TODO: Make up a good way to find any xi with any xj
+        
+    def __call__(x,y):
+
+
+
+def h(cp,density,dvisc,k,l,vel):
+    #assumes flat plate
+    re = density*vel*l/dvisc
+    pr = dvisc*cp/k
+    return 0.037*(re**0.8)*(pr**0.33333)*k/l
+
+def u(h,rsteel,asurf):
+    #rsteel is thickness/ksteek
+    return (2*/(h) +asurf*rsteel)**-1.
+
+#This stuff probably shouldn't be a class.
+def main():
+        #self.T_h_in = T_h_in
+        #self.T_h_out = T_h_out
+        #self.T_c_in = T_c_in
+        #self.T_c_out = T_c_out
 
     def LMTD(self):
         delT_a = self.T_h_in-self.T_c_out
@@ -51,3 +74,6 @@ class Heatexchanger():
 
     def qdot(self,T_in,T_out):
         return self.mdot*self.cp*(T_in-T_out)
+
+
+
