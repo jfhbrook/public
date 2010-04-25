@@ -90,7 +90,7 @@ Assuming a flat plate, one may calculate the heat transfer coefficient using the
 
 \begin{align}
 \label{eq:nukoverl}
-h &=\frac{k}{l} 0.037\textrm{Re}^{0.8}\textrm{Pr}^{1/3}\\
+h &=\frac{k_f}{t_{\textrm{gap}}} 0.037\textrm{Re}^{0.8}\textrm{Pr}^{1/3}\\
 \label{eq:re}
 \textrm{Re}&=\frac{\rho v t_{\textrm{gap}}}{\mu}\\
 \label{eq:pr}
@@ -125,6 +125,8 @@ Referring back to equation \ref{eq:flow2vel}, notice that \(l_z\) is a function 
 \end{equation}
 
 Hence, given dimensions of a plate heat exchanger (with dimensions \(l_x\) and \(l_y\)) and the inlet and outlet temperatures of both the hot and the cold side, the number of plates required to achieve the required heat exchanger performance may be calculated.
+
+\subsection{Data}
 
 \subsection{Software Implementation}
 
