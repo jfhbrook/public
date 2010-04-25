@@ -6,23 +6,22 @@
 \usepackage{pdfpages}
 \usepackage{graphicx}
 \usepackage{amsmath}
+\usepackage{fixltx2e}
 
 \assignment{Heat Exchanger Design}
 \student{Joshua Holbrook}
-\duedate{April 23\textsuperscript{rd} 2010}
+\duedate{May 1\textsuperscript{st} 2010}
 \coursename{Thermal Systems Lab}
 \coursenumber{ME 415}
 
 \begin{document}
 \sffamily
 
-\section{Introduction}
+\section{Introduction \& Background}
 
-stuff
+For this exercise, we are presented with the following scenario: A rural Alaskan village has a large diesel generator. Because diesel fuel is at a premium, the operators wish to reuse the waste heat from the generator to heat a small building, namely a laundromat. Our task, then, is to design a heat exchanger to dump the waste heat from the generator into a glycol heating system. The temperature differential for the building heat is specified to be \(> 20^o F\), the minimum coolant temperature for the generator is specified at \(140^o F\), and typical operating temperatures and flow rates for the generator are given in a table.  The fluids for both sides of the heat exchanger are assumed to be 50\% by volume ethylene glycol.
 
-\section{Methodology \& Background}
-
-\subsection{Mathematics}
+\section{Mathematics \& Approach}
 
 The basis of this analysis is the Log Mean Temperature Difference method, or LMTD method, which relies on the relation in equations \ref{eq:lmtd}, \ref{eq:cpdt} and \ref{eq:lmtd_def}, where \(T_i\) is the ith temperature, \(A_s\) is the surface area over which heat transfer is occuring, and \(U\) is the total heat transfer coefficient for the apparatus.
 
@@ -126,18 +125,49 @@ Referring back to equation \ref{eq:flow2vel}, notice that \(l_z\) is a function 
 
 Hence, given dimensions of a plate heat exchanger (with dimensions \(l_x\) and \(l_y\)) and the inlet and outlet temperatures of both the hot and the cold side, the number of plates required to achieve the required heat exchanger performance may be calculated.
 
-\subsection{Data}
+\section{Data Tables}
 
-\subsection{Software Implementation}
+There are four sets of data associated with this design strategy.
 
-\begin{itemize}
-\item find UA using mcpdt, lmtd and correction factor function
-\item Solve for N using zeros relation
-\end{itemize}
+\subsection{Engine Coolant Data Points}
 
-\subsection{TODO:}
-\begin{itemize}
-\item Figure out how to deal with stochastic data
-\item Actually implement everything
-\end{itemize}
+This data set consists of a series of temperature and volumetric flow rate readings from the original generator/radiator configuration. From this data, approximate probability distributions for \(T_{H, \textrm{in}}\), \(T_{H, \textrm{out}}\) and \(\dot{V}_H\) can be found (see figures x,y,z and w), and based on these sensible values may be assumed for the temperatures for use in heat exchanger calculations.
+
+Another, more sophisticated approach would be to attempt some sort of stochastic approach. For example, calculations could be ran for all combinations of \(\bar{T}_i \pm \sigma_i\). Alternately, finding uncertainty equations based on those we have may be the best bet, since they could potentially decrease computer crunch time significantly. Unfortunately, such treatments of data seem to be rare enough that finding information on them is difficult. Moreover, it's a lot of effort for values that, in the case of the temperatures, tend to vary by less than a degree either way.
+
+\subsection{50\% by volume Ethylene Glycol Property Table}
+
+``ASHRAE 2005 Fundamentals'' contains property tables for ethylene glycol at a number of by-volume mixtures relating temperature to density, heat capacity at constant pressure, heat conductivity and dynamic viscosity all at standard pressure. For calculations, it's easiest to pick a representative temperature for the entire system at which to pull constant values for \(\rho\), \(c_P\), \(k\) and \(\mu\), but this is (of course) not technically correct. Instead, I chose the approach of looking up these values at average temperatures for the hot and cold side of the heat exchanger, respectively.
+
+\subsection{LMTD Correction Factors}
+
+``Heat and Mass Transfer,'' by Yunus Cengel, contains graphs relating the four inlet/outlet temperatures of a cross-flow, non-mixing heat exchanger (amongst a few other configurations) to the correction factor \(F\). Unfortunately, these values were not in table form. I converted them to table form by using a piece of open-source software called Engauge Digitizer, which is designed to convert scans of graphs into tabular form.
+
+\subsection{Heat Exchanger Specifications Table}
+
+Finally, the data in figure \ref{tab:schmidt}, which contains the specifications for each model of heat exchanger, was to be used for its dimension and weight values, as functions of \(N\) where applicable.
+
+\section{Software Implementation}
+
+The software implementation of this design, while complete enough to be worthy of discussion, is unfinished due to the complexity of the problem as posed.
+
+As it stands, three classes were implemented to handle tabular data in .csv format:
+
+\begin{enumerate}
+\item \texttt{2dtable()} was designed to handle the correction factor tables from Cengel, which were functions of the derived values \(R\) and \(P\), both functions of the four inlet/outlet temperatures. The correction factor instance of this class allows returns \(F\) when called with \(R\) and \(P\) as arguments.
+\item \texttt{Continuoustable()} was designed with the properties tables from ``ASHRAE 2005 Fundamentals'' in mind, and instances of this class return interpolated values for requested properties at a given value for the left-most property (in this case, temperature).
+\item \texttt{Discretetable()}, in contrast, was designed for tables where interpolation wouldn't make sense---in particular, the engine coolant datapoints and heat exchanger parameters table. Other than the lack of value interpolation, this class has a similar structure to \texttt{Continuoustable()}.
+\end{enumerate}
+
+In addition, two other classes have been implemented:
+
+\begin{enumerate}
+\item \texttt{Tparams()} takes the four inlet/outlet temperatures as inputs and has methods returning values for LMTD\textsubscript{CF}, \(\bar{T}_H\), \(\bar{T}_C\), \(\Delta T_H\), \(\Delta T_C\), \(R\) and \(P\).
+\item \texttt{Htxrparams} takes heat exchanger parameter information, with the density of steel, as inputs. It has methods returning \(t_{\textrm{plate}}\), \(t_{\textrm{gap}}\) and \(l_z(N)\).
+\end{enumerate}
+
+These two classes, supply most of the variables required to complete the rest of the mathematical calculations as explained previously
+
+\section{Outcomes \& Conclusions}
+
 \end{document}
