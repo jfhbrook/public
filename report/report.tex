@@ -2,24 +2,17 @@
 
 \usepackage{bargar}
 \usepackage{euler}
+\usepackage{mathpazo}
 \usepackage{amsmath}
-%\usepackage{pdfpages}
 \usepackage{graphicx}
-%\usepackage{amsmath}
+\usepackage{amsmath}
 \usepackage{fixltx2e}
-
-
-\usepackage{fontspec}
-\usepackage{xunicode}
-\usepackage{xltxtra}
 
 \assignment{Heat Exchanger Design}
 \student{Joshua Holbrook}
 \duedate{May 1\textsuperscript{st} 2010}
 \coursename{Thermal Systems Lab}
 \coursenumber{ME 415}
-
-\setsansfont{Arial}
 
 \begin{document}
 \sffamily
@@ -52,7 +45,14 @@ The basis of this analysis is the Log Mean Temperature Difference method, or LMT
     \right) }
 \end{equation}
 
-In this case, the LMTD is defined as with the case of a counter-flow heat exchanger.  In this analysis, however, I am assuming a cross-flow heat exchanger, which requires a correction factor \(F\) to be used. This correction factor is a function of all four inlet/outlet temperatures, as well as the particular geometry of the heat exchanger.  For this analysis, the relations encoded in Cengel's Heat and Mass Transfer's graphs were used, assuming unmixed flow. \marginpar{pictures?}
+In this case, the LMTD is defined as with the case of a counter-flow heat exchanger.  In this analysis, however, I am assuming a cross-flow heat exchanger, which requires a correction factor \(F\) to be used. This correction factor is a function of all four inlet/outlet temperatures, as well as the particular geometry of the heat exchanger.  For this analysis, the relations encoded in Cengel's Heat and Mass Transfer's graphs assuming unmixed flow were used, as seen in figure \ref{fig:correction-factor}.
+
+\begin{figure}
+\center
+\label{fig:correction-factor}
+\includegraphics[width=3.0in]{correction-factor.png}
+\caption{This graph shows the correction factor as a function of the derived parameters \(R\) and \(P\). Despite the low quality of the scan, the graph was still usable.}
+\end{figure}
 
 From the constraints and assumptions for this heat exchanger design, both the LMTD and \(F\) may be found.  In addition, based on the constraints for the hot side of the heat exchanger, \(\dot{Q}\) may also be calculated. With these pieces of information, we may find what the product \(UA_s\) must be in order to meet the constraints for the heat exchanger design. 
 
