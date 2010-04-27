@@ -3,16 +3,23 @@
 \usepackage{bargar}
 \usepackage{euler}
 \usepackage{amsmath}
-\usepackage{pdfpages}
+%\usepackage{pdfpages}
 \usepackage{graphicx}
-\usepackage{amsmath}
+%\usepackage{amsmath}
 \usepackage{fixltx2e}
+
+
+\usepackage{fontspec}
+\usepackage{xunicode}
+\usepackage{xltxtra}
 
 \assignment{Heat Exchanger Design}
 \student{Joshua Holbrook}
 \duedate{May 1\textsuperscript{st} 2010}
 \coursename{Thermal Systems Lab}
 \coursenumber{ME 415}
+
+\setsansfont{Arial}
 
 \begin{document}
 \sffamily
@@ -62,7 +69,7 @@ For this design, I decided to start with pre-fabricated plates designed for braz
 
 Due to their prominence on the Google search page, I chose to work with Schmidt's line of brazed plate heat exchangers. Figure\ref{tab:schmidt}, which depicts a table from Schmidt's literature, mostly concerns itself with dimensions. Otherwise, Schmidt reveals that the primary material for their plates is 316 stainless steel. Looking up the properties of 316 stainless steel reveals a density of \(0.29\) lbm/in\textsuperscript{3} and a heat conductivity of \(9.4\) Btu/hr/ft\textsuperscript{2}/ft/\textsuperscript{o} F .
 
-\begin{figure}
+\begin{figure}[t]
 \center
 \label{tab:schmidt}
 \includegraphics[width=5.0in]{schmidt_props.png}
@@ -131,7 +138,14 @@ There are four sets of data associated with this design strategy.
 
 \subsection{Engine Coolant Data Points}
 
-This data set consists of a series of temperature and volumetric flow rate readings from the original generator/radiator configuration. From this data, approximate probability distributions for \(T_{H, \textrm{in}}\), \(T_{H, \textrm{out}}\) and \(\dot{V}_H\) can be found (see figures x,y,z and w), and based on these sensible values may be assumed for the temperatures for use in heat exchanger calculations.
+This data set consists of a series of temperature and volumetric flow rate readings from the original generator/radiator configuration. From this data, approximate probability distributions for \(T_{H, \textrm{in}}\), \(T_{H, \textrm{out}}\) and \(\dot{V}_H\) can be found (see figure \ref{fig:hists}), and based on these sensible values may be assumed for the temperatures for use in heat exchanger calculations.
+
+\begin{figure}[t]
+\center
+\label{fig:hists}
+\includegraphics[width=0.8\textwidth]{histograms.png}
+\caption{Histograms of the generator's run data. From the top left: The ``hot side'' of the generator loop, the ``cold side'' of the generator loop, the temperature difference between them, and the volumetric flow rate.}
+\end{figure}
 
 Another, more sophisticated approach would be to attempt some sort of stochastic approach. For example, calculations could be ran for all combinations of \(\bar{T}_i \pm \sigma_i\). Alternately, finding uncertainty equations based on those we have may be the best bet, since they could potentially decrease computer crunch time significantly. Unfortunately, such treatments of data seem to be rare enough that finding information on them is difficult. Moreover, it's a lot of effort for values that, in the case of the temperatures, tend to vary by less than a degree either way.
 
@@ -169,5 +183,11 @@ In addition, two other classes have been implemented:
 These two classes, supply most of the variables required to complete the rest of the mathematical calculations as explained previously
 
 \section{Outcomes \& Conclusions}
+
+Unfortunately, \(N\) was never actually calculated. However, this experience has delivered a number of significant outcomes. First, the method for designing a plate heat exchanger has been outlined---this is arguably the most important part conceptually. Having never approached such a problem previously, I ended up learning quite a bit about the LMTD method and how it may be used in the real world.
+
+Second, implementation has been explored, and while one hasn't been completed the structure of an implementation has been mostly fleshed out. In addition, the use of tabular (and graphical) data with software has been studied, leading to the beginnings of what may end up being a publically-available python module (tabular.py).
+
+In fact, not completing the calculations necessary to find \(N\) can be seen as a cautionary tale regarding simplifying assumptions (or lack thereof). For this project, I chose to make as few simplifying assumptions as I could get away with. This has the advantage of (hopefully) higher accuracy, but suffers from increased complexity. Had I made more simplifying assumptions (constant fluid properties and one model for the plates for example), I should've easily been able to calculate a value for \(N\). The moral of this project, if it has one, is this:  Make as many simplifying assumptions as you can get away with.
 
 \end{document}
