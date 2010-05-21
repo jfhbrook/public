@@ -1,0 +1,7 @@
+This is a project wherein I used qgis and python to estimate how many river crossings there are between a given Trans-Alaska pipeline pumping station and a given Alaskan town.
+
+shape_data/ contains, well, all the shapefile data. The SOURCES file is a csv which is intended to explain where everything came from. The vector data of the pumping stations was made with qgis using the raster data (map from wikipedia) and the georeferencing plugin (which also made use of the towns data). I also used qgis to make the gnomonic conversions (no telling if they are correct or not, since I'm a GIS noob) and to combine the towns and stations data into a single shapefile.
+
+count_crossings.py uses osgeo and shapely to import the shapefile line data of the rivers and the point data of the combined towns/stations data, specifies lines connection the towns to the stations, and counts intersections, producing a .csv file containing the results.
+
+Enjoy! Hopefully this is useful.
