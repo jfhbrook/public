@@ -10,7 +10,7 @@
   },
   "main": "lib/sendgrid.js",
   "scripts": {
-    "test": "vows --spec test/*.js"
+    "test": "nodeunit test/*.js"
   },
   "engines": {
     "node": "~v0.4.9"

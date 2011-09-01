@@ -53,9 +53,9 @@ Sends an email. Options are the same as those of the [sendgrid json web api](htt
 
 In order to run the tests, sendgrid needs a user, api key, and email addresses to send to and from. Before running these tests, open `./test/config-template.json`, edit it to contain your credentials and information, and save it as `./test/config.json`.
 
-Then, you may run the tests with vows:
+Then, you may run the tests with nodeunit:
 
-    vows test/*.js --spec
+    nodeunit test/*.js
 
 **Author:** Joshua Holbrook
 **Copyright 2011 Nodejitsu, Inc.**
