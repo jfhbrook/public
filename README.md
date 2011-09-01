@@ -1,10 +1,10 @@
-# node-sendgrid
+# sendgrid-web
 
-Send emails with [sendgrid](http://sendgrid.com) and node.js.
+Send emails with [sendgrid](http://sendgrid.com) and node.js! This sendgrid module (there are others) uses their JSON web API and the [request](https://github.com/mikeal/request) module.
 
 ## Install:
 
-    npm install sendgrid
+    npm install sendgrid-web
 
 ## Example:
 
@@ -58,4 +58,3 @@ Then, you may run the tests with nodeunit:
     nodeunit test/*.js
 
 **Author:** Joshua Holbrook
-**Copyright 2011 Nodejitsu, Inc.**
