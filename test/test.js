@@ -13,10 +13,8 @@ vows.describe("Sending emails with Sendgrid").addBatch({
         key: config.key
       });
     },
-    "The resulting object has a 'send' property": function (sendgrid) {
+    "The resulting object has a 'send' method": function (sendgrid) {
       assert.isTrue(Object.hasOwnProperty.call(sendgrid, "send"));
-    },
-    "This property is a function": function (sendgrid) {
       assert.equal(typeof(sendgrid.send), "function");
     },
 
