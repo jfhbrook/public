@@ -49,6 +49,13 @@ Sends an email. Options are the same as those of the [sendgrid json web api](htt
 * **html:** The body of the email, if it's intended to be treated like html.
 * **text:** The body of the email, if it's intended to be treated like plaintext.
 
+## Tests:
+
+In order to run the tests, sendgrid needs a user, api key, and email addresses to send to and from. Before running these tests, open `./test/config-template.json`, edit it to contain your credentials and information, and save it as `./test/config.json`.
+
+Then, you may run the tests with vows:
+
+    vows test/*.js --spec
 
 **Author:** Joshua Holbrook
 **Copyright 2011 Nodejitsu, Inc.**
