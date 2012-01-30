@@ -9,7 +9,7 @@ Send emails with [sendgrid](http://sendgrid.com) and node.js! This sendgrid modu
 ## Example:
 
 ``` js
-    var Sendgrid = require("sendgrid");
+    var Sendgrid = require("sendgrid-web");
 
     var sendgrid = new Sendgrid({
       user: "josh.holbrook@gmail.com",
