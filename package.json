@@ -2,7 +2,7 @@
   "author": "Joshua Holbrook <josh.holbrook@gmail.com> (http://jesusabdullah.github.com)",
   "name": "sendgrid-web",
   "description": "Easily send emails with sendgrid and node.js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "homepage": "https://github.com/jesusabdullah/node-sendgrid-web",
   "repository": {
     "type": "git",
