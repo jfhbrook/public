@@ -1,17 +1,21 @@
 {
-  "name": "log-producer",
-  "version": "0.0.0",
-  "description": "ERROR: No README.md file found!",
+  "name": "godot-log-producer",
+  "version": "0.0.1",
+  "description": "A producer for godot that tails logs",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tests-of-the-sierra-madre"
   },
-  "repository": "git@github.com:jesusabdullah/log-producer.git",
-  "author": "",
+  "repository": "git@github.com:jesusabdullah/godot-log-producer.git",
+  "homepage": "https://github.com/jesusabdullah/godot-log-producer",
+  "author": "Joshua Holbrook",
   "license": "MIT",
   "dependencies": {
     "tailing-stream": "0.0.4",
     "godot": "~0.5.0",
     "which": "~1.0.5"
+  },
+  "devDependencies": {
+    "tests-of-the-sierra-madre": "0.0.0"
   }
 }
