@@ -1,9 +1,7 @@
 var path = require('path'),
-    util = require('util'),
-    stream = require('stream');
+    util = require('util');
 
-var uuid = require('node-uuid'),
-    split = require('split'),
+var split = require('split'),
     Producer = require('godot').producer.Producer,
     tail = require('./tail');
 
