@@ -1,8 +1,7 @@
 var path = require('path'),
     util = require('util');
 
-var split = require('split'),
-    Producer = require('godot').producer.Producer,
+var Producer = require('godot').producer.Producer,
     tail = require('./tail');
 
 var LogProducer = module.exports = function (options) {
@@ -16,8 +15,16 @@ var LogProducer = module.exports = function (options) {
 
   this.logs = [];
 
-  tail(path.resolve(options.file)).pipe(split()).on('data', function (line) {
-    self.logs.push(line);
+  var s = tail(path.resolve(options.file));
+
+  s.on('data', function (lines) {
+    lines = lines.toString().split('\n');
+
+    if (lines[lines.length - 1] == '') {
+      lines.pop();
+    }
+
+    self.logs = self.logs.concat(lines);
   })
 };
 util.inherits(LogProducer, Producer);
