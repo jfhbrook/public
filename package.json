@@ -1,0 +1,25 @@
+{
+  "name": "clf-parser",
+  "version": "0.0.0",
+  "description": "A basic parser for the common log format seen in apache and nginx logs",
+  "main": "index.js",
+  "scripts": {
+    "test": "node ./test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jesusabdullah/node-clf-parser.git"
+  },
+  "keywords": [
+    "clf",
+    "common",
+    "log",
+    "format",
+    "parser"
+  ],
+  "author": "Joshua Holbrook",
+  "license": "MIT",
+  "devDependencies": {
+    "tap": "~0.4.3"
+  }
+}
