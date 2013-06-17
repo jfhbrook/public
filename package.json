@@ -1,0 +1,20 @@
+{
+  "name": "godot-npm-publish-producer",
+  "version": "0.0.0",
+  "description": "A producer for godot that emits npm publish events",
+  "main": "index.js",
+  "scripts": {
+    "test": "tests-of-the-sierra-madre"
+  },
+  "repository": "git@github.com:jesusabdullah/godot-npm-publish-producer.git",
+  "homepage": "https://github.com/jesusabdullah/godot-npm-publish-producer",
+  "author": "Joshua Holbrook",
+  "license": "MIT",
+  "dependencies": {
+    "npm-publish-stream": "~0.2.0",
+    "godot-producer": "~0.0.0"
+  },
+  "devDependencies": {
+    "tests-of-the-sierra-madre": "0.0.0"
+  }
+}
