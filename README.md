@@ -12,4 +12,4 @@ Enjoy!
 
 ![](https://github.com/jesusabdullah/alaska-democrat-favicon/blob/master/favicon.png?raw=true)
 
-### Paid For by the Alaska Young Democrats. Not Authorized by any candidate or candidate's committee.
+### Paid For by the Alaska Young Democrats. Not Authorized by any candidate or candidate's committee. 2602 Fairbanks Street Anchorage, AK 99503-2428
