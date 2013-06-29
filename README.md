@@ -10,4 +10,6 @@ Alaska Young Democrats, or any particular candidate, committee or organization.
 
 Enjoy!
 
+![](https://github.com/jesusabdullah/alaska-democrat-favicon/blob/master/favicon.png?raw=true)
+
 ### Paid For by the Alaska Young Democrats. Not Authorized by any candidate or candidate's committee.
