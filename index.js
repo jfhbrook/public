@@ -73,6 +73,13 @@ module.exports = function (line) {
   });
 
   //
+  // If there was a request, then get the method
+  //
+  if (parsed.request) {
+    parsed.http_method = parsed.request.split(' ').shift();
+  }
+
+  //
   // Parse the "local time" field into a javascript date object
   //
   if (parsed.time_local) {
