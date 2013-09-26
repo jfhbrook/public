@@ -1,6 +1,6 @@
 {
   "name": "clf-parser",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A basic parser for the common log format seen in apache and nginx logs",
   "main": "index.js",
   "scripts": {
