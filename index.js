@@ -137,13 +137,25 @@ module.exports = function (line) {
       //
       // Time zone offsets
       //
+      // TZ sign in standard string representations is REVERSED from sign in JavaScript:
+      //
+      // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getTimezoneOffset
+      //
+      // "Note that this means that the offset is positive if the local timezone is
+      // behind UTC and negative if it is ahead.  For example, if your time zone
+      // is UTC+10 (Australian Eastern Standard Time), -600 will be returned."
+      //
+      // See also:
+      //
+      // http://stackoverflow.com/questions/1091372/getting-the-clients-timezone-in-javascript/1091399#1091399
+
       offset.sign = str.substr(0, 1);
       offset.hh = parseInt(str.substr(1, 2), 10);
       offset.mm = parseInt(str.substr(3, 2), 10);
 
       switch (offset.sign) {
-        case '+': offset.sign = 1; break;
-        case '-': offset.sign = -1; break;
+        case '+': offset.sign = -1; break;
+        case '-': offset.sign = +1; break;
       }
 
       hh += offset.sign * offset.hh;
