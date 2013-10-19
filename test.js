@@ -12,6 +12,9 @@ tap.test('parsing this example from the apache guys totally works', function (t)
   t.equal(parsed.remote_user, 'frank', 'we have a user!');
   t.type(parsed.time_local, Date, 'we have a date!');
   t.equal(parsed.request, 'GET /apache_pb.gif HTTP/1.0', 'we have a request!');
+  t.equal(parsed.method, 'GET', 'we have a method!');
+  t.equal(parsed.path, '/apache_pb.gif', 'we have a path!');
+  t.equal(parsed.protocol, 'HTTP/1.0', 'we have a protocol!');
   t.equal(parsed.http_method, 'GET', 'we have an http method!');
   t.equal(parsed.status, 200, 'we have a status code!');
   t.equal(parsed.body_bytes_sent, 2326, 'we have bytes sent!');

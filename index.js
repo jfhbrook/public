@@ -53,6 +53,13 @@ module.exports = function (line) {
     parsed[label] = field;
   });
 
+  var matches = parsed.request.match(/([A-Z]+)\s+(\S+)\s+([A-Z]+\/[\d\.]+)/);
+  if (matches) {
+    parsed.method = matches[1];
+    parsed.path = matches[2];
+    parsed.protocol = matches[3];
+  }
+
   //
   // So the fields don't choke the implicit RegExp(str) in .match
   //
