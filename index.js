@@ -53,11 +53,14 @@ module.exports = function (line) {
     parsed[label] = field;
   });
 
-  var matches = parsed.request.match(/([A-Z]+)\s+(\S+)\s+([A-Z]+\/[\d\.]+)/);
-  if (matches) {
-    parsed.method = matches[1];
-    parsed.path = matches[2];
-    parsed.protocol = matches[3];
+  var matches;
+  if (parsed.request) {
+    var matches = parsed.request.match(/([A-Z]+)\s+(\S+)\s+([A-Z]+\/[\d\.]+)/);
+    if (matches) {
+      parsed.method = parsed.http_method = matches[1];
+      parsed.path = matches[2];
+      parsed.protocol = matches[3];
+    }
   }
 
   //
@@ -78,13 +81,6 @@ module.exports = function (line) {
       parsed[k] = null;
     }
   });
-
-  //
-  // If there was a request, then get the method
-  //
-  if (parsed.request) {
-    parsed.http_method = parsed.request.split(' ').shift();
-  }
 
   //
   // Parse the "local time" field into a javascript date object
