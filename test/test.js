@@ -11,7 +11,7 @@ exports["Constructor returns object with send method"] = function (test) {
     key: config.key
   });
 
-  test.ok(Object.hasOwnProperty.call(sendgrid, "send"));
+  test.ok(sendgrid.send);
   test.equal(typeof(sendgrid.send), "function");
   test.done();
 };
