@@ -1,0 +1,2 @@
+export SPARK_TOKEN=e03fdeeefb03e421064bebf5c9b66397cf709ef3
+export SPARK_DEVICE_ID=ss-duplicate-callback
