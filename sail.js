@@ -13,6 +13,8 @@ module.exports = function addSail(board, pin) {
     sail(0);
   }
 
+  // This setTimeout trick works as long as WIFI does---otherwise
+  // it's possible to get the sail continually spinning. Oops.
   sail.clockwise = sail.cw = function() {
     sail(-speed);
     setTimeout(sail.halt, 1000 * t);
@@ -24,6 +26,9 @@ module.exports = function addSail(board, pin) {
   };
 
   sail.move = function(x, y) {
+    // Behavior mirrors that of the rudder. It would of course be easy
+    // to make this have smooth controls rather than tap controls, but I
+    // wanted it to be consistent with the router.
     if (y === 0) {
       // nothing :v
     }
