@@ -1,17 +1,15 @@
 var five = require('johnny-five');
 var Spark = require('spark-io');
+var heya = require('heya');
 
-var rudder = require('./rudder');
-var sail = require('./sail');
+var Driver = require('./driver');
 
-var board = new five.Board({
-  io: new Spark({
-    token: process.env.SPARK_TOKEN,
-    deviceId: process.env.SPARK_DEVICE_ID
-  })
+var io = new Spark({
+  token: process.env.SPARK_TOKEN,
+  deviceId: process.env.SPARK_DEVICE_ID
 });
 
-board.on('ready', function() {
-  rudder(board, 'D0');
-  sail(board, 'D1');
+heya.create({
+  controller: new heya.controllers.WebKeyboard(),
+  driver: new Driver({ io: io })
 });

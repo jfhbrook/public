@@ -21,8 +21,22 @@ module.exports = function addRudder(board, pin) {
     rudder(setting);
   };
 
-  rudder.straight = function() {
+  rudder.straight = rudder.center = function() {
     setting = 0;
     rudder(setting);
   };
+
+  rudder.move = function(x, y) {
+    // Tap the arrows! I'm too lazy to set intervals/timeouts here
+    if (x === 0) {
+      // nothing :v
+    }
+    else if (x < 0) {
+      rudder.left();
+    }
+    else {
+      rudder.right();
+    }
+  };
+
 };

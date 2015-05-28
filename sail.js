@@ -23,4 +23,16 @@ module.exports = function addSail(board, pin) {
     setTimeout(sail.halt, 1000 * t);
   };
 
+  sail.move = function(x, y) {
+    if (y === 0) {
+      // nothing :v
+    }
+    else if (y > 0) {
+      sail.clockwise();
+    }
+    else {
+      sail.counterclockwise();
+    }
+  };
+
 };
