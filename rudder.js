@@ -1,6 +1,6 @@
 module.exports = function addRudder(board, pin) {
   var setting = 0;
-  var step = 0.2;
+  var step = 0.3;
 
   board.pinMode(pin, board.MODES.SERVO);
 
