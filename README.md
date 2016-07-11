@@ -1,3 +1,9 @@
+# I HAVENT TOUCHED THIS IN YEARS
+## USE THIS INSTEAD
+
+### <https://github.com/sendgrid/sendgrid-nodejs>
+
+
 # sendgrid-web
 
 Send emails with [sendgrid](http://sendgrid.com) and node.js! This sendgrid module (there are others) uses their JSON web API and the [request](https://github.com/mikeal/request) module.
