@@ -1,0 +1,28 @@
+# Colors (Monokai Soda)
+colors:
+  # Default colors
+  primary:
+    background: '0x1a1a1a'
+    foreground: '0xc4c5b5'
+
+  # Normal colors
+  normal:
+    black:   '0x1a1a1a'
+    red:     '0xf4005f'
+    green:   '0x98e024'
+    yellow:  '0xfa8419'
+    blue:    '0x9d65ff'
+    magenta: '0xf4005f'
+    cyan:    '0x58d1eb'
+    white:   '0xc4c5b5'
+
+  # Bright colors
+  bright:
+    black:   '0x625e4c'
+    red:     '0xf4005f'
+    green:   '0x98e024'
+    yellow:  '0xe0d561'
+    blue:    '0x9d65ff'
+    magenta: '0xf4005f'
+    cyan:    '0x58d1eb'
+    white:   '0xf6f6ef'

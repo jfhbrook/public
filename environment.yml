@@ -1,0 +1,4 @@
+name: alacritty-config-manager
+dependencies:
+  - python=3.7.2
+  - pyyaml=3.13
