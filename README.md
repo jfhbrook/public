@@ -16,4 +16,4 @@ I wanted a way to test out the themes in <https://github.com/jwilm/alacritty/wik
 
 # license
 
-
+MIT!
