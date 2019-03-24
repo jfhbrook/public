@@ -1,56 +1,16 @@
-Batify
+Goodify
 ======
 
-*Batify is an udevrule-file triggering plug and critical battery level notifications
-(using libnotify and [xpub](https://github.com/Ventto/xpub))*
+*Goodify is a fork of [batify](https://github.com/Ventto/batify) that does the
+same thing but with a shim script for prettier messages.*
 
 ## Perks
 
-* [x] **Minimal**: only one udevrule-file (using *libnotify*).
-* [x] **Everywhere**: displays notifications on any current graphical session.
-* [x] **Support**: for XWayland as well.
+* [x] **Works on my machine**: does what I need it to do
+* [x] **Is just batify with a shell script**: has most of the same perks
 
 # Installation
 
-## Requirements
+## Arch with the git clone
 
-Using libnotify, you might need to install a [notification server](https://wiki.archlinux.org/index.php/Desktop_notifications).
-
-## Package (AUR)
-
-```
-$ yaourt -S batify
-```
-
-## Manually
-
-```
-$ git clone --recursive https://github.com/Ventto/batify.git
-$ cd batify
-$ sudo make install
-```
-
-**Warning: After installing *batify*, do not forget to reload udev rules:**
-
-```
-$ udevadm control --reload-rules
-```
-
-# Notifications
-
-| Description | Level |
-|---|---|
-| Battery level is between 10% and 15% | normal |
-| Battery level is less or equal to 9% | critical |
-| AC adapter plugged-in | low |
-| AC adapter unplugged | low |
-
-# Troubleshooting
-
-## No battery level warnings displayed
-
-* You might need to replace `BAT0` with your battery identifier:
-
-```bash
-ACTION=="change", KERNEL=="BAT0", \
-```
+You can git clone this repo then run `makepkg -si`. That's what I did!
