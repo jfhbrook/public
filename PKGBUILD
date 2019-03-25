@@ -2,13 +2,13 @@
 
 pkgname=goodify
 pkgver=1.0
-pkgrel=5
+pkgrel=6
 pkgdesc='Some udev rules and a shell script for managing battery notifications a la libnotify - forked from batify'
 arch=('any')
 license=('MIT')
 provides=("${pkgname}")
 conflicts=("${pkgname}" 'batify')
-depends=('libnotify' 'xpub')
+depends=('bash' 'libnotify' 'xpub')
 optdepends=('notification-daemon')
 source=(
   '99-goodify.rules'
