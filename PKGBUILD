@@ -2,7 +2,7 @@
 
 pkgname=goodify
 pkgver=1.0
-pkgrel=3
+pkgrel=4
 pkgdesc='Some udev rules and a shell script for managing battery notifications a la libnotify - forked from batify'
 arch=('any')
 license=('MIT')
@@ -16,7 +16,7 @@ source=(
 )
 sha256sums=(
   '040072b88d085027354a73823d98c661db289bfa0c813d72c867ca782c2ce949'
-  'd79c7972a6a97cb46f435d47029fecabdcc2800aa83dd88fe4243b6c7008fed4'
+  '3bf1f2450f4898d2ae9a502e8cc38d58eb36d3b24a622936f3d9ea873403dfa3'
 )
 
 package() {

@@ -31,4 +31,4 @@ case $action in
   ;;
 esac
 
-notify-send -a batifications -u "${urgency}" "${hed}" "${dek}"
+notify-send -a goodify -u "${urgency}" "${hed}" "${dek}"
