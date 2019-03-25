@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+action="${1}"
+percent="${2:-?}"
+
+case $action in
+  battery-critical)
+    hed="BATTERY CRITICAL!"
+    dek="Currently at ${percent}%!"
+    urgency="critical"
+  ;;
+  battery-low)
+    hed="Battery Low!"
+    dek="Currently at ${percent}%"
+    urgency="normal"
+  ;;
+  unplugged)
+    hed="Power unplugged!"
+    dek="Make sure you don't run out!"
+    urgency="low"
+  ;;
+  plugged-in)
+    hed="Power plugged in!"
+    dek="Look how responsible you are!"
+    urgency="low"
+  ;;
+  *)
+    hed="WHO THE HELL KNOWS whats up with your battery"
+    dek="Someone called this with an unknown battery state"
+    urgency="critical"
+  ;;
+esac
+
+notify-send -a batifications -u "${urgency}" "${hed}" "${dek}"
