@@ -24,7 +24,7 @@ exec physlock -p "$(
     xfiles | \
   $(shuf -n 1 -e cowsay cowthink) \
     -W 77 \
-    -$(shuf -n 1 -e b d g p s t w y) \
-    -f $(find /usr/share/cows -type f | grep '\.cow' | shuf -n 1) | \
+    "-$(shuf -n 1 -e b d g p s t w y)" \
+    -f "$(find /usr/share/cows -type f | grep '\.cow' | shuf -n 1)" | \
   sed "s/^/            /"
-)" ${@}
+)" "${@}"
