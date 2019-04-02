@@ -1,0 +1,13 @@
+[Unit]
+Description=Throw up the lock screen on suspend
+Before=sleep.target
+
+[Service]
+User=%I
+Type=simple
+ExecStart=/usr/bin/lockenate
+ExecStartPost=/usr/bin/sleep 3
+
+[Install]
+WantedBy=sleep.target
+
