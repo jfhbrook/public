@@ -2,7 +2,7 @@
 
 pkgname=nini-tools
 pkgver=1.0.0
-pkgrel=4
+pkgrel=5
 pkgdesc="Screen locking by command or in reaction to systemd suspend/hibernate events!"
 arch=('any')
 license=('MIT')
@@ -37,7 +37,7 @@ source=(
 )
 sha256sums=(
   "473daf78f04188e0229e3b7dadf1ba1d5dca6909f3ee72ae7f97828dcea0da0d"
-  "55cf496c9fe02bc220094bd21421cdb09684279b26202b840fa131537355bcf9"
+  "3962bac3832f2fceba09aefb2dc100dab974eba8abc05240aae2663aeaf606cb"
 )
 
 package() {

@@ -6,7 +6,7 @@ Before=sleep.target
 User=%I
 Type=simple
 ExecStart=/usr/bin/lockenate
-ExecStartPost=/usr/bin/sleep 3
+ExecStartPost=/usr/bin/sleep 1
 
 [Install]
 WantedBy=sleep.target
