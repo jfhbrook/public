@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 BACKLIGHT_FILE=/sys/class/backlight/intel_backlight/brightness
 BACKLIGHT_PERCENT=20

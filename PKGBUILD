@@ -2,7 +2,7 @@
 
 pkgname=brightcli
 pkgver=1.0
-pkgrel=2
+pkgrel=3
 pkgdesc='A helper for managing screen brightness'
 arch=('any')
 license=('MIT')
@@ -13,7 +13,7 @@ source=(
   'backlight.rules'
 )
 sha256sums=(
-  'b9e00ca8079369e751e8b1e0401913690ffd43426cd19836350824c0a241e962'
+  'fa80cd3ab214a6a6aea60dc0c6c596799219a9f5c3ccd8e33ff218c9655081dd'
   '95c265409fe17cb0b85c3b8788a780c28b096c76e3b657f6e34bc9f2af93f787'
 )
 
