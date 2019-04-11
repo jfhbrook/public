@@ -5,19 +5,16 @@ from twisted.internet.defer import ensureDeferred
 from twisted.internet.task import react
 
 
-def command_runner(cmd):
+def async_command(cmd):
     @wraps(cmd)
-    def wrapped(*arg, **kwarg):
-        def returns_deferred(reactor):
-            return ensureDeferred(cmd(*arg, reactor=reactor, **kwarg))
-
-        return react(returns_deferred)
+    def wrapped(**kwarg):
+        return react(lambda reactor: ensureDeferred(cmd(reactor, **kwarg)))
 
     return wrapped
 
 
 @click.command()
-@command_runner
+@async_command
 async def main(reactor):
     # TODO: Anything lmao
 
