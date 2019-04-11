@@ -20,8 +20,6 @@ def async_command(cmd):
 async def main(reactor):
     # TODO: Anything lmao
 
-    print(ctx)
-
     # TODO: Pass any cli parameters in that might override the config
     print(load_config())
 
