@@ -3,8 +3,11 @@ name: pyxsession
 dependencies:
   - python=3.7.2
   - pip=19.0.3
-  - twisted=18.9.0
-  - toml=0.10.0
   - click=7.0
+  - ipykernel=5.1.1 
+  - pytest=4.6.2
+  - toml=0.10.0
+  - twisted=18.9.0
   - pip:
     - pyxdg==0.26
+    - voluptuous==0.11.5
