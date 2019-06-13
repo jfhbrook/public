@@ -42,12 +42,14 @@ def g_shell_unquote(quoted_string):
             if quoted_string[start] == '\\':
                 start += 1
 
-                if start < l and quoted_string[start] != '\n':
-                    retval += quoted_string[start]
+                if start < l:
+                    if quoted_string[start] != '\n':
+                        retval += quoted_string[start]
                     start += 1
             else:
                 retval += quoted_string[start]
                 start += 1
+
         if start < l:
             # This corresponds to "unquote_string_inplace" in glib/gshell.c
             # Obviously this doesn't unquote a string in-place
