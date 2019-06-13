@@ -4,14 +4,20 @@ import os.path
 import shutil
 from pyxsession.gshell import g_shell_parse_argv
 from pyxsession.util.decorators import representable
-from xdg.BaseDirectory import xdg_config_dirs
+from xdg.BaseDirectory import load_first_config, xdg_config_dirs
 from xdg.Exceptions import ParsingError, ValidationError
 from xdg.DesktopEntry import DesktopEntry
+
+XDG_RESOURCE = 'pyxsession'
 
 XDG_AUTOSTART_DIRS = [
     os.path.join(base, 'autostart')
     for base in xdg_config_dirs
 ]
+
+
+def config_basedir(resource=XDG_RESOURCE):
+    return load_first_config(resource)
 
 
 @representable([
@@ -220,25 +226,18 @@ def _load_autostart(dirs):
     'autostart_entries'
 ])
 class AutostartConfiguration:
-    def __init__(
-        self,
-        *,
-        directories=XDG_AUTOSTART_DIRS,
-        environment_name='pyxsession',
-        skip_unparsed=False,
-        skip_invalid=False
-    ):
-        self.directories = directories
-        self.environment_name = environment_name
+    def __init__(self, config):
+        self.directories = config['autostart']['directories']
+        self.environment_name = config['autostart']['environment_name']
 
-        self.entry_sets = _load_autostart(directories)
+        self.entry_sets = _load_autostart(self.directories)
 
         self.autostart_entries = dict()
 
         for filename, entry_set in self.entry_sets.items():
             entry = entry_set.coalesce(
-                skip_unparsed=skip_unparsed,
-                skip_invalid=skip_invalid
+                skip_unparsed=config['autostart']['skip_unparsed'],
+                skip_invalid=config['autostart']['skip_invalid']
             )
-            if entry.should_autostart(environment_name):
+            if entry.should_autostart(self.environment_name):
                 self.autostart_entries[filename] = entry

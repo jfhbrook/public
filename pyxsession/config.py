@@ -1,8 +1,6 @@
 import os.path
 import toml
-from xdg import BaseDirectory
-
-XDG_RESOURCE = 'pyxsession'
+from pyxsession.xdg import XDG_AUTOSTART_DIRS, config_basedir
 
 
 class LoadError(Exception):
@@ -17,11 +15,20 @@ class NoConfigurationFoundError(LoadError):
         )
 
 
+BASE_CONFIG = dict(
+    autostart=dict(
+        directories=XDG_AUTOSTART_DIRS,
+        environment_name='pyxsession',
+        skip_unparsed=False,
+        skip_invalid=False
+    )
+)
+
+
 def load_config():
-    basedir = BaseDirectory.load_first_config(XDG_RESOURCE)
+    basedir = config_basedir()
 
     if not basedir:
-        # TODO: Can we set a default pyxsession.toml to be nice?
         raise NoConfigurationFoundError()
 
     filename = os.path.join(basedir, 'pyxsession.toml')
@@ -32,8 +39,16 @@ def load_config():
         raise NoConfigurationFoundError() from e
 
     with f:
-        base_config = toml.load(f)
+        toml_config = toml.load(f)
 
-    # TODO: Process the base config in some way
+    config = {}
 
-    return base_config
+    for section, section_base_config in BASE_CONFIG.items():
+        config[section] = dict()
+        for k, v in section_base_config.items():
+            if section in toml_config and k in toml_config[section]:
+                config[section][k] = toml_config[section][k]
+            else:
+                config[section][k] = v
+
+    return config
