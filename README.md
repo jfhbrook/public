@@ -10,7 +10,7 @@
 * http://raphael.slinckx.net/blog/documents/dbus-tutorial - tutorial that includes dbus activation
 
 - [x] demo reading a toml config from ~/.config xdg etc
-- [ ] write something that parses the autostart directory
+- [x] write something that parses the autostart directory
 - [ ] write something that can spawn/monitor a standard service using xdg rules and twisted's existing procmon
 - [ ] add pyxsession to my xinitrc (manually activate the conda env)
 - [ ] write something that can poke at dbus services using xdg rules (should be way easy)
