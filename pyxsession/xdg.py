@@ -1,3 +1,4 @@
+from collections import defaultdict
 import os
 import os.path
 import shutil
@@ -163,6 +164,31 @@ class AutostartEntry:
         ])
 
 
+@representable(['entries'])
+class AutostartEntrySet:
+    def __init__(self):
+        self.entries = []
+
+    def add_entry(self, entry):
+        self.entries.append(entry)
+
+    def coalesce(self, *, skip_unparsed, skip_invalid):
+        for entry in self.entries:
+            parsed = entry.parsed and entry.exec_parsed
+            valid = entry.validated
+
+            if (
+                (not parsed and skip_unparsed)
+                or
+                (not valid and skip_invalid)
+            ):
+                continue
+
+            return entry
+
+        return None
+
+
 def _load_autostart_dir(dirpath):
     try:
         filenames = os.listdir(dirpath)
@@ -171,10 +197,6 @@ def _load_autostart_dir(dirpath):
         print(exc)
         return
 
-    # TODO: Validate that only NotShowIn or OnlyShowIn is defined
-    # NOTE: built in validation is too strict on its own but can be
-    # used to get some ideas and conventions
-
     for filename in filenames:
         yield AutostartEntry(os.path.join(dirpath, filename))
 
@@ -182,47 +204,41 @@ def _load_autostart_dir(dirpath):
 def _load_autostart(dirs):
     # Based on the logic described in:
     # https://specifications.freedesktop.org/autostart-spec/autostart-spec-0.5.html#idm140434866702736
-    desktop_files = dict()
+    configuration_sets = defaultdict(AutostartEntrySet)
 
-    # With the understanding that these are in order of precedence
     for dirname in dirs:
         for entry in _load_autostart_dir(dirname):
-            # Understanding is that topmost file takes precedence
-            if entry.filename not in desktop_files:
-                desktop_files[entry.filename] = entry
-            else:
-                # TODO: Right now an AutostartEntry can represent a
-                # garbage file. In this case, should we delegate to the
-                # overridden file?
-                # TODO: Should we take the liberty of trying to parse the
-                # backup file? Related question
-                # TODO: Configurable?
-                desktop_files[entry.filename].register_overridden_file(
-                    entry.fullpath
-                )
+            configuration_sets[entry.filename].add_entry(entry)
 
-    return desktop_files
+    return configuration_sets
 
 
 @representable([
     'directories',
     'environment_name',
     'all_files',
-    'should_autostart'
+    'autostart_entries'
 ])
 class AutostartConfiguration:
     def __init__(
         self,
+        *,
         directories=XDG_AUTOSTART_DIRS,
-        environment_name='pyxsession'
+        environment_name='pyxsession',
+        skip_unparsed=False,
+        skip_invalid=False
     ):
         self.directories = directories
         self.environment_name = environment_name
 
-        self.all_files = _load_autostart(directories)
+        self.entry_sets = _load_autostart(directories)
 
-        self.should_autostart = dict()
+        self.autostart_entries = dict()
 
-        for filename, entry in self.all_files.items():
+        for filename, entry_set in self.entry_sets.items():
+            entry = entry_set.coalesce(
+                skip_unparsed=skip_unparsed,
+                skip_invalid=skip_invalid
+            )
             if entry.should_autostart(environment_name):
-                self.should_autostart[filename] = entry
+                self.autostart_entries[filename] = entry
