@@ -28,10 +28,8 @@ def g_shell_unquote(quoted_string):
     retval = ''
 
     # Lord forgive me for what I'm about to do...
-    class UNQUOTED_STRING(Exception):
-        def __init__(self, val):
-            super().__init__()
-            self.value = val
+    class C_C_C_COMBO_BREAKER(Exception):
+        pass
 
     while start < l:
         while (
@@ -79,7 +77,7 @@ def g_shell_unquote(quoted_string):
                             s += 1
                             end = s
 
-                            raise UNQUOTED_STRING(dest)
+                            raise C_C_C_COMBO_BREAKER()
 
                         elif quoted_string[s] == '\\':
                             s += 1
@@ -98,19 +96,18 @@ def g_shell_unquote(quoted_string):
                             s += 1
                             end = s
 
-                            raise UNQUOTED_STRING(dest)
+                            raise C_C_C_COMBO_BREAKER()
                         else:
                             dest += quoted_string[s]
                             s += 1
 
-                raise BadQuotingError('Unmatched quotation mark in command line or other shell quoted text')
-            except UNQUOTED_STRING as exc:
-                retval += exc.value
+            except C_C_C_COMBO_BREAKER:
+                retval += dest
                 start = end
             else:
-                assert False, (
-                    "It isn't supposed to be possible to reach this part of "
-                    'the code'
+                raise BadQuotingError(
+                    'Unmatched quotation mark in command line or other shell '
+                    'quoted text'
                 )
 
     return retval
