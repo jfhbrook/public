@@ -80,13 +80,8 @@ def test_cmdline(cmdline, argv, exc_cls):
     ("\x22\\`\"", "`", None),
     ("\x22\\$\"", "$", None),
     ("\x22\\\n\"", "\n", None),
-
-    # These three fail!
-    # "\'" -> \'
     ("\"\\'\"", "\\'", None),
-    # "\[carriage return]" -> \[carriage return]
     ("\x22\\\r\"", "\\\r", None),
-    # "\n" -> \n
     ("\x22\\n\"", "\\n", None)
 ])
 def test_unquote(in_, out, exc_cls):

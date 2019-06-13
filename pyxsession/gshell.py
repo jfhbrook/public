@@ -88,7 +88,6 @@ def g_shell_unquote(quoted_string):
                                 s += 1
                             else:
                                 dest += '\\'
-                                s += 1
                         else:
                             dest += quoted_string[s]
                             s += 1
