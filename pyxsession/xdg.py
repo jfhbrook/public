@@ -1,6 +1,8 @@
 import os
 import os.path
 import shutil
+from pyxsession.gshell import g_shell_parse_argv
+from pyxsession.util.decorators import representable
 from xdg.BaseDirectory import xdg_config_dirs
 from xdg.Exceptions import ParsingError, ValidationError
 from xdg.DesktopEntry import DesktopEntry
@@ -11,188 +13,30 @@ XDG_AUTOSTART_DIRS = [
 ]
 
 
-# See: https://github.com/GNOME/glib/blob/master/glib/gshell.c#L431
-# License: LGPL
-def tokenize_exec(raw_exec):
-    current_quote = ''
-    current_token = None
-    retval = []
-    quoted = False
-
-    l = len(raw_exec)
-    i = 0
-
-    while i < l:
-        p = raw_exec[i]
-        if current_quote == '\\':
-            if p == '\n':
-                pass
-            else:
-                current_token = current_token or ''
-                current_token += '\\'
-                current_token += p
-            current_quote = '\0'  # Is this a sentinel?
-        elif current_quote = '#':
-            while p && p != '\n':
-                i += 1
-                if i >= l:
-                    break
-                p = raw_exec[i]
-            current_quote = '\0'  # That sentinel again!
-        elif current_quote:
-            if (
-                (p == current_quote) and not
-                ((current_quote == '"') and quoted)
-            ):
-                current_quote = '\0'
-            current_token = current_token or ''
-            current_token += p
-        else:
-            if p == '\n':
-                retval.append(current_token)
-                current_token = None
-            elif p == ' ' or p == '\t':
-                if current_token:
-                    if current_token:
-                        retval.append(current_token)
-                        current_token = None
-            elif p in {"'", '"', '\\'}:
-                if p != '\\':
-                    current_token = current_token or ''
-                    current_token += p
-                current_quote = p
-            elif '#':
-                if i == 0:
-                    current_quote = p
-                else:
-                    prior = raw_exec[i-1]
-                    if (
-                        (prior == '.') or
-                        (prior == '\n') or
-                        (prior == '\0')
-                    ):
-                        current_quote = p
-                    else:
-                        current_token = current_token or ''
-                        current_token += p
-            else:
-                current_token = current_token or ''
-                current_token += p
-        if p != '\\':
-            quoted = False
-        else:
-            quoted = not quoted
-
-        i += 1
-
-    if current_token:
-        retval.append(current_token)
-
-    if current_quote:
-        if current_quote == '\\':
-            raise Exception('Text ended just after a "\\" character.')
-        else:
-            raise Exception('Text ended before matching quote was found for {}. (The text was "{}")'.format(current_quote, raw_exec)
-
-    if not retval:
-        raise Exception('Text was empty (or contained only whitespace)')
-
-    return retval
-
-
-def shell_unquote(quoted_string):
-    unquoted = 0
-    end = 0
-    start = 0
-    l = len(quoted_string)
-    retval = ''
-
-    # Lord forgive me for what I'm about to do...
-    class UnquotedString(Exception):
-        def __init__(self, val):
-            super().__init__()
-            self.value = val
-
-    while start < l:
-        while (
-            (start < l) and
-            not (
-                (quoted_string[start] == '"') or
-                (quoted_string[start] == "'")
-            )
-        ):
-            if quoted_string[start] == '\\':
-                start += 1
-
-                if start < l and quoted_string[start] != '\n':
-                    retval += quoted_string[start]
-                    start += 1
-            else:
-                retval += quoted_string[start]
-                start += 1
-        if start < l:
-            # This corresponds to "unquote_string_inplace" in glib/gshell.c
-            # Obviously this doesn't unquote a string in-place
-            # Instead, we:
-            # * Inline the code so that we can modify the indexes (which we
-            #   use instead of pointers
-            # * Append to a python string as dest instead of modifying the
-            #   source string in-place
-            # * Abuse exceptions to simulate how the original procedure uses
-            #   return
-            try:
-                dest = ''
-                s = start
-
-                quote_char = quoted_string[s]
-
-                if quote_char not in {'"', "'"}:
-                    raise Exception(
-                        "Quoted text doesn't begin with a quotation mark"
-                    )
-
-                s += 1
-
-                if quote_char == '"':
-                    while s < l:
-                        assert s > dest
-                
-                    if quoted_string[s] == '"':
-                        s += 1
-                        end = s
-
-                        raise UnquotedString(dest)
-
-                    elif quoted_string[s] == '\\':
-                        s += 1
-                        if any([
-                            quoted_string[s] == c
-                            for c in '"\\`$\n'
-                        ]):
-                            s += 1
-                        else:
-                            dest += '\\'
-                            s += 1
-                    else:
-                        while s < l:
-                            if quoted_string[s] == "'":
-                                s += 1
-                                end = s
-
-                                raise UnquotedString(dest)
-                            else:
-                                s += 1
-
-                    raise Exception('Unmatched quotation mark in command line or other shell quoted text')
-            except UnquotedString as exc:
-                retval += exc.value
-                start = end
-
-    return retval
-
-
+@representable([
+    'fullpath',
+    'filename',
+    'overrides',
+    'entry',
+    'parsed',
+    'parse_exc',
+    'validated',
+    'validate_exc',
+    'exec_parsed',
+    'exec_parse_exc',
+    'exec',
+    'is_application',
+    'is_hidden',
+    'only_show_in',
+    'not_show_in',
+    'dbus_activatable',
+    'runtime_path'
+])
 class AutostartEntry:
-    def __init__(fullpath):
+    def __init__(self, fullpath):
+        """
+        See: https://specifications.freedesktop.org/autostart-spec/autostart-spec-0.5.html#idm140434866991296
+        """
         self.fullpath = fullpath
         self.filename = os.path.basename(fullpath)
         self.overrides = []
@@ -203,13 +47,37 @@ class AutostartEntry:
         except ParsingError as exc:
             self.parsed = False
             self.parse_exc = exc
-
-        try:
-            self.entry.validate()
-            self.validated = True
-        except ValidationError as exc:
             self.validated = False
-            self.validation_exc = exc
+            self.exec_parsed = False
+        else:
+            try:
+                self.entry.validate()
+                self.validated = True
+            except ValidationError as exc:
+                self.validated = False
+                self.validate_exc = exc
+
+            try:
+                # TODO: The freedesktop specification allows for %-encoded
+                # substitution variables. This logic is based on what
+                # xfce4-session does, which is use gshell's args parser.
+                # It's believed that the gshell parser is a de facto
+                # reference implementation for the rest of the rules and
+                # likely that because of the lack of a use case for file
+                # or url substitution that this is actually basically how
+                # this works elsewhere.
+                #
+                # See also:
+                # - https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables
+                # - https://github.com/xfce-mirror/xfce4-session/blob/0a915310582803296fbfb075e1ea1c045b20bfcc/xfce4-session/xfsm-global.c#L397
+                # - https://github.com/xfce-mirror/libxfce4ui/blob/master/libxfce4ui/xfce-spawn.c#L564
+                #
+                # See the gshell module for more information.
+                self.exec = g_shell_parse_argv(self.entry.getExec())
+                self.exec_parsed = True
+            except GShellError as exc:
+                self.exec_parsed = False
+                self.exec_parse_exc = exc
 
     def register_overridden_file(fullpath):
         self.overrides.append(fullpath)
@@ -230,10 +98,14 @@ class AutostartEntry:
 
     @property
     def only_show_in(self):
+        if not self.parsed:
+            return None
         return self.entry.getOnlyShowIn()
 
     @property
     def not_show_in(self):
+        if not self.parsed:
+            return None
         return self.entry.getNotShowIn()
 
     def should_show_in(self, show_in):
@@ -257,13 +129,17 @@ class AutostartEntry:
 
     @property
     def dbus_activatable(self):
+        if not self.parsed:
+            return False
+
         return self.entry.get('DBusActivatable', type='boolean')
 
     @property
     def runtime_path(self):
+        if not self.parsed:
+            return None
         return self.entry.getPath() or None
 
-    @property
     def passes_try_exec(self):
         if not self.parsed:
             return False
@@ -275,11 +151,16 @@ class AutostartEntry:
 
         return bool(shutil.which(try_exec))
 
-
-# TODO: Parse the exec key based on the desktop entry spec
-# Result should be a cli identifier and a list of string arguments
-def parse_exec(exec_key):
-    pass
+    def should_autostart(self, environment_name):
+        return all([
+            self.parsed,
+            self.is_application,
+            self.exec_parsed,
+            not self.is_hidden,
+            not self.dbus_activatable,
+            self.should_show_in(environment_name),
+            self.passes_try_exec()
+        ])
 
 
 def _load_autostart_dir(dirpath):
@@ -298,19 +179,50 @@ def _load_autostart_dir(dirpath):
         yield AutostartEntry(os.path.join(dirpath, filename))
 
 
-def load_autostart():
+def _load_autostart(dirs):
+    # Based on the logic described in:
+    # https://specifications.freedesktop.org/autostart-spec/autostart-spec-0.5.html#idm140434866702736
     desktop_files = dict()
 
     # With the understanding that these are in order of precedence
-    for dirname in XDG_AUTOSTART_DIRS:
+    for dirname in dirs:
         for entry in _load_autostart_dir(dirname):
             # Understanding is that topmost file takes precedence
             if entry.filename not in desktop_files:
                 desktop_files[entry.filename] = entry
             else:
+                # TODO: Right now an AutostartEntry can represent a
+                # garbage file. In this case, should we delegate to the
+                # overridden file?
+                # TODO: Should we take the liberty of trying to parse the
+                # backup file? Related question
+                # TODO: Configurable?
                 desktop_files[entry.filename].register_overridden_file(
                     entry.fullpath
                 )
 
+    return desktop_files
 
-    return sorted(desktop_files.values())
+
+@representable([
+    'directories',
+    'environment_name',
+    'all_files',
+    'should_autostart'
+])
+class AutostartConfiguration:
+    def __init__(
+        self,
+        directories=XDG_AUTOSTART_DIRS,
+        environment_name='pyxsession'
+    ):
+        self.directories = directories
+        self.environment_name = environment_name
+
+        self.all_files = _load_autostart(directories)
+
+        self.should_autostart = dict()
+
+        for filename, entry in self.all_files.items():
+            if entry.should_autostart(environment_name):
+                self.should_autostart[filename] = entry
