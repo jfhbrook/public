@@ -9,5 +9,6 @@ dependencies:
   - toml=0.10.0
   - twisted=18.9.0
   - pip:
+    - pyee==6.0.0
     - pyxdg==0.26
     - voluptuous==0.11.5
