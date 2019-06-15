@@ -1,177 +1,357 @@
-# Heavily influenced by https://github.com/twisted/twisted/blob/trunk/src/twisted/runner/procmon.py
-# Twisted looks like it's MIT licensed so we should be OK
+"""
+Classes for managing processes. Builds on top of twisted.runner.procmon
+but includes a number of extensions.
 
-from twisted.application.service import Service
-from twisted.internet import reactor as _reactor
-from twisted.internet.error import ProcessExitedAlready
-from twisted.internet.protocol import ProcessProtocol as BaseProtocol
-from twisted.logger import Logger
-from twisted.protocols.basic import LineReceiver
+See: https://github.com/twisted/twisted/blob/trunk/src/twisted/runner/procmon.py  # noqa
+"""
 
+# Note to self: twisted is MIT licensed.
+
+from enum import Enum
+import attr
+from twisted.runner.procmon import ProcessMonitor as BaseMonitor
 from pyee import TwistedEventEmitter as EventEmitter
 
 
-class StdioLineReceiver(LineReceiver):
+
+class LifecycleState(Enum):
     """
-    A LineReceiver used internally to convert binary process output into
-    unicode lines.
-    """
-    delimiter = b'\n'
-    name = None
-
-    def lineReceived(self, line):
-        try:
-            line = line.decode('utf-8')
-        except UnicodeDecodeError:
-            line = repr(line)
-
-        getattr(self.transport, f'{name}LineReceived')(line)
-
-
-def _attachRawReceived(cls, pipe):
-
-    def rawReceived(self, data):
-        getattr(self, f'{pipe}LineReceiver').dataReceived(data)
-        setattr(self, f'_{pipe}Empty', data[-1] == b'\n'
-
-    setattr(cls, f'{pipe}Received', rawReceived)
-
-    return cls
-
-
-def receivesTextLines(cls):
-    """
-    A class decorator that interceps calls to outReceived and errReceived,
-    uses a StdioLineReceiver to process that output into newline-separated
-    unicode, and calls the outLineReceived and errLineReceived methods
-    respectively.
-
-    This logic was largely lifted from twisted procmon but modified
-    for my own ends (ie not sending both stdout and stderr to a legacy
-    logger
-    """
-    for pipe in ['out', 'err']:
-        _attachRawReceived(cls, pipe)
-
-    def initializeLineReceivers(self):
-        for pipe in ['out', 'err']:
-            receiver = StdioLineReceiver()
-            receiver.name = pipe
-
-            setattr(self, f'{pipe}LineReceiver', receiver)
-
-            receiver.makeConnection(self)
-
-    def flushLineReceivers(self):
-        for pipe in ['out', 'err']:
-            if not getattr(self, f'_{pipe}Empty'):
-                getattr(self, f'{pipe}LineReceiver').dataReceived(b'\n')
- 
-
-    cls.initializeLineReceivers = initializeLineReceivers
-
-    return cls
-
-
-# protocols are things that allow reads via callback
-@receivesTextLines
-class ProcessProtocol(BaseProtocol):
-    process = None
-
-    def connectionMade(self):
-        self.initializeLineReceivers()
-
-    def outLineReceived(self, line):
-        self.process.log('{stream}: {line}', stream='out', line=line)
-
-    def errLineReceived(self, line):
-        self.process.log('{stream}: {line}', stream='err', line=line)
-
-    def processEnded(self, status):
-        self.flushLineReceivers()
-
-        self.process.emit('exit', status)
-
-        if self.process._forceQuitTimer.active():
-            self.process._forceQuitTimer.cancel()
-            self.process._forceQuitTimer = None
-
-        # TODO: Implement optional restarts
-
-        self.process._stopService()
-
-class Process(Service, EventEmitter):
-    """
-    A twisted Service that represents a process that we want to run. A lot
-    of the logic is lifted directly from twisted.runner.procmon but modified
-    since this is meant to handle the more general case of spawning a process
-    that isn't intended to be restarted.
+    The lifecycle state enum of a process monitored by a ProcessMonitor.
     """
 
-    def __init__(
-        self,
-        cmd, argv, env=None, path=None,
-        uid=None, gid=None,
-        killTime=5,
-        log=None,
-        reactor=_reactor
-    ):
-        self.reactor = reactor
+    STARTING='STARTING'
+    RUNNING='RUNNING'
+    QUITTING='QUITTING'
+    RESTARTING='RESTARTING'
+    STOPPED='STOPPED'
 
-        self.cmd = cmd
-        self.argv = argv
-        self.env = env or {}
-        self.path = path  # TODO: default this to something "sane"
 
-        self.uid = uid
-        self.gid = gid
 
-        self.killTime = killTime
+class ProcessSettings:
+    """
+    The process management settings for a process.
+    """
 
-        # TODO: What to do with this log? :)
+    restart = attr.ib()
+    threshold = attr.ib(default=None)
+    killTime = attr.ib(default=None)
+    minRestartDelay = attr.ib(default=None)
+    maxRestartDelay = attr.ib(default=None)
 
-        self.log = log or Logger()
 
-        self._forceQuitTimer = None
 
-    def startService(self):
-        super().startService()
+@attr.s
+class ProcessState:
+    """
+    The internal state of a process.
 
-        # TODO: procmon tracks start time, we should track stats too
-        # since we'll want to inspect those
+    * name: The name of the process
+    * state: The lifecycle state of the process
+    * settings: The configuration settings used for managing a process.
+    """
+    name = attr.ib()
+    state = attr.ib(default=None)
+    settings = attr.ib(default=None)
 
-        protocol = ProcessProtocol()
-        protocol.process = self
 
-        self.protocol = protocol
 
-        self.transport = self._reactor.spawnProcess(
-            protocol,
-            self.cmd, self.argv,
-            env=self.env, path=self.path,
-            uid=self.uid, gid=self.gid
+class ProcessMonitor(BaseMonitor, EventEmitter):
+    """
+    A subclass of twisted.runner.procmon#ProcessMonitor. While it implements
+    the same interfaces, it also have a number of extensions and behavioral
+    changes:
+
+    * Processes can individually be set to restart or, crucially, *not*
+      restart - this is the primary use case around the "autostart" freedesktop
+      standard. The default is to not restart; it must be explicitly enabled.
+    * Processes accept individual arguments for threshold, killTime,
+      minRestartDelay and maxRestartDelay. The restart behavior, when enabled,
+      is otherwise the same as in twisted.runner.procmon.
+    * Emit events as a pyee TwistedEventEmitter for various lifecycle
+      behaviors.
+
+    Events:
+
+    * 'startService' - The ProcessMonitor is starting.
+    * 'stopService' - The ProcessMonitor is stopping.
+    * 'addProcess' - A process is being added.
+      - state: ProcessState - The state of the newly-added process.
+    * 'removeProcess' - A process is being removed.
+      - state: ProcessState - The state of the process at the time of removal.
+    * 'startProcess' - A process is being started.
+      - state: ProcessState - The state of the process at the time of starting.
+    * 'stopProcess' - A process is being stopped.
+      - state: ProcessState - The state of the process at the time of it being
+        stopped.
+    * 'restartProcess' - A process has explicitly been told to restart. This
+      event does not fire when a process exits unexpectedly, or is manually
+      cycled by calls to stopProcess/startProcess.
+      - state: ProcessState - the state of the process at the time of it
+        restarting
+    * 'connectionLost' - A process has exited.
+      - state: ProcessState - the state of the process right before it exited
+    * 'forceStop' - A process being stopped timed out and had to be forced to
+      stop with a SIGKILL.
+      - state: ProcessState - the state of the process being stopped
+    """
+
+    restart = False
+
+
+    def __init__(self, reactor=None):
+        if reactor:
+            super().__init__(reactor=reactor)
+        else:
+            super().__init__()
+
+        self.settings = dict()
+        self.states = dict()
+
+
+    def isRegistered(self, name):
+        """
+        Is this process registered?
+        """
+        return name in self.states
+
+
+    def assertRegistered(self, name):
+        """
+        Raises a KeyError if the process isn't registered.
+        """
+        if not self.isRegistered(name):
+            raise KeyError(f'Unrecognized process name: {name}')
+
+
+    def getState(self, name):
+        """
+        Fetch and package the internal state of the process. Note that this
+        will always return a ProcessState even if the internal state is
+        malformed or missing.
+        """
+        self.assertRegistered(self, name)
+        return ProcessState(
+            name=name,
+            state=self.states.get(name, None),
+            settings=self.settings.get(name, None)
         )
 
-    def _stopService(self):
-        # Actions that need to get called regardless of whether an exit
-        # was initiated by the process or by the user
-        super().stopService()
 
-    def _forceQuit(self):
-        try:
-            self.transport.signalProcess('KILL')
-        except ProcessExitedAlready:
-            pass
+    def addProcess(
+        self,
+        name,
+        args,
+        *,
+        env={}, cwd=None,
+        uid=None, gid=None,
+        restart=self.restart,
+        threshold=self.threshold, killTime=self.killTime,
+        minRestartDelay=self.minRestartDelay,
+        maxRestartDelay=self.maxRestartDelay
+    ):
+        """
+        Add a new monitored process. If the service is running, start it
+        immediately.
+        """
+
+        if name in self.states:
+            raise KeyError(
+                f'Process {name} already exists! Try removing it first.'
+            )
+
+        state = ProcessState.STARTING
+
+        settings = ProcessSettings(restart=restart)
+
+        if restart:
+            settings.threshold = threshold
+            settings.killTime = killTime
+            settings.minRestartDelay = minRestartDelay
+            settings.maxRestartDelay = maxRestartDelay
+
+        self.state[name] = state
+        self.settings[name] = settings
+
+        self.emit('addProcess', self.getState(name))
+
+        super().addProcess(self, name, args, uid, gid, env, cwd)
+
+
+    def removeProcess(self, name):
+        """
+        Remove a process. This stops the process and then removes all state
+        from the process monitor.
+
+        This currently isn't well-tested and I suspect that code paths
+        triggered by stopping the process may cause async race conditions.
+        It's therefore recommended that you manually stop processes first,
+        before exiting.
+        """
+        self.emit('removeProcess', self.getState(name))
+        super().removeProcess(name)
+        del self.settings[name]
+        del self.states[name]
+
+
+    def startService(self):
+        self.emit('startService')
+        super().startService()
+
 
     def stopService(self):
-        self._stopService()
+        self.emit('stopService')
+        super().stopService()
 
-        try:
-            self.transport.signalProcess('TERM')
-        except ProcessExitedAlready:
-            pass
-        else:
-            self._forceQuitTimer = self._reactor.callLater(
-                self.killTime,
-                self._forceQuit
+
+    def _isActive(self, name):
+        return (
+            self.isRegistered(name)
+            and
+            self.states[name] in {
+                ProcessState.RUNNING,
+                ProcessState.QUITTING
+            }
+        )
+
+
+    def startProcess(self, name):
+        """
+        Start a process.
+
+        @param name: The name of the process to be started. 
+        """
+        # Unlike in procmon, we track process status in a dict so we
+        # should check that to see the state
+
+        self.assertRegistered(self, name)
+        if self._isActive(self, name):
+            return
+
+        self.emit('startProcess', self.getState(name))
+
+        # Should be smooth sailing - This section is the same as in procmon
+        process = self._processes[name]
+
+        proto = LoggingProtocol()
+        proto.service = self
+        proto.name = name
+        self.protocols[name] = proto
+        self.timeStarted[name] = self._reactor.seconds()
+        self._reactor.spawnProcess(proto, process.args[0], process.args,
+                                          uid=process.uid, gid=process.gid,
+                                          env=process.env, path=process.cwd)
+
+        # This is new though!
+        self.states[name] = ProcessState.RUNNING
+
+
+    def connectionLost(self, name):
+        """
+        Called when a monitored process exits. Overrides the base
+        ProcessMonitor behavior to use per-process parameters, track state
+        for external observation, and by default actually does not restart the
+        process.
+        """
+
+        priorState = self.states[name]['state']
+        settings = self.settings[name]
+
+        self.emit('connectionLost', self.getState(name))
+
+        restartSetting = settings.restart
+
+        # Update our state depending on what it was when the process exited
+        if priorState in {ProcessState.STARTING, ProcessState.RUNNING}:
+            # We expected the process to be running - we should fall back to
+            # our individual settings for restarts
+            shouldRestart = restartSetting
+
+            # State should either be RESTARTING or STOPPED
+            self.states[name] = (
+                ProcessState.RESTARTING
+                if shouldRestart
+                else ProcessState.STOPPED
             )
+        elif priorState == ProcessState.RESTARTING:
+            # OK, we're explicitly restarting
+            shouldRestart = True
+        elif priorState == ProcessState.QUITTING:
+            # OK, we're explicitly quitting
+            shouldRestart = False
+            self.states[name] = ProcessState.STOPPED
+        elif priorState == ProcessState.STOPPED:
+            # TODO: Warn, this shouldn't happen
+            pass
+
+        # This chunk is straight from procmon - this is clearing force
+        # quit timeouts
+        if name in self.murder:
+            if self.murder[name].active():
+                self.murder[name].cancel()
+            del self.murder[name]
+
+        del self.protocols[name]
+
+        # Pulling in our per-process settings...
+
+        threshold = settings.threshold
+        minRestartDelay = settings.minRestartDelay
+        maxRestartDelay = settings.maxRestartDelay
+
+        if shouldRestart:
+            # This section is also largely copied from procmon
+            if self._reactor.seconds() - self.timeStarted[name] < threshold:
+                nextDelay = self.delay[name]
+                self.delay[name] = min(self.delay[name] * 2, maxRestartDelay)
+
+            else:
+                nextDelay = 0
+                self.delay[name] = minRestartDelay
+
+            if self.running and name in self._processes:
+                self.restart[name] = self._reactor.callLater(
+                    nextDelay,
+                    self.startProcess,
+                    name
+                )
+
+
+    def _forceStopProcess(self, name, proc):
+        self.emit('forceStop', self.getState(name))
+        super()._forceStopProcess(self, proc)
+
+
+    def restartProcess(self, name):
+        self.states[name] = ProcessState.RESTARTING
+        self.emit('restartProcess', self.getState(name))
+        self._stopProcess(self, name)
+
+
+    def stopProcess(self, name):
+        self.states[name] = ProcessState.STOPPING
+        self.emit('stopProcess', self.getState(name))
+        self._stopProcess(self, name)
+
+
+    def _stopProcess(self, name):
+        self.assertRegistered(name)
+
+        self.states[name] = ProcessState.STOPPING
+
+        # Same as procmon
+        proto = self.protocols.get(name, None)
+        if proto is not None:
+            proc = proto.transport
+            try:
+                proc.signalProcess('TERM')
+            except error.ProcessExitedAlready:
+                pass
+            else:
+                self.murder[name] = self._reactor.callLater(
+                                            self.killTime,
+                                            self._forceStopProcess, name, proc)
+
+
+    def restartAll(self):
+        for name in self._processes:
+            self.restartProcess(name)
