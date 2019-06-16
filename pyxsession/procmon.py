@@ -9,9 +9,48 @@ See: https://github.com/twisted/twisted/blob/trunk/src/twisted/runner/procmon.py
 
 from enum import Enum
 import attr
+from twisted.logger import Logger
 from twisted.runner.procmon import ProcessMonitor as BaseMonitor
 from pyee import TwistedEventEmitter as EventEmitter
 
+
+# Hold my beer.
+#
+# This should hopefully be temporary, since it sounds like they're very much
+# open to refactoring this. The refactored version also will support
+# separating stdout and stderr.
+#
+# See: https://twistedmatrix.com/trac/ticket/9657#9657
+
+from twisted.runner.procmon import LoggingProtocol, ProcessProtocol
+
+
+def patchedLineReceived(self, line):
+    try:
+        line = line.decode('utf-8')
+    except UnicodeDecodeError:
+        line = repr(line)
+
+    self.service.log(
+        u'[{tag}] {line}',
+        tag=self.tag,
+        line=line,
+        stream=self.stream
+    )
+
+LoggingProtocol.lineReceived = patchedLineReceived
+
+
+originalConnectionMade = LoggingProtocol.connectionMade
+
+def patchedConnectionMade(self):
+    originalConnectionMade(self)
+    self.output.service = self.service
+
+LoggingProtocol.connectionMade patchedConnectionMade
+
+
+# OK cool, hand me my beer.
 
 
 class LifecycleState(Enum):
@@ -49,6 +88,7 @@ class ProcessState:
     * state: The lifecycle state of the process
     * settings: The configuration settings used for managing a process.
     """
+
     name = attr.ib()
     state = attr.ib(default=None)
     settings = attr.ib(default=None)
@@ -96,14 +136,16 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
     """
 
     restart = False
+    log = Logger()
 
 
-    def __init__(self, reactor=None):
+    def __init__(self, log=None, reactor=None):
         if reactor:
             super().__init__(reactor=reactor)
         else:
             super().__init__()
 
+        self.log = log or self.log
         self.settings = dict()
         self.states = dict()
 
@@ -194,11 +236,17 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
 
 
     def startService(self):
+        """
+        Start the service, which starts all the processes.
+        """
         self.emit('startService')
         super().startService()
 
 
     def stopService(self):
+        """
+        Stop the service, which stops all the processes.
+        """
         self.emit('stopService')
         super().stopService()
 
@@ -216,9 +264,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
 
     def startProcess(self, name):
         """
-        Start a process.
-
-        @param name: The name of the process to be started. 
+        Start a process. Updates the state to RUNNING.
         """
         # Unlike in procmon, we track process status in a dict so we
         # should check that to see the state
@@ -322,12 +368,18 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
 
 
     def restartProcess(self, name):
+        """
+        Manually restart a process, regardless of how it's been configured,
+        """
         self.states[name] = ProcessState.RESTARTING
         self.emit('restartProcess', self.getState(name))
         self._stopProcess(self, name)
 
 
     def stopProcess(self, name):
+        """
+        Stop a process.
+        """
         self.states[name] = ProcessState.STOPPING
         self.emit('stopProcess', self.getState(name))
         self._stopProcess(self, name)
@@ -353,5 +405,8 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
 
 
     def restartAll(self):
+        """
+        Manually restart all processes, regardless of how they've been configured.
+        """
         for name in self._processes:
             self.restartProcess(name)
