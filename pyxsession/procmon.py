@@ -9,10 +9,11 @@ See: https://github.com/twisted/twisted/blob/trunk/src/twisted/runner/procmon.py
 
 from enum import Enum
 import attr
+from pyee import TwistedEventEmitter as EventEmitter
 from twisted.logger import Logger
 from twisted.runner.procmon import ProcessMonitor as BaseMonitor
-from pyee import TwistedEventEmitter as EventEmitter
 
+from pyxsession.util.decorators import representable
 
 # Hold my beer.
 #
@@ -25,6 +26,7 @@ from pyee import TwistedEventEmitter as EventEmitter
 from twisted.runner.procmon import LoggingProtocol, ProcessProtocol
 
 
+
 def patchedLineReceived(self, line):
     try:
         line = line.decode('utf-8')
@@ -34,23 +36,26 @@ def patchedLineReceived(self, line):
     self.service.log(
         u'[{tag}] {line}',
         tag=self.tag,
-        line=line,
-        stream=self.stream
+        line=line
     )
 
+
+
 LoggingProtocol.lineReceived = patchedLineReceived
-
-
 originalConnectionMade = LoggingProtocol.connectionMade
+
+
 
 def patchedConnectionMade(self):
     originalConnectionMade(self)
     self.output.service = self.service
 
-LoggingProtocol.connectionMade patchedConnectionMade
 
+
+LoggingProtocol.connectionMade = patchedConnectionMade
 
 # OK cool, hand me my beer.
+
 
 
 class LifecycleState(Enum):
@@ -65,7 +70,8 @@ class LifecycleState(Enum):
     STOPPED='STOPPED'
 
 
-
+@representable
+@attr.s
 class ProcessSettings:
     """
     The process management settings for a process.
@@ -78,7 +84,7 @@ class ProcessSettings:
     maxRestartDelay = attr.ib(default=None)
 
 
-
+@representable
 @attr.s
 class ProcessState:
     """
@@ -94,7 +100,7 @@ class ProcessState:
     settings = attr.ib(default=None)
 
 
-
+@representable
 class ProcessMonitor(BaseMonitor, EventEmitter):
     """
     A subclass of twisted.runner.procmon#ProcessMonitor. While it implements
@@ -410,3 +416,13 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         """
         for name in self._processes:
             self.restartProcess(name)
+
+
+    def asdict(self):
+        return dict(
+            running=self.running,
+            processes={
+                name: self.getState(name)
+                for name in self.states
+            }
+        }
