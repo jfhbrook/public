@@ -23,7 +23,7 @@ from pyxsession.util.decorators import representable
 #
 # See: https://twistedmatrix.com/trac/ticket/9657#9657
 
-from twisted.runner.procmon import LoggingProtocol, ProcessProtocol
+from twisted.runner.procmon import LineLogger, LoggingProtocol
 
 
 
@@ -33,7 +33,7 @@ def patchedLineReceived(self, line):
     except UnicodeDecodeError:
         line = repr(line)
 
-    self.service.log(
+    self.service.log.info(
         u'[{tag}] {line}',
         tag=self.tag,
         line=line
@@ -41,7 +41,7 @@ def patchedLineReceived(self, line):
 
 
 
-LoggingProtocol.lineReceived = patchedLineReceived
+LineLogger.lineReceived = patchedLineReceived
 originalConnectionMade = LoggingProtocol.connectionMade
 
 
@@ -147,9 +147,11 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
 
     def __init__(self, log=None, reactor=None):
         if reactor:
-            super().__init__(reactor=reactor)
+            BaseMonitor.__init__(self, reactor=reactor)
         else:
-            super().__init__()
+            BaseMonitor.__init__(self)
+
+        EventEmitter.__init__(self)
 
         self.log = log or self.log
         self.settings = dict()
@@ -177,7 +179,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         will always return a ProcessState even if the internal state is
         malformed or missing.
         """
-        self.assertRegistered(self, name)
+        self.assertRegistered(name)
         return ProcessState(
             name=name,
             state=self.states.get(name, None),
@@ -192,10 +194,10 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         *,
         env={}, cwd=None,
         uid=None, gid=None,
-        restart=self.restart,
-        threshold=self.threshold, killTime=self.killTime,
-        minRestartDelay=self.minRestartDelay,
-        maxRestartDelay=self.maxRestartDelay
+        restart=None,
+        threshold=None, killTime=None,
+        minRestartDelay=None,
+        maxRestartDelay=None
     ):
         """
         Add a new monitored process. If the service is running, start it
@@ -207,22 +209,34 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
                 f'Process {name} already exists! Try removing it first.'
             )
 
-        state = ProcessState.STARTING
+        state = LifecycleState.STARTING
 
         settings = ProcessSettings(restart=restart)
 
         if restart:
-            settings.threshold = threshold
-            settings.killTime = killTime
-            settings.minRestartDelay = minRestartDelay
-            settings.maxRestartDelay = maxRestartDelay
+            settings.threshold = (
+                threshold if threshold is not None else self.threshold
+            )
+            settings.killTime = (
+                killTime if killTime is not None else self.killTime
+            )
+            settings.minRestartDelay = (
+                minRestartDelay
+                if minRestartDelay is not None
+                else self.minRestartDelay
+            )
+            settings.maxRestartDelay = (
+                maxRestartDelay
+                if maxRestartDelay is not None
+                else self.maxRestartDelay
+            )
 
-        self.state[name] = state
+        self.states[name] = state
         self.settings[name] = settings
 
         self.emit('addProcess', self.getState(name))
 
-        super().addProcess(self, name, args, uid, gid, env, cwd)
+        super().addProcess(name, args, uid, gid, env, cwd)
 
 
     def removeProcess(self, name):
@@ -262,8 +276,8 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
             self.isRegistered(name)
             and
             self.states[name] in {
-                ProcessState.RUNNING,
-                ProcessState.QUITTING
+                LifecycleState.RUNNING,
+                LifecycleState.QUITTING
             }
         )
 
@@ -275,8 +289,8 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         # Unlike in procmon, we track process status in a dict so we
         # should check that to see the state
 
-        self.assertRegistered(self, name)
-        if self._isActive(self, name):
+        self.assertRegistered(name)
+        if self._isActive(name):
             return
 
         self.emit('startProcess', self.getState(name))
@@ -294,7 +308,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
                                           env=process.env, path=process.cwd)
 
         # This is new though!
-        self.states[name] = ProcessState.RUNNING
+        self.states[name] = LifecycleState.RUNNING
 
 
     def connectionLost(self, name):
@@ -305,7 +319,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         process.
         """
 
-        priorState = self.states[name]['state']
+        priorState = self.states[name]
         settings = self.settings[name]
 
         self.emit('connectionLost', self.getState(name))
@@ -313,25 +327,25 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         restartSetting = settings.restart
 
         # Update our state depending on what it was when the process exited
-        if priorState in {ProcessState.STARTING, ProcessState.RUNNING}:
+        if priorState in {LifecycleState.STARTING, LifecycleState.RUNNING}:
             # We expected the process to be running - we should fall back to
             # our individual settings for restarts
             shouldRestart = restartSetting
 
             # State should either be RESTARTING or STOPPED
             self.states[name] = (
-                ProcessState.RESTARTING
+                LifecycleState.RESTARTING
                 if shouldRestart
-                else ProcessState.STOPPED
+                else LifecycleState.STOPPED
             )
-        elif priorState == ProcessState.RESTARTING:
+        elif priorState == LifecycleState.RESTARTING:
             # OK, we're explicitly restarting
             shouldRestart = True
-        elif priorState == ProcessState.QUITTING:
+        elif priorState == LifecycleState.QUITTING:
             # OK, we're explicitly quitting
             shouldRestart = False
-            self.states[name] = ProcessState.STOPPED
-        elif priorState == ProcessState.STOPPED:
+            self.states[name] = LifecycleState.STOPPED
+        elif priorState == LifecycleState.STOPPED:
             # TODO: Warn, this shouldn't happen
             pass
 
@@ -425,4 +439,4 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
                 name: self.getState(name)
                 for name in self.states
             }
-        }
+        )

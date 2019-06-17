@@ -3,7 +3,7 @@ import os
 import os.path
 import shutil
 from pyxsession.gshell import g_shell_parse_argv
-from pyxsession.util.decorators import representable
+from pyxsession.util.decorators import dictable, representable
 from xdg.BaseDirectory import load_first_config, xdg_config_dirs
 from xdg.Exceptions import ParsingError, ValidationError
 from xdg.DesktopEntry import DesktopEntry
@@ -20,7 +20,8 @@ def config_basedir(resource=XDG_RESOURCE):
     return load_first_config(resource)
 
 
-@representable([
+@representable
+@dictable([
     'fullpath',
     'filename',
     'overrides',
@@ -170,7 +171,8 @@ class AutostartEntry:
         ])
 
 
-@representable(['entries'])
+@representable
+@dictable(['entries'])
 class AutostartEntrySet:
     def __init__(self):
         self.entries = []
@@ -219,7 +221,8 @@ def _load_autostart(dirs):
     return configuration_sets
 
 
-@representable([
+@representable
+@dictable([
     'directories',
     'environment_name',
     'all_files',

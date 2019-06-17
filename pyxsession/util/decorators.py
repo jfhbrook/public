@@ -1,13 +1,28 @@
 from functools import wraps
 
 
-def add_representable_methods(cls, keys):
+def dictable(keys):
     def asdict(self):
         return {
             k: getattr(self, k)
             for k in keys
             if hasattr(self, k)
         }
+
+    def decorator(cls):
+        cls.asdict = asdict
+        return cls
+
+    return decorator
+
+
+def representable(cls):
+    if not (hasattr(cls, 'asdict') or hasattr(cls, '__attrs_attrs__')):
+        raise TypeError(
+            f'{cls} must have an `asdict` method. This can either be supplied '
+            'by the @attr.s decorator, the '
+            '@pyxsession.util.decorators.dictable decorator, or manually.'
+        )
 
     def repr_(self):
         return repr(self.asdict())
@@ -25,15 +40,6 @@ def add_representable_methods(cls, keys):
                     p.text(f'{k}=')
                     p.pretty(v)
 
-    # It should be possible to override this method independently of anything
-    if not hasattr(cls, 'asdict'):
-        if not keys:
-            raise TypeError(
-                'keys must be explicitly defined for classes without a '
-                'prexisting asdict method'
-            )
-        cls.asdict = asdict
-
     # attrs already has a solid repr
     if not hasattr(cls, '__attrs_attrs__'):
         cls.__repr__ = repr_
@@ -41,21 +47,4 @@ def add_representable_methods(cls, keys):
     # Proper ipython/jupyter style pretty methods
     cls._repr_pretty_ = repr_pretty
 
-
-def representable(cls=None):
-    if hasattr(cls, '__attrs_attrs__'):
-        keys = [attr.name for attr in cls.__attrs_attrs__]
-        add_representable_methods(cls, keys)
-        return cls
-    else:
-        if cls:
-            keys = cls
-        else:
-            keys = None
-
-        def decorator(cls):
-            add_representable_methods(cls, keys)
-            return cls
-
-        return decorator
-
+    return cls
