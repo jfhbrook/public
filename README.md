@@ -11,7 +11,10 @@
 
 - [x] demo reading a toml config from ~/.config xdg etc
 - [x] write something that parses the autostart directory
-- [ ] write something that can spawn/monitor a standard service using xdg rules and twisted's existing procmon
+- [x] write something that can spawn/monitor processes based on twisted's procmon
+- [x] patch twisted support into ipython
+- [ ] write something that can assemble a full coherent Configuration based on our base config + the parsed autostart directory
+- [ ] write something that can turn that coherent configuration into autostarted processes managed by our procmon
 - [ ] add pyxsession to my xinitrc (manually activate the conda env)
 - [ ] write something that can poke at dbus services using xdg rules (should be way easy)
 - [ ] make it speak dbus - query state and soft exit, and give it simple cli client
