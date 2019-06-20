@@ -93,7 +93,7 @@ return d
 
 
 
-    <crochet._eventloop.EventualResult at 0x7fe460d72d68>
+    <crochet._eventloop.EventualResult at 0x7fd6257622e8>
 
 
 
@@ -122,17 +122,22 @@ As of now, `twisted_ipython` has one configuration option:
 
 * **timeout**: The timeout, in seconds, used for calls to `wait_for` when autoawaiting
 
-You can set the configuration using the `%crochet_config` magic:
+You can set the configuration using the `twisted_config` magic:
 
 
 ```python
-%crochet_config show
-%crochet_config timeout 1
+%twisted_config show
 ```
 
-    # Crochet settings:
-     - timeout=60
-    Setting timeout to 1!
+    timeout=60
+
+
+
+```python
+%twisted_config timeout 1
+```
+
+    timeout=1
 
 
 
@@ -194,7 +199,7 @@ await sleep(2)
     Traceback (most recent call last):
       File "/home/josh/anaconda3/envs/twisted_ipython/lib/python3.7/site-packages/IPython/core/interactiveshell.py", line 3292, in run_code
         last_expr = (yield from self._async_exec(code_obj, self.user_ns))
-      File "<ipython-input-7-7ac6c6123586>", line 4, in async-def-wrapper
+      File "<ipython-input-8-7ac6c6123586>", line 4, in async-def-wrapper
     twisted.internet.defer.CancelledError
     
     During handling of the above exception, another exception occurred:
@@ -230,11 +235,10 @@ await sleep(2)
 
 
 ```python
-%crochet_config reset
+%twisted_config reset
 ```
 
-    # Resetting Crochet settings to their defaults:
-     - timeout=60
+    timeout=60
 
 
 # Help / APIs
@@ -243,7 +247,7 @@ These help commands work in Jupyter and in IPython, but don't work with nteract,
 
 
 ```python
-%crochet_config?
+%twisted_config?
 ```
 
 
@@ -252,7 +256,7 @@ These help commands work in Jupyter and in IPython, but don't work with nteract,
 ipython -c '
 %load_ext twisted_ipython
 print("")
-%crochet_config?
+%twisted_config?
 '
 ```
 
@@ -260,21 +264,28 @@ print("")
     [0;31mDocstring:[0m
     ::
     
-      %crochet_config key [value [value ...]]
+      %twisted_config key [value]
     
-    Configure settings for Crochet_:
+    Configure settings for twisted_ipython:
     
     - *timeout*: How long to wait for autoawaited twisted code to run
       before canceling, in seconds. Defaults to 60. Crochet uses ``2**31``
-      internally as a "basically infinity" constant, if you would like
-      this limitation to just go away and leave you alone.
+      internally as a deprecated "basically infinity" constant, which you
+      can use yourself by passing in 'INFINITY'.
     
     Examples::
     
         # Show the current config
-        %crochet_config show
+        %twisted_config show
     
-        %crochet_config set timeout 5
+        # Show just the config for timeout
+        %twisted_config show timeout
+    
+        # Set the timeout to 5 seconds
+        %twisted_config timeout 5
+    
+        # Reset the config to its default settings
+        %twisted_config reset
     
     positional arguments:
       key
@@ -301,7 +312,7 @@ print("")
     [0;31mDocstring:[0m
     ::
     
-      %run_in_reactor [assign [assign ...]]
+      %run_in_reactor [assign]
     
     Run the contents of the cell using run_in_reactor_.
     
@@ -373,20 +384,12 @@ The `README.md` can be generated using `make`:
 !make docs
 ```
 
-    jupyter nbconvert --to rst README.ipynb
-    [NbConvertApp] Converting notebook README.ipynb to rst
-    [NbConvertApp] Writing 14265 bytes to README.rst
-
-
 and linting like so:
 
 
 ```python
 !make lint
 ```
-
-    flake8 ./twisted_ipython/*.py setup.py
-
 
 other tasks include `package` and `upload`, which should be ran in-order by me when publishing this project to pypi.
 
@@ -401,5 +404,3 @@ I plan to use semver aggressively.
 ## License
 
 Like IPython, this is licensed under a 3-clause BSD license. For more, see `LICENSE.txt`.
-
-
