@@ -71,7 +71,7 @@ class TwistedMagics(Magics):
     @magic_arguments.magic_arguments()
     @magic_arguments.argument(
         'assign',
-        type=str, nargs='*', default='_'
+        type=str, nargs='?', default='_'
     )
     @cell_magic
     def run_in_reactor(self, line, cell):
@@ -100,11 +100,11 @@ class TwistedMagics(Magics):
 
             result.wait(5)
 
-        For more information, see the documentation for crochet_.
+        For more information, see the documentation for Crochet_.
 
         .. _run_in_reactor: https://crochet.readthedocs.io/en/stable/api.html#run-in-reactor-asynchronous-results
         .. _EventualResult: https://crochet.readthedocs.io/en/stable/api-reference.html#crochet.EventualResult
-        .. _crochet: https://crochet.readthedocs.io/en/stable/index.html
+        .. _Crochet: https://crochet.readthedocs.io/en/stable/index.html
         """  # noqa
 
         args = magic_arguments.parse_argstring(self.run_in_reactor, line)
@@ -129,7 +129,7 @@ class TwistedMagics(Magics):
                 {assign}
             ''').format(
                 indent=indentation,
-                assign=args.assign[0] if args.assign else '_'
+                assign=args.assign
             )
         )
 
