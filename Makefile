@@ -1,5 +1,5 @@
 docs: README.ipynb
-	jupyter nbconvert --to rst README.ipynb
+	jupyter nbconvert --to markdown README.ipynb
 
 package:
 	python setup.py check
