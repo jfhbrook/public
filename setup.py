@@ -10,7 +10,7 @@ with open(README_md, 'r') as f:
 
 setup(
     name="twisted_ipython",
-    version="1.0.0",
+    version="2.0.0",
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
@@ -20,6 +20,7 @@ setup(
     ],
     description="An IPython extension for running twisted code",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     author="Joshua Holbrook",
     author_email="josh.holbrook@gmail.com",
     url="https://github.com/jfhbrook/twisted_ipython",
