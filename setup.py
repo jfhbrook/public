@@ -1,19 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from os import path
 from setuptools import find_packages, setup
 
-long_description = """
-twisted_ipython
-===============
+README_md = path.join(path.abspath(path.dirname(__file__)), 'README.md')
 
-An `IPython <https://ipython.org/>`__ extension that uses
-`crochet <https://github.com/itamarst/crochet>`__ to enable running
-`Twisted <https://twistedmatrix.com/trac/>`__ in IPython and
-`Jupyter <https://jupyter.org/>`__ notebooks.
-
-For more information, check out the
-`README <https://github.com/jfhbrook/twisted_ipython/blob/master/README.ipynb>`__.
-"""  # noqa
+with open(README_md, 'r') as f:
+    long_description = f.read()
 
 setup(
     name="twisted_ipython",

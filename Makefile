@@ -1,6 +1,3 @@
-docs: README.ipynb
-	jupyter nbconvert --to markdown README.ipynb
-
 package:
 	python setup.py check
 	python setup.py sdist
