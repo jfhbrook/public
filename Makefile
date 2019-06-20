@@ -1,5 +1,5 @@
 docs: README.ipynb
-	jupyter nbconvert --to markdown README.ipynb
+	jupyter nbconvert --to rst README.ipynb
 
 package:
 	python setup.py check
@@ -10,4 +10,4 @@ upload:
 	twine upload dist/*
 
 lint:
-	flake8 ./twisted_ipython/*.py
+	flake8 ./twisted_ipython/*.py setup.py
