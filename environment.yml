@@ -1,0 +1,9 @@
+name: twisted_ipython
+
+dependencies:
+  - python=3.7.2
+  - pip=19.0.3
+  - ipykernel=5.1.1 
+  - twisted=18.9.0
+  - pip:
+    - crochet==1.10.0
