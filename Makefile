@@ -11,3 +11,6 @@ upload:
 
 lint:
 	flake8 ./twisted_ipython/*.py setup.py
+
+clean:
+	rm -rf build

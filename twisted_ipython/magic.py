@@ -124,10 +124,10 @@ class TwistedMagics(Magics):
 
         For more information, see the documentation for crochet_.
 
-        .. _run_in_reactor: https://crochet.readthedocs.io/en/stable/api.html#run-in-reactor-asynchronous-results  # noqa
-        .. _EventualResult: https://crochet.readthedocs.io/en/stable/api-reference.html#crochet.EventualResult  # noqa
+        .. _run_in_reactor: https://crochet.readthedocs.io/en/stable/api.html#run-in-reactor-asynchronous-results
+        .. _EventualResult: https://crochet.readthedocs.io/en/stable/api-reference.html#crochet.EventualResult
         .. _crochet: https://crochet.readthedocs.io/en/stable/index.html
-        """
+        """  # noqa
 
         args = magic_arguments.parse_argstring(self.run_in_reactor, line)
 

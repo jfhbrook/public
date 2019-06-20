@@ -142,7 +142,7 @@ Using the magic with this feature looks like this:
 
 .. parsed-literal::
 
-    <crochet._eventloop.EventualResult at 0x7f8e2498fdd8>
+    <crochet._eventloop.EventualResult at 0x7fe460d72d68>
 
 
 
@@ -443,9 +443,9 @@ The ``README.md`` can be generated using ``make``:
 
 .. parsed-literal::
 
-    jupyter nbconvert --to markdown README.ipynb
-    [NbConvertApp] Converting notebook README.ipynb to markdown
-    [NbConvertApp] Writing 13419 bytes to README.md
+    jupyter nbconvert --to rst README.ipynb
+    [NbConvertApp] Converting notebook README.ipynb to rst
+    [NbConvertApp] Writing 14265 bytes to README.rst
 
 
 and linting like so:
@@ -457,7 +457,7 @@ and linting like so:
 
 .. parsed-literal::
 
-    flake8 ./twisted_ipython/*.py
+    flake8 ./twisted_ipython/*.py setup.py
 
 
 other tasks include ``package`` and ``upload``, which should be ran
@@ -472,8 +472,8 @@ much of my time. Consider it beta quality software. That said, I plan on
 using it semi-regularly, so it will hopefully be pretty solid in
 practice.
 
-Versioning
-----------
+I develop against python 3.7 but it’s likely that this will work for
+older versions of python as well. Python 2 is explicitly unsupported.
 
 I plan to use semver aggressively.
 
