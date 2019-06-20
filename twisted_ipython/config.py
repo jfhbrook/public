@@ -1,1 +1,1 @@
-TIMEOUT = 60
+timeout = 60

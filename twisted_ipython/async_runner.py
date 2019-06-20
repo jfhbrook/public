@@ -11,7 +11,7 @@ def twisted_runner(coro):
     a blocking manner, as is required by the ipython API.
     """
 
-    @crochet.wait_for(timeout=config.TIMEOUT)
+    @crochet.wait_for(timeout=config.timeout)
     def run(coro):
         return ensureDeferred(coro)
 
