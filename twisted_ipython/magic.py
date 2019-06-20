@@ -65,7 +65,11 @@ class TwistedMagics(Magics):
         if args.key == 'show':
             print('# Crochet settings:')
             for key in SETTINGS.keys():
-                print(' - {key}={value}'.format(key=key, value=getattr(config, key)))
+                print(
+                    ' - {key}={value}'.format(
+                        key=key, value=getattr(config, key)
+                    )
+                )
         elif args.key == 'reset':
             print('# Resetting Crochet settings to their defaults:')
             for key, value in SETTINGS.items():
@@ -120,8 +124,8 @@ class TwistedMagics(Magics):
 
         For more information, see the documentation for crochet_.
 
-        .. _run_in_reactor: https://crochet.readthedocs.io/en/stable/api.html#run-in-reactor-asynchronous-results
-        .. _EventualResult: https://crochet.readthedocs.io/en/stable/api-reference.html#crochet.EventualResult
+        .. _run_in_reactor: https://crochet.readthedocs.io/en/stable/api.html#run-in-reactor-asynchronous-results  # noqa
+        .. _EventualResult: https://crochet.readthedocs.io/en/stable/api-reference.html#crochet.EventualResult  # noqa
         .. _crochet: https://crochet.readthedocs.io/en/stable/index.html
         """
 

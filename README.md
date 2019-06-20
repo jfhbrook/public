@@ -93,7 +93,7 @@ return d
 
 
 
-    <crochet._eventloop.EventualResult at 0x7f7b546b62e8>
+    <crochet._eventloop.EventualResult at 0x7f8e2498fdd8>
 
 
 
@@ -113,8 +113,6 @@ result.wait(2)
 
 ## Install
 
-I'm still working on it, but eventually this will be on pypi, where it can be installed with pip. From there it can be loaded with `%load_ext`.
-
 This library is [available on pypi](https://pypi.org/project/twisted_ipython/) and can be installed into your notebook's environment using [pip](https://pip.pypa.io/en/stable/). For a more concrete example using [Conda](https://docs.conda.io/en/latest/), check out the developer docs below.
 
 
@@ -129,17 +127,17 @@ You can set the configuration using the `%crochet_config` magic:
 
 ```python
 %crochet_config show
-%crochet_config timeout 5
+%crochet_config timeout 1
 ```
 
     # Crochet settings:
      - timeout=60
-    Setting timeout to 5!
+    Setting timeout to 1!
 
 
 
 ```python
-await sleep(10)
+await sleep(2)
 ```
 
 
@@ -188,47 +186,195 @@ await sleep(10)
     TimeoutError: 
 
 
-"Wow that is a heinous traceback!" you're saying to yourself! [It's a known issue](https://github.com/ipython/ipython/issues/9978), and rest assured that it's the correct error just displayed poorly.
-
-# Help / APIs
-
-These help commands work in Jupyter:
-
-
-```python
-%%run_in_reactor??
-```
-
-    No Python documentation found for '%autoawait'.
-    Use help() to get the interactive help utility.
-    Use help(str) for help on the str class.
+    ERROR:root:Internal Python error in the inspect module.
+    Below is the traceback from this internal error.
     
 
 
-## API documentat
+    Traceback (most recent call last):
+      File "/home/josh/anaconda3/envs/twisted_ipython/lib/python3.7/site-packages/IPython/core/interactiveshell.py", line 3292, in run_code
+        last_expr = (yield from self._async_exec(code_obj, self.user_ns))
+      File "<ipython-input-7-7ac6c6123586>", line 4, in async-def-wrapper
+    twisted.internet.defer.CancelledError
+    
+    During handling of the above exception, another exception occurred:
+    
+    Traceback (most recent call last):
+      File "/home/josh/anaconda3/envs/twisted_ipython/lib/python3.7/site-packages/IPython/core/interactiveshell.py", line 2033, in showtraceback
+        stb = value._render_traceback_()
+    AttributeError: 'CancelledError' object has no attribute '_render_traceback_'
+    
+    During handling of the above exception, another exception occurred:
+    
+    Traceback (most recent call last):
+      File "/home/josh/anaconda3/envs/twisted_ipython/lib/python3.7/site-packages/IPython/core/ultratb.py", line 1095, in get_records
+        return _fixed_getinnerframes(etb, number_of_lines_of_context, tb_offset)
+      File "/home/josh/anaconda3/envs/twisted_ipython/lib/python3.7/site-packages/IPython/core/ultratb.py", line 313, in wrapped
+        return f(*args, **kwargs)
+      File "/home/josh/anaconda3/envs/twisted_ipython/lib/python3.7/site-packages/IPython/core/ultratb.py", line 347, in _fixed_getinnerframes
+        records = fix_frame_records_filenames(inspect.getinnerframes(etb, context))
+      File "/home/josh/anaconda3/envs/twisted_ipython/lib/python3.7/inspect.py", line 1502, in getinnerframes
+        frameinfo = (tb.tb_frame,) + getframeinfo(tb, context)
+      File "/home/josh/anaconda3/envs/twisted_ipython/lib/python3.7/inspect.py", line 1464, in getframeinfo
+        lines, lnum = findsource(frame)
+      File "/home/josh/anaconda3/envs/twisted_ipython/lib/python3.7/inspect.py", line 828, in findsource
+        if pat.match(lines[lnum]): break
+    IndexError: list index out of range
 
-### Additions to the `%autoawait` cell magic
 
-Loading this extension adds the "twisted' runner to the `%autoawait` magic. You can enable twisted support for autoawait by calling `%autoawait twisted`.
 
-### The `%%run_in_reactor` cell magic
+    ---------------------------------------------------------------------------
 
-Right now, this magic only takes one optional argument, which is the name of a variable to assign the `EventualResult` to. This defaults to `_`.
 
-## Tests
+"Wow that is a heinous traceback!" you're saying to yourself! [It's a known issue](https://github.com/ipython/ipython/issues/9978), and rest assured that it's the correct error just displayed poorly.
 
-For now, there aren't any tests. However, I plan on using this in practice quite a bit.
+
+```python
+%crochet_config reset
+```
+
+    # Resetting Crochet settings to their defaults:
+     - timeout=60
+
+
+# Help / APIs
+
+These help commands work in Jupyter and in IPython, but don't work with nteract, nor do they render into notebooks. The output of these commands is therefore pasted in from IPython for convenience.
+
+
+```python
+%crochet_config?
+```
+
+    In [3]: %crochet_config?
+    Docstring:
+    ::
+
+      %crochet_config key [value [value ...]]
+
+    Configure settings for Crochet_:
+
+    - *timeout*: How long to wait for autoawaited twisted code to run
+      before canceling, in seconds. Defaults to 60. Crochet uses ``2**31``
+      internally as a "basically infinity" constant, if you would like
+      this limitation to just go away and leave you alone.
+
+    Examples::
+
+        # Show the current config
+        %crochet_config show
+
+        %crochet_config set timeout 5
+
+    positional arguments:
+      key
+      value
+    File:      ~/software/jfhbrook/twisted_ipython/twisted_ipython/magic.py
+
+
+```python
+%%run_in_reactor?
+```
+
+    Docstring:
+    ::
+
+      %run_in_reactor [assign [assign ...]]
+
+    Run the contents of the cell using run_in_reactor_.
+
+    When this magic is enabled, the cell will get rewritten to::
+
+        import crochet
+
+        def _cell():
+            # Your code here
+
+        @crochet.run_in_reactor
+        def _run_in_reactor():
+            return _cell()
+
+        _ = _run_in_reactor()
+        _
+
+    ``_run_in_reactor`` returns an EventualResult_. The name of the
+    variable that this value gets assigned to can be set as an
+    argument. For instance::
+
+        %run_in_reactor result
+
+        result.wait(5)
+
+    For more information, see the documentation for crochet_.
+
+    .. _run_in_reactor: https://crochet.readthedocs.io/en/stable/api.html#run-in-reactor-asynchronous-results
+    .. _EventualResult: https://crochet.readthedocs.io/en/stable/api-reference.html#crochet.EventualResult
+    .. _crochet: https://crochet.readthedocs.io/en/stable/index.html
+
+    positional arguments:
+      assign
+    File:      ~/software/jfhbrook/twisted_ipython/twisted_ipython/magic.py
+
+
+## Development
+
+### Setup with Conda and git
+
+First, git clone this project:
+
+    $ git clone git@github.com:jfhbrook/twisted_ipython.git
+    $ cd twisted_ipython
+
+This project comes with an `environment.yml` which may be used to create a conda environment:
+
+    $ conda env create
+
+Once the environment is created, you can source it and install the development version of twisted_ipython:
+
+    $ conda activate twisted_ipython
+    $ python setup.py develop
+
+Finally, you will need to install this environment as a user kernel:
+
+    $ python -m ipykernel install --user --name twisted_ipython
+
+Once these steps are complete, you should be able to find a kernel named "twisted_ipython" in the appropriate drop-down.
+
+## Tests, Linting and Documentation
+
+This notebook stands as the test suite as well as the primary source of documentation. Before releasing code, the notebook should be ran from top to bottom without any (unexpected) errors.
+
+The `README.md` can be generated using `make`:
+
+
+```python
+!make docs
+```
+
+    jupyter nbconvert --to markdown README.ipynb
+    [NbConvertApp] Converting notebook README.ipynb to markdown
+    [NbConvertApp] Writing 13419 bytes to README.md
+
+
+and linting like so:
+
+
+```python
+!make lint
+```
+
+    flake8 ./twisted_ipython/*.py
+
+
+other tasks include `package` and `upload`, which should be ran in-order by me when publishing this project to pypi.
 
 ## Support
 
-Just to set expectations: I'm just one guy that had an itch to scratch. I'll respond to issues and PRs but I don't expect this project to become a whole thing.
+Just to set expectations: I'm just one guy that had an itch to scratch. I'll respond to issues and PRs but I don't expect this project to take much of my time. Consider it beta quality software. That said, I plan on using it semi-regularly, so it will hopefully be pretty solid in practice.
 
-## TODO
+## Versioning
 
-* Create a line magic for configuring the timeout used for awaited code (currently set to 60s)
-* Set up packaging
-* Publish to pypi
-* Document how to install and load the extension
+I plan to use semver aggressively.
 
 ## License
 
