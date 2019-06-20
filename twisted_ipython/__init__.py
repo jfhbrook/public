@@ -7,5 +7,3 @@ def load_ipython_extension(ipython):
 
     ipython.register_magics(TwistedMagics)
     install_autoawait(ipython)
-
-    ipython.magic('autoawait twisted')
