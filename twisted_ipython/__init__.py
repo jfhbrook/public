@@ -1,5 +1,4 @@
 import crochet
-from twisted.internet import reactor
 from twisted_ipython.magic import install_autoawait, TwistedMagics
 
 
