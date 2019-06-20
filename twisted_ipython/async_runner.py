@@ -1,6 +1,6 @@
 from twisted.internet.defer import ensureDeferred
 import crochet
-import twisted_ipython.config as config
+from twisted_ipython.config import config
 
 
 def twisted_runner(coro):

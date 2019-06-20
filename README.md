@@ -239,81 +239,103 @@ await sleep(2)
 
 # Help / APIs
 
-These help commands work in Jupyter and in IPython, but don't work with nteract, nor do they render into notebooks. The output of these commands is therefore pasted in from IPython for convenience.
+These help commands work in Jupyter and in IPython, but don't work with nteract, nor do they render into notebooks. The output from IPython is included here for reference.
 
 
 ```python
 %crochet_config?
 ```
 
-    In [3]: %crochet_config?
-    Docstring:
+
+```bash
+%%bash
+ipython -c '
+%load_ext twisted_ipython
+print("")
+%crochet_config?
+'
+```
+
+    ]0;IPython: jfhbrook/twisted_ipython
+    [0;31mDocstring:[0m
     ::
-
+    
       %crochet_config key [value [value ...]]
-
+    
     Configure settings for Crochet_:
-
+    
     - *timeout*: How long to wait for autoawaited twisted code to run
       before canceling, in seconds. Defaults to 60. Crochet uses ``2**31``
       internally as a "basically infinity" constant, if you would like
       this limitation to just go away and leave you alone.
-
+    
     Examples::
-
+    
         # Show the current config
         %crochet_config show
-
+    
         %crochet_config set timeout 5
-
+    
     positional arguments:
       key
       value
-    File:      ~/software/jfhbrook/twisted_ipython/twisted_ipython/magic.py
+    [0;31mFile:[0m      ~/software/jfhbrook/twisted_ipython/twisted_ipython/magic.py
+
 
 
 ```python
 %%run_in_reactor?
 ```
 
-    Docstring:
+
+```bash
+%%bash
+ipython -c '
+%load_ext twisted_ipython
+print("")
+%%run_in_reactor?
+'
+```
+
+    ]0;IPython: jfhbrook/twisted_ipython
+    [0;31mDocstring:[0m
     ::
-
+    
       %run_in_reactor [assign [assign ...]]
-
+    
     Run the contents of the cell using run_in_reactor_.
-
+    
     When this magic is enabled, the cell will get rewritten to::
-
+    
         import crochet
-
+    
         def _cell():
             # Your code here
-
+    
         @crochet.run_in_reactor
         def _run_in_reactor():
             return _cell()
-
+    
         _ = _run_in_reactor()
         _
-
+    
     ``_run_in_reactor`` returns an EventualResult_. The name of the
     variable that this value gets assigned to can be set as an
     argument. For instance::
-
+    
         %run_in_reactor result
-
+    
         result.wait(5)
-
+    
     For more information, see the documentation for crochet_.
-
+    
     .. _run_in_reactor: https://crochet.readthedocs.io/en/stable/api.html#run-in-reactor-asynchronous-results
     .. _EventualResult: https://crochet.readthedocs.io/en/stable/api-reference.html#crochet.EventualResult
     .. _crochet: https://crochet.readthedocs.io/en/stable/index.html
-
+    
     positional arguments:
       assign
-    File:      ~/software/jfhbrook/twisted_ipython/twisted_ipython/magic.py
+    [0;31mFile:[0m      ~/software/jfhbrook/twisted_ipython/twisted_ipython/magic.py
 
 
 ## Development
