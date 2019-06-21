@@ -14,8 +14,10 @@
 - [x] write something that can spawn/monitor processes based on twisted's procmon
 - [x] patch twisted support into ipython's autoawait
 - [ ] write something that can assemble a full coherent Configuration based on our base config + the parsed autostart directory
-- [ ] build up templates and tooling for rendering `_repr_markdown` representations of the config for inspection in jupyter
-- [ ] investigate adding magics to run a non-awaiting result inside crochet's thread in jupyter/ipython
+- [ ] build up templates and tooling for rendering `_repr_markdown` representations of the config for inspection in nteract
+- [x] investigate adding magics to run a non-awaiting result inside crochet's thread in jupyter/ipython
+- [x] spin crochet magics out into a separate repo w/ a proper ipython-compatible license
+- [ ] write missing gshell function and spin out into separate repo w/ a proper glib-compatible license
 - [ ] write something that can poke at dbus services using xdg rules (should be way easy)
 - [ ] make a stub server that can speak dbus query state and soft exit
 - [ ] write an api client and tools in jupyter to interact w/ dbus
