@@ -4,7 +4,9 @@
 
 import pytest
 
-from pyxsession.gshell import g_shell_parse_argv, g_shell_unquote
+from pyxsession.gshell import (
+    g_shell_parse_argv, g_shell_quote, g_shell_unquote
+)
 from pyxsession.gshell import EmptyStringError, BadQuotingError
 
 @pytest.mark.parametrize('cmdline,argv,exc_cls', [
@@ -59,6 +61,18 @@ def test_cmdline(cmdline, argv, exc_cls):
         res = g_shell_parse_argv(cmdline)
 
         assert res == argv
+
+@pytest.mark.parametrize('in_,out', [
+    ("", "''"),
+    ("a", "'a'"),
+    ("(", "'('"),
+    ("'", "''\\'''"),
+    ("'a", "''\\''a'"),
+    ("a'", "'a'\\'''"),
+    ("a'a", "'a'\\''a'")
+])
+def test_quote(in_, out):
+    assert out == g_shell_quote(in_)
 
 
 @pytest.mark.parametrize('in_,out,exc_cls', [

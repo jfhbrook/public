@@ -20,6 +20,24 @@ class EmptyStringError(GShellError):
     pass
 
 
+def g_shell_quote(unquoted_string):
+    dest = "'"
+    p = 0
+    l = len(unquoted_string)
+
+    while p < l:
+        if unquoted_string[p] == "'":
+            dest += "'\\''"
+        else:
+            dest += unquoted_string[p]
+
+        p += 1
+
+    dest += "'"
+
+    return dest
+
+
 def g_shell_unquote(quoted_string):
     unquoted = 0
     end = 0
