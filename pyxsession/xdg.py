@@ -2,7 +2,7 @@ from collections import defaultdict
 import os
 import os.path
 import shutil
-from pyxsession.gshell import g_shell_parse_argv
+from gshell import g_shell_parse_argv, GShellError
 from pyxsession.util.decorators import dictable, representable
 from xdg.BaseDirectory import load_first_config, xdg_config_dirs
 from xdg.Exceptions import ParsingError, ValidationError
@@ -44,7 +44,7 @@ class AutostartEntry:
     def __init__(self, fullpath):
         """
         See: https://specifications.freedesktop.org/autostart-spec/autostart-spec-0.5.html#idm140434866991296
-        """
+        """  # noqa
         self.fullpath = fullpath
         self.filename = os.path.basename(fullpath)
         self.overrides = []
