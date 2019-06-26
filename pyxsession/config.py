@@ -1,4 +1,6 @@
 import os.path
+import attr
+import cattr
 import toml
 from pyxsession.xdg import XDG_AUTOSTART_DIRS, config_basedir
 
@@ -15,14 +17,29 @@ class NoConfigurationFoundError(LoadError):
         )
 
 
-BASE_CONFIG = dict(
-    autostart=dict(
-        directories=XDG_AUTOSTART_DIRS,
-        environment_name='pyxsession',
-        skip_unparsed=False,
-        skip_invalid=False
-    )
-)
+@attr.s
+class AutostartConfig:
+    directories = attr.ib(default=XDG_AUTOSTART_DIRS)
+    environment_name = attr.ib(default='pyxsession')
+    skip_unparsed = attr.ib(default=False)
+    skip_invalid = attr.ib(default=False)
+
+
+@attr.s
+class MenuConfig:
+    filename = attr.ib(default=None)
+
+
+@attr.s
+class OpenConfig:
+    filename = attr.ib(default=None)
+
+
+@attr.s
+class BaseConfig:
+    autostart = attr.ib(type=AutostartConfig, default=AutostartConfig())
+    menu = attr.ib(type=MenuConfig, default=MenuConfig())
+    open = attr.ib(type=OpenConfig, default=OpenConfig())
 
 
 def load_config():
@@ -41,14 +58,4 @@ def load_config():
     with f:
         toml_config = toml.load(f)
 
-    config = {}
-
-    for section, section_base_config in BASE_CONFIG.items():
-        config[section] = dict()
-        for k, v in section_base_config.items():
-            if section in toml_config and k in toml_config[section]:
-                config[section][k] = toml_config[section][k]
-            else:
-                config[section][k] = v
-
-    return config
+    return cattr.structure(toml_config, BaseConfig)

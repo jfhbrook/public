@@ -13,7 +13,10 @@ setup(
     author_email="josh.holbrook@gmail.com",
     url="https://github.com/jfhbrook/pyxsession",
     entry_points=dict(
-        console_scripts='pyxsession=pyxsession.cli:main'
+        console_scripts=[
+            'pyxsession-config=pyxsession.cli.config:main',
+            'pyxmenu=pyxsession.cli.menu:main'
+        ]
     ),
     keywords=[
         "X11", "window manager", "desktop environment", "X session",
