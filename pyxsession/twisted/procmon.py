@@ -195,6 +195,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         env={}, cwd=None,
         uid=None, gid=None,
         restart=None,
+        cleanup=None,
         threshold=None, killTime=None,
         minRestartDelay=None,
         maxRestartDelay=None
@@ -230,6 +231,13 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
                 if maxRestartDelay is not None
                 else self.maxRestartDelay
             )
+        else:
+            settings.cleanup = (
+                cleanup
+                if cleanup is not None
+                else True
+            )
+
 
         self.states[name] = state
         self.settings[name] = settings
@@ -349,6 +357,8 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
             # TODO: Warn, this shouldn't happen
             pass
 
+        shouldCleanup = not shouldRestart and settings.cleanup
+
         # This chunk is straight from procmon - this is clearing force
         # quit timeouts
         if name in self.murder:
@@ -380,6 +390,10 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
                     self.startProcess,
                     name
                 )
+        elif shouldCleanup:
+            # If this is a no-restart yes-cleanup process then remove it
+            # on exit
+            self.removeProcess(name)
 
 
     def _forceStopProcess(self, name, proc):
