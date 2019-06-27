@@ -2,22 +2,13 @@ from collections import defaultdict
 import os
 import os.path
 import shutil
-from gshell import g_shell_parse_argv, GShellError
+from gshell import GShellError
 from pyxsession.util.decorators import dictable, representable
-from xdg.BaseDirectory import load_first_config, xdg_config_dirs
+from pyxsession.xdg.exec_key import ExecKey
 from xdg.Exceptions import ParsingError, ValidationError
 from xdg.DesktopEntry import DesktopEntry
 
-XDG_RESOURCE = 'pyxsession'
-
-XDG_AUTOSTART_DIRS = [
-    os.path.join(base, 'autostart')
-    for base in xdg_config_dirs
-]
-
-
-def config_basedir(resource=XDG_RESOURCE):
-    return load_first_config(resource)
+from pyxsession.xdg import config_basedir
 
 
 @representable
@@ -65,23 +56,11 @@ class AutostartEntry:
                 self.validated = False
                 self.validate_exc = exc
 
+
+            self.exec = ExecKey(self.entry.getExec())
+
             try:
-                # TODO: The freedesktop specification allows for %-encoded
-                # substitution variables. This logic is based on what
-                # xfce4-session does, which is use gshell's args parser.
-                # It's believed that the gshell parser is a de facto
-                # reference implementation for the rest of the rules and
-                # likely that because of the lack of a use case for file
-                # or url substitution that this is actually basically how
-                # this works elsewhere.
-                #
-                # See also:
-                # - https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables
-                # - https://github.com/xfce-mirror/xfce4-session/blob/0a915310582803296fbfb075e1ea1c045b20bfcc/xfce4-session/xfsm-global.c#L397
-                # - https://github.com/xfce-mirror/libxfce4ui/blob/master/libxfce4ui/xfce-spawn.c#L564
-                #
-                # See the gshell module for more information.
-                self.exec = g_shell_parse_argv(self.entry.getExec())
+                self.exec.validate()
                 self.exec_parsed = True
             except GShellError as exc:
                 self.exec_parsed = False
@@ -230,8 +209,8 @@ def _load_autostart(dirs):
 ])
 class AutostartConfiguration:
     def __init__(self, config):
-        self.directories = config['autostart']['directories']
-        self.environment_name = config['autostart']['environment_name']
+        self.directories = config.autostart.directories
+        self.environment_name = config.autostart.environment_name
 
         self.entry_sets = _load_autostart(self.directories)
 
@@ -239,8 +218,8 @@ class AutostartConfiguration:
 
         for filename, entry_set in self.entry_sets.items():
             entry = entry_set.coalesce(
-                skip_unparsed=config['autostart']['skip_unparsed'],
-                skip_invalid=config['autostart']['skip_invalid']
+                skip_unparsed=config.autostart.skip_unparsed
+                skip_invalid=config.autostart.skip_invalid
             )
             if entry.should_autostart(self.environment_name):
                 self.autostart_entries[filename] = entry
