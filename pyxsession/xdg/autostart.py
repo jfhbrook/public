@@ -5,10 +5,16 @@ import shutil
 from gshell import GShellError
 from pyxsession.util.decorators import dictable, representable
 from pyxsession.xdg.exec_key import ExecKey
+from xdg.BaseDirectory import xdg_config_dirs
 from xdg.Exceptions import ParsingError, ValidationError
 from xdg.DesktopEntry import DesktopEntry
 
 from pyxsession.xdg import config_basedir
+
+XDG_AUTOSTART_DIRS = [
+    os.path.join(base, 'autostart')
+    for base in xdg_config_dirs
+]
 
 
 @representable
@@ -218,7 +224,7 @@ class AutostartConfiguration:
 
         for filename, entry_set in self.entry_sets.items():
             entry = entry_set.coalesce(
-                skip_unparsed=config.autostart.skip_unparsed
+                skip_unparsed=config.autostart.skip_unparsed,
                 skip_invalid=config.autostart.skip_invalid
             )
             if entry.should_autostart(self.environment_name):

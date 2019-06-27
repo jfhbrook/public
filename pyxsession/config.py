@@ -2,7 +2,8 @@ import os.path
 import attr
 import cattr
 import toml
-from pyxsession.xdg import XDG_AUTOSTART_DIRS, config_basedir
+from pyxsession.xdg import config_basedir
+from pyxsession.xdg.autostart import XDG_AUTOSTART_DIRS
 
 
 class LoadError(Exception):
