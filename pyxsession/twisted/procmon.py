@@ -192,7 +192,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         name,
         args,
         *,
-        env={}, cwd=None,
+        env=None, cwd=None,
         uid=None, gid=None,
         restart=None,
         cleanup=None,
@@ -204,6 +204,8 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         Add a new monitored process. If the service is running, start it
         immediately.
         """
+
+        env = dict() if env is None else env
 
         if name in self.states:
             raise KeyError(
