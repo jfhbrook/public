@@ -18,29 +18,47 @@ class NoConfigurationFoundError(LoadError):
         )
 
 
+def subconfig(cls):
+    return attr.ib(type=cls, default=cls())
+
+
+def value(default=None):
+    return attr.ib(default=default)
+
+
+XDG_CURRENT_DESKTOP = os.environ.get('XDG_CURRENT_DESKTOP', 'pyxsession')
+
+
 @attr.s
 class AutostartConfig:
-    directories = attr.ib(default=XDG_AUTOSTART_DIRS)
-    environment_name = attr.ib(default='pyxsession')
-    skip_unparsed = attr.ib(default=False)
-    skip_invalid = attr.ib(default=False)
+    directories = value(XDG_AUTOSTART_DIRS)
+    environment_name = value(XDG_CURRENT_DESKTOP)
+    skip_unparsed = value(False)
+    skip_invalid = value(default=False)
 
 
 @attr.s
 class MenuConfig:
-    filename = attr.ib(default=None)
+    filename = value()
 
 
 @attr.s
 class OpenConfig:
-    filename = attr.ib(default=None)
+    filename = value()
+
+
+@attr.s
+class MimeConfig:
+    database = value()
+    environment = value(XDG_CURRENT_DESKTOP)
 
 
 @attr.s
 class BaseConfig:
-    autostart = attr.ib(type=AutostartConfig, default=AutostartConfig())
-    menu = attr.ib(type=MenuConfig, default=MenuConfig())
-    open = attr.ib(type=OpenConfig, default=OpenConfig())
+    autostart = subconfig(AutostartConfig)
+    menu = subconfig(MenuConfig)
+    open = subconfig(OpenConfig)
+    mime = subconfig(MimeConfig)
 
 
 def load_config():
