@@ -25,9 +25,30 @@ def get_field_codes(raw):
 class ExecKey:
     def __init__(self, raw):
         self.raw = raw
+        self._is_valid = None
+        self._valid_exc = None
 
     def validate(self):
-        g_shell_parse_argv(self.raw)
+        if self._is_valid is None:
+            try:
+                g_shell_parse_argv(self.raw)
+            except GShellError as exc:
+                self._is_valid = False
+                self._valid_exc = exc
+                raise exc
+            else:
+                self._is_valid = True
+        elif not self._is_valid:
+            raise self._valid_exc
+            
+    def is_valid(self):
+        if self._is_valid is None:
+            try:
+                self.validate()
+            except GShellError:
+                pass
+
+        return self._is_valid
 
     def expected_fields(self):
         return {
