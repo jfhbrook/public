@@ -42,7 +42,7 @@ def urwid_command(cmd):
 
         loop.run()
 
-        if gen != widget:
+        if hasattr(gen, '__next__'):
             try:
                 next(gen)
             except StopIteration:

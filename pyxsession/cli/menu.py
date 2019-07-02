@@ -17,4 +17,4 @@ def main():
 
     menu = XDGMenu(xdg_menu)
 
-    yield menu.view, dict(unhandled_input=quit_on_q)
+    return menu.view, dict(unhandled_input=quit_on_q)
