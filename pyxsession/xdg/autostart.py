@@ -88,13 +88,13 @@ def _load_autostart_dir(dirpath):
 def _load_autostart(dirs):
     # Based on the logic described in:
     # https://specifications.freedesktop.org/autostart-spec/autostart-spec-0.5.html#idm140434866702736
-    configuration_sets = defaultdict(AutostartEntrySet)
+    entry_sets = defaultdict(AutostartEntrySet)
 
     for dirname in dirs:
         for entry in _load_autostart_dir(dirname):
-            configuration_sets[entry.filename].add_entry(entry)
+            entry_sets[entry.filename].add_entry(entry)
 
-    return configuration_sets
+    return entry_sets
 
 
 @representable
