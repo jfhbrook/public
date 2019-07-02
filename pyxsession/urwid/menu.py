@@ -1,6 +1,6 @@
 import urwid
 import xdg.Menu
-from pyxsession.execute import default_executor
+from pyxsession.executor import default_executor
 
 
 class XDGMenu:

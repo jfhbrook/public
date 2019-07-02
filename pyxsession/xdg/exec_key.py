@@ -59,6 +59,10 @@ class ExecKey:
 
     def build_argv(self, fields=None):
         return [
-            expand_field_codes(arg, fields)
-            for arg in g_shell_parse_argv(self.raw)
+            expanded_field
+            for expanded_field in (
+                expand_field_codes(arg, fields)
+                for arg in g_shell_parse_argv(self.raw)
+            )
+            if expanded_field != ''
         ]

@@ -9,34 +9,7 @@ from twisted.internet.error import ReactorNotRunning
 
 from pyxsession.xdg.executable import Executable
 from pyxsession.twisted.procmon import ProcessMonitor
-
-
-def spawn_detached_process(argv, *, env=None, cwd=None):
-    # Double-forking to truly detach the process
-    # For more on the strategy, see:
-    #
-    # * https://stackoverflow.com/questions/5772873/python-spawn-off-a-child-subprocess-detach-and-exit  # noqa
-    # * https://stackoverflow.com/questions/6011235/run-a-program-from-python-and-have-it-continue-to-run-after-the-script-is-kille  # noqa
-
-    pid = os.fork()
-    if pid > 0:
-        return
-
-    # TODO: An OSError here means forking failed. Right now we eat shit, do
-    # we want to do something different?
-
-    os.setsid()
-
-    Popen(
-        argv,
-        stdin=DEVNULL,
-        stdout=DEVNULL,
-        stderr=DEVNULL,
-        env=env,
-        cwd=cwd
-    )
-
-    sys.exit(0)
+from pyxsession.detach import spawn as spawn_detached
 
 
 class Executor:
@@ -73,7 +46,7 @@ class Executor:
     ):
         argv = executable.exec_key.build_argv(exec_key_fields)
         if not monitor:
-            spawn_detached_process(argv, env=env, cwd=cwd)
+            spawn_detached(argv, env=env, cwd=cwd)
         else:
             monitor_params = monitor_params or dict()
 
