@@ -1,5 +1,6 @@
 import urwid
 import xdg.Menu
+from pyxsession.execute import default_executor
 
 
 class XDGMenu:
@@ -29,7 +30,7 @@ class XDGMenu:
             def keypress(self, size, key):
                 key = super().keypress(size, key)
                 if key == 'enter':
-                    menu.selected = self.get_node().get_value().DesktopEntry
+                    menu.run(self.get_node().get_value().DesktopEntry)
                     raise urwid.ExitMainLoop()
                 return key
 
@@ -77,3 +78,6 @@ class XDGMenu:
         menu.list_box = urwid.ListBox(urwid.TreeWalker(menu.root))
 
         menu.view = menu.list_box
+
+    def run(self, entry):
+        default_executor.run_xdg_desktop_entry(entry)

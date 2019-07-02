@@ -10,7 +10,7 @@ def expand_field_codes(raw, fields):
 
     def get_field(match):
         field = match.group(0)
-        return fields.get(field[1:], field)
+        return fields.get(field[1:], '')
 
     return re.sub(FIELD_CODE_RE, get_field, raw)
 

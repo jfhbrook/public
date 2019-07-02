@@ -1,9 +1,11 @@
 from collections import defaultdict
 import os
 import os.path
-from pyxsession.util.decorators import dictable, representable
+
+import attr
 from xdg.BaseDirectory import xdg_config_dirs
 
+from pyxsession.util.decorators import dictable, representable
 from pyxsession.xdg import config_basedir
 from pyxsession.xdg.executable import Executable
 

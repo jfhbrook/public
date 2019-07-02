@@ -1,4 +1,4 @@
-import attrs
+import attr
 from collections import defaultdict
 import os
 import os.path
@@ -24,19 +24,32 @@ class Executable:
     exec_key_parsed = attr.ib()
     exec_key_parse_exc = attr.ib()
 
-    @staticmethod
-    def from_path(fullpath):
-        """
-        See: https://specifications.freedesktop.org/autostart-spec/autostart-spec-0.5.html#idm140434866991296
-        """  # noqa
+    @classmethod
+    def from_path(cls, fullpath):
         filename = os.path.basename(fullpath)
-
         try:
             entry = DesktopEntry(fullpath)
             parsed = True
+            parse_exc = None
         except ParsingError as exc:
+            entry = None
             parsed = False
             parse_exc = exc
+
+        return cls._construct(fullpath, filename, entry, parsed, parse_exc)
+
+    @classmethod
+    def from_desktop_entry(cls, entry):
+        # TODO: Can we recover the entry's filename?
+        return cls._construct(None, None, entry, True, None)
+
+    @classmethod
+    def _construct(cls, fullpath, filename, entry, parsed, parse_exc):
+        """
+        See: https://specifications.freedesktop.org/autostart-spec/autostart-spec-0.5.html#idm140434866991296
+        """  # noqa
+
+        if not parsed:
             validated = False
             validate_exc = None
             exec_key_parsed = False
@@ -61,7 +74,7 @@ class Executable:
                 exec_key_parsed = True
                 exec_key_parse_exc = None
 
-        return ExecutableEntry(
+        return Executable(
             filename,
             entry,
             parsed,
