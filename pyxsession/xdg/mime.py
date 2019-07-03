@@ -92,27 +92,59 @@ def _remove(mimetype, apps, target):
 
 
 @representable
+@attr.s
+class DesktopDatabase:
+    filename = attr.ib()
+    ini_file = attr.ib()
+    parsed = attr.ib()
+    parse_exc = attr.ib()
+
+    _cache = None
+
+    @classmethod
+    def from_file(cls, filename):
+        ini_file = IniFile()
+        try:
+            ini_file.parse(filename)
+        except ParsingError as exc:
+            ini_file = None
+            parsed = False
+            exc = None
+        else:
+            parsed = True
+            exc = None
+
+        return cls(
+            filename=filename,
+            ini_file=ini_file,
+            parsed=parsed,
+            parse_exc=exc
+        )
+
+    def items(self):
+        if not self._cache:
+            self._cache = _get_group(self.ini_file, 'MIME Cache')
+        yield from self._cache.items()
+
+
+@representable
 @dictable(['environment', 'default_applications', 'registered_applications'])
 class MimeDatabase:
     def __init__(self, config):
         self.environment = config.mime.environment
+        self.registered_applications = dict()
 
-        try:
-            self.cache_ini_file = IniFile()
-            self.cache_ini_file.parse(config.mime.cache)
-        except ParsingError as exc:
-            self.cache_parsed = False
-            self.cache_parse_exc = exc
-            self.registered_applications = dict()
-        else:
-            self.cache_parsed = True
-            self.cache_parse_exc = None
+        for directory in load_data_paths('applications'):
+            database = DesktopDatabase.from_file(
+                os.path.join(directory, 'mineinfo.cache')
+            )
 
-            self.registered_applications = {
-                mimetype: set(apps)
-                for mimetype, apps in
-                _get_group(self.cache_ini_file, 'MIME Cache').items()
-            }
+            # TODO: Log errors
+            if not database.parsed:
+                print(database.parse_exc)
+            else:
+                for mimetype, apps in database.items():
+                    _insert(mimetype, apps, self.registered_applications)
 
         self.default_applications = dict()
 
