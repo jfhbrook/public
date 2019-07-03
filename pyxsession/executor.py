@@ -7,9 +7,10 @@ import attr
 from twisted.internet import reactor
 from twisted.internet.error import ReactorNotRunning
 
-from pyxsession.xdg.executable import Executable
-from pyxsession.twisted.procmon import ProcessMonitor
 from pyxsession.detach import spawn as spawn_detached
+from pyxsession.twisted.procmon import ProcessMonitor
+from pyxsession.xdg.executable import Executable
+from pyxsession.util import Symbol
 
 
 class Executor:
@@ -79,11 +80,7 @@ class ExecutorPool(defaultdict):
 executors = ExecutorPool()
 
 
-class _Key:
-    pass
-
-
-DEFAULT_KEY = _Key()
+DEFAULT_KEY = Symbol('Default Executor Key')
 default_executor = executors[DEFAULT_KEY]
 
 
