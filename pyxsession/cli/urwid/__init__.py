@@ -63,20 +63,6 @@ class Session:
         except Exception as exc:
             self.fail(exc)
 
-    @classmethod
-    def inject(cls, fn):
-        session = cls()
-
-        @wraps(fn)
-        def wrapped(*args, **kwargs):
-            return fn(*args, session=session, **kwargs)
-
-        return wrapped
-
-    # TODO: Better method name
-    def use(self, widget):
-        self.widget = widget
-
 
 def urwid_command(cmd):
     @wraps(cmd)

@@ -3,8 +3,8 @@ import xdg.Menu
 from pyxsession.cli.urwid import on_q, Session
 
 
-@Session.inject
-def menu_session(xdg_menu, session):
+def menu_session(xdg_menu):
+    session = Session()
 
     class EntryWidget(urwid.TreeWidget):
         def selectable(self):
@@ -73,15 +73,20 @@ def menu_session(xdg_menu, session):
 
             return node
 
+    root = MenuNode(xdg_menu)
+    list_box = urwid.ListBox(urwid.TreeWalker(root))
+
     session.xdg_menu = xdg_menu
     session.entry_widget_cls = EntryWidget
     session.entry_node_cls = EntryNode
     session.session_widget_cls = MenuWidget
     session.session_node_cls = MenuNode
-    session.root = MenuNode(xdg_menu)
-    session.list_box = urwid.ListBox(urwid.TreeWalker(session.root))
+    session.root = root
+    session.list_box = list_box
 
-    session.use(session.list_box)
+    # TODO: It would be cool if there was an API that made it more obvious
+    # that we were "finalizing" the session
+    session.widget = list_box
     session.unhandled_input = on_q
 
     return session
