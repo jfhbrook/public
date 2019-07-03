@@ -3,10 +3,13 @@ import os
 import os.path
 
 import attr
+from xdg.BaseDirectory import load_data_paths
 
 from pyxsession.util.decorators import dictable, representable
-from pyxsession.xdg import config_basedir
 from pyxsession.xdg.executable import Executable
+
+
+XDG_APPLICATIONS_DIRS = load_data_paths('applications')
 
 
 @representable

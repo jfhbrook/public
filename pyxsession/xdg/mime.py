@@ -134,9 +134,11 @@ class DesktopDatabase:
 @representable
 @dictable(['environment', 'default_applications', 'registered_applications'])
 class MimeDatabase:
-    def __init__(self, config):
+    def __init__(self, config, applications):
         self.environment = config.mime.environment
-        self.registered_applications = dict()
+        self.applications = applications
+        self.lookup = dict()
+        self.defaults = dict()
 
         for directory in load_data_paths('applications'):
             database = DesktopDatabase.from_file(
@@ -148,9 +150,7 @@ class MimeDatabase:
                 print(database.parse_exc)
             else:
                 for mimetype, apps in database.items():
-                    _insert(mimetype, apps, self.registered_applications)
-
-        self.default_applications = dict()
+                    _insert(mimetype, apps, self.lookup)
 
         # TODO: Alternate algorithm that doesn't require reversing?
         # The list is short so it's not a big deal
@@ -162,12 +162,11 @@ class MimeDatabase:
             if mime_list.parsed:
                 added_associations = mime_list.get_added_associations()
                 for mimetype, apps in added_associations.items():
-                    _insert(mimetype, apps, self.registered_applications)
+                    _insert(mimetype, apps, self.lookup)
 
-                removed_associations = mime_list.get_removed_assoiations()
-
+                removed_associations = mime_list.get_removed_associations()
                 for mimetype, apps in removed_associations.items():
-                    _remove(mimetype, apps, self.registered_applications)
+                    _remove(mimetype, apps, self.lookup)
 
                     # Assumption is that if the mimetype is removed that we
                     # don't want an associated default application either.
@@ -175,30 +174,35 @@ class MimeDatabase:
                     # I could change my mind on this.
                     if mimetype in self.default_applications:
                         for removed_app in apps:
-                            self.default_applications[mimetype] = [
+                            self.defaults[mimetype] = [
                                 app
-                                for app in self.default_applications[mimetype]
+                                for app in self.defaults[mimetype]
                                 if app is not removed_app
                             ]
 
                 default_applications = mime_list.get_default_applications()
                 for mimetype, apps in default_applications:
-                    _insert(mimetype, apps, self.registered_applications)
+                    _insert(mimetype, apps, self.lookup)
 
                     # Current assumption is that an override should override
                     # the entire key.
                     #
                     # I could change my mind on this.
-                    self.default_applications[mimetype] = apps
-
+                    self.defaults[mimetype] = apps
             else:
                 # TODO: Logging
                 print(mime_list.exc)
 
-    # TODO: You would need to look up the result of this call against some
-    # kind of desktop registry
-    def file_applications(filename):
-        return self.registered_applications[get_type(filename)]
+    def applications_by_filename(filename):
+        return {
+            self.applications[key]
+            for key in self.lookup[get_type(filename)]
+            if key in self.applications
+        }
 
-    def file_default(filename):
-        return self.default_applications[get_type(filename)]
+    def default_by_filename(filename):
+        return [
+            self.applications[key]
+            for key in self.defaults[get_type(filename)]
+            if key in self.applications
+        ]

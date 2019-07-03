@@ -3,7 +3,7 @@ import attr
 import cattr
 import toml
 from pyxsession.util.decorators import representable
-from pyxsession.xdg import config_basedir
+from pyxsession.xdg import XDG_CURRENT_DESKTOP, config_basedir
 from pyxsession.xdg.autostart import XDG_AUTOSTART_DIRS
 from pyxsession.xdg.applications import XDG_APPLICATIONS_DIRS
 
@@ -30,9 +30,6 @@ def subconfig(cls):
 
 def value(default=None):
     return attr.ib(default=default)
-
-
-XDG_CURRENT_DESKTOP = os.environ.get('XDG_CURRENT_DESKTOP', 'pyxsession')
 
 
 @config
