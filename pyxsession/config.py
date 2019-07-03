@@ -49,7 +49,7 @@ class OpenConfig:
 
 @attr.s
 class MimeConfig:
-    database = value()
+    cache = value('/usr/share/applications/mimeinfo.cache')
     environment = value(XDG_CURRENT_DESKTOP)
 
 
