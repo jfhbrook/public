@@ -11,16 +11,6 @@ from pyxsession.xdg.applications import ApplicationsRegistry
 from pyxsession.xdg.mime import MimeRegistry
 
 
-def _get_field(exec_key, url_or_file):
-    expected_fields = exec_key.expected_fields()
-
-    for potential_field in 'UuFf':
-        if potential_field in expected_fields:
-            return potential_field
-    # TODO: Real exception
-    raise Exception('where are we supposed to put this?')
-
-
 @click.command()
 @click.argument('urls_and_or_files', nargs=-1)
 @async_command
