@@ -2,8 +2,10 @@ import os.path
 import attr
 import cattr
 import toml
+from pyxsession.util.decorators import representable
 from pyxsession.xdg import config_basedir
 from pyxsession.xdg.autostart import XDG_AUTOSTART_DIRS
+from pyxsession.xdg.applications import XDG_APPLICATIONS_DIRS
 
 
 class LoadError(Exception):
@@ -18,6 +20,10 @@ class NoConfigurationFoundError(LoadError):
         )
 
 
+def config(cls):
+    return representable(attr.s(cls))
+
+
 def subconfig(cls):
     return attr.ib(type=cls, default=cls())
 
@@ -29,31 +35,38 @@ def value(default=None):
 XDG_CURRENT_DESKTOP = os.environ.get('XDG_CURRENT_DESKTOP', 'pyxsession')
 
 
-@attr.s
+@config
 class AutostartConfig:
     directories = value(XDG_AUTOSTART_DIRS)
     environment_name = value(XDG_CURRENT_DESKTOP)
     skip_unparsed = value(False)
-    skip_invalid = value(default=False)
+    skip_invalid = value(False)
 
 
-@attr.s
+@config
+class ApplicationsConfig:
+    directories = value(XDG_APPLICATIONS_DIRS)
+    skip_unparsed = value(False)
+    skip_invalid = value(False)
+
+
+@config
 class MenuConfig:
     filename = value()
 
 
-@attr.s
+@config
 class OpenConfig:
     filename = value()
 
 
-@attr.s
+@config
 class MimeConfig:
     cache = value('/usr/share/applications/mimeinfo.cache')
     environment = value(XDG_CURRENT_DESKTOP)
 
 
-@attr.s
+@config
 class BaseConfig:
     autostart = subconfig(AutostartConfig)
     menu = subconfig(MenuConfig)
