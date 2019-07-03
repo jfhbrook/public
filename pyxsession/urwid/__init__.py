@@ -1,6 +1,9 @@
+from functools import wraps
 import urwid
 
 
-def quit_on_q(key):
-    if key in {'q', 'Q'}:
-        raise urwid.ExitMainLoop()
+def on_q(run):
+    @wraps(run)
+    def run_on_q(key):
+        if key in {'q', 'Q'}:
+            run()

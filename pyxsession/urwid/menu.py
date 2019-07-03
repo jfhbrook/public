@@ -4,9 +4,10 @@ from pyxsession.executor import default_executor
 
 
 class XDGMenu:
-    def __init__(menu, xdg_menu):
+    def __init__(menu, xdg_menu, exit):
         menu.xdg_menu = xdg_menu
         menu.selected = None
+        menu.exit = exit
 
         class EntryWidget(urwid.TreeWidget):
             def selectable(self):
@@ -31,7 +32,7 @@ class XDGMenu:
                 key = super().keypress(size, key)
                 if key == 'enter':
                     menu.run(self.get_node().get_value().DesktopEntry)
-                    raise urwid.ExitMainLoop()
+                    menu.exit()
                 return key
 
 

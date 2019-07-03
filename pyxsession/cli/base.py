@@ -1,5 +1,5 @@
 from functools import wraps
-from twisted.internet.defer import ensureDeferred
+from twisted.internet.defer import Deferred, ensureDeferred
 from twisted.internet.task import react
 import urwid
 
@@ -16,36 +16,45 @@ def async_command(cmd):
 
 def urwid_command(cmd):
     @wraps(cmd)
-    def wrapped(*arg, **kwarg):
-        gen = cmd(*arg, **kwarg)
+    @async_command
+    async def wrapped(reactor, *arg, **kwarg):
+        waiting = Deferred()
 
-        # TODO: As it stands we can only run one urwid loop, since it
-        # starts and stops the reactor. It might be possible to start the
-        # reactor separately in order to run multiple loops, but for various
-        # reasons that seems unlikely.
+        def next_(exc=None):
+            if exc:
+                waiting.errback(exc)
+            else:
+                waiting.callback(None)
 
-        if hasattr(gen, '__next__'):
-            widget = next(gen)
-        else:
-            widget = gen
+        agen = cmd(reactor, next_, *arg, **kwarg)
 
-        if type(widget) == tuple:
-            widget, loop_kwarg = widget
-        else:
-            loop_kwarg = dict()
+        try:
+            while True:
+                widget = await agen.__anext__()
 
-        loop = urwid.MainLoop(
-            widget,
-            event_loop=urwid.TwistedEventLoop(),
-            **loop_kwarg
-        )
+                if type(widget) == tuple:
+                    widget, loop_kwarg = widget
+                else:
+                    loop_kwarg = dict()
 
-        loop.run()
+                loop = urwid.MainLoop(
+                    widget,
+                    event_loop=urwid.TwistedEventLoop(
+                        reactor=reactor,
+                        manage_reactor=False
+                    ),
+                    **loop_kwarg
+                )
 
-        if hasattr(gen, '__next__'):
-            try:
-                next(gen)
-            except StopIteration:
-                pass
+                loop.start()
+
+                try:
+                    await waiting
+                finally:
+                    loop.stop()
+                    waiting = Deferred()
+
+        except StopAsyncIteration:
+            pass
 
     return wrapped
