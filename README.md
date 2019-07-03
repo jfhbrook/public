@@ -15,12 +15,18 @@
 - [x] patch twisted support into ipython's autoawait
 - [x] investigate adding magics to run a non-awaiting result inside crochet's thread in jupyter/ipython
 - [x] spin crochet magics out into a separate repo w/ a proper ipython-compatible license
+- [x] write an api client and tools in jupyter to interact w/ dbus
 - [x] write missing gshell function and spin out into separate repo w/ a proper glib-compatible license
-- [ ] write something that can assemble a full coherent Configuration based on our base config + the parsed autostart directory
+- [x] write executor abstraction for running commands and desktop applications
+- [x] write urwid app that will load and display the xdg menu and launch those applications in the background
+- [ ] write dbus marshalling framework
+- [ ] write code that will load an application database from /usr/share/applications and ~/.local/share/applications
+- [ ] write tooling for editing local desktop entries
+- [ ] create a dbus service for executing and monitoring programs with queries for state and soft exit
+- [ ] clean up obvious spelling/formatting issues with gshell and rename LICENSE to COPYING
+- [ ] write code that can take the base config and apply desktop entry overrides at the toml level
 - [ ] build up templates and tooling for rendering `_repr_markdown` representations of the config for inspection in nteract
 - [ ] write something that can poke at dbus services using xdg rules (should be way easy)
-- [ ] make a stub server that can speak dbus query state and soft exit
-- [ ] write an api client and tools in jupyter to interact w/ dbus
 - [ ] write something that can turn that coherent configuration into autostarted processes managed by our procmon and add to server
 - [ ] add pyxsession to my xinitrc (manually activate the conda env)
 - [ ] write toml thinger for running cron tasks
