@@ -60,6 +60,8 @@ class ExecKey:
         return set(get_field_codes(self.raw))
 
     def build_argv(self, fields=None):
+        fields = fields or dict()
+
         flattened_fields = {
             field: ' '.join(values)
             for field, values in fields.items()

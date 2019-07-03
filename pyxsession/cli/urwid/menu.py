@@ -1,93 +1,87 @@
 import urwid
 import xdg.Menu
-from pyxsession.executor import default_executor
-from pyxsession.cli.urwid import Session
+from pyxsession.cli.urwid import on_q, Session
 
 
-class XDGMenu(Session):
-    def __init__(menu, xdg_menu, *args, **kwargs):
-        class EntryWidget(urwid.TreeWidget):
-            def selectable(self):
-                return True
+@Session.inject
+def menu_session(xdg_menu, session):
 
-            @menu.catch
-            def get_display_text(self):
-                entry = self.get_node().get_value().DesktopEntry
-                name = entry.getName()
-                comment = entry.getComment()
-                if comment:
-                    return f'{name} - {comment}'
-                else:
-                    return name
+    class EntryWidget(urwid.TreeWidget):
+        def selectable(self):
+            return True
 
-            @menu.catch
-            def load_inner_widget(self):
-                # TODO: Does this need to be a button if we can't actually
-                # select it?
-                button = urwid.Button(self.get_display_text())
-                return button
+        @session.catch
+        def get_display_text(self):
+            entry = self.get_node().get_value().DesktopEntry
+            name = entry.getName()
+            comment = entry.getComment()
+            if comment:
+                return f'{name} - {comment}'
+            else:
+                return name
 
-            @menu.catch
-            def keypress(self, size, key):
-                key = super().keypress(size, key)
-                if key == 'enter':
-                    menu.run(self.get_node().get_value().DesktopEntry)
-                    menu.succeed()
-                return key
+        @session.catch
+        def load_inner_widget(self):
+            # TODO: Does this need to be a button if we can't actually
+            # select it?
+            button = urwid.Button(self.get_display_text())
+            return button
 
-
-        class EntryNode(urwid.TreeNode):
-            @menu.catch
-            def load_widget(self):
-                return EntryWidget(self)
+        @session.catch
+        def keypress(self, size, key):
+            key = super().keypress(size, key)
+            if key == 'enter':
+                session.succeed(self.get_node().get_value().DesktopEntry)
+            return key
 
 
-        class MenuWidget(urwid.TreeWidget):
-            @menu.catch
-            def get_display_text(self):
-                menu = self.get_node().get_value()
-                return f'{menu.getName()}:'
+    class EntryNode(urwid.TreeNode):
+        @session.catch
+        def load_widget(self):
+            return EntryWidget(self)
 
 
-        class MenuNode(urwid.ParentNode):
-            @menu.catch
-            def load_widget(self):
-                return MenuWidget(self)
+    class MenuWidget(urwid.TreeWidget):
+        @session.catch
+        def get_display_text(self):
+            session = self.get_node().get_value()
+            return f'{session.getName()}:'
 
-            @menu.catch
-            def load_child_keys(self):
-                entity = self.get_value()
-                if isinstance(entity, xdg.Menu.Menu):
-                    return list(range(len(list(entity.getEntries()))))
-                else:
-                    return []
 
-            @menu.catch
-            def load_child_node(self, key):
-                child = list(self.get_value().getEntries())[key]
-                depth = self.get_depth() + 1
-                is_menu = isinstance(child, xdg.Menu.Menu)
+    class MenuNode(urwid.ParentNode):
+        @session.catch
+        def load_widget(self):
+            return MenuWidget(self)
 
-                cls = MenuNode if is_menu else EntryNode
+        @session.catch
+        def load_child_keys(self):
+            entity = self.get_value()
+            if isinstance(entity, xdg.Menu.Menu):
+                return list(range(len(list(entity.getEntries()))))
+            else:
+                return []
 
-                node = cls(child, parent=self, key=key, depth=depth)
+        @session.catch
+        def load_child_node(self, key):
+            child = list(self.get_value().getEntries())[key]
+            depth = self.get_depth() + 1
+            is_session = isinstance(child, xdg.Menu.Menu)
 
-                return node
+            cls = MenuNode if is_session else EntryNode
 
-        super().__init__(*args, **kwargs)
+            node = cls(child, parent=self, key=key, depth=depth)
 
-        menu.xdg_menu = xdg_menu
-        menu.entry_widget_cls = EntryWidget
-        menu.entry_node_cls = EntryNode
-        menu.menu_widget_cls = MenuWidget
-        menu.menu_node_cls = MenuNode
+            return node
 
-        menu.root = MenuNode(xdg_menu)
+    session.xdg_menu = xdg_menu
+    session.entry_widget_cls = EntryWidget
+    session.entry_node_cls = EntryNode
+    session.session_widget_cls = MenuWidget
+    session.session_node_cls = MenuNode
+    session.root = MenuNode(xdg_menu)
+    session.list_box = urwid.ListBox(urwid.TreeWalker(session.root))
 
-        menu.list_box = urwid.ListBox(urwid.TreeWalker(menu.root))
+    session.use(session.list_box)
+    session.unhandled_input = on_q
 
-        menu.widget = menu.list_box
-
-    def run(self, entry):
-        with self.capture():
-            default_executor.run_xdg_desktop_entry(entry)
+    return session

@@ -4,8 +4,8 @@ from functools import wraps
 import click
 import xdg.Menu
 
-from pyxsession.cli.urwid import urwid_command, on_q
-from pyxsession.cli.urwid.menu import XDGMenu
+from pyxsession.cli.urwid import urwid_command
+from pyxsession.cli.urwid.menu import menu_session
 from pyxsession.config import load_config
 from pyxsession.executor import default_executor
 
@@ -17,7 +17,7 @@ async def main(reactor):
 
     xdg_menu = xdg.Menu.parse(config.menu.filename)
 
-    session = XDGMenu(xdg_menu, unhandled_input=on_q)
+    session = menu_session(xdg_menu)
 
     yield session
 

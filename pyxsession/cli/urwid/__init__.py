@@ -53,8 +53,8 @@ class Session:
     def fail(self, exc):
         self.done.errback(exc)
 
-    def succeed(self):
-        self.done.callback(None)
+    def succeed(self, result=None):
+        self.done.callback(result)
     
     @contextmanager
     def capture(self):
@@ -62,6 +62,20 @@ class Session:
             yield
         except Exception as exc:
             self.fail(exc)
+
+    @classmethod
+    def inject(cls, fn):
+        session = cls()
+
+        @wraps(fn)
+        def wrapped(*args, **kwargs):
+            return fn(*args, session=session, **kwargs)
+
+        return wrapped
+
+    # TODO: Better method name
+    def use(self, widget):
+        self.widget = widget
 
 
 def urwid_command(cmd):
