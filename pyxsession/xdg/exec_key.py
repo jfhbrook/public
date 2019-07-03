@@ -1,6 +1,6 @@
 import re
 
-from gshell import g_shell_parse_argv
+from gshell import g_shell_parse_argv, g_shell_quote
 
 from pyxsession.util.decorators import dictable, representable
 
@@ -62,8 +62,11 @@ class ExecKey:
         fields = fields or dict()
 
         flattened_fields = {
-            field: ' '.join(values)
-            for field, values in fields.items()
+            field: 
+                ' '.join(g_shell_quote(value))
+                if isinstance(value, list)
+                else value
+                for field, value in fields.items()
         }
 
         return [
