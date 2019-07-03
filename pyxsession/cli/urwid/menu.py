@@ -5,7 +5,7 @@ from pyxsession.cli.urwid import Session
 
 
 class XDGMenu(Session):
-    def __init__(menu, xdg_menu):
+    def __init__(menu, xdg_menu, *args, **kwargs):
         class EntryWidget(urwid.TreeWidget):
             def selectable(self):
                 return True
@@ -74,7 +74,7 @@ class XDGMenu(Session):
 
                 return node
 
-        super().__init__()
+        super().__init__(*args, **kwargs)
 
         menu.xdg_menu = xdg_menu
         menu.entry_widget_cls = EntryWidget

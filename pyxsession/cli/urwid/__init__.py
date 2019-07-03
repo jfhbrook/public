@@ -9,6 +9,7 @@ import urwid
 from pyxsession.twisted.util import as_deferred
 from pyxsession.cli.base import async_command
 
+
 def on_q(run):
     @wraps(run)
     def run_on_q(key):
@@ -16,18 +17,25 @@ def on_q(run):
             run()
 
 
-def _bail(exc=None):
-    if not exc:
-        sys.exit(0)
-    else:
-        print(exc)
-        sys.exit(1)
+_bail = Deferred()
+
+
+@_bail.addErrback
+def _sad(exc=None):
+    print(exc)
+    sys.exit(1)
+
+
+@_bail.addCallback
+def _happy(result=None):
+    sys.exit(0)
 
 
 @attr.s
 class Session:
     widget = attr.ib(default=None)
     done = attr.ib(default=_bail)
+    unhandled_input = attr.ib(default=None)
     loop_kwarg = attr.ib(default=dict())
 
     def catch(self, fn):
@@ -56,7 +64,6 @@ class Session:
             self.fail(exc)
 
 
-
 def urwid_command(cmd):
     @wraps(cmd)
     @async_command
@@ -71,13 +78,22 @@ def urwid_command(cmd):
 
                 session.done = waiting
 
+                loop_kwarg = dict(**session.loop_kwarg)
+
+                if session.unhandled_input:
+                    loop_kwarg[
+                        'unhandled_input'
+                    ] = session.unhandled_input(
+                        lambda: session.done.callback(None)
+                    )
+
                 loop = urwid.MainLoop(
                     session.widget,
                     event_loop=urwid.TwistedEventLoop(
                         reactor=reactor,
                         manage_reactor=False
                     ),
-                    **session.loop_kwarg
+                    **loop_kwarg
                 )
 
                 loop.start()
