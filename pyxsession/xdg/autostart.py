@@ -8,7 +8,7 @@ from xdg.BaseDirectory import xdg_config_dirs
 from pyxsession.util.decorators import dictable, representable
 from pyxsession.xdg import config_basedir
 from pyxsession.xdg.applications import (
-    Application, ApplicationsDatabase, load_application_sets
+    Application, ApplicationsRegistry, load_application_sets
 )
 
 
@@ -38,7 +38,7 @@ class Autostart(Application):
     'entries',
     'autostart_entries'
 ])
-class AutostartDatabase(ApplicationsDatabase):
+class AutostartRegistry(ApplicationsRegistry):
     def __init__(self, config):
         super().__init__(config, key='autostart', cls=Autostart)
         self.autostart_entries = dict()

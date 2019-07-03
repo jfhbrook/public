@@ -135,7 +135,7 @@ class DesktopDatabase:
 
 @representable
 @dictable(['environment', 'lookup', 'defaults'])
-class MimeDatabase:
+class MimeRegistry:
     def __init__(self, config, applications):
         self.environment = config.mime.environment
         self.applications = applications

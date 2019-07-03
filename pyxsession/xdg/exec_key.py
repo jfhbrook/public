@@ -56,7 +56,6 @@ class ExecKey:
         return self._is_valid
 
     def expected_fields(self):
-        print(self.raw)
         return set(get_field_codes(self.raw))
 
     def build_argv(self, fields=None):

@@ -85,7 +85,7 @@ def load_application_sets(dirs, cls=Application):
     'directories',
     'entries'
 ])
-class ApplicationsDatabase:
+class ApplicationsRegistry:
     def __init__(self, config, key='applications', cls=Application):
         self.directories = getattr(config, key).directories
         self.entry_sets = load_application_sets(self.directories, cls)

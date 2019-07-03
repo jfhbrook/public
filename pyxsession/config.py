@@ -62,7 +62,6 @@ class MimeConfig:
     cache = value('/usr/share/applications/mimeinfo.cache')
     environment = value(XDG_CURRENT_DESKTOP)
 
-
 @config
 class BaseConfig:
     autostart = subconfig(AutostartConfig)
@@ -70,6 +69,8 @@ class BaseConfig:
     open = subconfig(OpenConfig)
     mime = subconfig(MimeConfig)
     applications = subconfig(ApplicationsConfig)
+    # TODO: validate
+    urls = value(dict())
 
 
 def load_config():
