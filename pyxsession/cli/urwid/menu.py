@@ -1,18 +1,16 @@
 import urwid
 import xdg.Menu
 from pyxsession.executor import default_executor
+from pyxsession.cli.urwid import Session
 
 
-class XDGMenu:
-    def __init__(menu, xdg_menu, exit):
-        menu.xdg_menu = xdg_menu
-        menu.selected = None
-        menu.exit = exit
-
+class XDGMenu(Session):
+    def __init__(menu, xdg_menu):
         class EntryWidget(urwid.TreeWidget):
             def selectable(self):
                 return True
 
+            @menu.catch
             def get_display_text(self):
                 entry = self.get_node().get_value().DesktopEntry
                 name = entry.getName()
@@ -22,35 +20,41 @@ class XDGMenu:
                 else:
                     return name
 
+            @menu.catch
             def load_inner_widget(self):
                 # TODO: Does this need to be a button if we can't actually
                 # select it?
                 button = urwid.Button(self.get_display_text())
                 return button
 
+            @menu.catch
             def keypress(self, size, key):
                 key = super().keypress(size, key)
                 if key == 'enter':
                     menu.run(self.get_node().get_value().DesktopEntry)
-                    menu.exit()
+                    menu.succeed()
                 return key
 
 
         class EntryNode(urwid.TreeNode):
+            @menu.catch
             def load_widget(self):
                 return EntryWidget(self)
 
 
         class MenuWidget(urwid.TreeWidget):
+            @menu.catch
             def get_display_text(self):
                 menu = self.get_node().get_value()
                 return f'{menu.getName()}:'
 
 
         class MenuNode(urwid.ParentNode):
+            @menu.catch
             def load_widget(self):
                 return MenuWidget(self)
 
+            @menu.catch
             def load_child_keys(self):
                 entity = self.get_value()
                 if isinstance(entity, xdg.Menu.Menu):
@@ -58,6 +62,7 @@ class XDGMenu:
                 else:
                     return []
 
+            @menu.catch
             def load_child_node(self, key):
                 child = list(self.get_value().getEntries())[key]
                 depth = self.get_depth() + 1
@@ -69,6 +74,9 @@ class XDGMenu:
 
                 return node
 
+        super().__init__()
+
+        menu.xdg_menu = xdg_menu
         menu.entry_widget_cls = EntryWidget
         menu.entry_node_cls = EntryNode
         menu.menu_widget_cls = MenuWidget
@@ -78,7 +86,8 @@ class XDGMenu:
 
         menu.list_box = urwid.ListBox(urwid.TreeWalker(menu.root))
 
-        menu.view = menu.list_box
+        menu.widget = menu.list_box
 
     def run(self, entry):
-        default_executor.run_xdg_desktop_entry(entry)
+        with self.capture():
+            default_executor.run_xdg_desktop_entry(entry)
