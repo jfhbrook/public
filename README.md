@@ -23,7 +23,9 @@
 - [x] generalize autostart loading code to also work with `xdg.BaseDirectory.load_data_paths('applications')` for the purposes of an applications database to x-ref with mime data
 - [x] write code that will load an application database from /usr/share/applications and ~/.local/share/applications and stuff
 - [x] make urwid stuff actually work
+- [x] POC launcher for default applications
 - [ ] write dbus marshalling framework
+- [ ] Make default apps launcher actually good
 - [ ] write tooling for editing local desktop entries and mime/defaults data
 - [ ] create a dbus service for executing and monitoring programs with queries for state and soft exit
 - [ ] clean up obvious spelling/formatting issues with gshell and rename LICENSE to COPYING
