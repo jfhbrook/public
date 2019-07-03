@@ -19,8 +19,11 @@
 - [x] write missing gshell function and spin out into separate repo w/ a proper glib-compatible license
 - [x] write executor abstraction for running commands and desktop applications
 - [x] write urwid app that will load and display the xdg menu and launch those applications in the background
+- [x] write code for loading xdg mime data
+- [ ] generalize autostart loading code to also work with `xdg.BaseDirectory.load_data_paths('applications')` for the purposes of an applications database to x-ref with mime data
 - [ ] write dbus marshalling framework
-- [ ] write code that will load an application database from /usr/share/applications and ~/.local/share/applications
+- [ ] write code that will load an application database from /usr/share/applications and ~/.local/share/applications and stuff
+  - [ ] this is probably xdg data dirs / applications
 - [ ] write tooling for editing local desktop entries
 - [ ] create a dbus service for executing and monitoring programs with queries for state and soft exit
 - [ ] clean up obvious spelling/formatting issues with gshell and rename LICENSE to COPYING
