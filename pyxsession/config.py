@@ -69,6 +69,7 @@ class BaseConfig:
     menu = subconfig(MenuConfig)
     open = subconfig(OpenConfig)
     mime = subconfig(MimeConfig)
+    applications = subconfig(ApplicationsConfig)
 
 
 def load_config():

@@ -1,12 +1,13 @@
 import os.path
 
 import attr
-from xdg.BaseDirectory import xdg_config_dirs
+from xdg.BaseDirectory import load_data_paths, xdg_config_dirs
 from xdg.IniFile import IniFile
 from xdg.Exceptions import ParsingError
 from xdg.Mime import MIMEtype, get_type2 as get_type
 
 from pyxsession.util.decorators import dictable, representable
+from pyxsession.xdg.applications import XDG_APPLICATIONS_DIRS
 
 # By far the most complete information on how this works can be found via
 # this arch wiki link:
@@ -78,7 +79,7 @@ def load_xdg_mime_lists(environment=None):
 
 def _insert(mimetype, apps, target):
     if mimetype not in target:
-        target[mimetype] = set()
+        target[mimetype] = set(apps)
     else:
         for app in apps:
             target[mimetype].add(app)
@@ -132,7 +133,7 @@ class DesktopDatabase:
 
 
 @representable
-@dictable(['environment', 'default_applications', 'registered_applications'])
+@dictable(['environment', 'lookup', 'defaults'])
 class MimeDatabase:
     def __init__(self, config, applications):
         self.environment = config.mime.environment
@@ -140,9 +141,9 @@ class MimeDatabase:
         self.lookup = dict()
         self.defaults = dict()
 
-        for directory in load_data_paths('applications'):
+        for directory in XDG_APPLICATIONS_DIRS:
             database = DesktopDatabase.from_file(
-                os.path.join(directory, 'mineinfo.cache')
+                os.path.join(directory, 'mimeinfo.cache')
             )
 
             # TODO: Log errors
@@ -193,16 +194,16 @@ class MimeDatabase:
                 # TODO: Logging
                 print(mime_list.exc)
 
-    def applications_by_filename(filename):
-        return {
-            self.applications[key]
-            for key in self.lookup[get_type(filename)]
-            if key in self.applications
-        }
-
-    def default_by_filename(filename):
+    def applications_by_filename(self, filename):
         return [
-            self.applications[key]
+            self.applications.entries[key]
+            for key in self.lookup[get_type(filename)]
+            if key in self.applications.entries
+        ]
+
+    def default_by_filename(self, filename):
+        return [
+            self.applications.entries[key]
             for key in self.defaults[get_type(filename)]
-            if key in self.applications
+            if key in self.applications.entries
         ]

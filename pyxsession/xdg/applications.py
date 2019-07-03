@@ -9,7 +9,7 @@ from pyxsession.util.decorators import dictable, representable
 from pyxsession.xdg.executable import Executable
 
 
-XDG_APPLICATIONS_DIRS = load_data_paths('applications')
+XDG_APPLICATIONS_DIRS = list(load_data_paths('applications'))
 
 
 @representable
@@ -30,17 +30,6 @@ class Application:
 
         return cls(fullpath, filename, executable)
 
-    def should_autostart(self, environment_name):
-        return all([
-            self.executable.parsed,
-            self.executable.is_application,
-            self.executable.exec_parsed,
-            not self.executable.is_hidden,
-            not self.executable.dbus_activatable,
-            self.executable.should_show_in(environment_name),
-            self.executable.passes_try_exec()
-        ])
-
 
 @representable
 @dictable(['entries'])
@@ -54,7 +43,7 @@ class ApplicationSet:
     def coalesce(self, *, skip_unparsed, skip_invalid):
         for entry in self.entries:
             executable = entry.executable
-            parsed = executable.parsed and executable.exec_parsed
+            parsed = executable.parsed and executable.exec_key_parsed
             valid = executable.validated
 
             if (
@@ -78,7 +67,7 @@ def _load_application_dir(dirpath, cls):
         return
 
     for filename in filenames:
-        yield cls(os.path.join(dirpath, filename))
+        yield cls.from_path(os.path.join(dirpath, filename))
 
 
 def load_application_sets(dirs, cls=Application):
@@ -96,13 +85,13 @@ def load_application_sets(dirs, cls=Application):
     'directories',
     'entries'
 ])
-class ApplicationDatabase:
+class ApplicationsDatabase:
     def __init__(self, config, key='applications', cls=Application):
         self.directories = getattr(config, key).directories
         self.entry_sets = load_application_sets(self.directories, cls)
         self.entries = dict()
 
-        for filename, app_set in self.entry_sets.items():
+        for filename, entry_set in self.entry_sets.items():
             entry = entry_set.coalesce(
                 skip_unparsed=getattr(config, key).skip_unparsed,
                 skip_invalid=getattr(config, key).skip_invalid

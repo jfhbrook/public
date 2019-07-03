@@ -52,6 +52,7 @@ class Executable:
         if not parsed:
             validated = False
             validate_exc = None
+            exec_key = None
             exec_key_parsed = False
             exec_key_parse_exc = None
         else:
