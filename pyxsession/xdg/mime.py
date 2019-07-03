@@ -8,6 +8,10 @@ from xdg.Mime import MIMEtype, get_type2 as get_type
 
 from pyxsession.util.decorators import dictable, representable
 
+# By far the most complete information on how this works can be found via
+# this arch wiki link:
+#
+# https://wiki.archlinux.org/index.php/XDG_MIME_Applications
 
 XDG_MIMEAPPS_DIRS = xdg_config_dirs + [
     '/usr/local/share/applications',
