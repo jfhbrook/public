@@ -1,5 +1,8 @@
 import re
+
 from gshell import g_shell_parse_argv
+
+from pyxsession.util.decorators import dictable, representable
 
 
 FIELD_CODE_RE = '(?<!%)(%\S)'
@@ -17,11 +20,13 @@ def expand_field_codes(raw, fields):
 
 def get_field_codes(raw):
     return {
-        match.group(0)[1:]
+        match[1:]
         for match in re.findall(FIELD_CODE_RE, raw)
     }
 
 
+@representable
+@dictable(['raw'])
 class ExecKey:
     def __init__(self, raw):
         self.raw = raw
@@ -51,18 +56,19 @@ class ExecKey:
         return self._is_valid
 
     def expected_fields(self):
-        return {
-            code
-            for arg in g_shell_parse_argv(self.raw)
-            for code in get_field_codes(arg)
-        }
+        print(self.raw)
+        return set(get_field_codes(self.raw))
 
     def build_argv(self, fields=None):
+        flattened_fields = {
+            field: ' '.join(values)
+            for field, values in fields.items()
+        }
+
         return [
-            expanded_field
-            for expanded_field in (
-                expand_field_codes(arg, fields)
-                for arg in g_shell_parse_argv(self.raw)
+            arg
+            for arg in g_shell_parse_argv(
+                expand_field_codes(self.raw, flattened_fields)
             )
-            if expanded_field != ''
+            if arg != ''
         ]

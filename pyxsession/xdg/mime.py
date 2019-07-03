@@ -32,9 +32,10 @@ def xdg_mimeapps_files(environment=None):
 def _get_group(ini_file, group):
     if not ini_file:
         return dict()
+
     return {
-        MIMEtype(mine_type): [app for app in apps.split(';') if app]
-        for mine_type, apps in ini_file.content.get(group, dict()).items()
+        MIMEtype(mime_type): [app for app in apps.split(';') if app]
+        for mime_type, apps in ini_file.content.get(group, dict()).items()
     }
 
 
@@ -47,13 +48,13 @@ class MimeAppsList:
     parse_exc = attr.ib()
 
     def get_added_associations(self):
-        return _get_group(self, 'Added Associations')
+        return _get_group(self.ini_file, 'Added Associations')
 
     def get_removed_associations(self):
-        return _get_group(self, 'Removed Associations')
+        return _get_group(self.ini_file, 'Removed Associations')
 
     def get_default_applications(self):
-        return _get_group(self, 'Default Applications')
+        return _get_group(self.ini_file, 'Default Applications')
 
 
 def load_xdg_mime_lists(environment=None):
@@ -182,7 +183,9 @@ class MimeDatabase:
                             ]
 
                 default_applications = mime_list.get_default_applications()
-                for mimetype, apps in default_applications:
+
+
+                for mimetype, apps in default_applications.items():
                     _insert(mimetype, apps, self.lookup)
 
                     # Current assumption is that an override should override

@@ -45,6 +45,7 @@ class Executor:
         cwd=None
     ):
         argv = executable.exec_key.build_argv(exec_key_fields)
+
         if not monitor:
             spawn_detached(argv, env=env, cwd=cwd)
         else:
@@ -59,6 +60,14 @@ class Executor:
                 cleanup=cleanup,
                 **monitor_params
             )
+
+    def run_xdg_application(
+        self,
+        app,
+        **kwargs
+    ):
+        # TODO: Handle error states for the app like bad parses
+        self.run_xdg_executable(app.executable, **kwargs)
 
 
 class ExecutorPool(defaultdict):

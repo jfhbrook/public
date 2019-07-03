@@ -15,7 +15,8 @@ setup(
     entry_points=dict(
         console_scripts=[
             'pyxsession-config=pyxsession.cli.config:main',
-            'pyxmenu=pyxsession.cli.menu:main'
+            'pyxmenu=pyxsession.cli.menu:main',
+            'pyxopen=pyxsession.cli.open:main'
         ]
     ),
     keywords=[
