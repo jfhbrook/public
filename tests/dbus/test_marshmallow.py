@@ -63,8 +63,12 @@ basic_test_signature = 'ius(s)a(s)(is)'
 basic_test_dump = [3, 5, 'foo', ['bar'], ['baz', 'quux'], (7, 'moo')]
 
 
-def test_base_schema():
-    basic_schema = BasicTestSchema()
-    assert basic_schema.dump(basic_test_obj) == basic_test_dump
-    assert basic_schema.load(basic_test_dump) == basic_test_obj
-    assert schema_signature(basic_schema) == basic_test_signature
+@pytest.mark.parametrize('schema', [
+    BasicTestSchema(),
+    from_attrs(BasicTestObj)
+])
+def test_base_schema(schema):
+    from_attrs(BasicTestObj)
+    assert schema.dump(basic_test_obj) == basic_test_dump
+    assert schema.load(basic_test_dump) == basic_test_obj
+    assert schema_signature(schema) == basic_test_signature

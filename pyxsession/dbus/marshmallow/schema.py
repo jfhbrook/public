@@ -13,7 +13,7 @@ class DBusSchema(Schema, metaclass=SchemaMeta):
         ordered = True
       
     @post_dump
-    def _flatten_attrs_dicts(self, unstructured, many):
+    def _flatten_attrs_dicts(self, unstructured, many, **kwargs):
         if many:
             return [self._flatten_attrs_dicts(self, u) for u in unstructured]
 
@@ -101,9 +101,17 @@ def from_attrs(attrs_cls):
         cls = attrs_cls
 
     for attr in attrs_cls.__attrs_attrs__:
-        setattr(GeneratedSchemaClass, attr.name, attr.metadata[DBUS_SCHEMA])
+        if DBUS_FIELD in attr.metadata:
+            setattr(
+                GeneratedSchemaClass, attr.name, attr.metadata[DBUS_FIELD]
+            )
+        elif DBUS_NESTED in attr.metadata:
+            setattr(
+                GeneratedSchemaClass,
+                attr.name,
+                from_attrs(attr.metadata[DBUS_NESTED])
+            )
 
     GeneratedSchemaClass.__name__ = f'{attrs_cls.__name__}Schema'
-
 
     return GeneratedSchemaClass()
