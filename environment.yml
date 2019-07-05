@@ -11,7 +11,7 @@ dependencies:
   - twisted=18.9.0
   - pip:
     - cattrs==0.9.0
-    - gshell.py==0.0.3
+    - gshell.py==0.0.4
     - marshmallow==3.0.0rc7
     - pyee==6.0.0
     - pyxdg==0.26
