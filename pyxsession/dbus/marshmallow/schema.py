@@ -53,22 +53,22 @@ DBUS_NESTED = Symbol(
 
 
 @attr.s
-class SingletonClass:
+class WrappedField:
     wrapped_field = attr.ib()
 
 
-class SingletonSchema(Schema, metaclass=SchemaMeta):
+class WrappedFieldSchema(Schema, metaclass=SchemaMeta):
     class Meta:
         ordered=True
 
     @pre_dump
-    def _wrap_field(self, structured, many):
+    def _wrap_field(self, structured, many, **kwargs):
         if many:
             return [self.cls(s) for s in structured]
         return self.cls(structured)
 
     @post_dump
-    def _flatten_dict(self, unstructured, many):
+    def _flatten_dict(self, unstructured, many, **kwargs):
         if many:
             return [self._extract_field(u) for u in unstructured]
         return unstructured['wrapped_field']
@@ -84,12 +84,12 @@ class SingletonSchema(Schema, metaclass=SchemaMeta):
     def _extract_field(self, structured, many, **kwargs):
         if many:
             return [self._extract_field(s) for s in structured]
-        return structured.wrapped_field
+        return structured['wrapped_field']
 
 
 def from_field(field):
-    class FieldSchemaClass(SingletonSchema, metaclass=SchemaMeta):
-        cls = SingletonClass
+    class FieldSchemaClass(WrappedFieldSchema, metaclass=SchemaMeta):
+        cls = WrappedField
         wrapped_field = field
 
     FieldSchemaClass.__name__ = f'{field.__class__.__name__}Schema'

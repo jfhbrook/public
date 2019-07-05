@@ -8,7 +8,7 @@ from pyxsession.dbus.marshmallow.fields import (
 from pyxsession.dbus.marshmallow.schema import (
     DBusSchema, DBUS_FIELD, DBUS_NESTED,
     from_attrs, from_field,
-    SingletonClass, SingletonSchema
+    WrappedField, WrappedFieldSchema
 )
 from pyxsession.dbus.marshmallow.signature import (
     field_signature, schema_signature
@@ -68,7 +68,28 @@ basic_test_dump = [3, 5, 'foo', ['bar'], ['baz', 'quux'], (7, 'moo')]
     from_attrs(BasicTestObj)
 ])
 def test_base_schema(schema):
-    from_attrs(BasicTestObj)
     assert schema.dump(basic_test_obj) == basic_test_dump
     assert schema.load(basic_test_dump) == basic_test_obj
     assert schema_signature(schema) == basic_test_signature
+
+
+wrapped_field = 'hello'
+wrapped_field_signature = 's'
+
+
+class WrappedFieldTestSchema(WrappedFieldSchema):
+    cls = WrappedField
+    wrapped_field = Str()
+
+
+wrapped_field_schema = WrappedFieldTestSchema()
+
+
+@pytest.mark.parametrize('schema', [
+    wrapped_field_schema,
+    from_field(Str())
+])
+def test_singleton_schema(schema):
+    assert schema.dump(wrapped_field) == wrapped_field
+    assert schema.load(wrapped_field) == wrapped_field
+    assert schema_signature(schema) == 's'
