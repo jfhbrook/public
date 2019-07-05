@@ -4,6 +4,7 @@ from functools import wraps
 import click
 import xdg.Menu
 
+from pyxsession.cli.base import async_command
 from pyxsession.cli.urwid import urwid_command
 from pyxsession.cli.urwid.menu import menu_session
 from pyxsession.config import load_config
@@ -11,7 +12,7 @@ from pyxsession.executor import default_executor
 
 
 @click.command()
-@urwid_command
+@async_command
 async def main(reactor):
     config = load_config()
 
@@ -19,8 +20,6 @@ async def main(reactor):
 
     session = menu_session(xdg_menu)
 
-    yield session
-
-    desktop_entry = await session.done
+    desktop_entry = await session.run()
 
     default_executor.run_xdg_desktop_entry(desktop_entry)

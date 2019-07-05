@@ -2,11 +2,11 @@ from contextlib import contextmanager
 from functools import wraps
 
 import attr
+from twisted.internet import reactor as reactor_
 from twisted.internet.defer import Deferred, ensureDeferred
 from twisted.internet.task import react
 import urwid
 
-from pyxsession.twisted.util import as_deferred
 from pyxsession.cli.base import async_command
 
 
@@ -17,24 +17,11 @@ def on_q(run):
             run()
 
 
-_bail = Deferred()
-
-
-@_bail.addErrback
-def _sad(exc=None):
-    print(exc)
-    sys.exit(1)
-
-
-@_bail.addCallback
-def _happy(result=None):
-    sys.exit(0)
-
-
 @attr.s
 class Session:
+    reactor = attr.ib(default=reactor_)
     widget = attr.ib(default=None)
-    done = attr.ib(default=_bail)
+    done = attr.ib(default=attr.Factory(Deferred))
     unhandled_input = attr.ib(default=None)
     loop_kwarg = attr.ib(default=dict())
 
@@ -63,48 +50,28 @@ class Session:
         except Exception as exc:
             self.fail(exc)
 
+    async def run(self):
+        loop_kwarg = dict(**self.loop_kwarg)
 
-def urwid_command(cmd):
-    @wraps(cmd)
-    @async_command
-    async def wrapped(reactor, *arg, **kwarg):
-        waiting = Deferred()
+        if self.unhandled_input:
+            loop_kwarg[
+                'unhandled_input'
+            ] = self.unhandled_input(
+                lambda: self.done.callback(None)
+            )
 
-        agen = cmd(reactor, *arg, **kwarg)
+            loop = urwid.MainLoop(
+                self.widget,
+                event_loop=urwid.TwistedEventLoop(
+                    reactor=self.reactor,
+                    manage_reactor=False
+                ),
+                **loop_kwarg
+            )
 
-        try:
-            while True:
-                session = await agen.__anext__()
+            loop.start()
 
-                session.done = waiting
-
-                loop_kwarg = dict(**session.loop_kwarg)
-
-                if session.unhandled_input:
-                    loop_kwarg[
-                        'unhandled_input'
-                    ] = session.unhandled_input(
-                        lambda: session.done.callback(None)
-                    )
-
-                loop = urwid.MainLoop(
-                    session.widget,
-                    event_loop=urwid.TwistedEventLoop(
-                        reactor=reactor,
-                        manage_reactor=False
-                    ),
-                    **loop_kwarg
-                )
-
-                loop.start()
-
-                try:
-                    await waiting
-                finally:
-                    loop.stop()
-                    waiting = Deferred()
-
-        except StopAsyncIteration:
-            pass
-
-    return wrapped
+            try:
+                return await self.done
+            finally:
+                loop.stop()
