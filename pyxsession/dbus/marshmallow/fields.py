@@ -2,7 +2,7 @@ from marshmallow import fields
 
 __all__ = [
     'DBusField', 'Int32', 'UInt32', 'Str', 'Nested', 'List', 'Tuple',
-    'BASE_FIELDS', 'STRUCTURED_FIELDS'
+    'Variant', 'BASE_FIELDS'
 ]
 
 
@@ -11,6 +11,10 @@ class DBusField(fields.Field):
         super().__init__()
         self.dbus_type = dbus_type
         self.dbus_type_params = dbus_type_params
+
+
+class Variant(fields.Field):
+    pass
 
   
 class Int32(fields.Integer):
@@ -32,11 +36,6 @@ Tuple = fields.Tuple
 BASE_FIELDS = {
     Int32: 'i',
     UInt32: 'u',
-    Str: 's'
-}
-
-STRUCTURED_FIELDS = {
-    Nested: ('(', ')', lambda field: field.nested),
-    List: ('a(', ')', lambda fields: field.schema),
-    Tuple: ('(', ')', lambda fields: field.tuple_fields)
+    Str: 's',
+    Variant: 'v'
 }

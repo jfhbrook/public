@@ -1,7 +1,6 @@
 from pyxsession.dbus.marshmallow.fields import (
-    STRUCTURED_FIELDS,
     BASE_FIELDS,
-    DBusField
+    List, Tuple, Nested, DBusField, Variant
 )
 
 STRUCTURE_TYPES = {
@@ -17,16 +16,21 @@ def SignatureError(Exception):
 def field_signature(field):
     sig = ''
 
-    if type(field) in STRUCTURED_FIELDS:
-        left, right, accessor = STRUCTURED_FIELDS[field]
-        sig += left
-        accessed = accessor(field)
-        if type(accessed) == list or type(accessed) == tuple:
-            for f in accessed:
-                sig += schema_signature(f)
-        else:
-            sig += schema_signature(accessor(field))
-        sig += right
+    if type(field) == List:
+        sig += 'a('
+        inner = field.container
+        sig += field_signature(inner)
+        sig += ')'
+    elif type(field) == Tuple:
+        sig += '('
+        for f in field.tuple_fields:
+            sig += field_signature(f)
+        sig += ')'
+    elif type(field) == Nested:
+        sig += '('
+        inner = field.schema
+        sig += schema_signature(inner)
+        sig += ')'
     elif type(field) in BASE_FIELDS:
         sig += BASE_FIELDS[type(field)]
     elif type(field) == DBusField:

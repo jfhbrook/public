@@ -1,7 +1,7 @@
 from marshmallow.fields import Field
 
 from pyxsession.dbus.marshmallow.schema import from_field, from_attrs
-from pyxsession.dbus.signature import schema_signature
+from pyxsession.dbus.marshmallow.signature import schema_signature
 
 
 class Transformer:

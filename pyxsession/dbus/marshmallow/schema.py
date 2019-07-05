@@ -43,7 +43,12 @@ class DBusSchema(Schema, metaclass=SchemaMeta):
         return self.cls(**unstructured)
 
 
-DBUS_SCHEMA = Symbol('attrs metadata for generating a dbus schema')
+DBUS_FIELD = Symbol(
+    'attrs metadata for generating a dbus schema from a field'
+)
+DBUS_NESTED = Symbol(
+    'attrs metadata for generating a dbus schema from nested attrs class'
+)
 
 
 @attr.s
