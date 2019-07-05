@@ -43,7 +43,7 @@ def field_signature(field):
     return sig
 
 
-def signature(schema):
+def schema_signature(schema):
     sig = ''
     for name, field in schema.fields.items():
         sig += field_signature(field)
