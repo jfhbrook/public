@@ -5,6 +5,7 @@ from marshmallow.schema import SchemaMeta
 from marshmallow.decorators import pre_dump, post_dump, pre_load, post_load
 from txdbus import client
 
+from pyxsession.dbus.marshmallow.fields import Nested
 from pyxsession.util import Symbol
 
 
@@ -87,31 +88,39 @@ class SingletonSchema(Schema, metaclass=SchemaMeta):
 
 
 def from_field(field):
-    class GeneratedSchemaClass(SingletonSchema, metaclass=SchemaMeta):
+    class FieldSchemaClass(SingletonSchema, metaclass=SchemaMeta):
         cls = SingletonClass
         wrapped_field = field
 
-    GeneratedSchemaClass.__name__ = f'{field.__class__.__name__}Schema'
+    FieldSchemaClass.__name__ = f'{field.__class__.__name__}Schema'
 
-    return GeneratedSchemaClass()
+    return FieldSchemaClass()
+
 
 
 def from_attrs(attrs_cls):
-    class GeneratedSchemaClass(DBusSchema, metaclass=SchemaMeta):
+    class AttrsSchemaMeta(SchemaMeta):
+        @classmethod
+        def get_declared_fields(
+            mcls, klass, cls_fields, inherited_fields, dict_cls
+        ):
+            fields = super().get_declared_fields(
+                klass, cls_fields, inherited_fields, dict_cls
+            )
+
+            for attr in attrs_cls.__attrs_attrs__:
+                if DBUS_FIELD in attr.metadata:
+                    fields[attr.name] = attr.metadata[DBUS_FIELD]
+                elif DBUS_NESTED in attr.metadata:
+                    fields[attr.name] = Nested(
+                        from_attrs(attr.metadata[DBUS_NESTED])
+                    )
+
+            return fields
+
+    class AttrsSchemaClass(DBusSchema, metaclass=AttrsSchemaMeta):
         cls = attrs_cls
 
-    for attr in attrs_cls.__attrs_attrs__:
-        if DBUS_FIELD in attr.metadata:
-            setattr(
-                GeneratedSchemaClass, attr.name, attr.metadata[DBUS_FIELD]
-            )
-        elif DBUS_NESTED in attr.metadata:
-            setattr(
-                GeneratedSchemaClass,
-                attr.name,
-                from_attrs(attr.metadata[DBUS_NESTED])
-            )
+    AttrsSchemaClass.__name__ = f'{attrs_cls.__name__}Schema'
 
-    GeneratedSchemaClass.__name__ = f'{attrs_cls.__name__}Schema'
-
-    return GeneratedSchemaClass()
+    return AttrsSchemaClass()
