@@ -11,7 +11,7 @@ from pyxsession.dbus.marshmallow.schema import (
     WrappedField, WrappedFieldSchema
 )
 from pyxsession.dbus.marshmallow.signature import (
-    field_signature, schema_signature
+    schema_signature
 )
 
 
@@ -58,7 +58,7 @@ basic_test_obj = BasicTestObj(
 )
 
 
-basic_test_signature = 'ius(s)a(s)(is)'
+basic_test_signature = '(ius(s)a(s)(is))'
 
 basic_test_dump = [3, 5, 'foo', ['bar'], ['baz', 'quux'], (7, 'moo')]
 

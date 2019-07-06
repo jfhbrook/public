@@ -27,10 +27,8 @@ def field_signature(field):
             sig += field_signature(f)
         sig += ')'
     elif type(field) == Nested:
-        sig += '('
         inner = field.schema
         sig += schema_signature(inner)
-        sig += ')'
     elif type(field) in BASE_FIELDS:
         sig += BASE_FIELDS[type(field)]
     elif type(field) == DBusField:
@@ -48,6 +46,9 @@ def field_signature(field):
 
 
 def schema_signature(schema):
+    if 'wrapped_field' in schema.fields:
+        return field_signature(schema.fields['wrapped_field'])
+
     sig = '('
     for name, field in schema.fields.items():
         sig += field_signature(field)

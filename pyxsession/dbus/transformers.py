@@ -12,8 +12,6 @@ class Transformer:
             self.schema = from_attrs(type_)
           
     def signature(self):
-        if 'wrapped_field' in self.schema.fields:
-            return field_signature(self.schema.fields['wrapped_field'])
         return schema_signature(self.schema)
         
     def dump(self, structured):
