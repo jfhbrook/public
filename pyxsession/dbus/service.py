@@ -1,5 +1,7 @@
+from asyncio import iscoroutine
 import functools
 
+from twisted.internet.defer import Deferred
 from txdbus.objects import DBusObject
 from txdbus.interface import DBusInterface, Method, Property, Signal
 
@@ -21,16 +23,13 @@ class Service:
             args_xform = MultiTransformer(arguments)
             returns_xform = Transformer(returns)
             
-            @functools.wraps(fn)
-            def method_proxy(*raw_args):
-                return returns_xform.load(fn(*argx_xform.dump(raw_args)))
-          
             self.methods[fn.__name__] = (
                 args_xform,
                 returns_xform,
-                fn
+                fn 
             )
             return fn
+
         return register_method  
       
     @property
@@ -41,7 +40,7 @@ class Service:
             iface_methods = dict()
             for method_name, (
                 args_xform, returns_xform, fn
-            ) in self.methods.items():    
+            ) in self.methods.items():
                 iface_methods[method_name] = Method(
                     method_name,
                     arguments=args_xform.signature(),
@@ -58,7 +57,7 @@ class Service:
     async def server(self, connection):
         methods = {
             method_name: fn
-            for method_name, (args_sig, returns_sig, fn)
+            for method_name, (args_xform, returns_xform, fn)
             in self.methods.items()
         }
         
@@ -66,12 +65,27 @@ class Service:
             iface=self.iface,
             dbusInterfaces=[self.iface]
         )
-        
-        for name, fn in methods.items():
-            attrs[f'dbus_{name}'] = returns_deferred(fn)
+
+       
+        for name, (args_xform, returns_xform, fn) in self.methods.items():
+            @returns_deferred
+            async def proxy_fn(remote_object, *args):
+                xformed_args = args_xform.load(args)
+                maybe_coro = fn(*xformed_args)
+
+                if iscoroutine(maybe_coro) or isinstance(maybe_coro, Deferred):
+                    ret = await maybe_coro
+                else:
+                    ret = maybe_coro
+                raw_ret = returns_xform.dump(ret)
+                return raw_ret
+                return returns_xform.dump(await fn(*args_xform.load(args)))
+
+            attrs[f'dbus_{name}'] = proxy_fn
+            proxy_fn.__name__ = f'dbus_{name}'
       
         cls = type(self.name, (DBusObject,), attrs)
-        
+
         connection.exportObject(cls(self.object_path))
         
         return await connection.requestBusName(self.namespace)

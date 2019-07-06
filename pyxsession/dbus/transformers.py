@@ -1,24 +1,26 @@
 from marshmallow.fields import Field
 
 from pyxsession.dbus.marshmallow.schema import from_field, from_attrs
-from pyxsession.dbus.marshmallow.signature import schema_signature
+from pyxsession.dbus.marshmallow.signature import field_signature, schema_signature
 
 
 class Transformer:
     def __init__(self, type_):
-       if isinstance(type_, Field):
-           self.schema = from_field(type_)
-       else:
-           self.schema = from_attrs(type_)
+        if isinstance(type_, Field):
+            self.schema = from_field(type_)
+        else:
+            self.schema = from_attrs(type_)
           
     def signature(self):
+        if 'wrapped_field' in self.schema.fields:
+            return field_signature(self.schema.fields['wrapped_field'])
         return schema_signature(self.schema)
         
     def dump(self, structured):
-       return self.schema.dump(structured)
+        return self.schema.dump(structured)
       
     def load(self, unstructured):
-       return self.schema.load(unstructured)
+        return self.schema.load(unstructured)
 
       
 class MultiTransformer(Transformer):

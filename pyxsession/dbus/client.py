@@ -3,10 +3,12 @@ class Client:
         self.service = service
         self.remote_obj = remote_obj
         
-    def call(self, method_name, *args):
-        args_xform, returns_xform, fn = self.service.methods[method_name]
+    async def call(self, method_name, *args):
+        args_xform, returns_xform, _ = self.service.methods[method_name]
         xformed_args = args_xform.dump(args)
+        rv = await self.remote_obj.callRemote(method_name, *xformed_args)
+        return returns_xform.dump(rv)
 
-        raw_ret = self.remote_obj.callRemote(method_name, xformed_args)
-
-        return returns_xform.load(raw_ret)
+        return returns_xform.load(
+            self.remote_obj.callRemote(method_name, *args_xform.dump(args))
+        )

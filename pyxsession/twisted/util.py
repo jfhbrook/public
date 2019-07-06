@@ -13,5 +13,7 @@ def sleep(n, reactor=None):
 
 def returns_deferred(coro_fn):
     @wraps(coro_fn)
-    def returns_deferred(*args, **kwargs):
+    def wrapper(*args, **kwargs):
         return ensureDeferred(coro_fn(*args, **kwargs))
+
+    return wrapper

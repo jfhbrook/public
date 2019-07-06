@@ -97,7 +97,6 @@ def from_field(field):
     return FieldSchemaClass()
 
 
-
 def from_attrs(attrs_cls):
     class AttrsSchemaMeta(SchemaMeta):
         @classmethod
