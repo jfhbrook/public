@@ -8,17 +8,19 @@ from txdbus.interface import DBusInterface, Method, Property, Signal
 from pyxsession.dbus.client import Client
 from pyxsession.dbus.server import Server
 from pyxsession.dbus.transformers import MultiTransformer, Transformer
+from pyxsession.dbus.path import basename
 from pyxsession.twisted.util import returns_deferred
 
 
-class Service:
-    def __init__(self, name, namespace, interface_name):
-        self.name = name
-        self.namespace = namespace
-        self.interface_name = interface_name
-        self.object_path = f'/{self.name}'
+class Object:
+    def __init__(self, service, obj_path, iface_name=None):
+        if not iface_name:
+            iface_name = f'{basename(obj_path)}Iface'
+        self.service = service
+        self.obj_path = obj_path
+        self.iface_name = iface_name
         self.methods = dict()
-        
+
     def method(self, arguments, returns):
         def register_method(fn):
             args_xform = MultiTransformer(arguments)
@@ -49,17 +51,25 @@ class Service:
                 )
 
             iface = DBusInterface(
-                f'{self.namespace}.{self.interface_name}',
+                f'{self.service.namespace}.{self.iface_name}',
                 *iface_methods.values()
             )
             self._iface = iface
         return iface
-      
+ 
+
+class Service:
+    def __init__(self, namespace):
+        self.namespace = namespace
+        self.objects = dict()
+
+    def obj(self, obj_path, iface_name=None):
+        obj = Object(self, obj_path, iface_name)
+        self.objects[obj_path] = obj
+        return obj
+     
     async def server(self, connection):
         return await Server.create(connection, self)
       
     async def client(self, connection):
-        remote_obj = await connection.getRemoteObject(
-            self.namespace, self.object_path, self.iface
-        )
-        return Client(self, remote_obj)
+        return await Client.create(connection, self)
