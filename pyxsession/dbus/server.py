@@ -35,7 +35,6 @@ class Server:
 
         dbus_objs = dict()
         objects = dict()
-        bus_names = []
 
         for obj_path, service_obj in service.objects.items():
             path_parts = path.split(obj_path)
@@ -92,12 +91,12 @@ class Server:
 
             connection.exportObject(dbus_obj)
         
-            bus_names.append(await connection.requestBusName(service.namespace))
+            bus_name = await connection.requestBusName(service.namespace)
 
         server = server_cls(
             connection,
             service,
-            bus_names,
+            bus_name,
             dbus_obj_cls,
             dbus_obj
         )
