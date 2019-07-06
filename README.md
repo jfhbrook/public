@@ -25,7 +25,7 @@
 - [x] make urwid stuff actually work
 - [x] POC launcher for default applications
 - [x] write dbus marshalling framework
-- [ ] now make it support properties and events/signals
+- [x] now make it support properties and events/signals
 - [ ] Make default apps launcher actually good
 - [ ] write tooling for editing local desktop entries and mime/defaults data
 - [ ] create a dbus service for executing and monitoring programs with queries for state and soft exit
