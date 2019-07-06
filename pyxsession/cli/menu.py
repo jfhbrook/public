@@ -5,7 +5,6 @@ import click
 import xdg.Menu
 
 from pyxsession.cli.base import async_command
-from pyxsession.cli.urwid import urwid_command
 from pyxsession.cli.urwid.menu import menu_session
 from pyxsession.config import load_config
 from pyxsession.executor import default_executor

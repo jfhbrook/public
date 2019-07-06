@@ -51,27 +51,18 @@ class Session:
             self.fail(exc)
 
     async def run(self):
-        loop_kwarg = dict(**self.loop_kwarg)
+        loop = urwid.MainLoop(
+            self.widget,
+            event_loop=urwid.TwistedEventLoop(
+                reactor=self.reactor,
+                manage_reactor=False
+            ),
+            **self.loop_kwarg
+        )
 
-        if self.unhandled_input:
-            loop_kwarg[
-                'unhandled_input'
-            ] = self.unhandled_input(
-                lambda: self.done.callback(None)
-            )
+        loop.start()
 
-            loop = urwid.MainLoop(
-                self.widget,
-                event_loop=urwid.TwistedEventLoop(
-                    reactor=self.reactor,
-                    manage_reactor=False
-                ),
-                **loop_kwarg
-            )
-
-            loop.start()
-
-            try:
-                return await self.done
-            finally:
-                loop.stop()
+        try:
+            return await self.done
+        finally:
+            loop.stop()

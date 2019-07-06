@@ -87,6 +87,6 @@ def menu_session(xdg_menu):
     # TODO: It would be cool if there was an API that made it more obvious
     # that we were "finalizing" the session
     session.widget = list_box
-    session.unhandled_input = on_q
+    session.loop_kwarg['unhandled_input'] = on_q(session.succeed)
 
     return session
