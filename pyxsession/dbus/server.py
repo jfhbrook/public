@@ -3,7 +3,7 @@ import functools
 
 import attr
 from twisted.internet.defer import Deferred
-from txdbus.objects import DBusObject, dbusMethod
+from txdbus.objects import DBusObject, DBusProperty
 from txdbus.interface import DBusInterface, Method, Property, Signal
 
 from pyxsession.dbus.client import Client
@@ -32,8 +32,6 @@ class Server:
     @classmethod
     async def create(server_cls, connection, service):
         attrs = dict()
-
-        dbus_objs = dict()
         objects = dict()
 
         for obj_path, service_obj in service.objects.items():
@@ -62,11 +60,7 @@ class Server:
             attrs['iface'] = iface
             attrs['dbusInterfaces'] = [iface]
 
-            # Add the dbus method callbacks
-            for (
-                method_name,
-                (args_xform, returns_xform, fn)
-            ) in service_obj.methods.items():
+            def bind(args_xform, returns_xform, fn):
                 @returns_deferred
                 async def proxy_fn(remote_object, *args):
                     xformed_args = args_xform.load(args)
@@ -78,14 +72,39 @@ class Server:
                         ret = maybe_coro
                     return returns_xform.dump(ret)
 
+                return proxy_fn
+
+
+            # Add the dbus method callbacks
+            for (
+                method_name,
+                (args_xform, returns_xform, fn)
+            ) in service_obj.methods.items():
+
                 key = f'dbus_{method_name}'
 
+                proxy_fn = bind(args_xform, returns_xform, fn)
                 attrs[key] = proxy_fn
                 proxy_fn.__name__ = key
 
-            dbus_obj_cls = type(path.basename(obj_path), (DBusObject,), attrs)
+            defaults = dict()
+
+            # Add dbus properties
+            for (
+                prop_name, (xform, default, kwarg)
+            ) in service_obj.properties.items():
+                attrs[prop_name] = DBusProperty(prop_name)
+                defaults[prop_name] = default
+
+            dbus_obj_cls = type(
+                path.basename(obj_path),
+                (DBusObject,),
+                attrs
+            )
             dbus_obj = dbus_obj_cls(obj_path)
-            dbus_objs[obj_path] = dbus_obj
+
+            for attr_name, default in defaults.items():
+                setattr(dbus_obj, attr_name, default)
 
             obj.dbus_obj = dbus_obj
 

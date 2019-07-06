@@ -12,6 +12,8 @@ from pyxsession.dbus.path import basename
 from pyxsession.twisted.util import returns_deferred
 
 
+property_ = property
+
 class Object:
     def __init__(self, service, obj_path, iface_name=None):
         if not iface_name:
@@ -20,6 +22,7 @@ class Object:
         self.obj_path = obj_path
         self.iface_name = iface_name
         self.methods = dict()
+        self.properties = dict()
 
     def method(self, arguments, returns):
         def register_method(fn):
@@ -33,26 +36,35 @@ class Object:
             )
             return fn
 
-        return register_method  
+        return register_method
+
+    def property(self, name, type_, default, **kwargs):
+        self.properties[name] = (Transformer(type_), default, kwargs)
       
-    @property
+    @property_
     def iface(self):
         if hasattr(self, '_iface'):
             iface = self._iface
         else:
-            iface_methods = dict()
+            iface_methods = []
             for method_name, (
                 args_xform, returns_xform, fn
             ) in self.methods.items():
-                iface_methods[method_name] = Method(
+                iface_methods.append(Method(
                     method_name,
                     arguments=args_xform.signature(),
                     returns=returns_xform.signature()
+                ))
+
+            iface_properties = []
+            for prop_name, (xform, default, kwargs) in self.properties.items():
+                iface_properties.append(
+                    Property(prop_name, xform.signature(), **kwargs)
                 )
 
             iface = DBusInterface(
                 f'{self.service.namespace}.{self.iface_name}',
-                *iface_methods.values()
+                *(iface_methods + iface_properties)
             )
             self._iface = iface
         return iface
