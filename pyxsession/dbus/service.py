@@ -6,6 +6,7 @@ from txdbus.objects import DBusObject
 from txdbus.interface import DBusInterface, Method, Property, Signal
 
 from pyxsession.dbus.client import Client
+from pyxsession.dbus.server import Server
 from pyxsession.dbus.transformers import MultiTransformer, Transformer
 from pyxsession.twisted.util import returns_deferred
 
@@ -55,40 +56,7 @@ class Service:
         return iface
       
     async def server(self, connection):
-        methods = {
-            method_name: fn
-            for method_name, (args_xform, returns_xform, fn)
-            in self.methods.items()
-        }
-        
-        attrs = dict(
-            iface=self.iface,
-            dbusInterfaces=[self.iface]
-        )
-
-       
-        for name, (args_xform, returns_xform, fn) in self.methods.items():
-            @returns_deferred
-            async def proxy_fn(remote_object, *args):
-                xformed_args = args_xform.load(args)
-                maybe_coro = fn(*xformed_args)
-
-                if iscoroutine(maybe_coro) or isinstance(maybe_coro, Deferred):
-                    ret = await maybe_coro
-                else:
-                    ret = maybe_coro
-                raw_ret = returns_xform.dump(ret)
-                return raw_ret
-                return returns_xform.dump(await fn(*args_xform.load(args)))
-
-            attrs[f'dbus_{name}'] = proxy_fn
-            proxy_fn.__name__ = f'dbus_{name}'
-      
-        cls = type(self.name, (DBusObject,), attrs)
-
-        connection.exportObject(cls(self.object_path))
-        
-        return await connection.requestBusName(self.namespace)
+        return await Server.create(connection, self)
       
     async def client(self, connection):
         remote_obj = await connection.getRemoteObject(
