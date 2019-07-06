@@ -1,6 +1,7 @@
 from asyncio import iscoroutine
 import functools
 
+from pyee import TwistedEventEmitter as EventEmitter
 from twisted.internet.defer import Deferred
 from txdbus.objects import DBusObject
 from txdbus.interface import DBusInterface, Method, Property, Signal
@@ -11,8 +12,8 @@ from pyxsession.dbus.transformers import MultiTransformer, Transformer
 from pyxsession.dbus.path import basename
 from pyxsession.twisted.util import returns_deferred
 
-
 property_ = property
+
 
 class Object:
     def __init__(self, service, obj_path, iface_name=None):
@@ -23,6 +24,7 @@ class Object:
         self.iface_name = iface_name
         self.methods = dict()
         self.properties = dict()
+        self.signals = dict()
 
     def method(self, arguments, returns):
         def register_method(fn):
@@ -38,9 +40,13 @@ class Object:
 
         return register_method
 
+    def signal(self, name, type_):
+        xform = Transformer(type_)
+        self.signals[name] = xform
+
     def property(self, name, type_, default, **kwargs):
         self.properties[name] = (Transformer(type_), default, kwargs)
-      
+
     @property_
     def iface(self):
         if hasattr(self, '_iface'):
@@ -62,9 +68,15 @@ class Object:
                     Property(prop_name, xform.signature(), **kwargs)
                 )
 
+            iface_signals = []
+            for signal_name, xform in self.signals.items():
+                iface_signals.append(
+                    Signal(signal_name, xform.signature())
+                )
+
             iface = DBusInterface(
                 f'{self.service.namespace}.{self.iface_name}',
-                *(iface_methods + iface_properties)
+                *(iface_methods + iface_properties + iface_signals)
             )
             self._iface = iface
         return iface

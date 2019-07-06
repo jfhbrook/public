@@ -2,6 +2,7 @@ from asyncio import iscoroutine
 import functools
 
 import attr
+from pyee import TwistedEventEmitter as EventEmitter
 from twisted.internet.defer import Deferred
 from txdbus.objects import DBusObject, DBusProperty
 from txdbus.interface import DBusInterface, Method, Property, Signal
@@ -17,8 +18,25 @@ class Node:
     pass
 
 
-class Object:
-    pass
+class Object(EventEmitter):
+    def __init__(self, service_obj, dbus_obj=None):
+        super().__init__()
+        self.service_obj = service_obj
+        self.dbus_obj = dbus_obj
+
+    def emit(self, name, data):
+        if name not in self.service_obj.signals:
+            return
+
+        xform = self.service_obj.signals[name]
+        self.dbus_obj.emitSignal(name, xform.dump(data))
+
+        super().emit(self, name, data)
+
+    def on(self, *args, **kwargs):
+        raise NotImplementedError(
+            'Signals can only be emitted by the server, not received'
+        )
 
 
 @attr.s
@@ -42,7 +60,7 @@ class Server:
             except IndexError:
                 last_part = None
 
-            obj = Object()
+            obj = Object(service_obj)
 
             # Attach our object ot the server cls
             if last_part:
@@ -73,7 +91,6 @@ class Server:
                     return returns_xform.dump(ret)
 
                 return proxy_fn
-
 
             # Add the dbus method callbacks
             for (

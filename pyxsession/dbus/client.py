@@ -1,5 +1,5 @@
 import attr
-
+from pyee import TwistedEventEmitter as EventEmitter
 from pyxsession.dbus.path import split
 
 
@@ -7,10 +7,12 @@ class Node:
     pass
 
 
-@attr.s
-class Object:
-    remote_obj = attr.ib()
-    service_obj = attr.ib()
+class Object(EventEmitter):
+    def __init__(self, remote_obj, service_obj):
+        super().__init__()
+        self._emit = self.emit
+        self.remote_obj = remote_obj
+        self.service_obj = service_obj
 
     async def call(self, method_name, *args):
         args_xform, returns_xform, _ = self.service_obj.methods[method_name]
@@ -53,6 +55,7 @@ class Client:
             remote_obj = await connection.getRemoteObject(
                 service.namespace, obj_path
             )
+
             remote_objs[obj_path] = remote_obj
 
             # Generate and attach the client object
@@ -87,6 +90,12 @@ class Client:
                 proxy_fn.__name__ = method_name
 
                 setattr(obj, method_name, proxy_fn)
+
+            # Signals
+            for event_name, xform in service_obj.signals.items():
+                remote_obj.notifyOnSignal(
+                    event_name, lambda d: obj.emit(event_name, xform.load(d))
+                )
 
         client = Client(
             service,
