@@ -1,7 +1,7 @@
 from marshmallow import fields
 
 __all__ = [
-    'DBusField', 'Int32', 'UInt32', 'Str', 'Nested', 'List', 'Tuple',
+    'DBusField', 'Bytes', 'Bool', 'Int32', 'UInt32', 'Str', 'Nested', 'List', 'Tuple',
     'Variant', 'BASE_FIELDS'
 ]
 
@@ -13,29 +13,79 @@ class DBusField(fields.Field):
         self.dbus_type_params = dbus_type_params
 
 
-class Variant(fields.Field):
+class Bytes(fields.Str):
     pass
 
-  
+
+Bool = fields.Bool
+
+
+class _UInt(fields.Integer):
+    # TODO: validate inner value >= 0
+    pass
+
+
+class Int16(fields.Integer):
+    pass
+
+
+class UInt16(_UInt):
+    pass
+
+
 class Int32(fields.Integer):
     pass
 
     
-class UInt32(fields.Integer):
-    # TODO: Validation around int < 0
+class UInt32(_UInt):
     pass
+
+
+class Int64(fields.Integer):
+    pass
+
+    
+class UInt64(_UInt):
+    pass
+
+
+class Double(fields.Float):
+    pass
+
 
 Str = fields.Str
 
-Nested = fields.Nested
+
+class ObjectPath(fields.Str):
+    # TODO: Validate as an object path
+    pass
+
+
+class Signature(fields.Str):
+    pass
+
+
 List = fields.List
 Tuple = fields.Tuple
+Nested = fields.Nested
 
 
-# TODO: There are a lot of these!!
+class Variant(fields.Field):
+    pass
+
+
 BASE_FIELDS = {
+    Bytes: 'y',
+    Bool: 'b',
+    Int16: 'n',
+    UInt16: 'q',
     Int32: 'i',
     UInt32: 'u',
+    Int64: 'x',
+    UInt64: 't',
+    Double: 'd',
     Str: 's',
+    ObjectPath: 'o',
+    Signature: 'g',
     Variant: 'v'
 }
