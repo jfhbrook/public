@@ -14,13 +14,13 @@ class Object(EventEmitter):
     async def call(self, method_name, *args):
         args_xform, returns_xform, _ = self.service_obj.methods[method_name]
         xformed_args = args_xform.dump(args)
+
         rv = await self.remote_obj.callRemote(method_name, *xformed_args)
 
-        return returns_xform.dump(rv)
-
-        return returns_xform.load(
-            self.remote_obj.callRemote(method_name, *args_xform.dump(args))
-        )
+        # TODO: Why is this necessary???
+        if not returns_xform.is_field:
+            rv = rv[0]
+        return returns_xform.load(rv)
 
     async def get_property(self, prop_name):
         xform, default, kwargs = self.service_obj.properties[prop_name]

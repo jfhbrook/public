@@ -1,7 +1,11 @@
 import os.path
+
 import attr
 import cattr
 import toml
+
+from pyxsession.dbus import DBusField, List, Str, Variant
+from pyxsession.dbus.marshmallow.schema import DBUS_FIELD, DBUS_NESTED
 from pyxsession.util.decorators import representable
 from pyxsession.xdg import XDG_CURRENT_DESKTOP, config_basedir
 from pyxsession.xdg.autostart import XDG_AUTOSTART_DIRS
@@ -25,16 +29,16 @@ def config(cls):
 
 
 def subconfig(cls):
-    return attr.ib(type=cls, default=cls())
+    return attr.ib(type=cls, default=attr.Factory(cls), metadata={DBUS_NESTED: cls})
 
 
-def value(default=None):
-    return attr.ib(default=default)
+def value(default=None, field=None):
+    return attr.ib(default=default, metadata={DBUS_FIELD: field or Variant()})
 
 
 @config
 class AutostartConfig:
-    directories = value(XDG_AUTOSTART_DIRS)
+    directories = value(XDG_AUTOSTART_DIRS, field=List(Str()))
     environment_name = value(XDG_CURRENT_DESKTOP)
     skip_unparsed = value(False)
     skip_invalid = value(False)
@@ -42,18 +46,13 @@ class AutostartConfig:
 
 @config
 class ApplicationsConfig:
-    directories = value(XDG_APPLICATIONS_DIRS)
+    directories = value(XDG_APPLICATIONS_DIRS, field=List(Str()))
     skip_unparsed = value(False)
     skip_invalid = value(False)
 
 
 @config
 class MenuConfig:
-    filename = value()
-
-
-@config
-class OpenConfig:
     filename = value()
 
 
@@ -66,11 +65,10 @@ class MimeConfig:
 class BaseConfig:
     autostart = subconfig(AutostartConfig)
     menu = subconfig(MenuConfig)
-    open = subconfig(OpenConfig)
     mime = subconfig(MimeConfig)
     applications = subconfig(ApplicationsConfig)
     # TODO: validate
-    urls = value(dict())
+    urls = value(dict(), field=DBusField('a{ss}'))
 
 
 def load_config():
@@ -90,3 +88,14 @@ def load_config():
         toml_config = toml.load(f)
 
     return cattr.structure(toml_config, BaseConfig)
+
+
+def config_dbus_object(service, config):
+    obj = service.object('/pyxsession/Config')
+
+    @obj.method([], BaseConfig)
+    def get_base_config():
+        print(config)
+        return config
+
+    return obj

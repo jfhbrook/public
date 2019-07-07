@@ -9,8 +9,10 @@ class Transformer:
         if type_ is None:
             self.schema = None
         elif isinstance(type_, Field):
+            self.is_field = True
             self.schema = from_field(type_)
         else:
+            self.is_field = False
             self.schema = from_attrs(type_)
           
     def signature(self):
@@ -21,11 +23,13 @@ class Transformer:
     def dump(self, structured):
         if not self.schema:
             return None
+
         return self.schema.dump(structured)
       
     def load(self, unstructured):
         if not self.schema:
             return None
+
         return self.schema.load(unstructured)
 
       

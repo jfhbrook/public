@@ -71,6 +71,7 @@ class Server:
                         ret = await maybe_coro
                     else:
                         ret = maybe_coro
+
                     return returns_xform.dump(ret)
 
                 return proxy_fn

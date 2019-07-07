@@ -58,7 +58,7 @@ basic_test_obj = BasicTestObj(
 )
 
 
-basic_test_signature = '(ius(s)a(s)(is))'
+basic_test_signature = '(ius(s)as(is))'
 
 basic_test_dump = [3, 5, 'foo', ['bar'], ['baz', 'quux'], (7, 'moo')]
 

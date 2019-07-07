@@ -101,14 +101,23 @@ class Executor:
 
 @attr.s
 class DBusApplication:
-    filename = dbus_attr(type=Str(), default='')
-    exec_key_fields = dbus_attr(type=DBusField('a{ss}'), default=attr.Factory(dict))
-    monitor = dbus_attr(type=Bool(), default=False)
-    restart = dbus_attr(type=Bool(), default=False)
-    cleanup = dbus_attr(type=Bool(), default=True)
-    monitor_params = dbus_attr(type=DBusField('a{sv}'), default=attr.Factory(dict))
-    env = dbus_attr(type=DBusField('a{ss}'), default=attr.Factory(dict))
-    cwd = dbus_attr(type=Str(), default='')
+    filename = dbus_attr(field=Str(), default='')
+    exec_key_fields = dbus_attr(
+        field=DBusField('a{ss}'),
+        default=attr.Factory(dict)
+    )
+    monitor = dbus_attr(field=Bool(), default=False)
+    restart = dbus_attr(field=Bool(), default=False)
+    cleanup = dbus_attr(field=Bool(), default=True)
+    monitor_params = dbus_attr(
+        field=DBusField('a{sv}'),
+        default=attr.Factory(dict)
+    )
+    env = dbus_attr(
+        field=DBusField('a{ss}'),
+        default=attr.Factory(dict)
+    )
+    cwd = dbus_attr(field=Str(), default='')
 
 
 class DBusExecutor(Executor):

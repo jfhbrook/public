@@ -32,11 +32,12 @@ class DBusSchema(Schema, metaclass=SchemaMeta):
                 self._restructure_flattened_attrs(self, unstructured, one)
                 for one in many
             ]
+
         return OrderedDict([
             (attr.name, value)
             for attr, value in zip(self.cls.__attrs_attrs__, unstructured)
         ])
-    
+
     @post_load
     def _inflate_flattened_attrs(self, unstructured, many, **kwargs):
         if many:

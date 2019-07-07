@@ -9,12 +9,12 @@ from pyxsession.dbus.marshmallow.fields import (
 from pyxsession.dbus.marshmallow.schema import DBUS_FIELD, DBUS_NESTED
 
 
-def dbus_attr(type=None, attr_type=None, metadata=None, **kwargs):
+def dbus_attr(field=None, metadata=None, **kwargs):
     metadata = metadata or dict()
 
-    if isinstance(type, Field):
-        metadata[DBUS_FIELD] = type
+    if isinstance(field, Field):
+        metadata[DBUS_FIELD] = field
     else:
-        metadata[DBUS_NESTED] = type
+        metadata[DBUS_NESTED] = field
 
-    return attr.ib(type=attr_type, metadata=metadata, **kwargs)
+    return attr.ib(metadata=metadata, **kwargs)
