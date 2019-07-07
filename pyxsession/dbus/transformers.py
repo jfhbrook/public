@@ -6,18 +6,26 @@ from pyxsession.dbus.marshmallow.signature import field_signature, schema_signat
 
 class Transformer:
     def __init__(self, type_):
-        if isinstance(type_, Field):
+        if type_ is None:
+            self.schema = None
+        elif isinstance(type_, Field):
             self.schema = from_field(type_)
         else:
             self.schema = from_attrs(type_)
           
     def signature(self):
+        if not self.schema:
+            return ''
         return schema_signature(self.schema)
         
     def dump(self, structured):
+        if not self.schema:
+            return None
         return self.schema.dump(structured)
       
     def load(self, unstructured):
+        if not self.schema:
+            return None
         return self.schema.load(unstructured)
 
       

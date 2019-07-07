@@ -18,6 +18,7 @@ class Object(EventEmitter):
         args_xform, returns_xform, _ = self.service_obj.methods[method_name]
         xformed_args = args_xform.dump(args)
         rv = await self.remote_obj.callRemote(method_name, *xformed_args)
+
         return returns_xform.dump(rv)
 
         return returns_xform.load(

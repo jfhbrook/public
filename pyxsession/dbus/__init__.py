@@ -8,7 +8,7 @@ from pyxsession.dbus.marshmallow.fields import (
 )
 from pyxsession.dbus.marshmallow.schema import DBUS_FIELD, DBUS_NESTED
 
-type_ = type
+
 def dbus_attr(type=None, attr_type=None, metadata=None, **kwargs):
     metadata = metadata or dict()
 
