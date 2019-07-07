@@ -11,11 +11,8 @@ from pyxsession.dbus.client import Client
 import pyxsession.dbus.path as path
 import pyxsession.dbus.namespace as namespace
 from pyxsession.dbus.transformers import MultiTransformer, Transformer
+from pyxsession.dbus.tree import insert_into_tree
 from pyxsession.twisted.util import returns_deferred
-
-
-class Node:
-    pass
 
 
 class Object(EventEmitter):
@@ -43,35 +40,21 @@ class Object(EventEmitter):
 class Server:
     connection = attr.ib()
     service = attr.ib()
-    bus_name = attr.ib()
+    bus_names = attr.ib()
     dbus_obj_cls = attr.ib()
     dbus_obj = attr.ib()
 
     @classmethod
     async def create(server_cls, connection, service):
+        bus_names = []
         attrs = dict()
         objects = dict()
 
         for obj_path, service_obj in service.objects.items():
-            path_parts = path.split(obj_path)
-            first_part = path_parts.pop(0)
-            try:
-                last_part = path_parts.pop()
-            except IndexError:
-                last_part = None
-
             obj = Object(service_obj)
 
             # Attach our object ot the server cls
-            if last_part:
-                this_node = Node()
-                objects[first_part] = this_node
-                for path_part in path_parts:
-                    setattr(this_node, path_part, Node())
-                    this_node = getattr(this_node, path_part)
-                setattr(this_node, last_part, obj)
-            else:
-                objects[first_part] = obj
+            insert_into_tree(objects, path.split(obj_path), obj)
 
             # Generate and add the interface
             iface = service_obj.iface
@@ -127,12 +110,14 @@ class Server:
 
             connection.exportObject(dbus_obj)
         
-            bus_name = await connection.requestBusName(service.namespace)
+            bus_names.append(
+                await connection.requestBusName(service.namespace)
+            )
 
         server = server_cls(
             connection,
             service,
-            bus_name,
+            bus_names,
             dbus_obj_cls,
             dbus_obj
         )

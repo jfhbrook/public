@@ -1,10 +1,7 @@
 import attr
 from pyee import TwistedEventEmitter as EventEmitter
+from pyxsession.dbus.tree import insert_into_tree
 from pyxsession.dbus.path import split
-
-
-class Node:
-    pass
 
 
 class Object(EventEmitter):
@@ -62,22 +59,7 @@ class Client:
             # Generate and attach the client object
             obj = Object(remote_obj, service_obj)
 
-            path_parts = split(obj_path)
-            first_part = path_parts.pop(0)
-            try:
-                last_part = path_parts.pop()
-            except IndexError:
-                last_part = None
-
-            if last_part:
-                this_node = Node()
-                client_objs[first_part] = this_node
-                for path_part in path_parts:
-                    setattr(this_node, path_part, Node())
-                    this_node = getattr(this_node, path_part)
-                setattr(this_node, last_part, obj)
-            else:
-                client_objs[first_part] = obj
+            insert_into_tree(client_objs, split(obj_path), obj)
 
             def bind(obj):
                 async def proxy_fn(*args):

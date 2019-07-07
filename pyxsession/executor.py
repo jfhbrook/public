@@ -116,7 +116,7 @@ class DBusExecutor(Executor):
         super().__init__(**kwargs)
 
         self.service = service
-        self.obj = service.obj('/pyxsession/Executor')
+        self.obj = service.object('/pyxsession/Executor')
 
         @self.obj.method([DBusApplication], returns=None)
         async def run_dbus_application(dbus_app):

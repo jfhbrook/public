@@ -8,8 +8,9 @@ from txdbus.interface import DBusInterface, Method, Property, Signal
 
 from pyxsession.dbus.client import Client
 from pyxsession.dbus.server import Server
+from pyxsession.dbus.path import basename, split
 from pyxsession.dbus.transformers import MultiTransformer, Transformer
-from pyxsession.dbus.path import basename
+from pyxsession.dbus.tree import insert_into_tree
 from pyxsession.twisted.util import returns_deferred
 
 property_ = property
@@ -87,8 +88,10 @@ class Service:
         self.namespace = namespace
         self.objects = dict()
 
-    def obj(self, obj_path, iface_name=None):
+    def object(self, obj_path, iface_name=None):
         obj = Object(self, obj_path, iface_name)
+
+        insert_into_tree(self, split(obj_path), obj)
         self.objects[obj_path] = obj
         return obj
      
