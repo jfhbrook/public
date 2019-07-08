@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+import sys
 
 import crayons
 from systemd import journal
@@ -68,7 +69,8 @@ class CliObserver:
             pretty_level = PRETTY_BY_LEVEL[level]
 
             print(
-                f'{pretty_level} - {pretty_namespace} - {formatEvent(event)}'  # noqa
+                f'{pretty_level} - {pretty_namespace} - {formatEvent(event)}',  # noqa
+                file=sys.stderr
             )
 
             if 'log_failure' in event:
@@ -90,7 +92,7 @@ class JsonStdoutObserver:
         ]
 
     def __call__(self, event):
-        print(eventAsJSON(event))
+        print(eventAsJSON(event), file=sys.stderr)
 
 
 @implementer(ILogObserver)
