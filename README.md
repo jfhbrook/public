@@ -26,6 +26,7 @@
 - [x] POC launcher for default applications
 - [x] write dbus marshalling framework
 - [x] now make it support properties and events/signals
+- [x] build out logging framework
 - [ ] Make default apps launcher actually good
 - [ ] write tooling for editing local desktop entries and mime/defaults data
 - [ ] create a dbus service for executing and monitoring programs with queries for state and soft exit

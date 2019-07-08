@@ -110,7 +110,8 @@ class JournaldObserver:
 
         kwargs = dict(
             PRIORITY=priority,
-            TWISTED_LEVEL=NAME_BY_LEVEL[level],
+            TWISTED_LOG_LEVEL=NAME_BY_LEVEL[level],
+            TWISTED_LOG_NAMESPACE=namespace,
             SYSLOG_FACILITY=2,
             # TODO: Read from config
             SYSLOG_IDENTIFIER='korbenware'
@@ -124,18 +125,18 @@ class JournaldObserver:
                 kwargs[f'TWISTED_{k.upper()}'] = str(v)
 
         if traceback:
-            kwargs['TWISTED_FAILURE'] = traceback
+            kwargs['TWISTED_LOG_FAILURE'] = traceback
 
         journal.send(message, **kwargs)
 
 
 @contextmanager
 def captured(log):
-    log.info('It worked if it ends with ok')
+    log.info('It worked if it ends with OK 👍')
     try:
         yield
     except:  # noqa
         log.failure('== FLAGRANT SYSTEM ERROR==')
-        log.critical('NOT OK')
+        log.critical('NOT OK 🙅')
     else:
-        log.info('ok')
+        log.info('OK 👍')
