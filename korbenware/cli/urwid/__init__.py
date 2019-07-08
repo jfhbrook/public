@@ -13,6 +13,8 @@ def on_q(run):
         if key in {'q', 'Q'}:
             run()
 
+    return run_on_q
+
 
 @attr.s
 class Session:

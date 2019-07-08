@@ -21,21 +21,26 @@ async def main(reactor):
 
     hed = "Grandmaw Korben's XDG Menu Explorer 🦜"
     subhed = '"nice work, pixel birdie!"'
-    attribution = 'programmed entirely while unemployed'
+    subsubhed = 'programmed entirely while unemployed'
 
     with captured(log):
         log.info('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓')
         log.info('┃ {hed}  ┃', hed=hed)
-        log.info('┃ {subhed}             ┃', subhed=subhed)  # noqa
-        log.info('┃ {attribution}   ┃', attribution=attribution)  # noqa
+        log.info('┃ {subhed}             ┃', subhed=subhed)
+        log.info('┃ {subsubhed}   ┃', subsubhed=subsubhed)
         log.info('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛')
 
         log_config(config)
 
         xdg_menu = xdg.Menu.parse(config.menu.filename)
 
-        session = menu_session(xdg_menu)
+        session = menu_session(hed, subsubhed, xdg_menu)
 
         desktop_entry = await session.run()
 
-        default_executor.run_xdg_desktop_entry(desktop_entry)
+        if not desktop_entry:
+            log.info(
+                "Looks like you didn't end up choosing an item from the menu; doing nothing"  # noqa
+            )
+        else:
+            default_executor.run_xdg_desktop_entry(desktop_entry)

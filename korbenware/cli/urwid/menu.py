@@ -3,7 +3,7 @@ import xdg.Menu
 from korbenware.cli.urwid import on_q, Session
 
 
-def menu_session(xdg_menu):
+def menu_session(hed, subhed, xdg_menu):
     session = Session()
 
     class EntryWidget(urwid.TreeWidget):
@@ -71,7 +71,7 @@ def menu_session(xdg_menu):
             return node
 
     root = MenuNode(xdg_menu)
-    list_box = urwid.ListBox(urwid.TreeWalker(root))
+    list_box = urwid.TreeListBox(urwid.TreeWalker(root))
 
     session.xdg_menu = xdg_menu
     session.entry_widget_cls = EntryWidget
@@ -79,11 +79,23 @@ def menu_session(xdg_menu):
     session.session_widget_cls = MenuWidget
     session.session_node_cls = MenuNode
     session.root = root
+
     session.list_box = list_box
+    session.header = urwid.Columns([
+        urwid.Text(hed, align='left'),
+        urwid.Text(subhed, align='right')
+    ])
+    session.footer = urwid.Text(
+        'Nav: up/down, page up/page down, home/end 🌹 Collapse/expand: +/- 🌹 Select: [enter] 🌹 Bail: q/Q'
+    )
 
     # TODO: It would be cool if there was an API that made it more obvious
     # that we were "finalizing" the session
-    session.widget = list_box
+    session.widget = urwid.Frame(
+        list_box,
+        header=session.header,
+        footer=session.footer
+    )
     session.loop_kwarg['unhandled_input'] = on_q(session.succeed)
 
     return session
