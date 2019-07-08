@@ -94,7 +94,7 @@ class ApplicationSet:
 def _load_application_dir(dirpath, log, cls):
     try:
         filenames = os.listdir(dirpath)
-    except FileNotFoundError as exc:
+    except FileNotFoundError:
         return
 
     for filename in filenames:
@@ -131,7 +131,9 @@ class ApplicationsRegistry:
 
     def __init__(self, config, key='applications', cls=Application):
         self.directories = getattr(config, key).directories
-        self.entry_sets = load_application_sets(self.directories, self.log, cls)
+        self.entry_sets = load_application_sets(
+            self.directories, self.log, cls
+        )
         self.entries = dict()
 
         for filename, entry_set in self.entry_sets.items():

@@ -1,9 +1,9 @@
 from collections import OrderedDict
+
 import attr
-from marshmallow import Schema, fields
+from marshmallow import Schema
 from marshmallow.schema import SchemaMeta
 from marshmallow.decorators import pre_dump, post_dump, pre_load, post_load
-from txdbus import client
 
 from pyxsession.dbus.marshmallow.fields import Nested
 from pyxsession.util import Symbol
@@ -12,7 +12,7 @@ from pyxsession.util import Symbol
 class DBusSchema(Schema, metaclass=SchemaMeta):
     class Meta:
         ordered = True
-      
+
     @post_dump
     def _flatten_attrs_dicts(self, unstructured, many, **kwargs):
         if many:
@@ -24,7 +24,7 @@ class DBusSchema(Schema, metaclass=SchemaMeta):
             unstructured[attr.name]
             for attr in self.cls.__attrs_attrs__
         ]
-      
+
     @pre_load
     def _restructure_flattened_attrs(self, unstructured, many, **kwargs):
         if many:
@@ -60,7 +60,7 @@ class WrappedField:
 
 class WrappedFieldSchema(Schema, metaclass=SchemaMeta):
     class Meta:
-        ordered=True
+        ordered = True
 
     @pre_dump
     def _wrap_field(self, structured, many, **kwargs):
@@ -108,12 +108,12 @@ def from_attrs(attrs_cls):
                 klass, cls_fields, inherited_fields, dict_cls
             )
 
-            for attr in attrs_cls.__attrs_attrs__:
-                if DBUS_FIELD in attr.metadata:
-                    fields[attr.name] = attr.metadata[DBUS_FIELD]
-                elif DBUS_NESTED in attr.metadata:
-                    fields[attr.name] = Nested(
-                        from_attrs(attr.metadata[DBUS_NESTED])
+            for attr_ in attrs_cls.__attrs_attrs__:
+                if DBUS_FIELD in attr_.metadata:
+                    fields[attr_.name] = attr_.metadata[DBUS_FIELD]
+                elif DBUS_NESTED in attr_.metadata:
+                    fields[attr_.name] = Nested(
+                        from_attrs(attr_.metadata[DBUS_NESTED])
                     )
 
             return fields

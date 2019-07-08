@@ -1,6 +1,6 @@
 from pyxsession.dbus.marshmallow.fields import (
     BASE_FIELDS,
-    List, Tuple, Nested, DBusField, Variant
+    List, Tuple, Nested, DBusField
 )
 
 STRUCTURE_TYPES = {

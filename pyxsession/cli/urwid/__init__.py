@@ -3,11 +3,8 @@ from functools import wraps
 
 import attr
 from twisted.internet import reactor as reactor_
-from twisted.internet.defer import Deferred, ensureDeferred
-from twisted.internet.task import react
+from twisted.internet.defer import Deferred
 import urwid
-
-from pyxsession.cli.base import async_command
 
 
 def on_q(run):
@@ -42,7 +39,7 @@ class Session:
 
     def succeed(self, result=None):
         self.done.callback(result)
-    
+
     @contextmanager
     def capture(self):
         try:

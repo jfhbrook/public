@@ -1,11 +1,5 @@
 import urllib
 
-from pyxsession.config import load_config
-from pyxsession.executor import default_executor
-from pyxsession.urls import UrlRegistry
-from pyxsession.xdg.applications import ApplicationsRegistry
-from pyxsession.xdg.mime import MimeRegistry
-
 
 class OpenError(Exception):
     pass

@@ -85,7 +85,7 @@ class Client:
             remote_objs
         )
 
-        for attr, obj in client_objs.items():
-            setattr(client, attr, obj)
+        for attr_, obj in client_objs.items():
+            setattr(client, attr_, obj)
 
         return client

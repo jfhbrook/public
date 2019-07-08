@@ -34,19 +34,16 @@ def menu_session(xdg_menu):
                 session.succeed(self.get_node().get_value().DesktopEntry)
             return key
 
-
     class EntryNode(urwid.TreeNode):
         @session.catch
         def load_widget(self):
             return EntryWidget(self)
-
 
     class MenuWidget(urwid.TreeWidget):
         @session.catch
         def get_display_text(self):
             session = self.get_node().get_value()
             return f'{session.getName()}:'
-
 
     class MenuNode(urwid.ParentNode):
         @session.catch

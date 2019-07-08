@@ -2,7 +2,7 @@ class Node:
     # TODO: Give this a pretty representation
     def __init__(self):
         self._branches = {}
-    
+
     def _set_branch(self, name, node):
         setattr(self, name, node)
         self._branches[name] = node

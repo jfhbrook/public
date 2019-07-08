@@ -1,9 +1,3 @@
-from asyncio import iscoroutine
-import functools
-
-from pyee import TwistedEventEmitter as EventEmitter
-from twisted.internet.defer import Deferred
-from txdbus.objects import DBusObject
 from txdbus.interface import DBusInterface, Method, Property, Signal
 
 from pyxsession.dbus.client import Client
@@ -11,7 +5,6 @@ from pyxsession.dbus.server import Server
 from pyxsession.dbus.path import basename, split
 from pyxsession.dbus.transformers import MultiTransformer, Transformer
 from pyxsession.dbus.tree import insert_into_tree
-from pyxsession.twisted.util import returns_deferred
 
 property_ = property
 
@@ -31,11 +24,11 @@ class Object:
         def register_method(fn):
             args_xform = MultiTransformer(arguments)
             returns_xform = Transformer(returns)
-            
+
             self.methods[fn.__name__] = (
                 args_xform,
                 returns_xform,
-                fn 
+                fn
             )
             return fn
 
@@ -81,7 +74,7 @@ class Object:
             )
             self._iface = iface
         return iface
- 
+
 
 class Service:
     def __init__(self, namespace):
@@ -94,9 +87,9 @@ class Service:
         insert_into_tree(self, split(obj_path), obj)
         self.objects[obj_path] = obj
         return obj
-     
+
     async def server(self, connection):
         return await Server.create(connection, self)
-      
+
     async def client(self, connection):
         return await Client.create(connection, self)

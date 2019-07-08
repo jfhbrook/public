@@ -10,7 +10,7 @@ class UrlRegistry:
         self.lookup = dict()
         for scheme, desktop_file in config.urls.items():
             self.log.debug(
-                'Registering desktop application {application_name} as the opener for {scheme}:// urls...',
+                'Registering desktop application {application_name} as the opener for {scheme}:// urls...',  # noqa
                 application_name=desktop_file,
                 scheme=scheme
             )

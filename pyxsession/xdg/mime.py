@@ -2,7 +2,7 @@ import os.path
 
 import attr
 from twisted.python.failure import Failure
-from xdg.BaseDirectory import load_data_paths, xdg_config_dirs
+from xdg.BaseDirectory import xdg_config_dirs
 from xdg.IniFile import IniFile
 from xdg.Exceptions import ParsingError
 from xdg.Mime import MIMEtype, get_type2 as get_type
@@ -117,16 +117,16 @@ class DesktopDatabase:
         except ParsingError as exc:
             ini_file = None
             parsed = False
-            exc = None
+            parse_exc = exc
         else:
             parsed = True
-            exc = None
+            parse_exc = None
 
         return cls(
             filename=filename,
             ini_file=ini_file,
             parsed=parsed,
-            parse_exc=exc
+            parse_exc=parse_exc
         )
 
     def items(self):
@@ -220,7 +220,7 @@ class MimeRegistry:
 
                 for mimetype, apps in default_applications.items():
                     self.log.debug(
-                        'Registering applications {applications} as the defaults for mimetype {mimetype}...',
+                        'Registering applications {applications} as the defaults for mimetype {mimetype}...',  # noqa
                         mimetype=mimetype,
                         applications=apps
                     )

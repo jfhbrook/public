@@ -1,20 +1,11 @@
-from collections import defaultdict
-import os
-import sys
-from subprocess import Popen, DEVNULL
-
 import attr
-from twisted.internet import reactor
-from twisted.internet.error import ReactorNotRunning
 
 from pyxsession.dbus import dbus_attr, Str, Bool, DBusField
 from pyxsession.detach import spawn as spawn_detached
 from pyxsession.logger import create_logger
 from pyxsession.twisted.procmon import ProcessMonitor
-from pyxsession.xdg.applications import Application
 from pyxsession.xdg.exec_key import ExecKey
 from pyxsession.xdg.executable import Executable
-from pyxsession.util import Symbol
 
 
 class Executor:
@@ -34,6 +25,7 @@ class Executor:
 
     def run_exec_key(
         self,
+        process_name,
         exec_key,
         *,
         monitor=False,
@@ -58,8 +50,8 @@ class Executor:
             monitor_params = monitor_params or dict()
 
             self.log.info(
-                'Spawning {filename} using {argv} as a monitored process...',
-                filename=executable.filename,
+                'Spawning {process_name} using {argv} as a monitored process...',  # noqa
+                process_name=process_name,
                 argv=argv,
                 env=env,
                 cwd=cwd,
@@ -69,7 +61,7 @@ class Executor:
             )
 
             self.monitor.addProcess(
-                executable.filename,
+                process_name,
                 argv,
                 env=env,  # TODO: Parent env
                 cwd=cwd,  # TODO: default to ./
@@ -80,10 +72,12 @@ class Executor:
 
     def run_command(
         self,
+        process_name,
         raw,
         **kwargs
     ):
         return self.run_exec_key(
+            process_name,
             ExecKey(raw),
             **kwargs
         )
@@ -97,7 +91,11 @@ class Executor:
             'Running XDG executable {filename}...',
             filename=executable.filename
         )
-        return self.run_exec_key(executable.exec_key, **kwargs)
+        return self.run_exec_key(
+            executable.filename,
+            executable.exec_key,
+            **kwargs
+        )
 
     def run_xdg_desktop_entry(
         self,

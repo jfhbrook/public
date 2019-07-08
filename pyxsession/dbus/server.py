@@ -1,16 +1,11 @@
 from asyncio import iscoroutine
-import functools
 
 import attr
 from pyee import TwistedEventEmitter as EventEmitter
 from twisted.internet.defer import Deferred
 from txdbus.objects import DBusObject, DBusProperty
-from txdbus.interface import DBusInterface, Method, Property, Signal
 
-from pyxsession.dbus.client import Client
 import pyxsession.dbus.path as path
-import pyxsession.dbus.namespace as namespace
-from pyxsession.dbus.transformers import MultiTransformer, Transformer
 from pyxsession.dbus.tree import insert_into_tree
 from pyxsession.twisted.util import returns_deferred
 
@@ -67,7 +62,10 @@ class Server:
                     xformed_args = args_xform.load(args)
                     maybe_coro = fn(*xformed_args)
 
-                    if iscoroutine(maybe_coro) or isinstance(maybe_coro, Deferred):
+                    if (
+                        iscoroutine(maybe_coro)
+                        or isinstance(maybe_coro, Deferred)
+                    ):
                         ret = await maybe_coro
                     else:
                         ret = maybe_coro
@@ -110,7 +108,7 @@ class Server:
             obj.dbus_obj = dbus_obj
 
             connection.exportObject(dbus_obj)
-        
+
             bus_names.append(
                 await connection.requestBusName(service.namespace)
             )
@@ -123,7 +121,7 @@ class Server:
             dbus_obj
         )
 
-        for attr, obj in objects.items():
-            setattr(server, attr, obj)
+        for attr_, obj in objects.items():
+            setattr(server, attr_, obj)
 
         return server

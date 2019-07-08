@@ -1,5 +1,5 @@
 from functools import wraps
-from twisted.internet.defer import Deferred, ensureDeferred
+from twisted.internet.defer import ensureDeferred
 from twisted.internet.task import react
 
 

@@ -1,7 +1,4 @@
 from contextlib import contextmanager
-from textwrap import dedent
-import threading
-from queue import Queue
 
 import crayons
 from systemd import journal
@@ -111,7 +108,7 @@ class JournaldObserver:
             else None
         )
 
-        kwargs =  dict(
+        kwargs = dict(
             PRIORITY=priority,
             TWISTED_LEVEL=NAME_BY_LEVEL[level],
             SYSLOG_FACILITY=2,
@@ -142,4 +139,3 @@ def captured(log):
         log.critical('NOT OK')
     else:
         log.info('ok')
-    

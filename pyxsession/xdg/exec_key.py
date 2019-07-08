@@ -1,11 +1,11 @@
 import re
 
-from gshell import g_shell_parse_argv, g_shell_quote
+from gshell import g_shell_parse_argv, g_shell_quote, GShellError
 
 from pyxsession.util.decorators import dictable, representable
 
 
-FIELD_CODE_RE = '(?<!%)(%\S)'
+FIELD_CODE_RE = r'(?<!%)(%\S)'
 
 
 def expand_field_codes(raw, fields):
@@ -45,7 +45,7 @@ class ExecKey:
                 self._is_valid = True
         elif not self._is_valid:
             raise self._valid_exc
-            
+
     def is_valid(self):
         if self._is_valid is None:
             try:
@@ -62,7 +62,7 @@ class ExecKey:
         fields = fields or dict()
 
         flattened_fields = {
-            field: 
+            field:
                 ' '.join(g_shell_quote(value))
                 if isinstance(value, list)
                 else value

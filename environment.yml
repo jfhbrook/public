@@ -5,6 +5,8 @@ dependencies:
   - pip=19.0.3
   - attrs=19.1.0
   - click=7.0
+  - flake8=3.7.7
+  - pyflakes=2.1.1
   - ipykernel=5.1.1 
   - pytest=4.6.2
   - toml=0.10.0

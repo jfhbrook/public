@@ -1,5 +1,3 @@
-import urllib
-
 import click
 
 from pyxsession.cli.base import async_command

@@ -1,5 +1,4 @@
 import attr
-from functools import wraps
 
 
 def dictable(keys):

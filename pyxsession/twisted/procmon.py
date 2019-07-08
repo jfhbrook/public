@@ -10,6 +10,7 @@ See: https://github.com/twisted/twisted/blob/trunk/src/twisted/runner/procmon.py
 from enum import Enum
 import attr
 from pyee import TwistedEventEmitter as EventEmitter
+from twisted.internet.error import ProcessExitedAlready
 from twisted.logger import Logger
 from twisted.runner.procmon import ProcessMonitor as BaseMonitor
 
@@ -432,7 +433,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
             proc = proto.transport
             try:
                 proc.signalProcess('TERM')
-            except error.ProcessExitedAlready:
+            except ProcessExitedAlready:
                 pass
             else:
                 self.murder[name] = self._reactor.callLater(

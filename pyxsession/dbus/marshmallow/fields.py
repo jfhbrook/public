@@ -31,7 +31,7 @@ class UInt16(_UInt):
 class Int32(fields.Integer):
     pass
 
-    
+
 class UInt32(_UInt):
     pass
 
@@ -39,7 +39,7 @@ class UInt32(_UInt):
 class Int64(fields.Integer):
     pass
 
-    
+
 class UInt64(_UInt):
     pass
 

@@ -3,7 +3,7 @@ import pytest
 import attr
 
 from pyxsession.dbus.marshmallow.fields import (
-    DBusField, Int32, UInt32, Str, Nested, List, Tuple
+    Int32, UInt32, Str, Nested, List, Tuple
 )
 from pyxsession.dbus.marshmallow.schema import (
     DBusSchema, DBUS_FIELD, DBUS_NESTED,

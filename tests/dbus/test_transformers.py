@@ -1,13 +1,13 @@
 import pytest
 
-# TODO: fixture
 from pyxsession.config import (
     BaseConfig, AutostartConfig, MenuConfig, MimeConfig, ApplicationsConfig
 )
-from pyxsession.dbus.transformers import Transformer, MultiTransformer
+from pyxsession.dbus.transformers import Transformer
 from pyxsession.dbus.marshmallow.fields import Str
 
 
+# TODO: Create a pytest fixture for this
 config_loaded = BaseConfig(
     autostart=AutostartConfig(
         directories=['/home/josh/.config/autostart', '/etc/xdg/autostart'],

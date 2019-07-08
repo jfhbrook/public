@@ -31,7 +31,11 @@ def config(cls):
 
 
 def subconfig(cls):
-    return attr.ib(type=cls, default=attr.Factory(cls), metadata={DBUS_NESTED: cls})
+    return attr.ib(
+        type=cls,
+        default=attr.Factory(cls),
+        metadata={DBUS_NESTED: cls}
+    )
 
 
 def value(default=None, field=None):
@@ -113,15 +117,15 @@ log = create_logger()
 
 
 def _log_config(path, obj, level):
-    for attr in obj.__attrs_attrs__:
-        if hasattr(attr.type, '__attrs_attrs__'):
-            _log_config(path + [attr.name], getattr(obj, attr.name), level)
+    for attr_ in obj.__attrs_attrs__:
+        if hasattr(attr_.type, '__attrs_attrs__'):
+            _log_config(path + [attr_.name], getattr(obj, attr_.name), level)
         else:
             log.emit(
                 level,
                 'config: {path}={value}',
-                path='.'.join(path + [attr.name]),
-                value=getattr(obj, attr.name)
+                path='.'.join(path + [attr_.name]),
+                value=getattr(obj, attr_.name)
             )
 
 

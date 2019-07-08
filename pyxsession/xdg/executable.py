@@ -1,12 +1,12 @@
-import attr
-from collections import defaultdict
 import os
 import os.path
 import shutil
+
+import attr
 from gshell import GShellError
-from pyxsession.util.decorators import dictable, representable
+
+from pyxsession.util.decorators import representable
 from pyxsession.xdg.exec_key import ExecKey
-from xdg.BaseDirectory import xdg_config_dirs
 from xdg.Exceptions import ParsingError, ValidationError
 from xdg.DesktopEntry import DesktopEntry
 

@@ -1,16 +1,11 @@
-from collections import defaultdict
 import os
 import os.path
 
-import attr
 from xdg.BaseDirectory import xdg_config_dirs
 
 from pyxsession.logger import create_logger
 from pyxsession.util.decorators import dictable, representable
-from pyxsession.xdg import config_basedir
-from pyxsession.xdg.applications import (
-    Application, ApplicationsRegistry, load_application_sets
-)
+from pyxsession.xdg.applications import Application, ApplicationsRegistry
 
 
 XDG_AUTOSTART_DIRS = [
@@ -23,21 +18,23 @@ class Autostart(Application):
     def __init__(self):
         super().__init__()
         self._conditions = dict()
-        self_shoulds = dict()
+        self._shoulds = dict()
 
     def autostart_conditions(self, environment_name):
         if environment_name in self._conditions:
             conditions = self._conditions[environment_name]
         else:
-            conditions = {
-                parsed: self.executable.parsed,
-                is_application: self.executable.is_application,
-                exec_parsed: self.executable.exec_parsed,
-                not_hidden: not self.executable.is_hidden,
-                not_dbus_activatable: not self.executable.dbus_activatable,
-                should_show_in: self.executable.should_show_in(environment_name),
-                passes_try_exec: self.executable.passes_try_exec()
-            }
+            conditions = dict(
+                parsed=self.executable.parsed,
+                is_application=self.executable.is_application,
+                exec_parsed=self.executable.exec_parsed,
+                not_hidden=not self.executable.is_hidden,
+                not_dbus_activatable=not self.executable.dbus_activatable,
+                should_show_in=(
+                    self.executable.should_show_in(environment_name)
+                ),
+                passes_try_exec=self.executable.passes_try_exec()
+            )
             self._conditions[environment_name] = conditions
         return conditions
 
@@ -69,7 +66,7 @@ class AutostartRegistry(ApplicationsRegistry):
                     'Entry {filename} elligible for autostart',
                     filename=entry.filename
                 )
-                self.autostart_entries[filename] = entry
+                self.autostart_entries[entry.filename] = entry
             else:
                 self.log.warn(
                     'Entry {filename} not eligible for autostart',
