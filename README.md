@@ -29,6 +29,7 @@
 - [x] build out logging framework
 - [x] clean up obvious spelling/formatting issues with gshell and rename LICENSE to COPYING
 - [x] make kbmenu work well, be self-documenting, exit on q, etc
+- [x] write wrapper for journalctl for loading korbenware logs
 - [ ] create a dbus service for executing and monitoring programs with queries for state and soft exit (don't load autostart for now)
 - [ ] write tooling for editing local desktop entries and mime/defaults data
 - [ ] make kbopen display a menu when there is no default but there are registered apps for that type
