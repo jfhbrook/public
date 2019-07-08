@@ -12,6 +12,9 @@ setup(
     author="Joshua Holbrook",
     author_email="josh.holbrook@gmail.com",
     url="https://github.com/jfhbrook/pyxsession",
+    scripts=[
+        'bin/pyxsession-environment-loader'
+    ],
     entry_points=dict(
         console_scripts=[
             'pyxconfig=pyxsession.cli.config:main',
