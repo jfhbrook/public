@@ -1,4 +1,4 @@
-#### pyxsession
+#### korbenware 🦜
 
 * https://github.com/xmonad/xmonad/issues/77
 * https://wiki.lxde.org/en/LXSession#autostart_directories
@@ -31,7 +31,8 @@
 - [ ] create a dbus service for executing and monitoring programs with queries for state and soft exit (don't load autostart for now)
 - [ ] write tooling for editing local desktop entries and mime/defaults data
 - [ ] make kbopen display a menu when there is no default but there are registered apps for that type
-- [ ] build up templates and tooling for rendering `_repr_markdown` representations of the config for inspection in nteract
+- [ ] make kbmenu work well, be self-documenting, exit on q, etc
+- [ ] build up templates and tooling for rendering `_repr_markdown_` representations of the config for inspection in nteract
 - [ ] implement dbus activation as necessary
 - [ ] load autostart registry into an executor
 - [ ] add kb-session to my xinitrc (manually activate the conda env)
