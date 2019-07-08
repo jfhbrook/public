@@ -100,20 +100,16 @@ class JsonStdoutObserver:
 class JournaldObserver:
     def __call__(self, event):
         level = event.get('log_level', LogLevel.error)
-        priority = SYSLOG_PRIORITY_BY_LEVEL.get(level, 5)
         namespace = event.get('log_namespace', '????')
-        message = f'{namespace} - {formatEvent(event)}'
-        time = event.get('log_time')
-        if time:
-            time = repr(time)
-        else:
-            time = '???'
 
-        if 'log_failure' in event:
-            failure = event['log_failure']
-            traceback = _formatTraceback(failure)
-        else:
-            traceback = None
+        priority = SYSLOG_PRIORITY_BY_LEVEL.get(level, 5)
+        message = f'{namespace} - {formatEvent(event)}'
+
+        traceback = (
+            _formatTraceback(event['log_failure'])
+            if 'log_failure' in event
+            else None
+        )
 
         kwargs =  dict(
             PRIORITY=priority,
@@ -126,6 +122,7 @@ class JournaldObserver:
         for k, v in event.items():
             if k not in {
                 'log_level', 'log_namespace', 'log_format', 'log_logger',
+                'log_failure'
             }:
                 kwargs[f'TWISTED_{k.upper()}'] = str(v)
 
