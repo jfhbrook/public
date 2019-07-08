@@ -17,6 +17,7 @@ setup(
     entry_points=dict(
         console_scripts=[
             'kbconfig=korbenware.cli.config:main',
+            'kbsession=korbenware.cli.session:main',
             'kbmenu=korbenware.cli.menu:main',
             'kbopen=korbenware.cli.open:main'
         ]
