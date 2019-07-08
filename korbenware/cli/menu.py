@@ -6,7 +6,7 @@ from korbenware.cli.urwid.menu import menu_session
 from korbenware.config import load_config, log_config
 from korbenware.executor import default_executor
 from korbenware.logger import (
-    CliObserver, create_logger, publisher, captured
+    CliObserver, create_logger, greet, publisher, captured
 )
 
 
@@ -24,12 +24,7 @@ async def main(reactor):
     subsubhed = 'programmed entirely while unemployed'
 
     with captured(log):
-        log.info('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓')
-        log.info('┃ {hed}  ┃', hed=hed)
-        log.info('┃ {subhed}             ┃', subhed=subhed)
-        log.info('┃ {subsubhed}   ┃', subsubhed=subsubhed)
-        log.info('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛')
-
+        greet(log, hed, subhed, subsubhed)
         log_config(config)
 
         xdg_menu = xdg.Menu.parse(config.menu.filename)

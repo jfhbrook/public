@@ -4,7 +4,7 @@ from korbenware.cli.base import async_command
 from korbenware.config import load_config, log_config
 from korbenware.executor import default_executor
 from korbenware.logger import (
-    CliObserver, JournaldObserver, create_logger, publisher, captured
+    CliObserver, JournaldObserver, create_logger, publisher, captured, greet
 )
 from korbenware.open import ApplicationFinder, exec_key_fields, OpenError
 from korbenware.urls import UrlRegistry
@@ -24,17 +24,11 @@ async def main(reactor):
     publisher.addObserver(CliObserver(config))
 
     hed = 'Korben the X Session Manager 🦜'
-    subhed = '"open up or else!"'
     subhed = 'programmed entirely by the windowsill'
     subsubhed = 'by Korben'
  
     with captured(log):
-        log.info('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓')
-        log.info('┃ {hed}        ┃', hed=hed)
-        log.info('┃ {subhed} ┃', subhed=subhed)
-        log.info('┃ {subsubhed}                       c2019 ┃', subsubhed=subsubhed)
-        log.info('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛')
-
+        greet(log, hed, subhed, subsubhed)
         log_config(config)
 
         applications = ApplicationsRegistry(config)

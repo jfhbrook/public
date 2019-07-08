@@ -4,7 +4,7 @@ from korbenware.cli.base import async_command
 from korbenware.config import load_config, log_config
 from korbenware.executor import default_executor
 from korbenware.logger import (
-    CliObserver, create_logger, publisher, captured
+    CliObserver, create_logger, greet, publisher, captured
 )
 from korbenware.open import ApplicationFinder, exec_key_fields, OpenError
 from korbenware.urls import UrlRegistry
@@ -25,14 +25,10 @@ async def main(reactor, urls_and_or_files):
 
     hed = 'Korby Jr. The File/Url Opener 🦜'
     subhed = '"open up or else!"'
-    attribution = 'programmed entirely while eating a spider plant'
+    subsubhed = 'programmed entirely while eating a spider plant'
  
     with captured(log):
-        log.info('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓')
-        log.info('┃ {hed}                 ┃', hed=hed)
-        log.info('┃ {subhed}                              ┃', subhed=subhed)
-        log.info('┃ {attribution} ┃', attribution=attribution)
-        log.info('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛')
+        greet(log, hed, subhed, subsubhed)
         log_config(config)
 
         applications = ApplicationsRegistry(config)

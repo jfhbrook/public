@@ -142,3 +142,17 @@ def captured(log):
         log.critical('NOT OK 🙅')
     else:
         log.info('OK 👍')
+
+
+def greet(log, hed, subhed, subsubhed=None):
+    fields = [('hed', hed), ('subhed', subhed)]
+    if subsubhed:
+        fields.append(('subsubhed', subsubhed))
+
+    max_len = max(len(value) for name, value in fields)
+
+    log.info('┏━' + ('━' * max_len) + '━┓')
+    for name, value in fields:
+        log_format = '┃ {' + name + '}' + (' ' * (max_len - len(value))) + ' ┃'
+        log.info(log_format, **{name: value})
+    log.info('┗━' + ('━' * max_len) + '━┛')
