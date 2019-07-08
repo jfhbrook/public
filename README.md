@@ -27,20 +27,17 @@
 - [x] write dbus marshalling framework
 - [x] now make it support properties and events/signals
 - [x] build out logging framework
-- [ ] Make default apps launcher actually good
+- [x] clean up obvious spelling/formatting issues with gshell and rename LICENSE to COPYING
+- [ ] create a dbus service for executing and monitoring programs with queries for state and soft exit (don't load autostart for now)
 - [ ] write tooling for editing local desktop entries and mime/defaults data
-- [ ] create a dbus service for executing and monitoring programs with queries for state and soft exit
-- [ ] clean up obvious spelling/formatting issues with gshell and rename LICENSE to COPYING
-- [ ] write code that can take the base config and apply desktop entry overrides at the toml level
+- [ ] make kbopen display a menu when there is no default but there are registered apps for that type
 - [ ] build up templates and tooling for rendering `_repr_markdown` representations of the config for inspection in nteract
-- [ ] write something that can poke at dbus services using xdg rules (should be way easy)
-- [ ] write something that can turn that coherent configuration into autostarted processes managed by our procmon and add to server
-- [ ] add pyxsession to my xinitrc (manually activate the conda env)
-- [ ] write toml thinger for running cron tasks
+- [ ] implement dbus activation as necessary
+- [ ] load autostart registry into an executor
+- [ ] add kb-session to my xinitrc (manually activate the conda env)
 - [ ] make toml thinger for configuring running the window manager as a special process
-- [ ] switch completely to using pyxsession
-- [ ] write code that will detect processes w/ open x windows
-- [ ] write code in pyxsession that will gracefully attempt to close those processes before doing a hard exit
-- [ ] GET LICENSING SORTED OUT!!
-- [ ] set up a PKGBUILD in a separate repo that will build and install globally
-- [ ] bonus - implement dependencies on top of procmon with a similar technique as in coolbot98 w/ services
+- [ ] switch completely to using korbenware
+- [ ] Add license headers to files - most of them will be MPL
+- [ ] set up a PKGBUILD that will build and install globally
+- [ ] document everything (sphinx, RTD, man pages)
+- [ ] integrate other desktop tools as appropriate
