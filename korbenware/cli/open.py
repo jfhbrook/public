@@ -1,10 +1,10 @@
 import click
 
-from korbenware.cli.base import async_command
+from korbenware.cli.base import async_command, verbosity
 from korbenware.config import load_config, log_config
 from korbenware.executor import default_executor
 from korbenware.logger import (
-    CliObserver, create_logger, greet, publisher, captured
+    captured, CliObserver, create_logger, greet, publisher
 )
 from korbenware.open import ApplicationFinder, exec_key_fields, OpenError
 from korbenware.urls import UrlRegistry
@@ -13,15 +13,15 @@ from korbenware.xdg.mime import MimeRegistry
 
 
 @click.command()
+@verbosity
 @click.argument('urls_and_or_files', nargs=-1, required=True)
 @async_command
-async def main(reactor, urls_and_or_files):
-
+async def main(reactor, verbose, urls_and_or_files):
     config = load_config()
 
     log = create_logger(namespace='korbenware.cli.open')
 
-    publisher.addObserver(CliObserver(config))
+    publisher.addObserver(CliObserver(config, verbosity=verbose))
 
     hed = 'Korby Jr. The File/Url Opener 🦜'
     subhed = '"open up or else!"'

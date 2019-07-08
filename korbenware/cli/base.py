@@ -1,4 +1,6 @@
 from functools import wraps
+
+import click
 from twisted.internet.defer import ensureDeferred
 from twisted.internet.task import react
 
@@ -11,3 +13,6 @@ def async_command(cmd):
         ))
 
     return wrapped
+
+
+verbosity = click.option('-v', '--verbose', count=True)

@@ -40,6 +40,26 @@ SYSLOG_PRIORITY_BY_LEVEL = {
     LogLevel.critical: 2
 }
 
+LEVEL_BY_VERBOSITY = {
+    0: LogLevel.error,
+    1: LogLevel.warn,
+    2: LogLevel.info,
+    3: LogLevel.debug
+}
+
+VERBOSITY_BY_LEVEL = {
+    level: verbosity for verbosity, level in LEVEL_BY_VERBOSITY.items()
+}
+
+def get_level_config(config, verbosity=None):
+    config_level = LEVEL_BY_NAME[config.logger.level]
+    if not verbosity:
+        return config_level
+    else:
+        return LEVEL_BY_VERBOSITY[
+            min([VERBOSITY_BY_LEVEL[config_level] + verbosity, 3])
+        ]
+
 
 def create_logger(**kwargs):
     return Logger(observer=publisher, **kwargs)
@@ -47,12 +67,10 @@ def create_logger(**kwargs):
 
 @implementer(ILogObserver)
 class CliObserver:
-    def __init__(self, config):
-        self.threshold = LogLevel._levelPriorities[
-            LEVEL_BY_NAME[
-                config.logger.level
-            ]
-        ]
+    def __init__(self, config, level=None, verbosity=None):
+        if not level:
+            level = get_level_config(config, verbosity)
+        self.threshold = LogLevel._levelPriorities[level]
 
     def __call__(self, event):
         level = event.get('log_level', LogLevel.error)
@@ -138,7 +156,7 @@ def captured(log):
     try:
         yield
     except:  # noqa
-        log.failure('== FLAGRANT SYSTEM ERROR==')
+        log.failure('== FLAGRANT SYSTEM ERROR ==')
         log.critical('NOT OK 🙅')
     else:
         log.info('OK 👍')

@@ -42,8 +42,8 @@ def menu_session(hed, subhed, xdg_menu):
     class MenuWidget(urwid.TreeWidget):
         @session.catch
         def get_display_text(self):
-            session = self.get_node().get_value()
-            return f'{session.getName()}:'
+            menu_entry = self.get_node().get_value()
+            return f'{menu_entry.getName()}:'
 
     class MenuNode(urwid.ParentNode):
         @session.catch

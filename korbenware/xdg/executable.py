@@ -40,8 +40,9 @@ class Executable:
 
     @classmethod
     def from_desktop_entry(cls, entry):
-        # TODO: Can we recover the entry's filename?
-        return cls._construct(None, None, entry, True, None)
+        return cls._construct(
+            getattr(entry, 'filename', None), None, entry, True, None
+        )
 
     @classmethod
     def _construct(cls, fullpath, filename, entry, parsed, parse_exc):

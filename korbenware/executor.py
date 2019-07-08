@@ -89,7 +89,7 @@ class Executor:
     ):
         self.log.debug(
             'Running XDG executable {filename}...',
-            filename=executable.filename
+            filename=executable.filename or ('<unknown filename>')
         )
         return self.run_exec_key(
             executable.filename,
