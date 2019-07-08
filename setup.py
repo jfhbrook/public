@@ -19,7 +19,8 @@ setup(
             'kbconfig=korbenware.cli.config:main',
             'kbsession=korbenware.cli.session:main',
             'kbmenu=korbenware.cli.menu:main',
-            'kbopen=korbenware.cli.open:main'
+            'kbopen=korbenware.cli.open:main',
+            'kbjournal=korbenware.cli.journal:main'
         ]
     ),
     keywords=[
