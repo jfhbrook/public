@@ -14,7 +14,7 @@ setup(
     url="https://github.com/jfhbrook/pyxsession",
     entry_points=dict(
         console_scripts=[
-            'pyxsession-config=pyxsession.cli.config:main',
+            'pyxconfig=pyxsession.cli.config:main',
             'pyxmenu=pyxsession.cli.menu:main',
             'pyxopen=pyxsession.cli.open:main'
         ]

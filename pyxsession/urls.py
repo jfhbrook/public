@@ -1,10 +1,20 @@
 import urllib
 
+from pyxsession.logger import create_logger
+
 
 class UrlRegistry:
+    log = create_logger()
+
     def __init__(self, config, applications):
-        # Nice and sweet...for now.
-        self.lookup = dict(**config.urls)
+        self.lookup = dict()
+        for scheme, desktop_file in config.urls.items():
+            self.log.debug(
+                'Registering desktop application {application_name} as the opener for {scheme}:// urls...',
+                application_name=desktop_file,
+                scheme=scheme
+            )
+            self.lookup[scheme] = desktop_file
         self.applications = applications
 
     def get_application_by_url(self, url):

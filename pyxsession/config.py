@@ -3,9 +3,11 @@ import os.path
 import attr
 import cattr
 import toml
+from twisted.logger import LogLevel
 
 from pyxsession.dbus import DBusField, List, Str, Variant
 from pyxsession.dbus.marshmallow.schema import DBUS_FIELD, DBUS_NESTED
+from pyxsession.logger import create_logger
 from pyxsession.util.decorators import representable
 from pyxsession.xdg import XDG_CURRENT_DESKTOP, config_basedir
 from pyxsession.xdg.autostart import XDG_AUTOSTART_DIRS
@@ -61,12 +63,25 @@ class MimeConfig:
     cache = value('/usr/share/applications/mimeinfo.cache')
     environment = value(XDG_CURRENT_DESKTOP)
 
+
+@config
+class LoggerConfig:
+    level = value('debug')
+
+
+@config
+class MetaConfig:
+    config_filename = value('???')
+
+
 @config
 class BaseConfig:
     autostart = subconfig(AutostartConfig)
+    meta = subconfig(MetaConfig)
     menu = subconfig(MenuConfig)
     mime = subconfig(MimeConfig)
     applications = subconfig(ApplicationsConfig)
+    logger = subconfig(LoggerConfig)
     # TODO: validate
     urls = value(dict(), field=DBusField('a{ss}'))
 
@@ -87,7 +102,36 @@ def load_config():
     with f:
         toml_config = toml.load(f)
 
-    return cattr.structure(toml_config, BaseConfig)
+    structured = cattr.structure(toml_config, BaseConfig)
+
+    structured.meta.config_filename = filename
+
+    return structured
+
+
+log = create_logger()
+
+
+def _log_config(path, obj, level):
+    for attr in obj.__attrs_attrs__:
+        if hasattr(attr.type, '__attrs_attrs__'):
+            _log_config(path + [attr.name], getattr(obj, attr.name), level)
+        else:
+            log.emit(
+                level,
+                'config: {path}={value}',
+                path='.'.join(path + [attr.name]),
+                value=getattr(obj, attr.name)
+            )
+
+
+def log_config(config, level=LogLevel.debug):
+    log.emit(
+        level,
+        'Loaded configuration from {filename}...',
+        filename=config.meta.config_filename
+    )
+    _log_config(['config'], config, level)
 
 
 def config_dbus_object(service, config):
@@ -95,7 +139,6 @@ def config_dbus_object(service, config):
 
     @obj.method([], BaseConfig)
     def get_base_config():
-        print(config)
         return config
 
     return obj

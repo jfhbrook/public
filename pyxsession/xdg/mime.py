@@ -1,11 +1,13 @@
 import os.path
 
 import attr
+from twisted.python.failure import Failure
 from xdg.BaseDirectory import load_data_paths, xdg_config_dirs
 from xdg.IniFile import IniFile
 from xdg.Exceptions import ParsingError
 from xdg.Mime import MIMEtype, get_type2 as get_type
 
+from pyxsession.logger import create_logger
 from pyxsession.util.decorators import dictable, representable
 from pyxsession.xdg.applications import XDG_APPLICATIONS_DIRS
 
@@ -108,7 +110,7 @@ class DesktopDatabase:
     _cache = None
 
     @classmethod
-    def from_file(cls, filename):
+    def from_file(cls, filename, log=None):
         ini_file = IniFile()
         try:
             ini_file.parse(filename)
@@ -136,6 +138,8 @@ class DesktopDatabase:
 @representable
 @dictable(['environment', 'lookup', 'defaults'])
 class MimeRegistry:
+    log = create_logger()
+
     def __init__(self, config, applications):
         self.environment = config.mime.environment
         self.applications = applications
@@ -143,15 +147,26 @@ class MimeRegistry:
         self.defaults = dict()
 
         for directory in XDG_APPLICATIONS_DIRS:
-            database = DesktopDatabase.from_file(
-                os.path.join(directory, 'mimeinfo.cache')
+            filename = os.path.join(directory, 'mimeinfo.cache')
+            self.log.debug(
+                'Loading desktop mimeinfo database {filename}',
+                filename=filename
             )
+            database = DesktopDatabase.from_file(filename)
 
-            # TODO: Log errors
             if not database.parsed:
-                print(database.parse_exc)
+                self.log.warn(
+                    'INI file parse error while loading mimeinfo database {filename} - skipping!',  # noqa
+                    filename=filename,
+                    log_failure=Failure(database.parse_exc)
+                )
             else:
                 for mimetype, apps in database.items():
+                    self.log.debug(
+                        'Associating applications {applications} with mimetype {mimetype}...',  # noqa
+                        mimetype=mimetype,
+                        applications=apps
+                    )
                     _insert(mimetype, apps, self.lookup)
 
         # TODO: Alternate algorithm that doesn't require reversing?
@@ -164,18 +179,37 @@ class MimeRegistry:
             if mime_list.parsed:
                 added_associations = mime_list.get_added_associations()
                 for mimetype, apps in added_associations.items():
+                    self.log.debug('Associating applications {applications} with mimetype {mimetype}...',  # noqa
+                        mimetype=mimetype,
+                        applications=apps
+                    )
                     _insert(mimetype, apps, self.lookup)
 
                 removed_associations = mime_list.get_removed_associations()
                 for mimetype, apps in removed_associations.items():
+                    self.log.debug('Disassociating applications {applications} from mimetype {mimetype}...',  # noqa
+                        mimetype=mimetype,
+                        applications=apps
+                    )
                     _remove(mimetype, apps, self.lookup)
 
                     # Assumption is that if the mimetype is removed that we
                     # don't want an associated default application either.
                     #
                     # I could change my mind on this.
-                    if mimetype in self.default_applications:
-                        for removed_app in apps:
+                    if mimetype in self.defaults:
+                        to_remove = {
+                            app
+                            for app in apps
+                            if app in self.defaults[mimetype]
+                        }
+                        if to_remove:
+                            self.log.debug(
+                                'Removing applications {applications} as defaults from mimetype {mimetype}...',  # noqa
+                                mimetype=mimetype,
+                                applications=list(to_remove)
+                            )
+                        for removed_app in to_remove:
                             self.defaults[mimetype] = [
                                 app
                                 for app in self.defaults[mimetype]
@@ -184,8 +218,12 @@ class MimeRegistry:
 
                 default_applications = mime_list.get_default_applications()
 
-
                 for mimetype, apps in default_applications.items():
+                    self.log.debug(
+                        'Registering applications {applications} as the defaults for mimetype {mimetype}...',
+                        mimetype=mimetype,
+                        applications=apps
+                    )
                     _insert(mimetype, apps, self.lookup)
 
                     # Current assumption is that an override should override
@@ -194,8 +232,11 @@ class MimeRegistry:
                     # I could change my mind on this.
                     self.defaults[mimetype] = apps
             else:
-                # TODO: Logging
-                print(mime_list.exc)
+                self.log.warn(
+                    'Parse issues while loading mimeapp list at {filename} - skipping!',  # noqa
+                    filename=mime_list.filename,
+                    log_failure=Failure(mime_list.parse_exc)
+                )
 
     def applications_by_filename(self, filename):
         return [

@@ -3,8 +3,10 @@ import os
 import os.path
 
 import attr
+from twisted.python.failure import Failure
 from xdg.BaseDirectory import load_data_paths
 
+from pyxsession.logger import create_logger
 from pyxsession.util.decorators import dictable, representable
 from pyxsession.xdg.executable import Executable
 
@@ -34,7 +36,8 @@ class Application:
 @representable
 @dictable(['entries'])
 class ApplicationSet:
-    def __init__(self):
+    def __init__(self, log):
+        self.log = log
         self.entries = []
 
     def add_entry(self, entry):
@@ -46,35 +49,73 @@ class ApplicationSet:
             parsed = executable.parsed and executable.exec_key_parsed
             valid = executable.validated
 
+            if not executable.parsed:
+                self.log.warn(
+                    'Desktop file parse error while loading {filename}!',
+                    filename=executable.filename,
+                    log_failure=Failure(executable.parse_exc)
+                )
+            elif not executable.exec_key_parsed:
+                self.log.warn(
+                    'Exec key parse error while loading {filename}!',
+                    filename=executable.filename,
+                    log_failure=Failure(executable.exec_key_parse_exc)
+                )
+
+            if executable.parsed and not valid:
+                self.log.debug(
+                    'Desktop file validation issue while loading {filename}!',
+                    filename=executable.filename,
+                    log_failure=Failure(executable.validate_exc)
+                )
+
             if (
                 (not parsed and skip_unparsed)
                 or
                 (not valid and skip_invalid)
             ):
+                self.log.info(
+                    'Skipping loading {filename} due to loading issues',
+                    filename=executable.filename
+                )
                 continue
+            else:
+                if not parsed:
+                    self.log.warn(
+                        'Loading {filename} despite parsing issues!',
+                        filename=executable.filename
+                    )
 
             return entry
 
         return None
 
 
-def _load_application_dir(dirpath, cls):
+def _load_application_dir(dirpath, log, cls):
     try:
         filenames = os.listdir(dirpath)
     except FileNotFoundError as exc:
-        # TODO: Logging
-        print(exc)
         return
 
     for filename in filenames:
-        yield cls.from_path(os.path.join(dirpath, filename))
+        if filename.endswith('.desktop'):
+            fullpath = os.path.join(dirpath, filename)
+
+            log.debug(
+                'Loading application desktop file {filename}',
+                filename=fullpath
+            )
+
+            yield cls.from_path(fullpath)
 
 
-def load_application_sets(dirs, cls=Application):
-    entry_sets = defaultdict(ApplicationSet)
+def load_application_sets(dirs, log, cls=Application):
+    entry_sets = defaultdict(lambda: ApplicationSet(log))
 
     for dirname in dirs:
-        for entry in _load_application_dir(dirname, cls):
+        log.debug('Loading application directory {dirname}', dirname=dirname)
+
+        for entry in _load_application_dir(dirname, log, cls):
             entry_sets[entry.filename].add_entry(entry)
 
     return entry_sets
@@ -86,9 +127,11 @@ def load_application_sets(dirs, cls=Application):
     'entries'
 ])
 class ApplicationsRegistry:
+    log = create_logger()
+
     def __init__(self, config, key='applications', cls=Application):
         self.directories = getattr(config, key).directories
-        self.entry_sets = load_application_sets(self.directories, cls)
+        self.entry_sets = load_application_sets(self.directories, self.log, cls)
         self.entries = dict()
 
         for filename, entry_set in self.entry_sets.items():

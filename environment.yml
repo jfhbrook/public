@@ -11,6 +11,7 @@ dependencies:
   - twisted=18.9.0
   - pip:
     - cattrs==0.9.0
+    - crayons==0.2.0
     - gshell.py==0.0.4
     - marshmallow==3.0.0rc7
     - pyee==6.0.0
@@ -18,4 +19,4 @@ dependencies:
     - twisted_ipython==2.0.0
     - txdbus==1.1.0
     - urwid==2.0.1
-    - voluptuous==0.11.5
+    - zope.interface==4.6.0

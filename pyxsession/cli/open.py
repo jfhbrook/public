@@ -3,8 +3,9 @@ import urllib
 import click
 
 from pyxsession.cli.base import async_command
-from pyxsession.config import load_config
+from pyxsession.config import load_config, log_config
 from pyxsession.executor import default_executor
+from pyxsession.logger import CliObserver, publisher
 from pyxsession.open import ApplicationFinder, exec_key_fields
 from pyxsession.urls import UrlRegistry
 from pyxsession.xdg.applications import ApplicationsRegistry
@@ -15,7 +16,13 @@ from pyxsession.xdg.mime import MimeRegistry
 @click.argument('urls_and_or_files', nargs=-1)
 @async_command
 async def main(reactor, urls_and_or_files):
+
     config = load_config()
+
+    observer = CliObserver(config)
+    publisher.addObserver(observer)
+
+    log_config(config)
 
     applications = ApplicationsRegistry(config)
     mime = MimeRegistry(config, applications)

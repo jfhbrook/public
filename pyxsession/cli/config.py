@@ -1,14 +1,17 @@
 import click
+from twisted.logger import LogLevel
+
 from pyxsession.cli.base import async_command
-from pyxsession.config import load_config
+from pyxsession.config import load_config, log_config
+from pyxsession.logger import CliObserver, publisher
 
 
 @click.command()
 @async_command
 async def main(reactor):
-    # TODO: Anything lmao
+    config = load_config()
 
-    # TODO: Pass any cli parameters in that might override the config
-    print(load_config())
+    observer = CliObserver(config)
+    publisher.addObserver(observer)
 
-    return
+    log_config(config, level=LogLevel.info)

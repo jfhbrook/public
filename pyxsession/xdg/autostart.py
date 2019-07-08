@@ -5,6 +5,7 @@ import os.path
 import attr
 from xdg.BaseDirectory import xdg_config_dirs
 
+from pyxsession.logger import create_logger
 from pyxsession.util.decorators import dictable, representable
 from pyxsession.xdg import config_basedir
 from pyxsession.xdg.applications import (
@@ -19,16 +20,33 @@ XDG_AUTOSTART_DIRS = [
 
 
 class Autostart(Application):
+    def __init__(self):
+        super().__init__()
+        self._conditions = dict()
+        self_shoulds = dict()
+
+    def autostart_conditions(self, environment_name):
+        if environment_name in self._conditions:
+            conditions = self._conditions[environment_name]
+        else:
+            conditions = {
+                parsed: self.executable.parsed,
+                is_application: self.executable.is_application,
+                exec_parsed: self.executable.exec_parsed,
+                not_hidden: not self.executable.is_hidden,
+                not_dbus_activatable: not self.executable.dbus_activatable,
+                should_show_in: self.executable.should_show_in(environment_name),
+                passes_try_exec: self.executable.passes_try_exec()
+            }
+            self._conditions[environment_name] = conditions
+        return conditions
+
     def should_autostart(self, environment_name):
-        return all([
-            self.executable.parsed,
-            self.executable.is_application,
-            self.executable.exec_parsed,
-            not self.executable.is_hidden,
-            not self.executable.dbus_activatable,
-            self.executable.should_show_in(environment_name),
-            self.executable.passes_try_exec()
-        ])
+        if environment_name in self._shoulds:
+            should = self._shoulds[environment_name]
+        else:
+            should = all(self.autostart_conditions(environment_name))
+        return should
 
 
 @representable
@@ -39,12 +57,22 @@ class Autostart(Application):
     'autostart_entries'
 ])
 class AutostartRegistry(ApplicationsRegistry):
+    log = create_logger()
+
     def __init__(self, config):
         super().__init__(config, key='autostart', cls=Autostart)
         self.autostart_entries = dict()
 
-        self.autostart_entries = {
-            filename: entry
-            for entry in self.entries.items()
-            if entry.should_autostart(self.environment_name)
-        }
+        for entry in self.entries.items():
+            if entry.should_autostart(self.environment_name):
+                self.log.debug(
+                    'Entry {filename} elligible for autostart',
+                    filename=entry.filename
+                )
+                self.autostart_entries[filename] = entry
+            else:
+                self.log.warn(
+                    'Entry {filename} not eligible for autostart',
+                    filename=entry.filename,
+                    conditions=entry.autostart_conditions()
+                )
