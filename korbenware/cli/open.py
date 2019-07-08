@@ -23,11 +23,15 @@ async def main(reactor, urls_and_or_files):
 
     publisher.addObserver(CliObserver(config))
 
+    hed = 'Korby Jr. The File/Url Opener 🦜'
+    subhed = '"open up or else!"'
+    attribution = 'programmed entirely while eating a spider plant'
+ 
     with captured(log):
         log.info('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓')
-        log.info('┃ {hed}                 ┃', hed='Korby Jr. The File/Url Opener 🦜')  # noqa
-        log.info('┃ {subhed}                              ┃', subhed='"open up or else!"')  # noqa
-        log.info('┃ {attribution} ┃', attribution='programmed entirely while eating a spider plant')  # noqa
+        log.info('┃ {hed}                 ┃', hed=hed)
+        log.info('┃ {subhed}                              ┃', subhed=subhed)
+        log.info('┃ {attribution} ┃', attribution=attribution)
         log.info('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛')
         log_config(config)
 

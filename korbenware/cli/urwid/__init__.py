@@ -63,3 +63,4 @@ class Session:
             return await self.done
         finally:
             loop.stop()
+            print()

@@ -3,8 +3,11 @@ import xdg.Menu
 
 from korbenware.cli.base import async_command
 from korbenware.cli.urwid.menu import menu_session
-from korbenware.config import load_config
+from korbenware.config import load_config, log_config
 from korbenware.executor import default_executor
+from korbenware.logger import (
+    CliObserver, create_logger, publisher, captured
+)
 
 
 @click.command()
@@ -12,10 +15,27 @@ from korbenware.executor import default_executor
 async def main(reactor):
     config = load_config()
 
-    xdg_menu = xdg.Menu.parse(config.menu.filename)
+    log = create_logger(namespace='korbenware.cli.menu')
 
-    session = menu_session(xdg_menu)
+    publisher.addObserver(CliObserver(config))
 
-    desktop_entry = await session.run()
+    hed = "Grandmaw Korben's XDG Menu Explorer 🦜"
+    subhed = '"nice work, pixel birdie!"'
+    attribution = 'programmed entirely while unemployed'
 
-    default_executor.run_xdg_desktop_entry(desktop_entry)
+    with captured(log):
+        log.info('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓')
+        log.info('┃ {hed}  ┃', hed=hed)
+        log.info('┃ {subhed}             ┃', subhed=subhed)  # noqa
+        log.info('┃ {attribution}   ┃', attribution=attribution)  # noqa
+        log.info('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛')
+
+        log_config(config)
+
+        xdg_menu = xdg.Menu.parse(config.menu.filename)
+
+        session = menu_session(xdg_menu)
+
+        desktop_entry = await session.run()
+
+        default_executor.run_xdg_desktop_entry(desktop_entry)
