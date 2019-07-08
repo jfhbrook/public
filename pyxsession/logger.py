@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+from textwrap import dedent
 import threading
 from queue import Queue
 
@@ -59,7 +61,13 @@ class CliObserver:
 
         if LogLevel._levelPriorities[level] >= self.threshold:
 
-            pretty_namespace = crayons.blue(event.get('log_namespace', '????'))
+            namespace = event.get('log_namespace', '????')
+
+            if 'log_failure' in event:
+                pretty_namespace = crayons.yellow(namespace)
+            else:
+                pretty_namespace = crayons.blue(namespace)
+
             pretty_level = PRETTY_BY_LEVEL[level]
 
             print(
@@ -71,7 +79,7 @@ class CliObserver:
 
                 for line in _formatTraceback(failure).split('\n'):
                     print(
-                        f'{pretty_level} - {pretty_namespace} - {crayons.yellow("traceback")}: {line}'  # noqa
+                        f'{pretty_level} - {pretty_namespace} - {line}'  # noqa
                     )
 
 
@@ -158,3 +166,16 @@ class JournaldObserver:
             kwargs['TWISTED_FAILURE'] = traceback
 
         self.queue.put((LOG_ACTION, message, kwargs))
+
+
+@contextmanager
+def captured(log):
+    log.info('It worked if it ends with ok')
+    try:
+        yield
+    except:  # noqa
+        log.failure('== FLAGRANT SYSTEM ERROR==')
+        log.critical('NOT OK')
+    else:
+        log.info('ok')
+    

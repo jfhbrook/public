@@ -7,7 +7,7 @@ from pyxsession.xdg.applications import ApplicationsRegistry
 from pyxsession.xdg.mime import MimeRegistry
 
 
-def OpenError(Exception):
+class OpenError(Exception):
     pass
 
 
