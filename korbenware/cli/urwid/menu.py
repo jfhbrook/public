@@ -86,7 +86,8 @@ def menu_session(hed, subhed, xdg_menu):
         urwid.Text(subhed, align='right')
     ])
     session.footer = urwid.Text(
-        'Nav: up/down, page up/page down, home/end 🌹 Collapse/expand: +/- 🌹 Select: [enter] 🌹 Bail: q/Q'
+        'Nav: up/down, page up/page down, home/end 🌹 Collapse/expand: +/- 🌹'
+        'Select: [enter] 🌹 Bail: q/Q'
     )
 
     # TODO: It would be cool if there was an API that made it more obvious

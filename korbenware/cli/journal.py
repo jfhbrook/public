@@ -1,12 +1,13 @@
 import os
-import shutil
 
 import click
 
-from korbenware.config import load_config, log_config
+from twisted.logger import LogLevel
+
+from korbenware.config import load_config
 from korbenware.cli.base import verbosity
 from korbenware.logger import (
-    captured, CliObserver, create_logger, get_level_config, greet,
+    captured, CliObserver, create_logger, greet,
     LEVEL_BY_NAME, publisher, SYSLOG_PRIORITY_BY_LEVEL
 )
 
@@ -47,7 +48,7 @@ def main(verbose, level, journald_args):
             ] + list(journald_args)
 
             log.info('Exec-ing {command}...', command=['journalctl'] + argv)
-        except:
+        except:  # noqa
             argv = None
             raise
 

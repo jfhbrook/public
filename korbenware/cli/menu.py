@@ -41,7 +41,7 @@ async def main(reactor, verbose):
         else:
             log.info(
                 "Opening {name}...",
-                name = desktop_entry.getName()
+                name=desktop_entry.getName()
             )
 
             default_executor.run_xdg_desktop_entry(desktop_entry)

@@ -26,7 +26,7 @@ async def main(reactor, verbose, urls_and_or_files):
     hed = 'Korby Jr. The File/Url Opener 🦜'
     subhed = '"open up or else!"'
     subsubhed = 'programmed entirely while eating a spider plant'
- 
+
     with captured(log):
         greet(log, hed, subhed, subsubhed)
         log_config(config)

@@ -51,6 +51,7 @@ VERBOSITY_BY_LEVEL = {
     level: verbosity for verbosity, level in LEVEL_BY_VERBOSITY.items()
 }
 
+
 def get_level_config(config, verbosity=None):
     config_level = LEVEL_BY_NAME[config.logger.level]
     if not verbosity:
