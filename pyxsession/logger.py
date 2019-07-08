@@ -96,47 +96,8 @@ class JsonStdoutObserver:
         print(eventAsJSON(event))
 
 
-class _Action:
-    pass
-
-
-LOG_ACTION = _Action()
-
-EXIT_ACTION = _Action()
-
-
-class JournaldObserverError(Exception):
-    pass
-
-
 @implementer(ILogObserver)
 class JournaldObserver:
-    def __init__(self, reactor):
-        self.queue = Queue()
-        self.thread = threading.Thread(target=self.worker)
-        self.thread.start()
-        self.reactor = reactor
-        self.reactor.addSystemEventTrigger(
-            'after', 'shutdown', self.stop
-        )
-
-    def stop(self):
-        self.queue.put((EXIT_ACTION, None, None))
-
-    def worker(self):
-        while True:
-            action, message, kwargs = self.queue.get(block=True)
-
-            if action == EXIT_ACTION:
-                break
-            elif action == LOG_ACTION:
-                journal.send(message, **kwargs)
-                self.queue.task_done()
-            else:
-                raise JournaldObserverError(
-                    f'Unknown action {action}'
-                )
-
     def __call__(self, event):
         level = event.get('log_level', LogLevel.error)
         priority = SYSLOG_PRIORITY_BY_LEVEL.get(level, 5)
@@ -151,6 +112,8 @@ class JournaldObserver:
         if 'log_failure' in event:
             failure = event['log_failure']
             traceback = _formatTraceback(failure)
+        else:
+            traceback = None
 
         kwargs =  dict(
             PRIORITY=priority,
@@ -165,7 +128,7 @@ class JournaldObserver:
         if traceback:
             kwargs['TWISTED_FAILURE'] = traceback
 
-        self.queue.put((LOG_ACTION, message, kwargs))
+        journal.send(message, **kwargs)
 
 
 @contextmanager
