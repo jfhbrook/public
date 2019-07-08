@@ -24,7 +24,7 @@ async def main(reactor):
 
     hed = 'Korben the X Session Manager 🦜'
     subhed = 'programmed entirely by the windowsill'
-    subsubhed = 'by Korben'
+    subsubhed = 'by Korben c2019'
  
     with captured(log):
         greet(log, hed, subhed, subsubhed)

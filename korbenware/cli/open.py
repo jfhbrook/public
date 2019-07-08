@@ -12,7 +12,9 @@ from korbenware.xdg.applications import ApplicationsRegistry
 from korbenware.xdg.mime import MimeRegistry
 
 
-@click.command()
+@click.command(
+    help='Open files and URLs with default and mime-appropriate XDG applications'  # noqa
+)
 @verbosity
 @click.argument('urls_and_or_files', nargs=-1, required=True)
 @async_command

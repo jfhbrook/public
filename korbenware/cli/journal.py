@@ -12,10 +12,18 @@ from korbenware.logger import (
 )
 
 
-@click.command(context_settings=dict(ignore_unknown_options=True))
+@click.command(
+    context_settings=dict(ignore_unknown_options=True),
+    help='A thin wrapper around journalctl for loading korbenware-related journald logs'  # noqa
+)
 @verbosity
-@click.option('-l', '--level')
-@click.argument('journald_args', nargs=-1, type=click.UNPROCESSED)
+@click.option(
+    '-l', '--level',
+    help='Search journald logs at or above this Twisted logger level'
+)
+@click.argument(
+    'journald_args', nargs=-1, type=click.UNPROCESSED
+)
 def main(verbose, level, journald_args):
 
     config = load_config()
@@ -47,7 +55,7 @@ def main(verbose, level, journald_args):
                 syslog_identifier
             ] + list(journald_args)
 
-            log.info('Exec-ing {command}...', command=['journalctl'] + argv)
+            log.info('Exec-ing {command}...', command=argv)
         except:  # noqa
             argv = None
             raise

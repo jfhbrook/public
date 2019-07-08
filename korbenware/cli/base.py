@@ -15,4 +15,7 @@ def async_command(cmd):
     return wrapped
 
 
-verbosity = click.option('-v', '--verbose', count=True)
+verbosity = click.option(
+    '-v', '--verbose', count=True,
+    help="Set the verbosity for the cli logger. More v's means more logs!"
+)

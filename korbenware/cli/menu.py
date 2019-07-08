@@ -10,7 +10,9 @@ from korbenware.logger import (
 )
 
 
-@click.command()
+@click.command(
+    help='Display a TUI for the configured XDG app menu'
+)
 @verbosity
 @async_command
 async def main(reactor, verbose):
