@@ -3,27 +3,27 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="pyxsession",
+    name="korbenware",
     version="0.0.1",
     packages=find_packages(),
     include_package_data=True,
-    description="A little X session manager written in python",
+    description="A bunch of Python DIY Linux desktop tools",
     author="Joshua Holbrook",
     author_email="josh.holbrook@gmail.com",
-    url="https://github.com/jfhbrook/pyxsession",
+    url="https://github.com/jfhbrook/korbenware",
     scripts=[
         'bin/pyxsession-environment-loader'
     ],
     entry_points=dict(
         console_scripts=[
-            'pyxconfig=pyxsession.cli.config:main',
-            'pyxmenu=pyxsession.cli.menu:main',
-            'pyxopen=pyxsession.cli.open:main'
+            'kbconfig=korbenware.cli.config:main',
+            'kbmenu=korbenware.cli.menu:main',
+            'kbopen=korbenware.cli.open:main'
         ]
     ),
     keywords=[
         "X11", "window manager", "desktop environment", "X session",
-        "session manager"
+        "session manager", "XDG", "dbus"
     ],
     classifiers=[
         "Programming Language :: Python",
