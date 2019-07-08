@@ -28,16 +28,17 @@
 - [x] now make it support properties and events/signals
 - [x] build out logging framework
 - [x] clean up obvious spelling/formatting issues with gshell and rename LICENSE to COPYING
+- [x] make kbmenu work well, be self-documenting, exit on q, etc
 - [ ] create a dbus service for executing and monitoring programs with queries for state and soft exit (don't load autostart for now)
 - [ ] write tooling for editing local desktop entries and mime/defaults data
 - [ ] make kbopen display a menu when there is no default but there are registered apps for that type
-- [ ] make kbmenu work well, be self-documenting, exit on q, etc
 - [ ] build up templates and tooling for rendering `_repr_markdown_` representations of the config for inspection in nteract
 - [ ] implement dbus activation as necessary
 - [ ] load autostart registry into an executor
 - [ ] add kb-session to my xinitrc (manually activate the conda env)
 - [ ] make toml thinger for configuring running the window manager as a special process
 - [ ] switch completely to using korbenware
+- [ ] theme urwid components
 - [ ] Add license headers to files - most of them will be MPL
 - [ ] set up a PKGBUILD that will build and install globally
 - [ ] document everything (sphinx, RTD, man pages)
