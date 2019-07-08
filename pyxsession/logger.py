@@ -118,12 +118,16 @@ class JournaldObserver:
         kwargs =  dict(
             PRIORITY=priority,
             TWISTED_LEVEL=NAME_BY_LEVEL[level],
-            TWISTED_NAMESPACE=namespace,
-            TWISTED_TIME=time,
             SYSLOG_FACILITY=2,
             # TODO: Read from config
             SYSLOG_IDENTIFIER='pyxsession'
         )
+
+        for k, v in event.items():
+            if k not in {
+                'log_level', 'log_namespace', 'log_format', 'log_logger',
+            }:
+                kwargs[f'TWISTED_{k.upper()}'] = str(v)
 
         if traceback:
             kwargs['TWISTED_FAILURE'] = traceback
