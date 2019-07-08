@@ -12,7 +12,7 @@ setup(
     author_email="josh.holbrook@gmail.com",
     url="https://github.com/jfhbrook/korbenware",
     scripts=[
-        'bin/pyxsession-environment-loader'
+        'bin/korbenware-environment-loader'
     ],
     entry_points=dict(
         console_scripts=[
