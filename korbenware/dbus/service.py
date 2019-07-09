@@ -20,17 +20,21 @@ class Object:
         self.properties = dict()
         self.signals = dict()
 
-    def method(self, arguments, returns):
+    def method(self, arguments, returns, method=None, name=None):
         def register_method(fn):
             args_xform = MultiTransformer(arguments)
             returns_xform = Transformer(returns)
+            method_name = name or fn.__name__
 
-            self.methods[fn.__name__] = (
+            self.methods[method_name] = (
                 args_xform,
                 returns_xform,
                 fn
             )
             return fn
+
+        if method:
+            return register_method(method)
 
         return register_method
 

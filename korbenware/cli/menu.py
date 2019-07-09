@@ -4,7 +4,7 @@ import xdg.Menu
 from korbenware.cli.base import async_command, verbosity
 from korbenware.cli.urwid.menu import menu_session
 from korbenware.config import load_config, log_config
-from korbenware.executor import default_executor
+from korbenware.executor import BaseExecutor
 from korbenware.logger import (
     CliObserver, create_logger, greet, publisher, captured
 )
@@ -30,6 +30,8 @@ async def main(reactor, verbose):
         greet(log, hed, subhed, subsubhed)
         log_config(config)
 
+        executor = BaseExecutor()
+
         xdg_menu = xdg.Menu.parse(config.menu.filename)
 
         session = menu_session(hed, subsubhed, xdg_menu)
@@ -46,4 +48,4 @@ async def main(reactor, verbose):
                 name=desktop_entry.getName()
             )
 
-            default_executor.run_xdg_desktop_entry(desktop_entry)
+            executor.run_xdg_desktop_entry(desktop_entry)

@@ -1,8 +1,9 @@
 import click
+import txdbus
 
 from korbenware.cli.base import async_command
 from korbenware.config import load_config, log_config
-from korbenware.executor import default_executor
+from korbenware.executor import MonitoringExecutor, DBusExecutor
 from korbenware.logger import (
     JournaldObserver, create_logger, publisher, captured, greet
 )
@@ -35,7 +36,31 @@ async def main(reactor):
         urls = UrlRegistry(config, applications)
         finder = ApplicationFinder(urls, mime)
 
-        # TODO: Set up executors
-        # TODO: Set up dbus service
-        # TODO: Set up SIGINT hooks
+        # For the window manager and maybe the bar
+        # critical_executor = MonitoringExecutor(reactor)
 
+        # For everything else
+        default_executor = ApplicationExecutor(reactor, applications)
+
+        dbus_executor = DBusExecutor(
+            obj_path='/korbenware/executors/DefaultExecutor',
+            service=service,
+            reactor=reactor,
+            underlying=default_executor
+        )
+
+        # TODO: Set up SIGINT/exit hooks
+        exit = None
+
+        # TODO: Set up lifecycle hooks
+        # TODO: Build dbus APIs for inspecting the state of the process
+
+        # Start the world
+        default_executor.start()
+
+        dbus_conn = await txdbus.client.connect(reactor)
+
+        await dbus_executor.start_server(dbus_conn)
+
+        # TODO: need to await something
+        await exit

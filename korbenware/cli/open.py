@@ -2,7 +2,7 @@ import click
 
 from korbenware.cli.base import async_command, verbosity
 from korbenware.config import load_config, log_config
-from korbenware.executor import default_executor
+from korbenware.executor import BaseExecutor
 from korbenware.logger import (
     captured, CliObserver, create_logger, greet, publisher
 )
@@ -38,6 +38,9 @@ async def main(reactor, verbose, urls_and_or_files):
         urls = UrlRegistry(config, applications)
         finder = ApplicationFinder(urls, mime)
 
+        # TODO: dbus executor
+        executor = BaseExecutor()
+
         for url_or_file in urls_and_or_files:
             try:
                 app = finder.get_by_url_or_file(url_or_file)
@@ -52,7 +55,7 @@ async def main(reactor, verbose, urls_and_or_files):
                     url_or_file=url_or_file,
                     application=app.filename
                 )
-                default_executor.run_xdg_application(
+                executor.run_xdg_application(
                     app,
                     exec_key_fields=exec_key_fields(app, url_or_file)
                 )
