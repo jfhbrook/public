@@ -1,6 +1,7 @@
 import attr
 
 from korbenware.dbus import Bool, dbus_attr, DBusField, Str, List
+from korbenware.dbus.proxy import dbus_method, dbus_proxy
 from korbenware.detach import spawn as spawn_detached
 from korbenware.logger import create_logger
 from korbenware.twisted.procmon import ProcessMonitor
@@ -198,56 +199,17 @@ class DBusArgvPayload(MonitorAttrsMixin, EnvAttrsMixin):
     argv = dbus_attr(field=List(Str()), default=attr.Factory(list))
 
 
-def call_dbus(remote_method):
-    def wrapped(factory):
-        async def remote_call(self, *args, **kwargs):
-            argument = factory(self, *args, **kwargs)
-            await getattr(self.remote_executor, remote_method)(argument)
-        return remote_call
-
-    return wrapped
-
-
-def respond_dbus(method_name):
-    def local_method(self, dbus_args):
-        if hasattr(dbus_args, 'repair_env_in_place'):
-            dbus_args.repair_env_in_place()
-        return getattr(self.underlying, method_name)(**attr.asdict(dbus_args))
-
-    return local_method
-
-
-def map_method(executor, name):
-    return dict(
-        name=name,
-        method=getattr(executor, f'_{name}')
-    )
-
-
+@dbus_proxy
 class DBusExecutor(BaseExecutor):
-    def __init__(self, service, obj_path, underlying=None, **kwargs):
-        super().__init__(**kwargs)
 
-        self.service = service
-        self.obj = service.object(obj_path)
+    @dbus_method([DBusArgvPayload], None)
+    async def run_argv(self, server_method, *args, **kwargs):
+        await server_method(DBusArgvPayload(*args, **kwargs))
 
-        self.obj.method(
-            [DBusArgvPayload], None,
-            **map_method(self, 'run_dbus_argv')
-        )
-
-        self.obj.method(
-            [DBusApplicationPayload], None,
-            **map_method(self, 'run_dbus_application')
-        )
-
-        if underlying:
-            self.underlying = underlying
-
-    def run_argv(self, *args, **kwargs):
-        return DBusArgvPayload(*args, **kwargs)
-
-    _run_dbus_argv = respond_dbus('run_argv')
+    @run_argv.server_method
+    async def _run_dbus_argv(self, payload):
+        payload.repair_env_in_place()
+        await self.underlying.run_argv(**payload)
 
     # run_exec_key calls run_argv
     # run_command calls run_exec_key
@@ -262,25 +224,19 @@ class DBusExecutor(BaseExecutor):
             'run_xdg_desktop_entry not implemented over dbus!'
         )
 
-    @call_dbus('run_dbus_application')
-    def run_xdg_application(self, app, **kwargs):
-        return DBusApplicationPayload(
-            filename=app.filename,
-            **kwargs
-        )
-
-    @call_dbus('run_dbus_application')
-    def run_xdg_application_by_name(self, filename, **kwargs):
-        return DBusApplicationPayload(
+    @dbus_method([DBusApplicationPayload], None)
+    async def run_xdg_application_by_name(
+        self, server_method, filename, **kwargs
+    ):
+        await server_method(DBusApplicationPayload(
             filename=filename,
             **kwargs
-        )
+        ))
 
-    _run_dbus_application = respond_dbus('run_xdg_application_by_name')
+    @run_xdg_application_by_name.server_method
+    async def _run_dbus_application(self, payload):
+        payload.repair_env_in_place()
+        await self.underlying.run_xdg_application_by_name(**payload)
 
-    async def start_client(self, connection):
-        self.client = await self.service.client(connection)
-        self.remote_executor = self.client.korbenware.Executor
-
-    async def start_server(self, connection):
-        self.server = await self.service.server(connection)
+    def run_xdg_application(self, app, **kwargs):
+        return self.run_xdg_application_by_name(app.filename, **kwargs)
