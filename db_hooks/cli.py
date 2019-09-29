@@ -26,8 +26,12 @@ from pygments.formatters import Terminal256Formatter
 import toml
 
 from db_hooks import (
-    CONFIG_LOCATIONS, ConfigurationNotFoundError, GLOBAL_CONFIG, LOCAL_CONFIG,
-    load_config, get_cli_command
+    CONFIG_LOCATIONS,
+    ConfigurationNotFoundError,
+    GLOBAL_CONFIG,
+    LOCAL_CONFIG,
+    load_config,
+    get_cli_command,
 )
 
 
@@ -85,6 +89,7 @@ def print_config_for_database(filename=None):
         "Could not find a configuration in either of the following locations: "
         + "; ".join(CONFIG_LOCATIONS)
     )
+
 
 @main.command(help="List available db_hooks database connections.")
 @click.option(

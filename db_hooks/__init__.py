@@ -97,10 +97,10 @@ def get_cli_command(name, filename=None):
         env = dict()
 
         for cli_key, conn_key in [
-            ('-U', "username"),
-            ('-h', "host"),
-            ('-p', "port"),
-            ('-d', "database")
+            ("-U", "username"),
+            ("-h", "host"),
+            ("-p", "port"),
+            ("-d", "database"),
         ]:
             if getattr(url, conn_key, None):
                 argv.append(cli_key)
