@@ -4,7 +4,7 @@ Extremely beta sqlalchemy and toml based sql connection manager.
 
 ## config file
 
-`db_hooks` looks for toml a local config file at `./.databases.toml` in your working directory and then looks for a global config file using the [appdirs](https://pypi.org/project/appdirs/) library. Right now there isn't an obvious way to find this path, but running `db_hooks list` will bomb with a useful error message if the file isn't there. In general, try these locations:
+`db_hooks` looks for a local config file at `./.databases.toml` in your working directory and then looks for a global config file using the [appdirs](https://pypi.org/project/appdirs/) library. Right now there isn't an obvious way to find this path, but running `db_hooks list` will bomb with a useful error message if the file isn't there. In general, try these locations:
 
 |         os | location                                                |
 |------------|---------------------------------------------------------|
