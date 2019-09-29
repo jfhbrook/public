@@ -6,7 +6,7 @@ install_into_environment:
 install_kernel:
 	python -m ipykernel install --user --name db_hooks
 
-generate_requirements_txt:
+requirements.txt:
 	python ./scripts/conda2requirements.py
 	pip-compile requirements.in
 
