@@ -15,6 +15,7 @@ dependencies:
   - toml=0.10.0
   - twine=2.0.0
   - pip:
+    - cachetools==3.1.1
     - flake8-black==0.1.1
     - pip-tools==4.1.0
     - psycopg2-binary==2.8.3

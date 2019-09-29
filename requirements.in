@@ -1,5 +1,6 @@
 appdirs==1.4.3
 black==19.3b0
+cachetools==3.1.1
 click==7.0
 flake8-black==0.1.1
 flake8==3.7.8
