@@ -12,7 +12,7 @@ Extremely beta sqlalchemy and toml based sql connection manager.
 |        osx | `~/Library/Application Support/db_hooks/databases.toml` |
 | windows 10 | `~\AppData\local\jfhbrook\db_hooks`                     |
 
-Keys in the TOML file are connection names. Under those are key/value pairs for the varios parameters in a connection. Connections support the following parameters:
+Keys in the TOML file are connection names. Under those are key/value pairs for the various parameters in a connection. Connections support the following parameters:
 
 * `connection` - a sqlalchemy-compatible connstring. May have a `{password}` f-string parameter.
 * `password_cmd` - a bash command that will be executed in order to fetch the password, which will be applied to `connection` as an f-string.
