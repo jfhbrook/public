@@ -126,9 +126,9 @@ def connect(ctx, name):
     env = dict(os.environ, **env)
 
     if not shutil.which(cmd):
-        raise ClientProgramNotFoundError(f"`Command {cmd} not found.")
+        raise ClientProgramNotFoundError("`Command {cmd} not found.".format(cmd))
 
-    if argv:
+    if len(argv) > 1:
         os.execvpe(cmd, argv, env)
     else:
         os.execlpe(cmd, env)
