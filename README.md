@@ -27,6 +27,21 @@ connection = "postgresql+psycopg2://josh:{password}@localhost:5432/josh"
 password_cmd = "zenity --password"
 ```
 
+## in your code
+
+Once you have a connection configured, you can load a sqlalchemy engine using
+the `get_engine` API:
+
+```py
+from db_hooks import get_engine
+
+engine = get_engine('pg_example')
+```
+
+This will pull the connection, run your `password_cmd` and give you a configured sqlalchemy engine.
+
+Note that `get_engine` is cached with a `cachetools.TTLCache` configured with a ttl of 10 minutes.
+
 ## the cli
 
 `db_hooks` exposes a CLI that will launch either `psql` or `mysql` in a manner appropriate to the underlying connection. You can run `db_hooks --help` for hopefully useful help output.
