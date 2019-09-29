@@ -32,7 +32,7 @@ LOCAL_CONFIG = os.path.abspath("./.databases.toml")
 CONFIG_LOCATIONS = [LOCAL_CONFIG, GLOBAL_CONFIG]
 
 # Cache connections for 10 minutes
-cache = TTLCache(ttl=600)
+cache = TTLCache(maxsize=512, ttl=600)
 
 
 class DBHooksError(Exception):
