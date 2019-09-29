@@ -21,6 +21,7 @@ import os.path
 import subprocess
 
 from appdirs import user_data_dir
+from cachetools import cached, TTLCache
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import make_url
 import toml
@@ -29,6 +30,9 @@ import toml
 GLOBAL_CONFIG = os.path.join(user_data_dir("db_hooks", "jfhbrook"), "databases.toml")
 LOCAL_CONFIG = os.path.abspath("./.databases.toml")
 CONFIG_LOCATIONS = [LOCAL_CONFIG, GLOBAL_CONFIG]
+
+# Cache connections for 10 minutes
+cache = TTLCache(ttl=600)
 
 
 class DBHooksError(Exception):
@@ -82,6 +86,7 @@ def get_connstring(name, filename=None):
     return conn_info["connection"].format(**kwargs)
 
 
+@cached(cache=cache)
 def get_engine(name, filename=None):
     return create_engine(get_connstring(name, filename=filename))
 
