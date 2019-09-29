@@ -96,16 +96,18 @@ def get_cli_command(name, filename=None):
         argv = ["psql"]
         env = dict()
 
-        for key in ["username", "host", "port"]:
-            if getattr(url, key, None):
-                argv.append(f"--{key}")
-                argv.append(str(getattr(url, key)))
+        for cli_key, conn_key in [
+            ('-U', "username"),
+            ('-h', "host"),
+            ('-p', "port"),
+            ('-d', "database")
+        ]:
+            if getattr(url, conn_key, None):
+                argv.append(cli_key)
+                argv.append(str(getattr(url, conn_key)))
 
         if url.password:
             env["PGPASSWORD"] = url.password
-
-        if url.database:
-            argv.append(url.database)
 
     elif url.drivername.startswith("mysql"):
         argv = ["mysql"]

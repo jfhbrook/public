@@ -25,15 +25,25 @@ from pygments.lexers import TOMLLexer
 from pygments.formatters import Terminal256Formatter
 import toml
 
-from db_hooks import CONFIG_LOCATIONS, load_config, get_cli_command
+from db_hooks import (
+    CONFIG_LOCATIONS, ConfigurationNotFoundError, GLOBAL_CONFIG, LOCAL_CONFIG,
+    load_config, get_cli_command
+)
 
 
 @click.group(help="Interact with db_hooks database connections.")
 @click.option("--filename", type=click.Path(exists=True), default=None)
+@click.option("--system/--no-system", default=None)
 @click.pass_context
-def main(ctx, filename):
+def main(ctx, filename, system):
     ctx.ensure_object(dict)
-    ctx.obj["CONFIG_FILENAME"] = filename
+    if system is not None:
+        if system:
+            ctx.obj["CONFIG_FILENAME"] = GLOBAL_CONFIG
+        else:
+            ctx.obj["CONFIG_FILENAME"] = LOCAL_CONFIG
+    else:
+        ctx.obj["CONFIG_FILENAME"] = filename
 
 
 def print_config_for_filename(filename):
@@ -107,12 +117,13 @@ def connect(ctx, name):
 
     argv, env = get_cli_command(name, filename=filename)
 
-    cmd = argv.pop(0)
+    cmd = argv[0]
+    env = dict(os.environ, **env)
 
     if not shutil.which(cmd):
         raise ClientProgramNotFoundError(f"`Command {cmd} not found.")
 
     if argv:
-        os.execvp(cmd, argv)
+        os.execvpe(cmd, argv, env)
     else:
-        os.execlp(cmd)
+        os.execlpe(cmd, env)
