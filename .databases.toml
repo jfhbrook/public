@@ -1,0 +1,3 @@
+[pg_example]
+connection = "postgresql+psycopg2://josh:{password}@localhost:5432/josh"
+password_cmd = "zenity --password"

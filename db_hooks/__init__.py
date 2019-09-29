@@ -27,7 +27,7 @@ import toml
 
 
 GLOBAL_CONFIG = os.path.join(user_data_dir("db_hooks", "jfhbrook"), "databases.toml")
-LOCAL_CONFIG = os.path.abspath('./.databases.toml')
+LOCAL_CONFIG = os.path.abspath("./.databases.toml")
 CONFIG_LOCATIONS = [LOCAL_CONFIG, GLOBAL_CONFIG]
 
 
@@ -56,8 +56,8 @@ def load_config(filename=None):
             pass
 
     raise ConfigurationNotFoundError(
-        'Could not find a configuration in either of the following locations: ' +
-        '; '.join(CONFIG_LOCATIONS)
+        "Could not find a configuration in either of the following locations: "
+        + "; ".join(CONFIG_LOCATIONS)
     )
 
 
@@ -72,12 +72,9 @@ def get_connstring(name, filename=None):
     kwargs = dict()
 
     if "password_cmd" in conn_info:
-        pw_kwargs = dict(connection_name=name)
-
         kwargs["password"] = (
             subprocess.run(
-                ["bash", "-c", conn_info["password_cmd"]],
-                capture_output=True,
+                ["bash", "-c", conn_info["password_cmd"]], capture_output=True
             )
             .stdout.decode("utf8")
             .strip()

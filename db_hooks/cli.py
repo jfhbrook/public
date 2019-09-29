@@ -25,29 +25,56 @@ from pygments.lexers import TOMLLexer
 from pygments.formatters import Terminal256Formatter
 import toml
 
-from db_hooks import CONFIG_FILENAME, load_config, get_command
+from db_hooks import CONFIG_LOCATIONS, load_config, get_cli_command
 
 
 @click.group(help="Interact with db_hooks database connections.")
-@click.option("--filename", type=click.Path(exists=True), default=CONFIG_FILENAME)
+@click.option("--filename", type=click.Path(exists=True), default=None)
 @click.pass_context
 def main(ctx, filename):
     ctx.ensure_object(dict)
     ctx.obj["CONFIG_FILENAME"] = filename
 
 
-def print_config(filename):
+def print_config_for_filename(filename):
     with open(filename, "r") as f:
         click.echo(highlight(f.read(), TOMLLexer(), Terminal256Formatter()))
 
 
-def print_config_for_database(name, filename):
+def print_config(filename=None):
+    if filename:
+        return print_config_for_filename(filename)
+    for filename in CONFIG_LOCATIONS:
+        try:
+            return print_config_for_filename(filename)
+        except FileNotFoundError:
+            pass
+    raise ConfigurationNotFoundError(
+        "Could not find a configuration in either of the following locations: "
+        + "; ".join(CONFIG_LOCATIONS)
+    )
+
+
+def print_config_for_database_with_filename(name, filename):
     config = load_config(filename)
     conn_info = config[name]
     click.echo(
         highlight(toml.dumps({name: conn_info}), TOMLLexer(), Terminal256Formatter())
     )
 
+
+def print_config_for_database(filename=None):
+    if filename:
+        return print_config_for_database_with_filename(filename)
+    for filename in CONFIG_LOCATIONS:
+        try:
+            return print_config_for_database_with_filename(filename)
+        except FileNotFoundError:
+            pass
+    raise ConfigurationNotFoundError(
+        "Could not find a configuration in either of the following locations: "
+        + "; ".join(CONFIG_LOCATIONS)
+    )
 
 @main.command(help="List available db_hooks database connections.")
 @click.option(
@@ -78,7 +105,7 @@ class ClientProgramNotFoundError(Exception):
 def connect(ctx, name):
     filename = ctx.obj["CONFIG_FILENAME"]
 
-    argv, env = get_command(name, filename=filename)
+    argv, env = get_cli_command(name, filename=filename)
 
     cmd = argv.pop(0)
 

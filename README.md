@@ -15,8 +15,7 @@ Extremely beta sqlalchemy and toml based sql connection manager.
 Keys in the TOML file are connection names. Under those are key/value pairs for the varios parameters in a connection. Connections support the following parameters:
 
 * `connection` - a sqlalchemy-compatible connstring. May have a `{password}` f-string parameter.
-* `password` - a plaintext password that can be applied to `connection`
-* `password_cmd` - a bash command that will be executed in order to fetch the password.
+* `password_cmd` - a bash command that will be executed in order to fetch the password, which will be applied to `connection` as an f-string.
 
 In general, one would use `password_cmd` to write a small snippet that fetches the password. This is designed to allow the most flexibility and therefore will depend on your needs.
 
@@ -34,4 +33,4 @@ password_cmd = "zenity --password"
 
 ## licensing
 
-This library is licensed under the Apache Software License. See the LICENSE file for details.
+This library is licensed under the Apache Software License. See the LICENSE and NOTICE files for details.
