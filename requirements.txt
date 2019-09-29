@@ -4,7 +4,10 @@
 #
 #    pip-compile requirements.in
 #
+--index-url https://devpi.squarespace.net/root/sqsp/+simple/
+
 appdirs==1.4.3
+appnope==0.1.0            # via ipython
 attrs==19.1.0             # via black
 backcall==0.1.0           # via ipython
 black==19.3b0
@@ -25,6 +28,8 @@ jedi==0.15.1              # via ipython
 jupyter-client==5.3.3     # via ipykernel
 jupyter-core==4.5.0       # via jupyter-client
 mccabe==0.6.1             # via flake8
+numpy==1.17.2             # via pandas
+pandas==0.25.1
 parso==0.5.1              # via jedi
 pexpect==4.7.0            # via ipython
 pickleshare==0.7.5        # via ipython
@@ -36,7 +41,8 @@ ptyprocess==0.6.0         # via pexpect
 pycodestyle==2.5.0        # via flake8
 pyflakes==2.1.1           # via flake8
 pygments==2.4.2
-python-dateutil==2.8.0    # via jupyter-client
+python-dateutil==2.8.0    # via jupyter-client, pandas
+pytz==2019.2              # via pandas
 pyyaml==5.1.2
 pyzmq==18.1.0             # via jupyter-client
 readme-renderer==24.0     # via twine
