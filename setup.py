@@ -10,7 +10,7 @@ with open(README_md, "r") as f:
 
 setup(
     name="db_hooks",
-    version="0.0.6",
+    version="0.0.7",
     packages=find_packages(),
     include_package_data=True,
     description="A simple sqlalchemy connection configuration manager",
@@ -20,7 +20,7 @@ setup(
     author_email="josh.holbrook@gmail.com",
     url="https://github.com/jfhbrook/db_hooks",
     python_requires=">=3.5",
-    install_requires=["appdirs", "click", "pygments", "sqlalchemy", "toml"],
+    install_requires=["appdirs", "cachetools", "click", "pygments", "sqlalchemy", "toml"],
     entry_points=dict(console_scripts=["db_hooks=db_hooks.cli:main"]),
     keywords=["sqlalchemy", "repl", "jupyter", "database"],
     classifiers=[
