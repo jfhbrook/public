@@ -78,7 +78,7 @@ def get_connstring(name, filename=None):
     if "password_cmd" in conn_info:
         kwargs["password"] = (
             subprocess.run(
-                ["bash", "-c", conn_info["password_cmd"]], capture_output=True
+                ["bash", "-c", conn_info["password_cmd"]], stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
             .stdout.decode("utf8")
             .strip()
