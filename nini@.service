@@ -5,7 +5,7 @@ Before=sleep.target
 [Service]
 User=%I
 Type=simple
-ExecStart=/usr/bin/lockenate
+ExecStart=/usr/bin/lockenate-physlock-wrapper
 ExecStartPost=/usr/bin/sleep 1
 
 [Install]

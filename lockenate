@@ -1,30 +1,3 @@
 #!/usr/bin/env bash
 
-exec physlock -p "$(
-  echo
-  echo
-  echo
-  echo
-  fortune -e \
-    chappelle \
-    chucknorris \
-    dexterslab \
-    drugs \
-    farscape \
-    ferengi_rules_of_acquisition \
-    firefly \
-    futurama \
-    hackers \
-    hitchhiker \
-    limericks \
-    matrix \
-    mlpfim \
-    rickandmorty \
-    starwars \
-    xfiles | \
-  $(shuf -n 1 -e cowsay cowthink) \
-    -W 77 \
-    "-$(shuf -n 1 -e b d g p s t w y)" \
-    -f "$(find /usr/share/cows -type f | grep '\.cow' | shuf -n 1)" | \
-  sed "s/^/            /"
-)" "${@}"
+sudo systemctl start "nini@${USER}.service"
