@@ -10,7 +10,7 @@ with open(README_md, "r") as f:
 
 setup(
     name="db_hooks",
-    version="0.1.0",
+    version="0.1.1",
     packages=find_packages(),
     include_package_data=True,
     description="A simple sqlalchemy connection configuration manager",
@@ -22,7 +22,9 @@ setup(
     python_requires=">=3.5",
     install_requires=[
         "appdirs",
+        "attrs",
         "cachetools",
+        "cattrs",
         "click",
         "pygments",
         "sqlalchemy",
