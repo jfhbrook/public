@@ -18,12 +18,13 @@ If you're using arch, `makepkg -si` in this directory should work. Otherwise,
 it's just a script and a systemd user hook so you can probably open the
 `PKGBUILD` and crib off that.
 
-That will install a `lockenate` script and a `nini@` user service. Assuming
-your sleeping is managed by `systemd` as mine is, you can run
-`systemctl enable "nini@${USER}"` to make the lock script automatically run
-when the computer goes to sleep.
+That will install a `lockenate-physlock-wrapper` script, a `nini@` user
+service, and a `lockenate` script that wraps manually starting the nini user
+service. You can run `systemctl enable "nini@${USER}"` to make the lock script
+automatically run when the computer goes to sleep.
 
-I also hooked up `lockenate` to a keypress in my window manager. Up to you!
+I hooked up `sudo lockenate` to a keypress in my window manager and added that
+command to my sudoers. Up to you!
 
 ## License
 
