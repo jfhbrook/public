@@ -20,7 +20,14 @@ setup(
     author_email="josh.holbrook@gmail.com",
     url="https://github.com/jfhbrook/db_hooks",
     python_requires=">=3.5",
-    install_requires=["appdirs", "cachetools", "click", "pygments", "sqlalchemy", "toml"],
+    install_requires=[
+        "appdirs",
+        "cachetools",
+        "click",
+        "pygments",
+        "sqlalchemy",
+        "toml",
+    ],
     entry_points=dict(console_scripts=["db_hooks=db_hooks.cli:main"]),
     keywords=["sqlalchemy", "repl", "jupyter", "database"],
     classifiers=[

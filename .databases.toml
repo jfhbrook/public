@@ -1,3 +1,9 @@
-[pg_example]
-connection = "postgresql+psycopg2://josh:{password}@localhost:5432/josh"
 password_cmd = "zenity --password"
+password_loader = "bash"
+
+[connections.pg_example]
+protocol = "postgresql"
+username = "josh"
+host = "localhost"
+port = "5432"
+database = "josh"

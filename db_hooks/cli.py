@@ -16,23 +16,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import os
-import shutil
-
 import click
-from pygments import highlight
-from pygments.lexers import TOMLLexer
-from pygments.formatters import Terminal256Formatter
-import toml
 
-from db_hooks import (
-    CONFIG_LOCATIONS,
-    ConfigurationNotFoundError,
-    GLOBAL_CONFIG,
-    LOCAL_CONFIG,
-    load_config,
-    get_cli_command,
-)
+from db_hooks.config import Config, GLOBAL_CONFIG, LOCAL_CONFIG
+from db_hooks.client import Client
 
 
 @click.group(help="Interact with db_hooks database connections.")
@@ -49,67 +36,21 @@ def main(ctx, filename, system):
     else:
         ctx.obj["CONFIG_FILENAME"] = filename
 
-
-def print_config_for_filename(filename):
-    with open(filename, "r") as f:
-        click.echo(highlight(f.read(), TOMLLexer(), Terminal256Formatter()))
+    ctx.obj["CONFIG"] = Config.load_config(ctx.obj["CONFIG_FILENAME"])
 
 
-def print_config(filename=None):
-    if filename:
-        return print_config_for_filename(filename)
-    for filename in CONFIG_LOCATIONS:
-        try:
-            return print_config_for_filename(filename)
-        except FileNotFoundError:
-            pass
-    raise ConfigurationNotFoundError(
-        "Could not find a configuration in either of the following locations: "
-        + "; ".join(CONFIG_LOCATIONS)
-    )
-
-
-def print_config_for_database_with_filename(name, filename):
-    config = load_config(filename)
-    conn_info = config[name]
-    click.echo(
-        highlight(toml.dumps({name: conn_info}), TOMLLexer(), Terminal256Formatter())
-    )
-
-
-def print_config_for_database(filename=None):
-    if filename:
-        return print_config_for_database_with_filename(filename)
-    for filename in CONFIG_LOCATIONS:
-        try:
-            return print_config_for_database_with_filename(filename)
-        except FileNotFoundError:
-            pass
-    raise ConfigurationNotFoundError(
-        "Could not find a configuration in either of the following locations: "
-        + "; ".join(CONFIG_LOCATIONS)
-    )
-
-
-@main.command(help="List available db_hooks database connections.")
+@main.command(help="Show part or all of the db_hooks configuration")
 @click.option(
-    "--name",
-    type=str,
-    default=None,
-    help="Filter to only show info for this connection",
+    "--key", type=str, default=None, help="Filter to only show info for this connection"
 )
 @click.pass_context
-def list(ctx, name):
-    filename = ctx.obj["CONFIG_FILENAME"]
+def show(ctx, key):
+    config = ctx.obj["CONFIG"]
 
-    if name:
-        print_config_for_database(name, filename)
+    if key:
+        config.echo_property(key)
     else:
-        print_config(filename=filename)
-
-
-class ClientProgramNotFoundError(Exception):
-    pass
+        config.echo()
 
 
 @main.command(
@@ -118,17 +59,4 @@ class ClientProgramNotFoundError(Exception):
 @click.argument("name")
 @click.pass_context
 def connect(ctx, name):
-    filename = ctx.obj["CONFIG_FILENAME"]
-
-    argv, env = get_cli_command(name, filename=filename)
-
-    cmd = argv[0]
-    env = dict(os.environ, **env)
-
-    if not shutil.which(cmd):
-        raise ClientProgramNotFoundError("`Command {cmd} not found.".format(cmd))
-
-    if len(argv) > 1:
-        os.execvpe(cmd, argv, env)
-    else:
-        os.execlpe(cmd, env)
+    Client.from_config(ctx.obj["CONFIG"], name).exec()

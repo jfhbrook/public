@@ -4,6 +4,7 @@ dependencies:
   - python=3.7.4
   - pip=19.2.3
   - appdirs=1.4.3
+  - attrs=19.1.0
   - black=19.3b0
   - click=7.0
   - flake8=3.7.8
@@ -16,6 +17,7 @@ dependencies:
   - twine=2.0.0
   - pip:
     - cachetools==3.1.1
+    - cattrs==0.9.0
     - flake8-black==0.1.1
     - pip-tools==4.1.0
     - psycopg2-binary==2.8.3
