@@ -16,6 +16,9 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import functools
+import sys
+
 import click
 import click_log
 
@@ -27,11 +30,24 @@ import db_hooks.editor as editor
 click_log.basic_config(logger)
 
 
+def capture(fn):
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except Exception:  # noqa
+            logger.exception("FLAGRANT SYSTEM ERROR")
+            sys.exit(1)
+
+    return wrapper
+
+
 @click.group(help="Interact with db_hooks database connections.")
 @click_log.simple_verbosity_option(logger)
 @click.option("--filename", type=click.Path(exists=True), default=None)
 @click.option("--system/--no-system", default=None)
 @click.pass_context
+@capture
 def main(ctx, filename, system):
     ctx.ensure_object(dict)
 
@@ -51,6 +67,7 @@ def main(ctx, filename, system):
     "--key", type=str, default=None, help="Filter to only show info for this connection"
 )
 @click.pass_context
+@capture
 def show(ctx, key):
     config = ctx.obj["CONFIG"]
 
@@ -65,10 +82,12 @@ def show(ctx, key):
 )
 @click.argument("name")
 @click.pass_context
+@capture
 def connect(ctx, name):
     Client.from_config(ctx.obj["CONFIG"], name).exec()
 
 
 @main.command(help="Edit the global config")
+@capture
 def edit():
     editor.edit()
