@@ -17,8 +17,6 @@
 # under the License.
 
 import functools
-import sys
-
 import click
 import click_log
 
@@ -37,7 +35,7 @@ def capture(fn):
             return fn(*args, **kwargs)
         except Exception:  # noqa
             logger.exception("FLAGRANT SYSTEM ERROR")
-            sys.exit(1)
+            raise click.Abort()
 
     return wrapper
 
