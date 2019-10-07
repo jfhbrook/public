@@ -24,7 +24,7 @@ from db_hooks.errors import EditorNotFoundError
 
 
 def edit():
-    editor = os.environ.get('EDITOR', 'vi')
+    editor = os.environ.get("EDITOR", "vi")
 
     argv = [editor, GLOBAL_CONFIG]
 

@@ -16,10 +16,15 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import logging
+
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
 
 from db_hooks.password import PasswordLoader
+
+
+logger = logging.getLogger(__name__)
 
 
 SQLALCHEMY_PROTOCOLS = {
@@ -40,7 +45,7 @@ def format_url(connection_config, password):
         database=connection_config.database,
     )
 
-    return str(url)
+    return url
 
 
 def get_url(config, connection_name):
@@ -56,4 +61,7 @@ def get_url(config, connection_name):
 
 
 def build_engine(config, connection_name):
-    return create_engine(get_url(config, connection_name))
+    url = get_url(config, connection_name)
+
+    logger.info("Creating engine with {}...".format(repr(url)))
+    return create_engine(str(url))

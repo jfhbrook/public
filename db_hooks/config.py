@@ -16,6 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import logging
 import os
 import os.path
 from typing import Dict, Optional
@@ -32,6 +33,8 @@ from toml.decoder import TomlDecodeError
 
 from db_hooks.errors import ConfigNotFoundError, MalformedConfigError
 from db_hooks.password import PASSWORD_UNSUPPORTED
+
+logger = logging.getLogger(__name__)
 
 GLOBAL_CONFIG = os.path.join(user_data_dir("db_hooks", "jfhbrook"), "databases.toml")
 LOCAL_CONFIG = os.path.abspath("./.databases.toml")
@@ -91,36 +94,45 @@ class Config:
             raise MalformedConfigError(filename) from exc
         structured.raw = raw
 
+        for connection_config in structured.connections.values():
+            if connection_config.has_password is None:
+                connection_config.has_password = (
+                    connection_config.protocol not in PASSWORD_UNSUPPORTED
+                )
+
         return structured
 
     @classmethod
     def load_config(cls, filename=None):
         if filename:
+            logger.info("Loading configuration from {}...".format(filename))
             try:
                 return cls.from_file(filename)
             except FileNotFoundError as exc:
                 raise ConfigNotFoundError(filename=filename) from exc
-        for filename in cls.config_locations:
-            try:
-                config = cls.from_file(filename)
-            except FileNotFoundError:
-                pass
-            else:
-                for connection_config in config.connections.values():
-                    if connection_config.has_password is None:
-                        connection_config.has_password = (
-                            connection_config.protocol not in PASSWORD_UNSUPPORTED
-                        )
-                return config
 
-        raise ConfigNotFoundError(locations=cls.config_locations)
+        for filename in cls.config_locations[:-1]:
+            logger.info("Loading configuration from {}...".format(filename))
+            try:
+                return cls.from_file(filename)
+            except FileNotFoundError:
+                logger.info(
+                    "Configuration not found at {}. Trying the next location.".format(
+                        filename
+                    )
+                )
+
+        try:
+            return cls.from_file(cls.config_locations[-1])
+        except FileNotFoundError as exc:
+            raise ConfigNotFoundError(locations=cls.config_locations) from exc
 
     def save(self, filename):
         with open(filename, "w") as f:
             toml.dump(f, self.unstructure())
 
     def echo(self):
-        click.echo(format_toml(self.raw))
+        click.echo(format_toml(toml.dumps(cattr.unstructure(self))))
 
     def echo_property(self, key):
         config = self

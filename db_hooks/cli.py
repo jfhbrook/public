@@ -17,18 +17,24 @@
 # under the License.
 
 import click
+import click_log
 
+from db_hooks import logger
 from db_hooks.client import Client
 from db_hooks.config import Config, GLOBAL_CONFIG, LOCAL_CONFIG
 import db_hooks.editor as editor
 
+click_log.basic_config(logger)
+
 
 @click.group(help="Interact with db_hooks database connections.")
+@click_log.simple_verbosity_option(logger)
 @click.option("--filename", type=click.Path(exists=True), default=None)
 @click.option("--system/--no-system", default=None)
 @click.pass_context
 def main(ctx, filename, system):
     ctx.ensure_object(dict)
+
     if system is not None:
         if system:
             ctx.obj["CONFIG_FILENAME"] = GLOBAL_CONFIG
@@ -63,8 +69,6 @@ def connect(ctx, name):
     Client.from_config(ctx.obj["CONFIG"], name).exec()
 
 
-@main.command(
-    help="Edit the global config"
-)
+@main.command(help="Edit the global config")
 def edit():
     editor.edit()

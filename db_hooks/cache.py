@@ -17,12 +17,14 @@
 # under the License.
 
 import functools
+import logging
 
 from cachetools import LFUCache, LRUCache, RRCache, TTLCache
 import cachetools.keys as keys
 
 from db_hooks.errors import UnrecognizedCacheImplementationError
 
+logger = logging.getLogger(__name__)
 
 CACHE_CLS_BY_NAME = {
     cls.__name__: cls for cls in [LFUCache, LRUCache, RRCache, TTLCache]
@@ -32,6 +34,12 @@ CACHE_CLS_BY_NAME = {
 def create_cache(cache_config):
     if cache_config.type not in CACHE_CLS_BY_NAME:
         raise UnrecognizedCacheImplementationError(cache_config.type, CACHE_CLS_BY_NAME)
+
+    logger.info(
+        "Creating connection cache of type {}({})...".format(
+            cache_config.type, cache_config.kwargs
+        )
+    )
 
     cls = CACHE_CLS_BY_NAME[cache_config.type]
     return cls(**cache_config.kwargs)
@@ -44,18 +52,22 @@ class CacheManager:
         self._key = key
 
     def set_cache(self, cache):
+        logger.info("Cache set to {}.".format(cache))
         self._cache = cache
 
     def has_cache(self):
         return self._cache is not None
 
     def clear_cache(self):
+        logger.info("Cache has been cleared.")
         self._cache = None
 
     def disable_cache(self):
+        logger.info("Cache has been disabled.")
         self._enabled = False
 
     def enable_cache(self):
+        logger.info("Cache has been enabled.")
         self._enabled = True
 
     def cached(self, fn):

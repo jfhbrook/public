@@ -17,8 +17,11 @@
 # under the License.
 
 from abc import ABC, abstractmethod
+import logging
 import shlex
 import subprocess
+
+logger = logging.getLogger(__name__)
 
 PASSWORD_UNSUPPORTED = {"sqlite"}
 
@@ -29,10 +32,14 @@ class PasswordLoader(ABC):
 
     @classmethod
     def from_config(cls, config):
+        logger.info(
+            "Initializing password loader of type {}...".format(config.password_loader)
+        )
         return PASSWORD_LOADERS[config.password_loader](config)
 
     @classmethod
     def run_command(cls, argv):
+        logger.debug("Running {}...".format(argv))
         process = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         return process.stdout.decode("utf8").strip()
@@ -42,6 +49,7 @@ class PasswordLoader(ABC):
         pass
 
     def get_password(self, connection_name):
+        logger.info("Getting password for connection {}...".format(connection_name))
         connection_config = self.config.connections[connection_name]
 
         if hasattr(self.config, "password_cmd"):

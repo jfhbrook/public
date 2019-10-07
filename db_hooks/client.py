@@ -124,5 +124,5 @@ CLIENTS = {
     "postgresql": PostgreSQLClient,
     "pg": PostgreSQLClient,
     "mysql": MySQLClient,
-    "sqlite": SqliteClient
+    "sqlite": SqliteClient,
 }

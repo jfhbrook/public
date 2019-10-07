@@ -16,10 +16,13 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import logging
+
 from db_hooks.cache import CacheManager, create_cache
 from db_hooks.config import Config
 from db_hooks.sqlalchemy import build_engine
 
+logger = logging.getLogger(__name__)
 
 cache_manager = CacheManager()
 
