@@ -20,6 +20,8 @@ from abc import ABC, abstractmethod
 import shlex
 import subprocess
 
+PASSWORD_UNSUPPORTED = {"sqlite"}
+
 
 class PasswordLoader(ABC):
     def __init__(self, config):

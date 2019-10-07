@@ -46,8 +46,11 @@ def format_url(connection_config, password):
 def get_url(config, connection_name):
     connection_config = config.connections[connection_name]
 
-    loader = PasswordLoader.from_config(config)
-    password = loader.get_password(connection_name)
+    if connection_config.has_password:
+        loader = PasswordLoader.from_config(config)
+        password = loader.get_password(connection_name)
+    else:
+        password = None
 
     return format_url(connection_config, password)
 

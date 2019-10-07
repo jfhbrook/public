@@ -18,8 +18,9 @@
 
 import click
 
-from db_hooks.config import Config, GLOBAL_CONFIG, LOCAL_CONFIG
 from db_hooks.client import Client
+from db_hooks.config import Config, GLOBAL_CONFIG, LOCAL_CONFIG
+import db_hooks.editor as editor
 
 
 @click.group(help="Interact with db_hooks database connections.")
@@ -60,3 +61,10 @@ def show(ctx, key):
 @click.pass_context
 def connect(ctx, name):
     Client.from_config(ctx.obj["CONFIG"], name).exec()
+
+
+@main.command(
+    help="Edit the global config"
+)
+def edit():
+    editor.edit()

@@ -58,8 +58,16 @@ class UnrecognizedCacheImplementationError(DBHooksError):
         super().__init__(self, message)
 
 
-class ClientNotFoundError(DBHooksError):
-    message = "Could not find the executable {}"
+class CommandNotFoundError(DBHooksError):
+    message = "Could not find the command {} in the PATH"
 
     def __init__(self, cmd):
         super().__init__(self, self.message.format(cmd))
+
+
+class ClientNotFoundError(CommandNotFoundError):
+    pass
+
+
+class EditorNotFoundError(CommandNotFoundError):
+    pass

@@ -34,7 +34,11 @@ class Client(ABC):
         self.config = config
         self.connection_name = connection_name
         self.connection_config = config.connections[connection_name]
-        self.password_loader = PasswordLoader.from_config(config)
+        self.password_loader = (
+            PasswordLoader.from_config(config)
+            if self.connection_config.has_password
+            else None
+        )
 
     @classmethod
     def from_config(cls, config, connection_name):
@@ -45,7 +49,11 @@ class Client(ABC):
         argv = [self.bin]
         env = dict()
 
-        password = self.password_loader.get_password(self.connection_name)
+        password = (
+            self.password_loader.get_password(self.connection_name)
+            if self.connection_config.has_password
+            else None
+        )
 
         for cli_key, conn_key in self.options:
             if conn_key == "password":
@@ -106,9 +114,15 @@ class MySQLClient(Client):
     parameters = ["database"]
 
 
+class SqliteClient(Client):
+    bin = "sqlite3"
+    parameters = ["database"]
+
+
 CLIENTS = {
     "postgres": PostgreSQLClient,
     "postgresql": PostgreSQLClient,
     "pg": PostgreSQLClient,
     "mysql": MySQLClient,
+    "sqlite": SqliteClient
 }

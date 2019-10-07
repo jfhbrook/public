@@ -31,6 +31,7 @@ import toml
 from toml.decoder import TomlDecodeError
 
 from db_hooks.errors import ConfigNotFoundError, MalformedConfigError
+from db_hooks.password import PASSWORD_UNSUPPORTED
 
 GLOBAL_CONFIG = os.path.join(user_data_dir("db_hooks", "jfhbrook"), "databases.toml")
 LOCAL_CONFIG = os.path.abspath("./.databases.toml")
@@ -45,6 +46,7 @@ def format_toml(toml):
 class DatabaseConfig:
     protocol: Optional[str] = attr.ib(default=None)
     username: Optional[str] = attr.ib(default=None)
+    has_password: Optional[bool] = attr.ib(default=None)
     host: Optional[str] = attr.ib(default=None)
     port: Optional[int] = attr.ib(default=None)
     database: Optional[str] = attr.ib(default=None)
@@ -100,9 +102,16 @@ class Config:
                 raise ConfigNotFoundError(filename=filename) from exc
         for filename in cls.config_locations:
             try:
-                return cls.from_file(filename)
+                config = cls.from_file(filename)
             except FileNotFoundError:
                 pass
+            else:
+                for connection_config in config.connections.values():
+                    if connection_config.has_password is None:
+                        connection_config.has_password = (
+                            connection_config.protocol not in PASSWORD_UNSUPPORTED
+                        )
+                return config
 
         raise ConfigNotFoundError(locations=cls.config_locations)
 
