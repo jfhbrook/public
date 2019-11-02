@@ -50,9 +50,13 @@ class Client(ABC):
         env = dict()
 
         password = (
-            self.password_loader.get_password(self.connection_name)
-            if self.connection_config.has_password
-            else None
+            (
+                self.password_loader.get_password(self.connection_name)
+                if self.connection_config.has_password
+                else None
+            )
+            if self.connection_config.password is None
+            else self.connection_config.password
         )
 
         for cli_key, conn_key in self.options:

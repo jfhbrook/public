@@ -53,7 +53,11 @@ def get_url(config, connection_name):
 
     if connection_config.has_password:
         loader = PasswordLoader.from_config(config)
-        password = loader.get_password(connection_name)
+        password = (
+            loader.get_password(connection_name)
+            if connection_config.password is None
+            else connection_config.password
+        )
     else:
         password = None
 

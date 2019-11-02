@@ -53,6 +53,7 @@ class DatabaseConfig:
     host: Optional[str] = attr.ib(default=None)
     port: Optional[int] = attr.ib(default=None)
     database: Optional[str] = attr.ib(default=None)
+    password: Optional[str] = attr.ib(default=None)
     password_cmd: Optional[str] = attr.ib(default=None)
 
 
@@ -97,6 +98,8 @@ class Config:
         for connection_config in structured.connections.values():
             if connection_config.has_password is None:
                 connection_config.has_password = (
+                    connection_config.password is not None
+                    or
                     connection_config.protocol not in PASSWORD_UNSUPPORTED
                 )
 

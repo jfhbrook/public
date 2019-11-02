@@ -26,6 +26,7 @@ setup(
         "cachetools",
         "cattrs",
         "click",
+        "click-log",
         "pygments",
         "sqlalchemy",
         "toml",
