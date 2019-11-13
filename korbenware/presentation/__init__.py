@@ -1,13 +1,8 @@
-from korbenware.structuring import asdict
+from korbenware.structuring import asdict, assert_dictable
 
 
 def representable(cls):
-    if not (hasattr(cls, 'asdict') or hasattr(cls, '__attrs_attrs__')):
-        raise TypeError(
-            f'{cls} must be dictable. This functionality can either be '
-            'supplied by the @attr.s decorator, the '
-            '@korbenware.structuring.dictable decorator, or manually.'
-        )
+    assert_dictable(cls)
 
     def repr_(self):
         return repr(asdict(self))

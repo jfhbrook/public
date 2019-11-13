@@ -31,3 +31,23 @@ def asdict(obj):
         return attr.asdict(obj)
     else:
         return obj.asdict()
+
+
+class UndictableError(TypeError):
+    def __init__():
+        super().__init__(
+            f'{cls} must be dictable. This functionality can either be '
+            'supplied by the @attr.s decorator, the '
+            '@korbenware.structuring.dictable decorator, or manually '
+            'implementing {cls}.asdict().'
+        )
+
+
+def is_dictable(cls):
+    return hasattr(cls, 'asdict') or hasattr(cls, '__attrs_attrs__')
+
+
+def assert_dictable(cls):
+    if not is_dictable(cls):
+        raise UndictableError()
+

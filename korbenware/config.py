@@ -9,6 +9,7 @@ from korbenware.dbus import DBusField, List, Str, Variant
 from korbenware.dbus.marshmallow.schema import DBUS_FIELD, DBUS_NESTED
 from korbenware.logger import create_logger
 from korbenware.presentation import representable
+from korbenware.presentation.markdown import markdownable
 from korbenware.xdg import XDG_CURRENT_DESKTOP, config_basedir
 from korbenware.xdg.autostart import XDG_AUTOSTART_DIRS
 from korbenware.xdg.applications import XDG_APPLICATIONS_DIRS
@@ -27,7 +28,7 @@ class NoConfigurationFoundError(LoadError):
 
 
 def config(cls):
-    return representable(attr.s(cls))
+    return markdownable(representable(attr.s(cls)))
 
 
 def subconfig(cls):
