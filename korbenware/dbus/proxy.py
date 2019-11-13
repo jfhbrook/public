@@ -118,7 +118,7 @@ def dbus_proxy(cls):
             # without using the remote
             setattr(
                 self, method_obj.client_fn.__name__,
-                server_side_method(remote_obj)
+                server_side_method(self.remote_obj)
             )
 
         self.connect = server_connect
