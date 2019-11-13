@@ -1,13 +1,23 @@
 import attr
 
 
-def dictable(keys):
-    def asdict(self):
-        return {
-            k: getattr(self, k)
-            for k in keys
-            if hasattr(self, k)
-        }
+def dictable(keys=None):
+    if keys:
+        def asdict(self):
+            return {
+                k: getattr(self, k)
+                for k in keys
+                if hasattr(self, k)
+            }
+    else:
+        def asdict(self):
+            d = dict()
+            for k in dir(self):
+                if not k.startswith('_'):
+                    attr = getattr(self, k)
+                    if not hasattr(attr, '__call__'):
+                        d[k] = attr
+            return d
 
     def decorator(cls):
         cls.asdict = asdict
