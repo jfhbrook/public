@@ -7,7 +7,8 @@ from twisted.python.failure import Failure
 from xdg.BaseDirectory import load_data_paths
 
 from korbenware.logger import create_logger
-from korbenware.util.decorators import dictable, representable
+from korbenware.structuring import dictable
+from korbenware.presentation import representable
 from korbenware.xdg.executable import Executable
 
 

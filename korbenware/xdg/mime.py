@@ -8,7 +8,8 @@ from xdg.Exceptions import ParsingError
 from xdg.Mime import MIMEtype, get_type2 as get_type
 
 from korbenware.logger import create_logger
-from korbenware.util.decorators import dictable, representable
+from korbenware.structuring import dictable
+from korbenware.presentation import representable
 from korbenware.xdg.applications import XDG_APPLICATIONS_DIRS
 
 # By far the most complete information on how this works can be found via

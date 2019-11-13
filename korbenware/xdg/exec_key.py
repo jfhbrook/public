@@ -2,7 +2,8 @@ import re
 
 from gshell import g_shell_parse_argv, g_shell_quote, GShellError
 
-from korbenware.util.decorators import dictable, representable
+from korbenware.structuring import dictable
+from korbenware.presentation import representable
 
 
 FIELD_CODE_RE = r'(?<!%)(%\S)'

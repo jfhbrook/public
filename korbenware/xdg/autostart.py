@@ -4,7 +4,8 @@ import os.path
 from xdg.BaseDirectory import xdg_config_dirs
 
 from korbenware.logger import create_logger
-from korbenware.util.decorators import dictable, representable
+from korbenware.structuring import dictable
+from korbenware.presentation import representable
 from korbenware.xdg.applications import Application, ApplicationsRegistry
 
 

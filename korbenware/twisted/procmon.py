@@ -15,7 +15,7 @@ from twisted.internet.error import ProcessExitedAlready
 from twisted.logger import Logger
 from twisted.runner.procmon import ProcessMonitor as BaseMonitor
 
-from korbenware.util.decorators import representable
+from korbenware.presentation import representable
 
 # Hold my beer.
 #

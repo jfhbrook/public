@@ -6,7 +6,7 @@ from marshmallow.schema import SchemaMeta
 from marshmallow.decorators import pre_dump, post_dump, pre_load, post_load
 
 from korbenware.dbus.marshmallow.fields import Nested
-from korbenware.util import Symbol
+from korbenware.symbol import Symbol
 
 
 class DBusSchema(Schema, metaclass=SchemaMeta):

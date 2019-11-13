@@ -1,6 +1,6 @@
 import attr
 
-from korbenware.util.decorators import representable
+from korbenware.presentation import representable
 
 
 @representable

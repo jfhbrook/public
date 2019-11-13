@@ -7,7 +7,7 @@ from gshell import GShellError
 from xdg.Exceptions import ParsingError, ValidationError
 from xdg.DesktopEntry import DesktopEntry
 
-from korbenware.util.decorators import representable
+from korbenware.presentation import representable
 from korbenware.xdg.exec_key import ExecKey
 
 
