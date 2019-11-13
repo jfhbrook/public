@@ -9,12 +9,14 @@ from xdg.BaseDirectory import load_data_paths
 from korbenware.logger import create_logger
 from korbenware.keys import keys
 from korbenware.presentation import representable
+from korbenware.presentation.markdown import markdownable
 from korbenware.xdg.executable import Executable
 
 
 XDG_APPLICATIONS_DIRS = list(load_data_paths('applications'))
 
 
+@markdownable
 @representable
 @attr.s
 class Application:
@@ -34,6 +36,7 @@ class Application:
         return cls(fullpath, filename, executable)
 
 
+@markdownable
 @representable
 @keys(['entries'])
 class ApplicationSet:
@@ -122,6 +125,7 @@ def load_application_sets(dirs, log, cls=Application):
     return entry_sets
 
 
+@markdownable
 @representable
 @keys([
     'directories',

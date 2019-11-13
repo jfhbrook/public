@@ -10,6 +10,7 @@ from xdg.Mime import MIMEtype, get_type2 as get_type
 from korbenware.logger import create_logger
 from korbenware.keys import keys
 from korbenware.presentation import representable
+from korbenware.presentation.markdown import markdownable
 from korbenware.xdg.applications import XDG_APPLICATIONS_DIRS
 
 # By far the most complete information on how this works can be found via
@@ -41,7 +42,7 @@ def _get_group(ini_file, group):
         for mime_type, apps in ini_file.content.get(group, dict()).items()
     }
 
-
+@markdownable
 @representable
 @attr.s
 class MimeAppsList:
@@ -100,6 +101,7 @@ def _remove(mimetype, apps, target):
         del target[mimetype]
 
 
+@markdownable
 @representable
 @attr.s
 class DesktopDatabase:
@@ -136,6 +138,7 @@ class DesktopDatabase:
         yield from self._cache.items()
 
 
+@markdownable
 @representable
 @keys(['environment', 'lookup', 'defaults'])
 class MimeRegistry:

@@ -8,9 +8,11 @@ from xdg.Exceptions import ParsingError, ValidationError
 from xdg.DesktopEntry import DesktopEntry
 
 from korbenware.presentation import representable
+from korbenware.presentation.markdown import markdownable
 from korbenware.xdg.exec_key import ExecKey
 
 
+@markdownable
 @representable
 @attr.s
 class Executable:

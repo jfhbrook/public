@@ -6,6 +6,7 @@ from xdg.BaseDirectory import xdg_config_dirs
 from korbenware.logger import create_logger
 from korbenware.keys import keys
 from korbenware.presentation import representable
+from korbenware.presentation.markdown import markdownable
 from korbenware.xdg.applications import Application, ApplicationsRegistry
 
 
@@ -47,6 +48,7 @@ class Autostart(Application):
         return should
 
 
+@markdownable
 @representable
 @keys([
     'directories',

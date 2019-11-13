@@ -4,6 +4,7 @@ from gshell import g_shell_parse_argv, g_shell_quote, GShellError
 
 from korbenware.keys import keys
 from korbenware.presentation import representable
+from korbenware.presentation.markdown import markdownable
 
 
 FIELD_CODE_RE = r'(?<!%)(%\S)'
@@ -26,6 +27,7 @@ def get_field_codes(raw):
     }
 
 
+@markdownable
 @representable
 @keys(['raw'])
 class ExecKey:
