@@ -1,4 +1,4 @@
-from korbenware.structuring import asdict, assert_dictable
+from korbenware.keys import asdict, assert_dictable
 
 
 def representable(cls):

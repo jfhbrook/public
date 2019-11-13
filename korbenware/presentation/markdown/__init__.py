@@ -1,4 +1,4 @@
-from korbenware.structuring import asdict, assert_dictable, is_dictable
+from korbenware.keys import assert_keys, has_keys, iter_items
 
 
 def is_markdownable(obj):
@@ -13,23 +13,32 @@ def _visit(level, obj):
     listed_attrs = []
     markdownable_attrs = []
 
-    for k, v in asdict(obj).items():
-        print(v, type(v), is_dictable(v), is_markdownable(v))
-        if is_dictable(v) or is_markdownable(v):
+    for k, v in iter_items(obj):
+        if has_keys(v) or is_markdownable(v):
             markdownable_attrs.append((k, v))
         else:
             listed_attrs.append((k, v))
 
     for k, v in listed_attrs:
-        lines.append(f'* **{k}:** {v}')
+        if type(v) == list:
+            lines.append(f'* **{k}:**')
+            for element in v:
+                lines.append(f'    * {element}')
+        elif type(v) == dict:
+            lines.append(f'* **{k}:**')
+            for elem_k, elem_v in v.items():
+                lines.append(f'    * **{elem_k}:** {elem_v}')
+
+        else:
+            lines.append(f'* **{k}:** {v}')
 
     lines.append('')
 
     for k, v in markdownable_attrs:
         if is_markdownable(v):
-            lines = lines + ['', v._repr_markdown_(), '']
+            lines = lines + ['', v._repr_markdown_(level + 1), '']
         else:
-            lines = lines + visit(level + 1, v)
+            lines = lines + _visit(level + 1, v)
 
         lines.append('')
 
@@ -37,10 +46,10 @@ def _visit(level, obj):
 
 
 def markdownable(cls):
-    assert_dictable(cls)
+    assert_keys(cls)
 
-    def repr_markdown(self):
-        return _visit(1, self)
+    def repr_markdown(self, level=1):
+        return _visit(level, self)
 
     cls._repr_markdown_ = repr_markdown
 

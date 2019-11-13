@@ -7,7 +7,7 @@ from twisted.python.failure import Failure
 from xdg.BaseDirectory import load_data_paths
 
 from korbenware.logger import create_logger
-from korbenware.structuring import dictable
+from korbenware.keys import keys
 from korbenware.presentation import representable
 from korbenware.xdg.executable import Executable
 
@@ -35,7 +35,7 @@ class Application:
 
 
 @representable
-@dictable(['entries'])
+@keys(['entries'])
 class ApplicationSet:
     def __init__(self, log):
         self.log = log
@@ -123,7 +123,7 @@ def load_application_sets(dirs, log, cls=Application):
 
 
 @representable
-@dictable([
+@keys([
     'directories',
     'entries'
 ])

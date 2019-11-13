@@ -19,7 +19,6 @@ class DBusSchema(Schema, metaclass=SchemaMeta):
             return [self._flatten_attrs_dicts(self, u) for u in unstructured]
 
         # TODO: What if not dealing with an attrs class?
-        # Should dictable use ordered dicts?
         return [
             unstructured[attr.name]
             for attr in self.cls.__attrs_attrs__
