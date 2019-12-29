@@ -81,6 +81,7 @@ class Config:
 
     @classmethod
     def from_file(cls, filename):
+        logger.info("Loading configuration from {}...".format(filename))
         with open(filename, "r") as f:
             raw = f.read()
 
@@ -108,14 +109,12 @@ class Config:
     @classmethod
     def load_config(cls, filename=None):
         if filename:
-            logger.info("Loading configuration from {}...".format(filename))
             try:
                 return cls.from_file(filename)
             except FileNotFoundError as exc:
                 raise ConfigNotFoundError(filename=filename) from exc
 
         for filename in cls.config_locations[:-1]:
-            logger.info("Loading configuration from {}...".format(filename))
             try:
                 return cls.from_file(filename)
             except FileNotFoundError:

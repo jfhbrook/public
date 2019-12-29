@@ -32,6 +32,7 @@ SQLALCHEMY_PROTOCOLS = {
     "postgresql": "postgresql+psycopg2",
     "pg": "postgresql+psycopg2",
     "mysql": "mysql+pymysql",
+    "sqlite": "sqlite",
 }
 
 

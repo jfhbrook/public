@@ -2,7 +2,7 @@ password_cmd = "zenity --password"
 password_loader = "bash"
 
 [connections.pg_example]
-protocol = "postgresql"
+protocol = "postgres"
 username = "josh"
 host = "localhost"
 port = "5432"

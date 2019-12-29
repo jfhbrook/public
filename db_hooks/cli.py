@@ -24,6 +24,7 @@ from db_hooks import logger
 from db_hooks.client import Client
 from db_hooks.config import Config, GLOBAL_CONFIG, LOCAL_CONFIG
 import db_hooks.editor as editor
+from db_hooks.errors import ConfigNotFoundError
 
 click_log.basic_config(logger)
 
@@ -36,6 +37,17 @@ def capture(fn):
         except Exception:  # noqa
             logger.exception("FLAGRANT SYSTEM ERROR")
             raise click.Abort()
+
+    return wrapper
+
+
+def pass_config(fn):
+    @functools.wraps(fn)
+    @click.pass_context
+    def wrapper(ctx, *args, **kwargs):
+        if ctx.obj.get("CONFIG_NOT_FOUND_ERROR"):
+            raise ctx.obj["CONFIG_NOT_FOUND_ERROR"]
+        return fn(ctx.obj["CONFIG"], *args, **kwargs)
 
     return wrapper
 
@@ -57,18 +69,20 @@ def main(ctx, filename, system):
     else:
         ctx.obj["CONFIG_FILENAME"] = filename
 
-    ctx.obj["CONFIG"] = Config.load_config(ctx.obj["CONFIG_FILENAME"])
+    try:
+        ctx.obj["CONFIG"] = Config.load_config(ctx.obj["CONFIG_FILENAME"])
+    except ConfigNotFoundError as exc:
+        ctx.obj["CONFIG"] = None
+        ctx.obj["CONFIG_NOT_FOUND_ERROR"] = exc
 
 
 @main.command(help="Show part or all of the db_hooks configuration")
 @click.option(
     "--key", type=str, default=None, help="Filter to only show info for this connection"
 )
-@click.pass_context
 @capture
-def show(ctx, key):
-    config = ctx.obj["CONFIG"]
-
+@pass_config
+def show(config, key):
     if key:
         config.echo_property(key)
     else:
@@ -79,10 +93,10 @@ def show(ctx, key):
     help="Connect to a database using the default cli client for that database."
 )
 @click.argument("name")
-@click.pass_context
 @capture
-def connect(ctx, name):
-    Client.from_config(ctx.obj["CONFIG"], name).exec()
+@pass_config
+def connect(config, name):
+    Client.from_config(config, name).exec()
 
 
 @main.command(help="Edit the global config")
