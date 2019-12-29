@@ -4,7 +4,7 @@ Before=sleep.target
 
 [Service]
 User=%I
-Type=simple
+Type=oneshot
 ExecStart=/usr/bin/lockenate-physlock-wrapper
 ExecStartPost=/usr/bin/sleep 1
 
