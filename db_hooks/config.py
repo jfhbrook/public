@@ -17,6 +17,7 @@
 # under the License.
 
 import logging
+import json
 import os
 import os.path
 from typing import Dict, Optional
@@ -26,12 +27,12 @@ import attr
 import cattr
 import click
 from pygments import highlight
-from pygments.lexers import TOMLLexer
+from pygments.lexers import JsonLexer, TOMLLexer
 from pygments.formatters import Terminal256Formatter
 import toml
 from toml.decoder import TomlDecodeError
 
-from db_hooks.errors import ConfigNotFoundError, MalformedConfigError
+from db_hooks.errors import ConfigNotFoundError, DBHooksError, MalformedConfigError
 from db_hooks.password import PASSWORD_UNSUPPORTED
 
 logger = logging.getLogger(__name__)
@@ -41,8 +42,24 @@ LOCAL_CONFIG = os.path.abspath("./.databases.toml")
 CONFIG_LOCATIONS = [LOCAL_CONFIG, GLOBAL_CONFIG]
 
 
-def format_toml(toml):
-    return highlight(toml, TOMLLexer(), Terminal256Formatter())
+def format_config(config, format="toml", pretty=True):
+    config = cattr.unstructure(config)
+
+    if format == "toml":
+        config = toml.dumps(config)
+        if pretty:
+            config = highlight(config, TOMLLexer(), Terminal256Formatter())
+    elif format == "json":
+        if pretty:
+            config = highlight(
+                json.dumps(config, indent=2), JsonLexer(), Terminal256Formatter()
+            )
+        else:
+            config = json.dumps(config)
+    else:
+        raise DBHooksError(f"Unrecognized format {format}!")
+
+    return config
 
 
 @attr.s
@@ -100,8 +117,7 @@ class Config:
             if connection_config.has_password is None:
                 connection_config.has_password = (
                     connection_config.password is not None
-                    or
-                    connection_config.protocol not in PASSWORD_UNSUPPORTED
+                    or connection_config.protocol not in PASSWORD_UNSUPPORTED
                 )
 
         return structured
@@ -133,10 +149,10 @@ class Config:
         with open(filename, "w") as f:
             toml.dump(f, self.unstructure())
 
-    def echo(self):
-        click.echo(format_toml(toml.dumps(cattr.unstructure(self))))
+    def echo(self, format="toml", highlight=True):
+        click.echo(format_config(self, format, highlight))
 
-    def echo_property(self, key):
+    def echo_property(self, key, format="toml", highlight=True):
         config = self
         root = dict()
         parent = None
@@ -153,4 +169,4 @@ class Config:
 
         parent[k] = config
 
-        click.echo(format_toml(toml.dumps(cattr.unstructure(root))))
+        click.echo(format_config(format, highlight))

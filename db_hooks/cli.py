@@ -80,13 +80,16 @@ def main(ctx, filename, system):
 @click.option(
     "--key", type=str, default=None, help="Filter to only show info for this connection"
 )
+@click.option("--json/--no-json", default=False, help="Output JSON instead of TOML")
+@click.option("--pretty/--no-pretty", default=True, help="Apply syntax highlighting")
 @capture
 @pass_config
-def show(config, key):
+def show(config, key, json, pretty):
+    format = "json" if json else "toml"
     if key:
-        config.echo_property(key)
+        config.echo_property(key, format, pretty)
     else:
-        config.echo()
+        config.echo(format, pretty)
 
 
 @main.command(
