@@ -17,6 +17,8 @@
 # under the License.
 
 import functools
+import os
+
 import click
 import click_log
 
@@ -52,9 +54,79 @@ def pass_config(fn):
     return wrapper
 
 
+def autocomplete_config_files(ctx, args, incomplete):
+    directory = os.path.dirname(incomplete)
+    prefix = os.path.basename(incomplete)
+
+    directory = directory if directory else "."
+
+    try:
+        listings = os.listdir(directory)
+    except FileNotFoundError:
+        return []
+
+    return [
+        os.path.join(directory, listing)
+        for listing in listings
+        if listing.startswith(prefix)
+        and os.path.isdir(listing)
+        or listing.endswith(".toml")
+    ]
+
+
+def autocomplete_config_key(ctx, args, incomplete):
+    try:
+        config = Config.load_config()
+    except ConfigNotFoundError:
+        return []
+
+    known_keys = incomplete.split(".")
+    incomplete_key = known_keys.pop()
+
+    for k in known_keys:
+        if type(config) == dict:
+            config = config[k]
+        elif hasattr(config.__class__, "__attrs_attrs__"):
+            config = getattr(config, k)
+        else:
+            return []
+
+    return [
+        f"{'.'.join(known_keys)}.{k}" if known_keys else k
+        for k in (
+            config.keys()
+            if type(config) == dict
+            else (
+                [attr.name for attr in config.__class__.__attrs_attrs__]
+                if hasattr(config.__class__, "__attrs_attrs__")
+                else []
+            )
+        )
+        if k.startswith(incomplete_key)
+    ]
+
+
+def autocomplete_connection_names(ctx, args, incomplete):
+    try:
+        config = Config.load_config()
+    except ConfigNotFoundError:
+        return []
+
+    return [
+        connection_name
+        for connection_name in config.connections.keys()
+        if connection_name.startswith(incomplete)
+    ]
+
+
 @click.group(help="Interact with db_hooks database connections.")
 @click_log.simple_verbosity_option(logger)
-@click.option("--filename", type=click.Path(exists=True), default=None)
+@click.option(
+    "--filename",
+    type=click.Path(exists=True),
+    default=None,
+    autocompletion=autocomplete_config_files,
+)
 @click.option("--system/--no-system", default=None)
 @click.pass_context
 @capture
@@ -78,7 +150,11 @@ def main(ctx, filename, system):
 
 @main.command(help="Show part or all of the db_hooks configuration")
 @click.option(
-    "--key", type=str, default=None, help="Filter to only show info for this connection"
+    "--key",
+    type=str,
+    default=None,
+    help="Filter to only show info for this connection",
+    autocompletion=autocomplete_config_key,
 )
 @click.option("--json/--no-json", default=False, help="Output JSON instead of TOML")
 @click.option("--pretty/--no-pretty", default=True, help="Apply syntax highlighting")
@@ -95,7 +171,7 @@ def show(config, key, json, pretty):
 @main.command(
     help="Connect to a database using the default cli client for that database."
 )
-@click.argument("name")
+@click.argument("name", autocompletion=autocomplete_connection_names)
 @capture
 @pass_config
 def connect(config, name):

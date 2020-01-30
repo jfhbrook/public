@@ -94,6 +94,10 @@ This will pull the connection, prompt for your password, and give you a configur
 
 `db_hooks` exposes a CLI that will launch either `psql`, `mysql` or `sqlite` in a manner appropriate to the underlying connection. You can connect to this database by running `db_hooks connect {your_connection_name_here}`.
 
+### bash complete
+
+`db_hooks` has support for shell tab-completion. You can enable it by running `eval $(_DB_HOOKS_COMPLETE=source db_hooks)` for bash (the default shell for most Linux distributions and older versions of OSX) or `eval $(_DB_HOOKS_COMPLETE=source_zsh db_hooks)` (the default shell in new versions of OSX). PowerShell is unfortunately not supported. For more information, you can [read Click's docs for autocompltion](https://click.palletsprojects.com/en/7.x/bashcomplete/). 
+
 ## licensing
 
 This library is licensed under the Apache Software License. See the LICENSE and NOTICE files for details.
