@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-exec physlock -p "$(
+exec physlock -d -p "$(
   echo
   echo
   echo
