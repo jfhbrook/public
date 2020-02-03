@@ -10,14 +10,20 @@ action="${1}"
 
 case $action in
   up)
-    updated_brightness=$((${CURRENT_BRIGHTNESS}*(100+${BACKLIGHT_PERCENT})/100))    
+    icon='🌞' 
+    updated_brightness=$((CURRENT_BRIGHTNESS*(100+BACKLIGHT_PERCENT)/100))    
   ;;
   down)
-    updated_brightness=$((${CURRENT_BRIGHTNESS}*(100-${BACKLIGHT_PERCENT})/100))
+    icon='⛅'
+    updated_brightness=$((CURRENT_BRIGHTNESS*(100-BACKLIGHT_PERCENT)/100))
   ;;
   *)
+    icon=''
     updated_brightness="${DEFAULT_BRIGHTNESS}"
   ;;
 esac
 
 echo $updated_brightness > "${BACKLIGHT_FILE}"
+if [ ! -z $icon ]; then
+  notify-send "$icon $updated_brightness"
+fi

@@ -1,8 +1,8 @@
 # Maintainer: Josh Holbrook <josh.holbrook@gmail.com>
 
 pkgname=brightcli
-pkgver=1.0
-pkgrel=3
+pkgver=1.1
+pkgrel=1
 pkgdesc='A helper for managing screen brightness'
 arch=('any')
 license=('MIT')
@@ -13,7 +13,7 @@ source=(
   'backlight.rules'
 )
 sha256sums=(
-  'fa80cd3ab214a6a6aea60dc0c6c596799219a9f5c3ccd8e33ff218c9655081dd'
+  '9db912e0e618ec10164f69ba2061b3720093cda906212212128018ab8140171d'
   '95c265409fe17cb0b85c3b8788a780c28b096c76e3b657f6e34bc9f2af93f787'
 )
 
