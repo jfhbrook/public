@@ -27,4 +27,6 @@ exec physlock -d -p "$(
     "-$(shuf -n 1 -e b d g p s t w y)" \
     -f "$(find /usr/share/cows -type f | grep '\.cow' | shuf -n 1)" | \
   sed "s/^/            /"
+  echo
+  echo "            Contact: josh.holbrook@gmail.com"
 )" "${@}"
