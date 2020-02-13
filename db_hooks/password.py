@@ -18,12 +18,18 @@
 
 from abc import ABC, abstractmethod
 import logging
+import keyring
+from keyring.errors import KeyringError
 import shlex
 import subprocess
 
 logger = logging.getLogger(__name__)
 
 PASSWORD_UNSUPPORTED = {"sqlite"}
+
+
+def keyring_service(config, connection_name):
+    return "{}.{}".format(config.keyring.namespace, connection_name)
 
 
 class PasswordLoader(ABC):
@@ -49,8 +55,25 @@ class PasswordLoader(ABC):
         pass
 
     def get_password(self, connection_name):
-        logger.info("Getting password for connection {}...".format(connection_name))
         connection_config = self.config.connections[connection_name]
+        keyring_pass = None
+
+        if self.config.keyring.enable:
+            logger.info("Checking keyring for connection {}...".format(connection_name))
+            try:
+                keyring_pass = keyring.get_password(
+                    keyring_service(self.config, connection_name),
+                    connection_config.username or "<no_username>",
+                )
+            except KeyringError as exc:
+                logger.warn(exc)
+
+            if keyring_pass:
+                logger.info("Found password in keyring.")
+                return keyring_pass
+
+            logger.info("Could not find password in keyring.")
+        logger.info("Getting password for connection {}...".format(connection_name))
 
         if hasattr(self.config, "password_cmd"):
             password_cmd = self.config.password_cmd
@@ -64,7 +87,20 @@ class PasswordLoader(ABC):
 
         argv = self.get_argv(templated)
 
-        return self.run_command(argv)
+        keyring_pass = self.run_command(argv)
+
+        if keyring_pass and self.config.keyring.enable:
+            logger.info("Saving password to keyring...")
+            try:
+                keyring.set_password(
+                    keyring_service(self.config, connection_name),
+                    connection_config.username or "<no_username>",
+                    keyring_pass,
+                )
+            except KeyringError as exc:
+                logger.warn(exc)
+
+        return keyring_pass
 
 
 class ShlexPasswordLoader(PasswordLoader):

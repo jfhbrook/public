@@ -67,6 +67,17 @@ password_loader = "powershell"
 password_cmd = "(Get-Credential -Credential {name}).GetNetworkCredential().Password"
 ```
 
+### keyring
+
+`db_hooks` will optionally attempt to load and save passwords into your OS's keyring using the [keyring](https://github.com/jaraco/keyring) Python package. This feature must be enabled explicitly:
+
+```toml
+[keyring]
+enable = true
+```
+
+Passwords by default will be saved to keys named `com.jfhbrook.db_hooks.{connection_name}`. You can override this by setting the `keyring.namespace` parameter.
+
 ### caching
 
 Connections in code are cached by `db_hooks` using [`cachetools`](https://cachetools.readthedocs.io/en/stable/). This means that if you call `get_engine` with the same connection name twice that it will in most cases reuse an already-initialized engine, meaning that you will only be prompted for a password once.
