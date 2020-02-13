@@ -26,7 +26,7 @@ from db_hooks import logger
 from db_hooks.client import Client
 from db_hooks.config import Config, GLOBAL_CONFIG, LOCAL_CONFIG
 import db_hooks.editor as editor
-from db_hooks.errors import ConfigNotFoundError
+from db_hooks.errors import ConfigNotFoundError, MalformedConfigError
 
 click_log.basic_config(logger)
 
@@ -47,9 +47,22 @@ def pass_config(fn):
     @functools.wraps(fn)
     @click.pass_context
     def wrapper(ctx, *args, **kwargs):
-        if ctx.obj.get("CONFIG_NOT_FOUND_ERROR"):
-            raise ctx.obj["CONFIG_NOT_FOUND_ERROR"]
+        for error_type in {"CONFIG_NOT_FOUND_ERROR", "MALFORMED_CONFIG_ERROR"}:
+            if ctx.obj.get(error_type):
+                raise ctx.obj[error_type]
         return fn(ctx.obj["CONFIG"], *args, **kwargs)
+
+    return wrapper
+
+
+def warn_config(fn):
+    @functools.wraps(fn)
+    @click.pass_context
+    def wrapper(ctx, *args, **kwargs):
+        for error_type in {"CONFIG_NOT_FOUND_ERROR", "MALFORMED_CONFIG_ERROR"}:
+            if ctx.obj.get(error_type):
+                logger.warn(ctx.obj[error_type])
+        return fn(*args, **kwargs)
 
     return wrapper
 
@@ -77,7 +90,7 @@ def autocomplete_config_files(ctx, args, incomplete):
 def autocomplete_config_key(ctx, args, incomplete):
     try:
         config = Config.load_config()
-    except ConfigNotFoundError:
+    except (ConfigNotFoundError, MalformedConfigError):
         return []
 
     known_keys = incomplete.split(".")
@@ -109,7 +122,7 @@ def autocomplete_config_key(ctx, args, incomplete):
 def autocomplete_connection_names(ctx, args, incomplete):
     try:
         config = Config.load_config()
-    except ConfigNotFoundError:
+    except (ConfigNotFoundError, MalformedConfigError):
         return []
 
     return [
@@ -146,6 +159,9 @@ def main(ctx, filename, system):
     except ConfigNotFoundError as exc:
         ctx.obj["CONFIG"] = None
         ctx.obj["CONFIG_NOT_FOUND_ERROR"] = exc
+    except MalformedConfigError as exc:
+        ctx.obj["CONFIG"] = None
+        ctx.obj["MALFORMED_CONFIG_ERROR"] = exc
 
 
 @main.command(help="Show part or all of the db_hooks configuration")
@@ -180,5 +196,6 @@ def connect(config, name):
 
 @main.command(help="Edit the global config")
 @capture
+@warn_config
 def edit():
     editor.edit()
