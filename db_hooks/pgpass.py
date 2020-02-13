@@ -38,6 +38,9 @@ class PGPassLine:
                 database = match.group(3),
                 username = match.group(4),
                 password = match.group(5),
+                # TODO: Apply business rules to this metadata - in our case we
+                # need to track modified time (value as iso8601) in order to
+                # manage evictions
                 metadata = dict([
                     tuple(re.split(r":\s+", pair))
                     for pair in re.split(r",\s+", match.group(6).strip())
