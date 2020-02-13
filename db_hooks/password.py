@@ -89,7 +89,7 @@ class PasswordLoader(ABC):
 
         keyring_pass = self.run_command(argv)
 
-        if keyring_pass:
+        if keyring_pass and self.config.keyring.enable:
             logger.info("Saving password to keyring...")
             try:
                 keyring.set_password(
