@@ -81,7 +81,14 @@ class CacheConfig:
 
 
 @attr.s
+class KeyringConfig:
+    enable: bool = attr.ib(default=False)
+    namespace: str = attr.ib(default="com.jfhbrook.db_hooks")
+
+
+@attr.s
 class Config:
+    keyring: KeyringConfig = attr.ib(default=KeyringConfig())
     cache: CacheConfig = attr.ib(default=CacheConfig())
     connections: Dict[str, DatabaseConfig] = attr.ib(default=dict())
     password_cmd: str = attr.ib(default="zenity --password")

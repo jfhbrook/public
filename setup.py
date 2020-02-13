@@ -27,6 +27,7 @@ setup(
         "cattrs",
         "click",
         "click-log",
+        "keyring",
         "pygments",
         "sqlalchemy",
         "toml",
