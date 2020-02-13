@@ -17,6 +17,8 @@
 # under the License.
 
 import os
+import os.path
+import shlex
 import shutil
 
 from db_hooks.config import GLOBAL_CONFIG
@@ -24,9 +26,12 @@ from db_hooks.errors import EditorNotFoundError
 
 
 def edit():
-    editor = os.environ.get("EDITOR", "vi")
+    os.makedirs(os.path.dirname(GLOBAL_CONFIG), exist_ok=True)
 
-    argv = [editor, GLOBAL_CONFIG]
+    argv = shlex.split(shutil.os.environ.get("EDITOR", "vi"))
+
+    editor = argv.pop(0)
+    argv.append(GLOBAL_CONFIG)
 
     if not shutil.which(editor):
         raise EditorNotFoundError(editor)
