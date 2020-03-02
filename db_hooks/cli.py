@@ -28,8 +28,11 @@ from db_hooks.config import Config, GLOBAL_CONFIG, LOCAL_CONFIG
 import db_hooks.editor as editor
 from db_hooks.pgpass import PgPass, is_pgpass_protocol
 from db_hooks.errors import (
-    ConfigNotFoundError, MalformedConfigError, PgPassDisabledError,
-    PgPassUnmanagableConnectionError
+    ConfigNotFoundError,
+    MalformedConfigError,
+    PgPassDisabledError,
+    PgPassNoPasswordError,
+    PgPassUnmanagableConnectionError,
 )
 
 click_log.basic_config(logger)
@@ -223,9 +226,11 @@ def pass_pgpass(fn):
     return wrapper
 
 
-@pgpass.command(help="Show the state of the pgpass file as managed by db_hooks")
+@pgpass.command(
+    name="show", help="Show the state of the pgpass file as managed by db_hooks"
+)
 @pass_pgpass
-def show(pgpass):
+def show_pgpass(pgpass):
     pgpass.show()
 
 
@@ -233,14 +238,26 @@ def show(pgpass):
 @click.argument("name", autocompletion=autocomplete_connection_names)
 @click.pass_context
 @capture
-def add(ctx, name):
-    config = ctx.obj['CONFIG']
-    pgpass = ctx.obj['PGPASS']
+def refresh(ctx, name):
+    config = ctx.obj["CONFIG"]
+    pgpass = ctx.obj["PGPASS"]
 
     connection_config = config.connections[name]
 
     if not is_pgpass_protocol(connection_config.protocol):
         raise PgPassUnmanagableConnectionError(name, connection_config.protocol)
+
+    if not connection_config.has_password:
+        raise PgPassNoPasswordError(name)
+
+    entry = pgpass.get_entry(name, config)
+
+    entry.load_password(config)
+
+    entry.touch()
+
+    pgpass.write()
+
 
 @main.command(help="Edit the global config")
 @capture

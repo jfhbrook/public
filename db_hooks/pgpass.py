@@ -1,16 +1,22 @@
 import datetime
 import dateutil.parser
+import logging
 import os
 import os.path
 import re
 import stat
 
+import arrow
 import attr
 from terminaltables import SingleTable as Table
+
+from db_hooks.password import PasswordLoader
 
 PERMISSIONS = stat.S_IRUSR | stat.S_IWUSR
 
 PGPASS_PROTOCOLS = {"postgres", "postgresql", "pg"}
+
+logger = logging.getLogger(__name__)
 
 
 def is_pgpass_protocol(protocol):
@@ -74,7 +80,12 @@ class PgPassEntry:
             return cls(raw=raw, managed=False)
 
     @classmethod
-    def create(cls, host, port, database, username, password):
+    def create(cls, host, port, database, username, password, connection_name=None):
+        metadata = dict(modified=datetime.datetime.utcnow())
+
+        if connection_name:
+            metadata["name"] = connection_name
+
         return cls(
             raw=None,
             managed=True,
@@ -83,8 +94,23 @@ class PgPassEntry:
             database=database,
             username=username,
             password=password,
-            metadata=dict(modified=datetime.datetime.now()),
+            metadata=metadata,
         )
+
+    @classmethod
+    def from_config(cls, name, config):
+        connection_config = config.connections[name]
+        return cls.create(
+            connection_config.host,
+            connection_config.port,
+            connection_config.database,
+            connection_config.username,
+            connection_config.password,
+            name,
+        )
+
+    def touch(self):
+        self.metadata["modified"] = datetime.datetime.utcnow()
 
     def stringify(self):
         if self.managed:
@@ -92,15 +118,16 @@ class PgPassEntry:
                 [
                     f"{k}: {v}"
                     for k, v in [
-                        _dehydrate_metadata_kv(kv) for kv in self.metadata.items()
+                        _dehydrate_metadata_kv(k, v) for k, v in self.metadata.items()
                     ]
                 ]
             )
+
             raw = ":".join(
                 [
                     self.host,
-                    self.port,
-                    self.db,
+                    str(self.port),
+                    self.database,
                     self.username,
                     f"{self.password} # db_hooks {comment}",
                 ]
@@ -110,32 +137,52 @@ class PgPassEntry:
         return raw
 
     @property
-    def name(self):
+    def pgpass_key(self):
         if self.managed:
-            return ":".join(
-                self.host,
-                self.port,
-                self.db,
-                self.username
-            )
+            return ":".join([self.host, str(self.port), self.database, self.username])
+        # Try to print everything prior to the password at least
+        match = re.match(r"^([^:]+?:[^:]+?:[^:]+?:[^:]+?):", self.raw.strip())
+        if match:
+            return match.group(1)
         else:
-            # Try to print everything prior to the password at least
-            match = re.match(r"^([^:]+?:[^:]+?:[^:]+?:[^:]+?):", self.raw.strip())
-            if match:
-                return match.group(1)
-            else:
-                # Fall back to the actual raw value
-                return self.raw.strip()
+            # Fall back to the actual raw value
+            return self.raw.strip()
+
+    @property
+    def name(self):
+        if self.managed and self.metadata and "name" in self.metadata:
+            return self.metadata["name"]
+        return None
 
     @property
     def age(self):
         # Kinda a joke default :)
         modified = datetime.datetime.fromtimestamp(0)
 
-        if self.managed and 'modified' in self.metadata:
-            modified = self.metadata['modified']
+        if self.managed and "modified" in self.metadata:
+            modified = self.metadata["modified"]
 
-        return datetime.datetime.now() - modified
+        return datetime.datetime.utcnow() - modified
+
+    @property
+    def human_age(self):
+        modified = datetime.datetime.fromtimestamp(0)
+
+        if self.managed and "modified" in self.metadata:
+            modified = self.metadata["modified"]
+
+        return arrow.get(modified).humanize()
+
+    def load_password(self, config):
+        connection_config = config.connections[self.name]
+        loader = PasswordLoader.from_config(config)
+        password = (
+            loader.get_password(self.name)
+            if connection_config.password is None
+            else connection_config.password
+        )
+
+        self.password = password
 
 
 class PgPass:
@@ -155,9 +202,7 @@ class PgPass:
     @classmethod
     def from_config(cls, config):
         self = cls(
-            config.pgpass.location,
-            config.pgpass.ttl,
-            config.pgpass.clear_backup
+            config.pgpass.location, config.pgpass.ttl, config.pgpass.clear_backup
         )
         self.read()
         return self
@@ -173,6 +218,17 @@ class PgPass:
             if self._clear_backup:
                 os.remove(f"{self._filename}.bak")
 
+    def get_entry(self, name, config):
+        # O(n) but likely to not be many of these so shrug
+        for entry in self._data:
+            if entry.name == name:
+                return entry
+        entry = PgPassEntry.from_config(name, config)
+
+        self._data.append(entry)
+
+        return entry
+
     def add(self, pg_pass_line):
         self._data.append(pg_pass_line)
 
@@ -185,7 +241,7 @@ class PgPass:
                 or ("modified" in getattr(entry, "metadata", dict()))
                 and (
                     entry.metadata["modified"]
-                    < (datetime.datetime.now() - datetime.timedelta(self.ttl))
+                    < (datetime.datetime.utcnow() - datetime.timedelta(self.ttl))
                 )
             )
         ]
@@ -194,9 +250,16 @@ class PgPass:
         self._data = [entry for entry in self._data if not entry.managed]
 
     def show(self):
-        print(Table([
-            ["entry", "managed", "age (s)"]
-        ] + [
-            [entry.name, entry.managed, entry.age]
-            for entry in self._data
-        ]).table)
+        table = Table(
+            [["connection name", "pgpass key", "managed", "age"]]
+            + [
+                [
+                    entry.pgpass_key or "<unknown>",
+                    entry.name or "<n/a>",
+                    entry.managed,
+                    entry.human_age,
+                ]
+                for entry in self._data
+            ]
+        )
+        print(table.table)

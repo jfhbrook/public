@@ -28,6 +28,7 @@ from db_hooks.errors import EditorNotFoundError
 
 logger = logging.getLogger(__name__)
 
+
 def edit():
     dirname = os.path.dirname(GLOBAL_CONFIG)
     logger.debug("Ensuring the path {} exists...".format(dirname))
