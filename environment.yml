@@ -1,25 +1,23 @@
 name: db_hooks
 
 dependencies:
-  - python=3.7.4
-  - pip=19.2.3
+  - python=3.7.6
+  - pip=20.0.2
   - appdirs=1.4.3
-  - attrs=19.1.0
-  - black=19.3b0
+  - attrs=19.3.0
+  - black=19.10b0
+  - cachetools=3.1.1
+  - cattrs=1.0.0
   - click=7.0
-  - flake8=3.7.8
-  - ipykernel=5.1.2
+  - click-log=0.3.2
+  - flake8=3.7.9
+  - flake8-black=0.1.1
+  - ipykernel=5.1.4
   - keyring=21.1.0
-  - pandas=0.25.1
-  - pygments=2.4.2
-  - pyyaml=5.1.2
-  - sqlalchemy=1.3.8
+  - pandas=1.0.1
+  - psycopg2=2.8.4
+  - pygments=2.5.2
+  - pyyaml=5.3
+  - sqlalchemy=1.3.13
   - toml=0.10.0
-  - twine=2.0.0
-  - pip:
-    - cachetools==3.1.1
-    - cattrs==0.9.0
-    - click-log==0.3.2
-    - flake8-black==0.1.1
-    - pip-tools==4.1.0
-    - psycopg2-binary==2.8.3
+  - twine=3.1.1
