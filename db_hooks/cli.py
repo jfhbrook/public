@@ -26,7 +26,11 @@ from db_hooks import logger
 from db_hooks.client import Client
 from db_hooks.config import Config, GLOBAL_CONFIG, LOCAL_CONFIG
 import db_hooks.editor as editor
-from db_hooks.errors import ConfigNotFoundError, MalformedConfigError
+from db_hooks.pgpass import PgPass, is_pgpass_protocol
+from db_hooks.errors import (
+    ConfigNotFoundError, MalformedConfigError, PgPassDisabledError,
+    PgPassUnmanagableConnectionError
+)
 
 click_log.basic_config(logger)
 
@@ -43,13 +47,17 @@ def capture(fn):
     return wrapper
 
 
+def assert_config(ctx):
+    for error_type in {"CONFIG_NOT_FOUND_ERROR", "MALFORMED_CONFIG_ERROR"}:
+        if ctx.obj.get(error_type):
+            raise ctx.obj[error_type]
+
+
 def pass_config(fn):
     @functools.wraps(fn)
     @click.pass_context
     def wrapper(ctx, *args, **kwargs):
-        for error_type in {"CONFIG_NOT_FOUND_ERROR", "MALFORMED_CONFIG_ERROR"}:
-            if ctx.obj.get(error_type):
-                raise ctx.obj[error_type]
+        assert_config(ctx)
         return fn(ctx.obj["CONFIG"], *args, **kwargs)
 
     return wrapper
@@ -194,10 +202,45 @@ def connect(config, name):
     Client.from_config(config, name).exec()
 
 
-@main.command(
-    help="Interact with the pgpass file"
-)
+@main.group(help="Interact with the pgpass file")
+@click.pass_context
+@capture
+def pgpass(ctx, *args, **kwargs):
+    assert_config(ctx)
 
+    if not ctx.obj["CONFIG"].pgpass.enable:
+        raise PgPassDisabledError()
+
+    ctx.obj["PGPASS"] = PgPass.from_config(ctx.obj["CONFIG"])
+
+
+def pass_pgpass(fn):
+    @functools.wraps(fn)
+    @click.pass_context
+    def wrapper(ctx, *args, **kwargs):
+        return fn(ctx.obj["PGPASS"], *args, **kwargs)
+
+    return wrapper
+
+
+@pgpass.command(help="Show the state of the pgpass file as managed by db_hooks")
+@pass_pgpass
+def show(pgpass):
+    pgpass.show()
+
+
+@pgpass.command(help="Prompt for a password and save it to the pgpass file")
+@click.argument("name", autocompletion=autocomplete_connection_names)
+@click.pass_context
+@capture
+def add(ctx, name):
+    config = ctx.obj['CONFIG']
+    pgpass = ctx.obj['PGPASS']
+
+    connection_config = config.connections[name]
+
+    if not is_pgpass_protocol(connection_config.protocol):
+        raise PgPassUnmanagableConnectionError(name, connection_config.protocol)
 
 @main.command(help="Edit the global config")
 @capture

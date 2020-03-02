@@ -10,6 +10,12 @@ from terminaltables import SingleTable as Table
 
 PERMISSIONS = stat.S_IRUSR | stat.S_IWUSR
 
+PGPASS_PROTOCOLS = {"postgres", "postgresql", "pg"}
+
+
+def is_pgpass_protocol(protocol):
+    return protocol in PGPASS_PROTOCOLS
+
 
 def pg_pass_file():
     if os.name == "nt":
@@ -38,7 +44,7 @@ class PgPassEntry:
     database = attr.ib(default=None)
     username = attr.ib(default=None)
     password = attr.ib(default=None)
-    metadata = attr.ib(default=attr.factory(dict))
+    metadata = attr.ib(default=attr.Factory(dict))
 
     @classmethod
     def parse(cls, raw):
@@ -49,7 +55,7 @@ class PgPassEntry:
         if match:
             metadata = dict(
                 [
-                    _hydrate_metadata_kv(tuple(re.split(r":\s+", pair)))
+                    _hydrate_metadata_kv(*tuple(re.split(r":\s+", pair)))
                     for pair in re.split(r",\s+", match.group(6).strip())
                 ]
             )
@@ -124,7 +130,7 @@ class PgPassEntry:
     @property
     def age(self):
         # Kinda a joke default :)
-        modified = datetime.datetime.timestamp(0)
+        modified = datetime.datetime.fromtimestamp(0)
 
         if self.managed and 'modified' in self.metadata:
             modified = self.metadata['modified']
@@ -133,24 +139,25 @@ class PgPassEntry:
 
 
 class PgPass:
-    def __init__(self, filename, ttl=600, clean_backup=True):
+    def __init__(self, filename, ttl=600, clear_backup=True):
         self._data = []
         self._filename = filename
-        self._clean_backup = clean_backup
+        self._clear_backup = clear_backup
         self.ttl = ttl
 
     def read(self):
         with open(self._filename, "r") as f:
             raw = f.read()
         for line in raw.split("\n"):
-            self._data.append(PgPassEntry.parse(line))
+            if line:
+                self._data.append(PgPassEntry.parse(line))
 
     @classmethod
     def from_config(cls, config):
         self = cls(
             config.pgpass.location,
             config.pgpass.ttl,
-            config.pgpass.clean_backup
+            config.pgpass.clear_backup
         )
         self.read()
         return self
@@ -163,7 +170,7 @@ class PgPass:
             os.rename(stage.name, self._filename)
             if os.name != "nt":
                 os.chmod(self._filename, PERMISSIONS)
-            if self._clean_backup:
+            if self._clear_backup:
                 os.remove(f"{self._filename}.bak")
 
     def add(self, pg_pass_line):
@@ -192,4 +199,4 @@ class PgPass:
         ] + [
             [entry.name, entry.managed, entry.age]
             for entry in self._data
-        ]))
+        ]).table)
