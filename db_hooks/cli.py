@@ -185,13 +185,18 @@ def show(config, key, json, pretty):
 
 
 @main.command(
-    help="Connect to a database using the default cli client for that database."
+    help="Connect to a database using the default cli client for that database"
 )
 @click.argument("name", autocompletion=autocomplete_connection_names)
 @capture
 @pass_config
 def connect(config, name):
     Client.from_config(config, name).exec()
+
+
+@main.command(
+    help="Interact with the pgpass file"
+)
 
 
 @main.command(help="Edit the global config")

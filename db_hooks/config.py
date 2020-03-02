@@ -34,6 +34,7 @@ from toml.decoder import TomlDecodeError
 
 from db_hooks.errors import ConfigNotFoundError, DBHooksError, MalformedConfigError
 from db_hooks.password import PASSWORD_UNSUPPORTED
+from db_hooks.pgpass import pg_pass_file
 
 logger = logging.getLogger(__name__)
 
@@ -87,9 +88,18 @@ class KeyringConfig:
 
 
 @attr.s
+class PgPassConfig:
+    enable: bool = attr.ib(default=False)
+    location: bool = attr.ib(default=pg_pass_file())
+    ttl: int = attr.ib(default=600)
+    clear_backup: bool = attr.ib(default=False)
+
+
+@attr.s
 class Config:
     keyring: KeyringConfig = attr.ib(default=KeyringConfig())
     cache: CacheConfig = attr.ib(default=CacheConfig())
+    pgpass: PgPassConfig = attr.ib(default=PgPassConfig())
     connections: Dict[str, DatabaseConfig] = attr.ib(default=dict())
     password_cmd: str = attr.ib(default="zenity --password")
     password_loader: str = attr.ib(default="shlex")
