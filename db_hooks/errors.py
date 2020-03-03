@@ -16,6 +16,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from db_hooks.pgpass import PGPASS_PROTOCOLS
+
 
 class DBHooksError(Exception):
     """
@@ -71,3 +73,30 @@ class ClientNotFoundError(CommandNotFoundError):
 
 class EditorNotFoundError(CommandNotFoundError):
     pass
+
+
+class PgPassError(DBHooksError):
+    pass
+
+
+class PgPassDisabledError(PgPassError):
+    message = "pgpass management needs to be enabled"
+
+    def __init__(self):
+        super().__init__(self, self.message)
+
+
+class PgPassUnmanagableConnectionError(PgPassError):
+    message = "The {} connection uses the {} protocol; must be one of: {}"
+
+    def __init__(self, name, protocol):
+        message = self.message.format(name, protocol, "; ".join(PGPASS_PROTOCOLS))
+        super().__init__(self, message)
+
+
+class PgPassNoPasswordError(PgPassError):
+    message = "The {} connection has no password"
+
+    def __init__(self, name):
+        message = self.message.format(name)
+        super.__init__(self, message)

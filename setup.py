@@ -30,6 +30,7 @@ setup(
         "keyring",
         "pygments",
         "sqlalchemy",
+        "terminaltables",
         "toml",
     ],
     entry_points=dict(console_scripts=["db_hooks=db_hooks.cli:main"]),

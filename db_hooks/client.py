@@ -17,11 +17,27 @@
 # under the License.
 
 from abc import ABC
+import logging
 import os
 import shutil
 
 from db_hooks.errors import ClientNotFoundError
 from db_hooks.password import PasswordLoader
+from db_hooks.pgpass import PgPass
+
+logger = logging.getLogger(__name__)
+
+
+class PasswordMemoizer:
+    password = None
+
+    def __init__(self, client):
+        self.client = client
+
+    def __call__(self):
+        if not self.password:
+            self.password = self.client.get_password()
+        return self.password
 
 
 class Client(ABC):
@@ -45,11 +61,8 @@ class Client(ABC):
         connection_config = config.connections[connection_name]
         return CLIENTS[connection_config.protocol](config, connection_name)
 
-    def get_command(self):
-        argv = [self.bin]
-        env = dict()
-
-        password = (
+    def get_password(self):
+        return (
             (
                 self.password_loader.get_password(self.connection_name)
                 if self.connection_config.has_password
@@ -59,9 +72,19 @@ class Client(ABC):
             else self.connection_config.password
         )
 
+    def side_effects(self, argv, env):
+        "Override this if the client has custom logic"
+        return argv, env
+
+    def get_command(self):
+        argv = [self.bin]
+        env = dict()
+
+        get_password = PasswordMemoizer(self)
+
         for cli_key, conn_key in self.options:
             if conn_key == "password":
-                conn_val = password
+                conn_val = get_password()
             else:
                 conn_val = getattr(self.connection_config, conn_key, None)
             if conn_val:
@@ -70,7 +93,7 @@ class Client(ABC):
 
         for conn_key in self.parameters:
             if conn_key == "password":
-                parameter = password
+                parameter = get_password()
             else:
                 parameter = getattr(self.connection_config, conn_key, None)
             if parameter:
@@ -78,16 +101,18 @@ class Client(ABC):
 
         for env_key, conn_key in self.env:
             if conn_key == "password":
-                env_val = password
+                env_val = get_password()
             else:
                 env_val = getattr(self.connection_config, conn_key, None)
             if env_val:
                 env[env_key] = env_val
 
+        self.side_effects(argv, env)
+
         return argv, env
 
     def exec(self):
-        argv, env = self.get_command()
+        argv, env = self.side_effects(*self.get_command())
 
         cmd = argv[0]
         env = dict(os.environ, **env)
@@ -104,7 +129,22 @@ class Client(ABC):
 class PostgreSQLClient(Client):
     bin = "psql"
     options = [("-U", "username"), ("-h", "host"), ("-p", "port"), ("-d", "database")]
-    env = [("PGPASSWORD", "password")]
+
+    def side_effects(self, argv, env):
+        if self.config.pgpass.enable:
+            pgpass = PgPass.from_config(self.config)
+
+            pgpass.evict()
+
+            entry = pgpass.get_entry(self.connection_name, self.config)
+            entry.load_password(self.config)
+
+            pgpass.write()
+        else:
+            logger.info("pgpass is disabled; using PGPASSWORD environment variable...")
+            env["PGPASSWORD"] = self.get_password()
+
+        return argv, env
 
 
 class MySQLClient(Client):
