@@ -193,6 +193,7 @@ class PgPass:
         self.ttl = ttl
 
     def read(self):
+        logger.info(f"Reading {self._filename}...")
         with open(self._filename, "r") as f:
             raw = f.read()
         for line in raw.split("\n"):
@@ -208,6 +209,7 @@ class PgPass:
         return self
 
     def write(self):
+        logger.info(f"Writing {self._filename}...")
         with open(f"{self._filename}.stage", "w") as stage:
             for entry in self._data:
                 stage.write(f"{entry.stringify()}\n")
@@ -217,6 +219,7 @@ class PgPass:
                 os.chmod(self._filename, PERMISSIONS)
             if self._clear_backup:
                 os.remove(f"{self._filename}.bak")
+        logger.debug(f"Finished writing to {self._filename}.")
 
     def get_entry(self, name, config):
         # O(n) but likely to not be many of these so shrug
@@ -229,10 +232,18 @@ class PgPass:
 
         return entry
 
-    def add(self, pg_pass_line):
-        self._data.append(pg_pass_line)
+    def add(self, pg_pass_entry):
+        logger.debug(
+            f"Adding {pg_pass_entry.name} ({pg_pass_entry.pgpass_key}) to pgpass..."
+        )
+        self._data.append(pg_pass_entry)
 
-    def evict(self):
+    def evict(self, ttl=None):
+        if not ttl:
+            ttl = self.ttl
+
+        logger.info(f"Evicting managed entries in pgpass older than {ttl} seconds...")
+
         self._data = [
             entry
             for entry in self._data
@@ -241,12 +252,13 @@ class PgPass:
                 or ("modified" in getattr(entry, "metadata", dict()))
                 and (
                     entry.metadata["modified"]
-                    < (datetime.datetime.utcnow() - datetime.timedelta(self.ttl))
+                    > (datetime.datetime.utcnow() - datetime.timedelta(seconds=ttl))
                 )
             )
         ]
 
     def clear(self):
+        logger.info(f"Clearing all managed entries from pgpass...")
         self._data = [entry for entry in self._data if not entry.managed]
 
     def show(self):

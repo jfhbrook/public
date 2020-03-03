@@ -234,11 +234,13 @@ def show_pgpass(pgpass):
     pgpass.show()
 
 
-@pgpass.command(help="Prompt for a password and save it to the pgpass file")
+@pgpass.command(
+    name="refresh", help="Prompt for a password and save it to the pgpass file"
+)
 @click.argument("name", autocompletion=autocomplete_connection_names)
 @click.pass_context
 @capture
-def refresh(ctx, name):
+def refresh_pgpass(ctx, name):
     config = ctx.obj["CONFIG"]
     pgpass = ctx.obj["PGPASS"]
 
@@ -253,9 +255,32 @@ def refresh(ctx, name):
     entry = pgpass.get_entry(name, config)
 
     entry.load_password(config)
-
     entry.touch()
 
+    pgpass.write()
+
+
+@pgpass.command(
+    name="evict",
+    help="Evict managed entries in pgpass that are older than the given TTL",
+)
+@click.option("--ttl", type=int, default=600, show_default=True)
+@click.pass_context
+@capture
+def evict_pgpass(ctx, ttl):
+    pgpass = ctx.obj["PGPASS"]
+
+    pgpass.evict(ttl)
+    pgpass.write()
+
+
+@pgpass.command(name="clear", help="Clear all managed entries in pgpass")
+@click.pass_context
+@capture
+def clear_pgpass(ctx):
+    pgpass = ctx.obj["PGPASS"]
+
+    pgpass.clear()
     pgpass.write()
 
 
