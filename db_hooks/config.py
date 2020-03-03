@@ -186,4 +186,4 @@ class Config:
 
         parent[k] = config
 
-        click.echo(format_config(self, format, highlight))
+        click.echo(format_config(parent, format, highlight))
