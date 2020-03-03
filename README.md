@@ -78,6 +78,23 @@ enable = true
 
 Passwords by default will be saved to keys named `com.jfhbrook.db_hooks.{connection_name}`. You can override this by setting the `keyring.namespace` parameter.
 
+### pgpass
+
+By default, `db_hooks` uses environment variables to set the password when launching `psql`. However, `db_hooks` also supports managing a `~/.pgpass` file. This feature must be enabled explicitly:
+
+```toml
+[pgpass]
+enable = true
+```
+
+You can also set `pgpass.ttl`, which defaults to `600` seconds - 10 minutes.
+
+`~/.pgpass` entries managed by `db_hooks` are tagged with a special `# db_hooks` comment that attaches metadata for the entry, such as when it was last modified and which `db_hooks` connection it corresponds to. Entries without this special comment are considered "unmanaged" and should never be changed or removed.
+
+When calling `db_hooks connect` in the cli, if pgpass is enabled then `db_hooks` will evict stale passwords from `~/.pgpass`, prompt as normal, then add the updated credentials for that connection back to `~/.pgpass` before launching `psql`. Other commands and non-postgresql clients operate as though pgpass is disabled.
+
+`~/.pgpass` can also be managed directly using the `db_hooks pgpass` set of subcommands. An example use case is to connect `db_hooks pgpass evict` to a cron job or systemd timer in order to remove passwords after the configured TTL.
+
 ### caching
 
 Connections in code are cached by `db_hooks` using [`cachetools`](https://cachetools.readthedocs.io/en/stable/). This means that if you call `get_engine` with the same connection name twice that it will in most cases reuse an already-initialized engine, meaning that you will only be prompted for a password once.
