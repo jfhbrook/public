@@ -16,6 +16,7 @@ from twisted.logger import Logger
 from twisted.runner.procmon import ProcessMonitor as BaseMonitor
 
 from korbenware.presentation import representable
+from korbenware.presentation.markdown import markdownable
 
 # Hold my beer.
 #
@@ -72,6 +73,8 @@ class LifecycleState(Enum):
     STOPPED='STOPPED'
 
 
+
+@markdownable
 @representable
 @attr.s
 class ProcessSettings:
@@ -79,13 +82,15 @@ class ProcessSettings:
     The process management settings for a process.
     """
 
-    restart = attr.ib()
+    restart = attr.ib(default=False)
     threshold = attr.ib(default=None)
     killTime = attr.ib(default=None)
     minRestartDelay = attr.ib(default=None)
     maxRestartDelay = attr.ib(default=None)
 
 
+
+@markdownable
 @representable
 @attr.s
 class ProcessState:
@@ -102,6 +107,8 @@ class ProcessState:
     settings = attr.ib(default=None)
 
 
+
+@markdownable
 @representable
 class ProcessMonitor(BaseMonitor, EventEmitter):
     """
@@ -409,7 +416,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         """
         Manually restart a process, regardless of how it's been configured,
         """
-        self.states[name] = ProcessState.RESTARTING
+        self.states[name] = LifecycleState.RESTARTING
         self.emit('restartProcess', self.getState(name))
         self._stopProcess(self, name)
 
@@ -418,7 +425,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         """
         Stop a process.
         """
-        self.states[name] = ProcessState.STOPPING
+        self.states[name] = LifecycleState.STOPPING
         self.emit('stopProcess', self.getState(name))
         self._stopProcess(self, name)
 
@@ -426,7 +433,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
     def _stopProcess(self, name):
         self.assertRegistered(name)
 
-        self.states[name] = ProcessState.STOPPING
+        self.states[name] = LifecycleState.STOPPING
 
         # Same as procmon
         proto = self.protocols.get(name, None)

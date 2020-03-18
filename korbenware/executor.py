@@ -1,12 +1,15 @@
 import attr
 
-from korbenware.dbus import Bool, dbus_attr, DBusField, Str, List
+from korbenware.dbus import Bool, dbus_attr, DBusField, Double, Str, List
 from korbenware.dbus.proxy import dbus_method, dbus_proxy
 from korbenware.detach import spawn as spawn_detached
 from korbenware.logger import create_logger
 from korbenware.twisted.procmon import ProcessMonitor
 from korbenware.xdg.exec_key import ExecKey
 from korbenware.xdg.executable import Executable
+from korbenware.keys import keys
+from korbenware.presentation import representable
+from korbenware.presentation.markdown import markdownable
 
 
 class BaseExecutor:
@@ -87,6 +90,9 @@ class BaseExecutor:
         return self.run_xdg_executable(app.executable, **kwargs)
 
 
+@markdownable
+@representable
+@keys(['monitor'])
 class MonitoringExecutor(BaseExecutor):
     log = create_logger()
 
