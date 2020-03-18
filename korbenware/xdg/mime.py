@@ -42,6 +42,7 @@ def _get_group(ini_file, group):
         for mime_type, apps in ini_file.content.get(group, dict()).items()
     }
 
+
 @markdownable
 @representable
 @attr.s

@@ -1,6 +1,6 @@
 import attr
 
-from korbenware.dbus import Bool, dbus_attr, DBusField, Double, Str, List
+from korbenware.dbus import Bool, dbus_attr, DBusField, Str, List
 from korbenware.dbus.proxy import dbus_method, dbus_proxy
 from korbenware.detach import spawn as spawn_detached
 from korbenware.logger import create_logger
