@@ -14,4 +14,4 @@ async def main(reactor):
     observer = CliObserver(config, verbosity=2)
     publisher.addObserver(observer)
 
-    log_config(config)
+    log_config(config, LogLevel.info)
