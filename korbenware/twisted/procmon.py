@@ -15,6 +15,7 @@ from twisted.internet.error import ProcessExitedAlready
 from twisted.logger import Logger
 from twisted.runner.procmon import ProcessMonitor as BaseMonitor
 
+from korbenware.keys import keys
 from korbenware.presentation import representable
 from korbenware.presentation.markdown import markdownable
 
@@ -110,6 +111,7 @@ class ProcessState:
 
 @markdownable
 @representable
+@keys(['settings', 'states'])
 class ProcessMonitor(BaseMonitor, EventEmitter):
     """
     A subclass of twisted.runner.procmon#ProcessMonitor. While it implements
