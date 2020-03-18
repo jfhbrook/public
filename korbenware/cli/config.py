@@ -11,7 +11,7 @@ from korbenware.logger import CliObserver, publisher
 async def main(reactor):
     config = load_config()
 
-    observer = CliObserver(config)
+    observer = CliObserver(config, verbosity=2)
     publisher.addObserver(observer)
 
-    log_config(config, level=LogLevel.info)
+    log_config(config)
