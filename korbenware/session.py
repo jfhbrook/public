@@ -1,7 +1,7 @@
 import attr
 
 from korbenware.config import BaseConfig
-from korbenware.dbus import Bool, dbus_attr, from_attrs, List, Nested
+from korbenware.dbus import Bool, dbus_attr, Int16, Int64, List, Str
 from korbenware.executor import ApplicationExecutor, MonitoringExecutor
 from korbenware.open import ApplicationFinder
 from korbenware.presentation import representable
@@ -15,25 +15,44 @@ from korbenware.xdg.mime import MimeRegistry
 @representable
 @attr.s
 class ProcessState:
+    name = dbus_attr(Str(), default='???')
+    state = dbus_attr(Str(), default='UNKNOWN')
     restart = dbus_attr(Bool(), default=False)
+    threshold = dbus_attr(Int64(), default=-1)
+    killTime = dbus_attr(Int64(), default=-1)
+    minRestartDelay = dbus_attr(Int64(), default=-1)
+    maxRestartDelay = dbus_attr(Int64(), default=-1)
 
     @classmethod
-    def from_procmon(cls, setting, state):
-        return cls()
-
-
-def executor_state(executor):
-    monitor = executor.monitor
-
-    return [
-        ProcessState.from_procmon(
-            monitor.settings.get(key, None),
-            monitor.states.get(key, None)
+    def from_procmon_state(cls, state):
+        return cls(
+            name=state.name,
+            state=state.state.value,
+            restart=state.settings.restart,
+            threshold=state.settings.threshold or -1,
+            killTime=state.settings.killTime or -1,
+            minRestartDelay=state.settings.minRestartDelay or -1,
+            maxRestartDelay=state.settings.maxRestartDelay or -1
         )
-        for key in (
-            set(monitor.settings.keys()).union(set(monitor.states.keys()))
+
+
+@markdownable
+@representable
+@attr.s
+class ExecutorState:
+    running = dbus_attr(Int16(), default=-1)
+    processes = dbus_attr(List(ProcessState), default=[])
+
+    @classmethod
+    def from_executor(cls, executor):
+        monitor = executor.monitor.asdict()
+        return cls(
+            running=monitor.get('running', -1),
+            processes=[
+                ProcessState.from_procmon_state(state)
+                for state in monitor.get('processes', {}).values()
+            ]
         )
-    ]
 
 
 @markdownable
@@ -41,13 +60,19 @@ def executor_state(executor):
 @attr.s
 class SessionState:
     config = dbus_attr(BaseConfig)
-    critical_executor = dbus_attr(List(ProcessState))
+    critical_executor = dbus_attr(ExecutorState)
+    primary_executor = dbus_attr(ExecutorState)
 
     @classmethod
     def from_session(cls, session):
         return cls(
             config=session.config,
-            critical_executor=[]
+            critical_executor=ExecutorState.from_executor(
+                session.critical_executor
+            ),
+            primary_executor=ExecutorState.from_executor(
+                session.primary_executor
+            )
         )
 
 
