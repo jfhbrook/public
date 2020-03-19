@@ -105,7 +105,8 @@ def keys(keys=None):
     def decorator(cls):
         cls.__keys__ = __keys__ or _default_keys(cls)
 
-        cls.asdict = asdict
+        if not hasattr(cls, 'asdict'):
+            cls.asdict = asdict
 
         cls.keys = keys
         cls.__iter__ = keys
