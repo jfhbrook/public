@@ -1,5 +1,7 @@
 from marshmallow import fields
 
+from korbenware.dbus.marshmallow.schema import from_attrs
+
 
 class DBusField(fields.Field):
     def __init__(self, dbus_type, dbus_type_params=None):
@@ -60,7 +62,15 @@ class Signature(fields.Str):
     pass
 
 
-List = fields.List
+class List(fields.List):
+    def __init__(self, field_or_attrs, **kwargs):
+        if hasattr(field_or_attrs, '__attrs_attrs__'):
+            field = fields.Nested(from_attrs(field_or_attrs))
+        else:
+            field = field_or_attrs
+        super().__init__(field)
+
+
 Tuple = fields.Tuple
 Nested = fields.Nested
 

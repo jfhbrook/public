@@ -41,7 +41,7 @@ def executor_state(executor):
 @attr.s
 class SessionState:
     config = dbus_attr(BaseConfig)
-    critical_executor = dbus_attr(List(Nested(from_attrs(ProcessState))))
+    critical_executor = dbus_attr(List(ProcessState))
 
     @classmethod
     def from_session(cls, session):

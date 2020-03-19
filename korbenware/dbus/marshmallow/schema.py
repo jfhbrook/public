@@ -5,7 +5,7 @@ from marshmallow import Schema
 from marshmallow.schema import SchemaMeta
 from marshmallow.decorators import pre_dump, post_dump, pre_load, post_load
 
-from korbenware.dbus.marshmallow.fields import Nested
+from marshmallow.fields import Nested
 from korbenware.symbol import Symbol
 
 
