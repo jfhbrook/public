@@ -18,7 +18,7 @@ def field_signature(field):
 
     if type(field) == List:
         sig += 'a'
-        inner = field.container
+        inner = field.inner
         sig += field_signature(inner)
     elif type(field) == Tuple:
         sig += '('

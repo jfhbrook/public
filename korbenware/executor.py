@@ -150,7 +150,7 @@ class ApplicationExecutor(MonitoringExecutor):
     log = create_logger()
 
     def __init__(self, *, reactor=None, applications=None):
-        super().__init__(self, reactor=reactor)
+        super().__init__(reactor=reactor)
         self.applications = applications
 
     def run_xdg_application_by_name(
@@ -164,85 +164,3 @@ class ApplicationExecutor(MonitoringExecutor):
         )
         app = self.applications.entries[filename]
         return self.run_xdg_application(app, **kwargs)
-
-
-class MonitorAttrsMixin:
-    monitor = dbus_attr(field=Bool(), default=False)
-    restart = dbus_attr(field=Bool(), default=False)
-    cleanup = dbus_attr(field=Bool(), default=True)
-    monitor_params = dbus_attr(
-        field=DBusField('a{sv}'),
-        default=attr.Factory(dict)
-    )
-
-
-class EnvAttrsMixin:
-    env = dbus_attr(
-        field=DBusField('a{ss}'),
-        default=attr.Factory(dict)
-    )
-    cwd = dbus_attr(field=Str(), default='')
-
-    def repair_env_in_place(self):
-        if self.env == dict():
-            self.env = None
-        if self.cwd == '':
-            self.cwd = None
-
-
-@attr.s
-class DBusApplicationPayload(MonitorAttrsMixin, EnvAttrsMixin):
-    filename = dbus_attr(field=Str(), default='')
-    exec_key_fields = dbus_attr(
-        field=DBusField('a{ss}'),
-        default=attr.Factory(dict)
-    )
-
-
-@attr.s
-class DBusArgvPayload(MonitorAttrsMixin, EnvAttrsMixin):
-    process_name = dbus_attr(field=Str(), default='')
-    argv = dbus_attr(field=List(Str()), default=attr.Factory(list))
-
-
-@dbus_proxy
-class DBusExecutor(BaseExecutor):
-
-    @dbus_method([DBusArgvPayload], None)
-    async def run_argv(self, server_method, *args, **kwargs):
-        await server_method(DBusArgvPayload(*args, **kwargs))
-
-    @run_argv.server_method
-    async def _run_dbus_argv(self, payload):
-        payload.repair_env_in_place()
-        await self.underlying.run_argv(**payload)
-
-    # run_exec_key calls run_argv
-    # run_command calls run_exec_key
-
-    async def run_xdg_executable(self, *args, **kwargs):
-        raise NotImplementedError(
-            'run_xdg_executable not implemented over dbus!'
-        )
-
-    async def run_xdg_desktop_entry(self, *args, **kwargs):
-        raise NotImplementedError(
-            'run_xdg_desktop_entry not implemented over dbus!'
-        )
-
-    @dbus_method([DBusApplicationPayload], None)
-    async def run_xdg_application_by_name(
-        self, server_method, filename, **kwargs
-    ):
-        await server_method(DBusApplicationPayload(
-            filename=filename,
-            **kwargs
-        ))
-
-    @run_xdg_application_by_name.server_method
-    async def _run_dbus_application(self, payload):
-        payload.repair_env_in_place()
-        await self.underlying.run_xdg_application_by_name(**payload)
-
-    def run_xdg_application(self, app, **kwargs):
-        return self.run_xdg_application_by_name(app.filename, **kwargs)
