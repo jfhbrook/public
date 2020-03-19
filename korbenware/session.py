@@ -1,15 +1,18 @@
 import attr
-from txdbus import client
 
 from korbenware.config import BaseConfig
-from korbenware.dbus import dbus_attr, Str
+from korbenware.dbus import dbus_attr
 from korbenware.executor import ApplicationExecutor, MonitoringExecutor
-from korbenware.open import ApplicationFinder, exec_key_fields, OpenError
+from korbenware.open import ApplicationFinder
+from korbenware.presentation import representable
+from korbenware.presentation.markdown import markdownable
 from korbenware.urls import UrlRegistry
 from korbenware.xdg.applications import ApplicationsRegistry
 from korbenware.xdg.mime import MimeRegistry
 
 
+@markdownable
+@representable
 @attr.s
 class SessionState:
     config = dbus_attr(BaseConfig)
