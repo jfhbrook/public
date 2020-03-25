@@ -45,18 +45,19 @@ def patchedLineReceived(self, line):
 
 
 
-LineLogger.lineReceived = patchedLineReceived
-originalConnectionMade = LoggingProtocol.connectionMade
-
-
-
 def patchedConnectionMade(self):
     originalConnectionMade(self)
     self.output.service = self.service
 
 
 
-LoggingProtocol.connectionMade = patchedConnectionMade
+if not hasattr(BaseMonitor, 'log'):
+    LineLogger.lineReceived = patchedLineReceived
+    originalConnectionMade = LoggingProtocol.connectionMade
+
+    LoggingProtocol.connectionMade = patchedConnectionMade
+
+
 
 # OK cool, hand me my beer.
 
