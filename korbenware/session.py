@@ -92,6 +92,14 @@ class Session:
             applications=self.applications
         )
 
+    def start(self):
+        self.critical_executor.start()
+        self.primary_executor.start()
+
+    def stop(self):
+        self.primary_executor.stop()
+        self.critical_executor.stop()
+
     def attach(self, service):
         obj = service.object('/Session')
 
