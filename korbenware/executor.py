@@ -100,11 +100,11 @@ class MonitoringExecutor(BaseExecutor):
         self.monitor = ProcessMonitor(log=self.log, reactor=reactor)
 
     def start(self):
-        self.log('Starting monitoring service...')
+        self.log.info('Starting monitoring service...')
         self.monitor.startService()
 
     def stop(self):
-        self.log('Stopping monitoring service...')
+        self.log.info('Stopping monitoring service...')
         self.monitor.stopService()
 
     def run_argv(

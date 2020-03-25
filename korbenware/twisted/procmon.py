@@ -72,6 +72,7 @@ class LifecycleState(Enum):
     RUNNING='RUNNING'
     QUITTING='QUITTING'
     RESTARTING='RESTARTING'
+    STOPPING='STOPPING'
     STOPPED='STOPPED'
 
 
@@ -430,7 +431,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         """
         self.states[name] = LifecycleState.STOPPING
         self.emit('stopProcess', self.getState(name))
-        self._stopProcess(self, name)
+        self._stopProcess(name)
 
 
     def _stopProcess(self, name):

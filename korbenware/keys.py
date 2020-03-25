@@ -58,7 +58,7 @@ def iter_keys(obj):
     yield from (
         getattr(
             obj, '__keys__',
-            [attr.name for attr in getattr(obj, '__attrs_attrs__')]
+            [attr.name for attr in getattr(obj, '__attrs_attrs__', [])]
         )
     )
 
