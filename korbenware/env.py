@@ -33,3 +33,13 @@ def load_base_env():
         env[key] = val
 
     return env
+
+
+BASE_ENV = load_base_env()
+
+
+def load_env(extra_vars=None):
+    extra_vars = extra_vars or dict()
+    env = dict(**BASE_ENV)
+    env.update(extra_vars)
+    return env

@@ -1,4 +1,5 @@
 from korbenware.detach import spawn as spawn_detached
+from korbenware.env import load_env
 from korbenware.logger import create_logger
 from korbenware.twisted.procmon import ProcessMonitor
 from korbenware.xdg.exec_key import ExecKey
@@ -19,6 +20,8 @@ class BaseExecutor:
         env=None,
         cwd=None
     ):
+        env = load_env(env)
+
         self.log.info(
             'Spawning {process_name} using {argv} as a detached process...',
             process_name=process_name,
@@ -119,6 +122,7 @@ class MonitoringExecutor(BaseExecutor):
         if not monitor:
             return super().run_argv(process_name, argv, env=env, cwd=cwd)
 
+        env = load_env(env)
         monitor_params = monitor_params or dict()
 
         self.log.info(
@@ -135,7 +139,7 @@ class MonitoringExecutor(BaseExecutor):
         self.monitor.addProcess(
             process_name,
             argv,
-            env=env,  # TODO: Parent env
+            env=env,
             cwd=cwd,  # TODO: default to ./
             restart=restart,
             cleanup=cleanup
