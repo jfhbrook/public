@@ -70,7 +70,6 @@ class LifecycleState(Enum):
 
     STARTING='STARTING'
     RUNNING='RUNNING'
-    QUITTING='QUITTING'
     RESTARTING='RESTARTING'
     STOPPING='STOPPING'
     STOPPED='STOPPED'
@@ -246,6 +245,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
                 if maxRestartDelay is not None
                 else self.maxRestartDelay
             )
+            settings.cleanup = False
         else:
             settings.cleanup = (
                 cleanup
@@ -300,7 +300,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
             and
             self.states[name] in {
                 LifecycleState.RUNNING,
-                LifecycleState.QUITTING
+                LifecycleState.STOPPING
             }
         )
 
@@ -364,13 +364,13 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         elif priorState == LifecycleState.RESTARTING:
             # OK, we're explicitly restarting
             shouldRestart = True
-        elif priorState == LifecycleState.QUITTING:
+        elif priorState == LifecycleState.STOPPING:
             # OK, we're explicitly quitting
             shouldRestart = False
             self.states[name] = LifecycleState.STOPPED
         elif priorState == LifecycleState.STOPPED:
             # TODO: Warn, this shouldn't happen
-            pass
+            shouldRestart = False
 
         shouldCleanup = not shouldRestart and settings.cleanup
 
@@ -413,7 +413,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
 
     def _forceStopProcess(self, name, proc):
         self.emit('forceStop', self.getState(name))
-        super()._forceStopProcess(self, proc)
+        super()._forceStopProcess(proc)
 
 
     def restartProcess(self, name):
