@@ -12,7 +12,7 @@ import attr
 
 from pyee import TwistedEventEmitter as EventEmitter
 from twisted.internet.error import ProcessExitedAlready
-from twisted.logger import Logger
+from korbenware.logger import create_logger
 from twisted.runner.procmon import ProcessMonitor as BaseMonitor
 
 from korbenware.keys import keys
@@ -155,7 +155,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
     """
 
     restart = False
-    log = Logger()
+    log = create_logger()
 
 
     def __init__(self, log=None, reactor=None):
