@@ -1,3 +1,7 @@
+import datetime
+
+import arrow
+
 from korbenware.keys import assert_keys, has_keys, iter_items
 
 
@@ -30,7 +34,8 @@ def _visit(level, obj, name=None):
             lines.append(f'* **{k}:**')
             for elem_k, elem_v in v.items():
                 lines.append(f'    * **{elem_k}:** {elem_v}')
-
+        elif type(v) == datetime.datetime:
+            lines.append(f'* **{k}:** {v} ({arrow.get(v).humanize()})')
         else:
             lines.append(f'* **{k}:** {v}')
 
