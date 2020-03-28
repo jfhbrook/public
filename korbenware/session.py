@@ -15,6 +15,20 @@ from korbenware.xdg.autostart import AutostartRegistry
 from korbenware.xdg.mime import MimeRegistry
 
 
+class AlreadyStartedError(Exception):
+    def __init__(self):
+        super().__init__(
+            "This session is already started and can't be started twice"
+        )
+
+
+class AlreadyStoppedError(Exception):
+    def __init__(self):
+        super().__init__(
+            "This session is already stopped and can't be stopped twice"
+        )
+
+
 @markdownable
 @representable
 @attr.s
@@ -124,6 +138,9 @@ class Session:
         self.stopped_at = None
 
     def start(self):
+        if self.running:
+            raise AlreadyStartedError()
+
         self.critical_executor.start()
 
         self.primary_executor.start()
@@ -133,6 +150,9 @@ class Session:
         self.started_at = datetime.datetime.utcnow()
 
     def stop(self):
+        if not self.running:
+            raise AlreadyStoppedError()
+
         self.primary_executor.stop()
         self.critical_executor.stop()
 
