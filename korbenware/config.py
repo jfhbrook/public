@@ -44,6 +44,11 @@ def value(default=None, field=None):
 
 
 @config
+class DBusConfig:
+    namespace = value('org.jfhbrook.korbenware')
+
+
+@config
 class AutostartConfig:
     directories = value(XDG_AUTOSTART_DIRS, field=List(Str()))
     environment_name = value(XDG_CURRENT_DESKTOP)
@@ -81,6 +86,7 @@ class MetaConfig:
 
 @config
 class BaseConfig:
+    dbus = subconfig(DBusConfig)
     autostart = subconfig(AutostartConfig)
     meta = subconfig(MetaConfig)
     menu = subconfig(MenuConfig)
