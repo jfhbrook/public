@@ -3,6 +3,7 @@ import attr
 from korbenware.config import BaseConfig
 from korbenware.dbus import Bool, dbus_attr, Int16, Int64, List, Str
 from korbenware.executor import ApplicationExecutor, MonitoringExecutor
+from korbenware.keys import keys
 from korbenware.open import ApplicationFinder
 from korbenware.presentation import representable
 from korbenware.presentation.markdown import markdownable
@@ -77,6 +78,18 @@ class SessionState:
         )
 
 
+@markdownable
+@representable
+@keys([
+    'config',
+    'applications',
+    'autostart',
+    'mime',
+    'urls',
+    'finder',
+    'critical_executor',
+    'primary_executor'
+])
 class Session:
     def __init__(self, reactor, config):
         self.reactor = reactor
