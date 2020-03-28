@@ -17,8 +17,9 @@ XDG_AUTOSTART_DIRS = [
 
 
 class Autostart(Application):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, fullpath, filename, executable):
+        super().__init__(fullpath, filename, executable)
+
         self._conditions = dict()
         self._shoulds = dict()
 
@@ -29,7 +30,7 @@ class Autostart(Application):
             conditions = dict(
                 parsed=self.executable.parsed,
                 is_application=self.executable.is_application,
-                exec_parsed=self.executable.exec_parsed,
+                exec_key_parsed=self.executable.exec_key_parsed,
                 not_hidden=not self.executable.is_hidden,
                 not_dbus_activatable=not self.executable.dbus_activatable,
                 should_show_in=(
@@ -44,7 +45,7 @@ class Autostart(Application):
         if environment_name in self._shoulds:
             should = self._shoulds[environment_name]
         else:
-            should = all(self.autostart_conditions(environment_name))
+            should = all(self.autostart_conditions(environment_name).values())
         return should
 
 
@@ -59,11 +60,13 @@ class Autostart(Application):
 class AutostartRegistry(ApplicationsRegistry):
     log = create_logger()
 
-    def __init__(self, config):
+    def __init__(self, config, environment_name='korbenware'):
         super().__init__(config, key='autostart', cls=Autostart)
+
+        self.environment_name = environment_name
         self.autostart_entries = dict()
 
-        for entry in self.entries.items():
+        for name, entry in self.entries.items():
             if entry.should_autostart(self.environment_name):
                 self.log.debug(
                     'Entry {filename} elligible for autostart',
@@ -74,5 +77,7 @@ class AutostartRegistry(ApplicationsRegistry):
                 self.log.warn(
                     'Entry {filename} not eligible for autostart',
                     filename=entry.filename,
-                    conditions=entry.autostart_conditions()
+                    conditions=entry.autostart_conditions(
+                        self.environment_name
+                    )
                 )

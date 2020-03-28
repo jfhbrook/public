@@ -8,6 +8,7 @@ from korbenware.presentation import representable
 from korbenware.presentation.markdown import markdownable
 from korbenware.urls import UrlRegistry
 from korbenware.xdg.applications import ApplicationsRegistry
+from korbenware.xdg.autostart import AutostartRegistry
 from korbenware.xdg.mime import MimeRegistry
 
 
@@ -82,6 +83,7 @@ class Session:
         self.config = config
 
         self.applications = ApplicationsRegistry(config)
+        self.autostart = AutostartRegistry(config)
         self.mime = MimeRegistry(config, self.applications)
         self.urls = UrlRegistry(config, self.applications)
         self.finder = ApplicationFinder(self.urls, self.mime)
