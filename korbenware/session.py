@@ -88,6 +88,10 @@ class SessionState:
     @classmethod
     def from_session(cls, session):
         return cls(
+            running=session.running,
+            loaded_at=session.loaded_at,
+            started_at=session.started_at,
+            stopped_at=session.stopped_at,
             config=session.config,
             critical_executor=ExecutorState.from_executor(
                 session.critical_executor
