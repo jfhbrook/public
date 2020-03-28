@@ -102,6 +102,7 @@ class Session:
         self.finder = ApplicationFinder(self.urls, self.mime)
 
         self.critical_executor = MonitoringExecutor(reactor)
+
         self.primary_executor = ApplicationExecutor(
             reactor=reactor,
             applications=self.applications
@@ -109,7 +110,9 @@ class Session:
 
     def start(self):
         self.critical_executor.start()
+
         self.primary_executor.start()
+        self.autostart.init_executor(self.primary_executor)
 
     def stop(self):
         self.primary_executor.stop()

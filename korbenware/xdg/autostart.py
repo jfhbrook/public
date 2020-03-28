@@ -81,3 +81,29 @@ class AutostartRegistry(ApplicationsRegistry):
                         self.environment_name
                     )
                 )
+
+    def init_executor(
+        self,
+        executor,
+        monitor=True,
+        cleanup=False,
+        env=None,
+        cwd=None
+    ):
+        for name, entry in self.autostart_entries.items():
+            self.log.info(
+                'Adding {name} to executor...',
+                name=name,
+                executor=executor,
+                monitor=monitor,
+                cleanup=cleanup,
+                env=env,
+                cwd=cwd
+            )
+            executor.run_xdg_application(
+                entry,
+                monitor=monitor,
+                cleanup=cleanup,
+                env=env,
+                cwd=cwd
+            )

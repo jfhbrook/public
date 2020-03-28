@@ -18,7 +18,7 @@ class BaseExecutor:
         argv,
         *,
         env=None,
-        cwd=None
+        cwd=None,
     ):
         env = load_env(env)
 
@@ -38,11 +38,12 @@ class BaseExecutor:
         *,
         exec_key_fields=None,
         env=None,
-        cwd=None
+        cwd=None,
+        **kwargs
     ):
         argv = exec_key.build_argv(exec_key_fields)
 
-        self.run_argv(process_name, argv, env=env, cwd=cwd)
+        self.run_argv(process_name, argv, env=env, cwd=cwd, **kwargs)
 
     def run_command(
         self,
