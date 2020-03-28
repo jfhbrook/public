@@ -109,8 +109,6 @@ class SessionState:
     'applications',
     'autostart',
     'mime',
-    'urls',
-    'finder',
     'critical_executor',
     'primary_executor'
 ])
