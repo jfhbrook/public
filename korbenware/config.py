@@ -93,7 +93,6 @@ class BaseConfig:
     mime = subconfig(MimeConfig)
     applications = subconfig(ApplicationsConfig)
     logger = subconfig(LoggerConfig)
-    # TODO: validate
     urls = value(dict(), field=DBusField('a{ss}'))
 
 
@@ -143,13 +142,3 @@ def log_config(config, level=LogLevel.debug):
         filename=config.meta.config_filename
     )
     _log_config(['config'], config, level)
-
-
-def config_dbus_object(service, config):
-    obj = service.object('/korbenware/Config')
-
-    @obj.method([], BaseConfig)
-    def get_base_config():
-        return config
-
-    return obj
