@@ -36,10 +36,10 @@ class ProcessState:
     name = dbus_attr(Str(), default='???')
     state = dbus_attr(Str(), default='UNKNOWN')
     restart = dbus_attr(Bool(), default=False)
-    threshold = dbus_attr(Int64(), default=-1)
-    killTime = dbus_attr(Int64(), default=-1)
-    minRestartDelay = dbus_attr(Int64(), default=-1)
-    maxRestartDelay = dbus_attr(Int64(), default=-1)
+    threshold = dbus_attr(Int64())
+    killTime = dbus_attr(Int64())
+    minRestartDelay = dbus_attr(Int64())
+    maxRestartDelay = dbus_attr(Int64())
 
     @classmethod
     def from_procmon_state(cls, state):
@@ -58,8 +58,8 @@ class ProcessState:
 @representable
 @attr.s
 class ExecutorState:
-    running = dbus_attr(Int16(), default=-1)
-    processes = dbus_attr(List(ProcessState), default=[])
+    running = dbus_attr(Int16())
+    processes = dbus_attr(List(ProcessState))
 
     @classmethod
     def from_executor(cls, executor):
@@ -78,12 +78,12 @@ class ExecutorState:
 @attr.s
 class SessionState:
     running = dbus_attr(Bool(), default=False)
-    loaded_at = dbus_attr(DateTime(), default=datetime.datetime.fromtimestamp(0))
-    started_at = dbus_attr(DateTime(), default=datetime.datetime.fromtimestamp(0))
-    stopped_at = dbus_attr(DateTime(), default=datetime.datetime.fromtimestamp(0))
-    config = dbus_attr(BaseConfig, default=attr.Factory(BaseConfig))
-    critical_executor = dbus_attr(ExecutorState, default=attr.Factory(ExecutorState))
-    primary_executor = dbus_attr(ExecutorState, default=attr.Factory(ExecutorState))
+    loaded_at = dbus_attr(DateTime())
+    started_at = dbus_attr(DateTime())
+    stopped_at = dbus_attr(DateTime())
+    config = dbus_attr(BaseConfig)
+    critical_executor = dbus_attr(ExecutorState)
+    primary_executor = dbus_attr(ExecutorState)
 
     @classmethod
     def from_session(cls, session):
