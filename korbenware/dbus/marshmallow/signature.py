@@ -1,6 +1,6 @@
 from korbenware.dbus.marshmallow.fields import (
     BASE_FIELDS,
-    List, Tuple, Nested, DBusField
+    List, Tuple, Nested, DBusField, SerializedField
 )
 
 STRUCTURE_TYPES = {
@@ -28,6 +28,8 @@ def field_signature(field):
     elif type(field) == Nested:
         inner = field.schema
         sig += schema_signature(inner)
+    elif isinstance(field, SerializedField):
+        sig += BASE_FIELDS[field.field_cls]
     elif type(field) in BASE_FIELDS:
         sig += BASE_FIELDS[type(field)]
     elif type(field) == DBusField:

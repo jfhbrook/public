@@ -1,7 +1,9 @@
+import datetime
+
 import attr
 
 from korbenware.config import BaseConfig
-from korbenware.dbus import Bool, dbus_attr, Int16, Int64, List, Str
+from korbenware.dbus import Bool, DateTime, dbus_attr, Int16, Int64, List, Str
 from korbenware.executor import ApplicationExecutor, MonitoringExecutor
 from korbenware.keys import keys
 from korbenware.open import ApplicationFinder
@@ -61,9 +63,13 @@ class ExecutorState:
 @representable
 @attr.s
 class SessionState:
-    config = dbus_attr(BaseConfig)
-    critical_executor = dbus_attr(ExecutorState)
-    primary_executor = dbus_attr(ExecutorState)
+    running = dbus_attr(Bool(), default=False)
+    loaded_at = dbus_attr(DateTime(), default=datetime.datetime.fromtimestamp(0))
+    started_at = dbus_attr(DateTime(), default=datetime.datetime.fromtimestamp(0))
+    stopped_at = dbus_attr(DateTime(), default=datetime.datetime.fromtimestamp(0))
+    config = dbus_attr(BaseConfig, default=attr.Factory(BaseConfig))
+    critical_executor = dbus_attr(ExecutorState, default=attr.Factory(ExecutorState))
+    primary_executor = dbus_attr(ExecutorState, default=attr.Factory(ExecutorState))
 
     @classmethod
     def from_session(cls, session):
@@ -81,6 +87,10 @@ class SessionState:
 @markdownable
 @representable
 @keys([
+    'running',
+    'loaded_at',
+    'started_at',
+    'stopped_at',
     'config',
     'applications',
     'autostart',
@@ -108,15 +118,26 @@ class Session:
             applications=self.applications
         )
 
+        self.running = False
+        self.loaded_at = datetime.datetime.utcnow()
+        self.started_at = None
+        self.stopped_at = None
+
     def start(self):
         self.critical_executor.start()
 
         self.primary_executor.start()
         self.autostart.init_executor(self.primary_executor)
 
+        self.running = True
+        self.started_at = datetime.datetime.utcnow()
+
     def stop(self):
         self.primary_executor.stop()
         self.critical_executor.stop()
+
+        self.running = False
+        self.stopped_at = datetime.datetime.utcnow()
 
     def attach(self, service):
         obj = service.object('/Session')

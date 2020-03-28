@@ -1,3 +1,5 @@
+import datetime
+
 from marshmallow import fields
 
 from korbenware.dbus.marshmallow.schema import from_attrs
@@ -77,6 +79,24 @@ Nested = fields.Nested
 
 class Variant(fields.Field):
     pass
+
+
+class SerializedField(fields.Field):
+    field_cls = None
+
+
+class DateTime(SerializedField):
+    field_cls = Int64
+
+    def _serialize(self, value, attr, obj, **kwargs):
+        if not value:
+            return 0
+        return int(value.timestamp() * 1000)
+
+    def _deserialize(self, value, attr, data, **kwargs):
+        if not value:
+            value = 0
+        return datetime.datetime.fromtimestamp(value / 1000)
 
 
 BASE_FIELDS = {
