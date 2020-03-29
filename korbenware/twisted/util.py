@@ -17,3 +17,25 @@ def returns_deferred(coro_fn):
         return ensureDeferred(coro_fn(*args, **kwargs))
 
     return wrapper
+
+
+def wait_for_event(ee, event):
+    d = Deferred()
+
+    @ee.once(event)
+    def fire_deferred(*args, **kwargs):
+        print('gonna fire dat deferred')
+        data = None
+        if args:
+            try:
+                data = xs[0]
+            except IndexError:
+                pass
+        elif kwargs:
+            try:
+                data = next(iter(kwargs.values()))
+            except StopIteration:
+                pass
+        d.callback(data)
+
+    return d
