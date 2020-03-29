@@ -81,6 +81,11 @@ class Object:
 
 
 class Service:
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(config.dbus.namespace)
+
     def __init__(self, namespace):
         self.namespace = namespace
         self.objects = dict()
