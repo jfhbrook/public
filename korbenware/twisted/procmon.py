@@ -132,6 +132,8 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
 
     * 'startService' - The ProcessMonitor is starting.
     * 'stopService' - The ProcessMonitor is stopping.
+    * 'serviceStopped' - The ProcessMonitor has stopped and all processes have
+      exited.
     * 'addProcess' - A process is being added.
       - state: ProcessState - The state of the newly-added process.
     * 'removeProcess' - A process is being removed.
@@ -151,6 +153,8 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
     * 'forceStop' - A process being stopped timed out and had to be forced to
       stop with a SIGKILL.
       - state: ProcessState - the state of the process being stopped
+    * 'stateChange' - A process's state has changed.
+      - state: ProcessState - the new state of the process
     """
 
     restart = False
@@ -183,6 +187,11 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         """
         if not self.isRegistered(name):
             raise KeyError(f'Unrecognized process name: {name}')
+
+
+    def _setProcessState(self, name, state):
+        self.states[name] = state
+        self.emit('stateChange', dict(name=name, state=state))
 
 
     def getState(self, name):
@@ -253,8 +262,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
                 else True
             )
 
-
-        self.states[name] = state
+        self._setProcessState(name, state)
         self.settings[name] = settings
 
         self.emit('addProcess', self.getState(name))
@@ -286,12 +294,29 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         super().startService()
 
 
+    def _allServicesStopped(self):
+        return all(
+            state == LifecycleState.STOPPED
+            for state in self.states.values()
+        )
+
+
     def stopService(self):
         """
         Stop the service, which stops all the processes.
         """
         self.emit('stopService')
         super().stopService()
+
+        def maybe_emit(state):
+            if self._allServicesStopped():
+                self.emit('serviceStopped')
+            else:
+
+        if self._allServicesStopped():
+            self.emit('serviceStopped')
+        else:
+            self.on('stateChange', maybe_emit)
 
 
     def _isActive(self, name):
@@ -331,7 +356,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
                                           env=process.env, path=process.cwd)
 
         # This is new though!
-        self.states[name] = LifecycleState.RUNNING
+        self._setProcessState(name, LifecycleState.RUNNING)
 
 
     def connectionLost(self, name):
@@ -341,7 +366,6 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         for external observation, and by default actually does not restart the
         process.
         """
-
         priorState = self.states[name]
         settings = self.settings[name]
 
@@ -367,9 +391,10 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         elif priorState == LifecycleState.STOPPING:
             # OK, we're explicitly quitting
             shouldRestart = False
-            self.states[name] = LifecycleState.STOPPED
+            self._setProcessState(name, LifecycleState.STOPPED)
         elif priorState == LifecycleState.STOPPED:
-            # TODO: Warn, this shouldn't happen
+            # This shouldn't happen but if it does we *definitely* don't want
+            # to restart
             shouldRestart = False
 
         shouldCleanup = not shouldRestart and settings.cleanup
@@ -420,7 +445,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         """
         Manually restart a process, regardless of how it's been configured,
         """
-        self.states[name] = LifecycleState.RESTARTING
+        self._setProcessState(name, LifecycleState.RESTARTING)
         self.emit('restartProcess', self.getState(name))
         self._stopProcess(self, name)
 
@@ -429,7 +454,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         """
         Stop a process.
         """
-        self.states[name] = LifecycleState.STOPPING
+        self._setProcessState(name, LifecycleState.STOPPING)
         self.emit('stopProcess', self.getState(name))
         self._stopProcess(name)
 
@@ -437,11 +462,16 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
     def _stopProcess(self, name):
         self.assertRegistered(name)
 
-        self.states[name] = LifecycleState.STOPPING
+        self._setProcessState(name, LifecycleState.STOPPING)
 
-        # Same as procmon
         proto = self.protocols.get(name, None)
-        if proto is not None:
+
+        if proto is None:
+            # If the proto isn't there then the process is definitely already
+            # stopped.
+            self._setProcessState(name, LifecycleState.STOPPED)
+        else:
+            # Same as procmon
             proc = proto.transport
             try:
                 proc.signalProcess('TERM')
