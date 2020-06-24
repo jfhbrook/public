@@ -24,11 +24,10 @@ def wait_for_event(ee, event):
 
     @ee.once(event)
     def fire_deferred(*args, **kwargs):
-        print('gonna fire dat deferred')
         data = None
         if args:
             try:
-                data = xs[0]
+                data = args[0]
             except IndexError:
                 pass
         elif kwargs:
