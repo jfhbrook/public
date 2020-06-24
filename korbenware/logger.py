@@ -123,12 +123,6 @@ class JournaldObserver:
         priority = SYSLOG_PRIORITY_BY_LEVEL.get(level, 5)
         message = f'{namespace} - {formatEvent(event)}'
 
-        traceback = (
-            _formatTraceback(event['log_failure'])
-            if 'log_failure' in event
-            else None
-        )
-
         kwargs = dict(
             PRIORITY=priority,
             TWISTED_LOG_LEVEL=NAME_BY_LEVEL[level],
@@ -145,7 +139,13 @@ class JournaldObserver:
             }:
                 kwargs[f'TWISTED_{k.upper()}'] = str(v)
 
-        if traceback:
+        if 'log_failure' in event:
+            failure = event['log_failure']
+            traceback = _formatTraceback(failure)
+
+            for line in traceback.split('\n'):
+                message += f'\n{namespace} - {line}'
+
             kwargs['TWISTED_LOG_FAILURE'] = traceback
 
         journal.send(message, **kwargs)
