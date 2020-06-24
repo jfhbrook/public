@@ -22,6 +22,7 @@ dependencies:
   - urwid=2.1.0
   - zope.interface=4.7.1
   - pip:
+    - -e .
     - gshell.py==0.0.4
     - git+https://github.com/systemd/python-systemd.git#egg=systemd
     - twisted-ipython==2.0.0
