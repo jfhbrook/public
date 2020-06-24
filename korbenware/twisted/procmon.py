@@ -311,7 +311,6 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         def maybe_emit(state):
             if self._allServicesStopped():
                 self.emit('serviceStopped')
-            else:
 
         if self._allServicesStopped():
             self.emit('serviceStopped')
