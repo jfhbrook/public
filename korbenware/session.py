@@ -1,6 +1,7 @@
 import datetime
 
 import attr
+from pyee import TwistedEventEmitter as EventEmitter
 
 from korbenware.config import BaseConfig
 from korbenware.dbus import Bool, DateTime, dbus_attr, Int16, Int64, List, Str
@@ -116,8 +117,10 @@ class SessionState:
     'critical_executor',
     'primary_executor'
 ])
-class Session:
+class Session(EventEmitter):
     def __init__(self, reactor, config):
+        super().__init__()
+
         self.reactor = reactor
         self.config = config
 
@@ -143,17 +146,23 @@ class Session:
         if self.running:
             raise AlreadyStartedError()
 
+        self.emit('start')
+
         self.critical_executor.start()
 
         self.primary_executor.start()
-        self.autostart.init_executor(self.primary_executor)
+        # self.autostart.init_executor(self.primary_executor)
 
         self.running = True
         self.started_at = datetime.datetime.utcnow()
 
+        self.emit('started')
+
     def stop(self):
         if not self.running:
             raise AlreadyStoppedError()
+
+        self.emit('stop')
 
         self.primary_executor.stop()
         self.critical_executor.stop()
@@ -161,11 +170,23 @@ class Session:
         self.running = False
         self.stopped_at = datetime.datetime.utcnow()
 
+        self.emit('stopped')
+
     def attach(self, service):
-        obj = service.object('/Session')
+        obj = service.object('/korbenware/Session')
 
         @obj.method([], SessionState)
         def get_state():
             return SessionState.from_session(self)
+
+        @obj.method([Str()], Bool())
+        def run_xdg_application(name):
+            self.primary_executor.run_xdg_application_by_name(name)
+            return True
+
+        @obj.method([], Bool())
+        def shutdown():
+            self.stop()
+            return True
 
         return obj
