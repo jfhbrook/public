@@ -1,7 +1,9 @@
 from contextlib import contextmanager
+import datetime
 import sys
 
 import crayons
+import pandas as pd
 from systemd import journal
 from twisted.logger import (
     eventAsJSON, formatEvent, ILogObserver, Logger, LogLevel, LogPublisher
@@ -117,8 +119,8 @@ class JsonStdoutObserver:
 @implementer(ILogObserver)
 class JournaldObserver:
     def __call__(self, event):
-        level = event.get('log_level', LogLevel.error)
-        namespace = event.get('log_namespace', '????')
+        level = event.pop('log_level', LogLevel.error)
+        namespace = event.pop('log_namespace', '????')
 
         priority = SYSLOG_PRIORITY_BY_LEVEL.get(level, 5)
         message = f'{namespace} - {formatEvent(event)}'
@@ -132,15 +134,8 @@ class JournaldObserver:
             SYSLOG_IDENTIFIER='korbenware'
         )
 
-        for k, v in event.items():
-            if k not in {
-                'log_level', 'log_namespace', 'log_format', 'log_logger',
-                'log_failure'
-            }:
-                kwargs[f'TWISTED_{k.upper()}'] = str(v)
-
         if 'log_failure' in event:
-            failure = event['log_failure']
+            failure = event.pop('log_failure')
             traceback = _formatTraceback(failure)
 
             for line in traceback.split('\n'):
@@ -148,7 +143,39 @@ class JournaldObserver:
 
             kwargs['TWISTED_LOG_FAILURE'] = traceback
 
+        for k, v in event.items():
+            if k not in {
+                'log_format', 'log_logger'
+            }:
+                kwargs[f'TWISTED_{k.upper()}'] = str(v)
+
         journal.send(message, **kwargs)
+
+
+@implementer(ILogObserver)
+class PandasObserver:
+    COLUMNS = ['timestamp', 'level', 'namespace', 'message', 'failure', 'traceback', 'event']
+    def __init__(self):
+        self.df = pd.DataFrame(columns=self.COLUMNS)
+
+    def __call__(self, event):
+        message = formatEvent(event)
+        failure = event.get('log_failure', None)
+
+        traceback = None
+        if failure:
+            traceback = _format_traceback(failure)
+            message += f'\n{traceback}'
+
+        self.df = self.df.append(dict(
+            timestamp=pd.to_datetime(datetime.datetime.now()),
+            level=NAME_BY_LEVEL.get(event.get('log_level', LogLevel.error), 'error'),
+            namespace=event.get('log_namespace', '????'),
+            message=message,
+            failure=failure,
+            traceback=traceback,
+            event=event
+        ), ignore_index=True)
 
 
 @contextmanager
