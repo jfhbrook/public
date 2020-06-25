@@ -12,7 +12,9 @@ dependencies:
   - crayons=0.3.0
   - flake8=3.7.9
   - ipykernel=5.1.4
+  - ipywidgets=7.5.1
   - marshmallow=3.5.0
+  - nodejs=14.4.0
   - pyee=7.0.1
   - pyflakes=2.1.1
   - pytest=5.4.1
@@ -20,6 +22,7 @@ dependencies:
   - toml=0.10.0
   - twisted=20.3.0
   - urwid=2.1.0
+  - yarn=1.22.4
   - zope.interface=4.7.1
   - pip:
     - -e .
