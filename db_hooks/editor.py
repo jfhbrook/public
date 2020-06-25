@@ -34,7 +34,7 @@ def edit():
     logger.debug("Ensuring the path {} exists...".format(dirname))
     os.makedirs(dirname, exist_ok=True)
 
-    argv = shlex.split(shutil.os.environ.get("EDITOR", "vi"))
+    argv = shlex.split(os.environ.get("EDITOR", "vi"))
 
     editor = argv[0]
     argv.append(GLOBAL_CONFIG)
