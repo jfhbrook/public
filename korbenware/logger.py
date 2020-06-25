@@ -154,7 +154,16 @@ class JournaldObserver:
 
 @implementer(ILogObserver)
 class PandasObserver:
-    COLUMNS = ['timestamp', 'level', 'namespace', 'message', 'failure', 'traceback', 'event']
+    COLUMNS = [
+        'timestamp',
+        'level',
+        'namespace',
+        'message',
+        'failure',
+        'traceback',
+        'event'
+    ]
+
     def __init__(self):
         self.df = pd.DataFrame(columns=self.COLUMNS)
 
@@ -164,12 +173,15 @@ class PandasObserver:
 
         traceback = None
         if failure:
-            traceback = _format_traceback(failure)
+            traceback = _formatTraceback(failure)
             message += f'\n{traceback}'
 
         self.df = self.df.append(dict(
             timestamp=pd.to_datetime(datetime.datetime.now()),
-            level=NAME_BY_LEVEL.get(event.get('log_level', LogLevel.error), 'error'),
+            level=NAME_BY_LEVEL.get(
+                event.get('log_level', LogLevel.error),
+                'error'
+            ),
             namespace=event.get('log_namespace', '????'),
             message=message,
             failure=failure,
@@ -178,16 +190,28 @@ class PandasObserver:
         ), ignore_index=True)
 
 
+def explain_ok(log):
+    log.info('It worked if it ends with OK 👍')
+
+
+def signal_ok(log):
+    log.info('OK 👍')
+
+
+def log_failure(log):
+    log.failure('== FLAGRANT SYSTEM ERROR ==')
+    log.critical('NOT OK 🙅')
+
+
 @contextmanager
 def captured(log):
-    log.info('It worked if it ends with OK 👍')
+    explain_ok(log)
     try:
         yield
     except:  # noqa
-        log.failure('== FLAGRANT SYSTEM ERROR ==')
-        log.critical('NOT OK 🙅')
+        log_failure(log)
     else:
-        log.info('OK 👍')
+        signal_ok(log)
 
 
 def greet(log, hed, subhed, subsubhed=None):
