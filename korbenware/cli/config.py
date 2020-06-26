@@ -1,3 +1,6 @@
+from pathlib import Path
+from shutil import copy2
+
 import click
 import crayons
 from pygments import highlight
@@ -125,7 +128,17 @@ def show_base_config(ctx):
 )
 @click.pass_context
 def edit_base_config(ctx):
-    open_editor(ctx.obj['CONFIG'].meta.config_filename)
+    config = ctx.obj['CONFIG']
+    log = ctx.obj['LOGGER']
+
+    with captured(log):
+        _greet(log)
+
+        config_filename = config.meta.config_filename
+
+        log.info(f'Editing {config_filename}...')
+
+    open_editor(config_filename)
 
 
 @main.group(
@@ -158,6 +171,11 @@ def show_applications(ctx, application):
         if application:
             app = applications.entries[application]
 
+            if app.executable.is_hidden:
+                hidden = crayons.yellow('yes')
+            else:
+                hidden = crayons.green('no')
+
             if app.executable.parsed:
                 parsed = crayons.green('yes')
             else:
@@ -188,6 +206,8 @@ def show_applications(ctx, application):
 
             for row in [
                 ['full path', app.fullpath],
+                ['overridden paths', [o.fullpath for o in app.overrides]],
+                ['hidden?', hidden],
                 ['exec key', app.executable.exec_key.raw],
                 ['desktop file parsed?', parsed],
                 ['desktop file validated?', validated],
@@ -206,18 +226,6 @@ def show_applications(ctx, application):
             print('----------')
 
         else:
-            print(
-                fmt_table(
-                    [['path']] + [
-                        [get_color()(directory)]
-                        for directory in applications.directories
-                    ],
-                    title='directories'
-                )
-            )
-
-            print('')
-
             table = [
                 [
                     'name',
@@ -229,7 +237,8 @@ def show_applications(ctx, application):
                 ]
             ]
 
-            for name, app in applications.entries.items():
+            for app in sorted(applications.entries.values()):
+
                 color = get_color()
 
                 if app.executable.is_hidden:
@@ -253,7 +262,7 @@ def show_applications(ctx, application):
                     exec_key_parsed = crayons.yellow('no')
 
                 table.append([
-                    color(name),
+                    color(app.filename),
                     hidden,
                     parsed,
                     validated,
@@ -262,3 +271,74 @@ def show_applications(ctx, application):
                 ])
 
             print(fmt_table(table, title='applications'))
+
+
+class UnresolvedApplicationPathError():
+    def __init__(self, src_path, directories):
+        super().__init__(
+            f"Couldn't generate an edit path for {src_path} in any of: "
+            f"{directories.join(', ')}"
+        )
+
+@applications.command(
+    name='edit',
+    help=(
+        'Edit an application loaded by Korbenware'
+    )
+)
+@click.option(
+    '-a', '--application',
+    help='An application to edit',
+    required=True
+)
+@click.option(
+    '-c', '--copy',
+    help=(
+        'Copy the .desktop file to the highest priority search path if it '
+        "doesn't already exist there"
+    )
+)
+@click.pass_context
+def edit_application(ctx, application, copy):
+    config = ctx.obj['CONFIG']
+    log = ctx.obj['LOGGER']
+
+    should_edit = True
+
+    with captured(log):
+        try:
+            _greet(log)
+
+            applications = ApplicationsRegistry(config)
+
+            app = applications.entries[application]
+
+            directories = [
+                Path(directory)
+                for directory in applications.directories
+            ]
+
+            src_path = Path(app.fullpath)
+
+            if copy:
+                for directory in directories:
+                    try:
+                        dest_path = directories[0] / src_path.relative_to(directory)
+                    except ValueError:
+                        continue
+
+                if not dest_path:
+                    raise UnresolvedApplicationPathError(src_path, directories)
+
+                if src_path != dest_path:
+                    log.info('Copying {src_path} to {dest_path}...')
+                    copy2(src_path, dest_path)
+            else:
+                dest_path = src_path
+        except:  # noqa
+            should_edit = False
+        else:
+            log.info('Opening {dest_path} in the editor...')
+
+    if should_edit:
+        open_editor(dest_path)
