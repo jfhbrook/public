@@ -44,11 +44,6 @@ def value(default=None, field=None):
 
 
 @config
-class DBusConfig:
-    namespace = value('org.jfhbrook.korbenware')
-
-
-@config
 class AutostartConfig:
     directories = value(XDG_AUTOSTART_DIRS, field=List(Str()))
     environment_name = value(XDG_CURRENT_DESKTOP)
@@ -61,6 +56,16 @@ class ApplicationsConfig:
     directories = value(XDG_APPLICATIONS_DIRS, field=List(Str()))
     skip_unparsed = value(False)
     skip_invalid = value(False)
+
+
+@config
+class DBusConfig:
+    namespace = value('org.jfhbrook.korbenware')
+
+
+@config
+class FormatConfig:
+    pygments_formatter = value('trac')
 
 
 @config
@@ -93,6 +98,7 @@ class BaseConfig:
     mime = subconfig(MimeConfig)
     applications = subconfig(ApplicationsConfig)
     logger = subconfig(LoggerConfig)
+    format = subconfig(FormatConfig)
     urls = value(dict(), field=DBusField('a{ss}'))
 
 

@@ -18,6 +18,7 @@ dependencies:
   - pandas=1.0.5
   - pyee=7.0.1
   - pyflakes=2.1.1
+  - pygments=2.6.1
   - pytest=5.4.1
   - pyxdg=0.26
   - terminaltables=3.1.0
