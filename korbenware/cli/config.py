@@ -170,11 +170,20 @@ def show_applications(ctx, application):
 
         if application:
             app = applications.entries[application]
+            color = crayons.magenta
 
             if app.executable.is_hidden:
                 hidden = crayons.yellow('yes')
+                color = crayons.blue
             else:
                 hidden = crayons.green('no')
+
+            if app.executable.no_display:
+                no_display = crayons.yellow('yes')
+                if not app.executable.is_hidden:
+                    color = crayons.cyan
+            else:
+                no_display = crayons.green('no')
 
             if app.executable.parsed:
                 parsed = crayons.green('yes')
@@ -208,16 +217,15 @@ def show_applications(ctx, application):
                 ['full path', app.fullpath],
                 ['overridden paths', [o.fullpath for o in app.overrides]],
                 ['hidden?', hidden],
+                ['no display?', no_display],
                 ['exec key', app.executable.exec_key.raw],
                 ['desktop file parsed?', parsed],
                 ['desktop file validated?', validated],
                 ['exec key parsed?', exec_key_parsed]
             ]:
-                color = get_color()
                 table.append([color(cell) for cell in row])
 
             print(fmt_table(table, title='application'))
-
             print('')
             print('raw file')
             print('----------')
@@ -230,6 +238,7 @@ def show_applications(ctx, application):
                 [
                     'name',
                     'hidden?',
+                    'no display?',
                     'parsed?',
                     'validated?',
                     'exec key parsed?',
@@ -239,12 +248,20 @@ def show_applications(ctx, application):
 
             for app in sorted(applications.entries.values()):
 
-                color = get_color()
+                color = crayons.magenta
 
                 if app.executable.is_hidden:
                     hidden = crayons.yellow('yes')
+                    color = crayons.blue
                 else:
                     hidden = crayons.green('no')
+
+                if app.executable.no_display:
+                    no_display = crayons.yellow('yes')
+                    if not app.executable.is_hidden:
+                        color = crayons.cyan
+                else:
+                    no_display = crayons.green('no')
 
                 if app.executable.parsed:
                     parsed = crayons.green('yes')
@@ -264,6 +281,7 @@ def show_applications(ctx, application):
                 table.append([
                     color(app.filename),
                     hidden,
+                    no_display,
                     parsed,
                     validated,
                     exec_key_parsed,
@@ -280,6 +298,7 @@ class UnresolvedApplicationPathError():
             f"{directories.join(', ')}"
         )
 
+
 @applications.command(
     name='edit',
     help=(
@@ -292,7 +311,7 @@ class UnresolvedApplicationPathError():
     required=True
 )
 @click.option(
-    '-c', '--copy',
+    '-c', '--copy/--no-copy',
     help=(
         'Copy the .desktop file to the highest priority search path if it '
         "doesn't already exist there"
@@ -323,7 +342,11 @@ def edit_application(ctx, application, copy):
             if copy:
                 for directory in directories:
                     try:
-                        dest_path = directories[0] / src_path.relative_to(directory)
+                        dest_path = (
+                            directories[0]
+                            /
+                            src_path.relative_to(directory)
+                        )
                     except ValueError:
                         continue
 
@@ -331,14 +354,22 @@ def edit_application(ctx, application, copy):
                     raise UnresolvedApplicationPathError(src_path, directories)
 
                 if src_path != dest_path:
-                    log.info('Copying {src_path} to {dest_path}...')
+                    log.info(
+                        'Copying {src_path} to {dest_path}...',
+                        src_path=src_path,
+                        dest_path=dest_path
+                    )
                     copy2(src_path, dest_path)
             else:
                 dest_path = src_path
         except:  # noqa
             should_edit = False
+            raise
         else:
-            log.info('Opening {dest_path} in the editor...')
+            log.info(
+                'Opening {file_path} in the editor...',
+                file_path=dest_path
+            )
 
     if should_edit:
         open_editor(dest_path)

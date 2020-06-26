@@ -105,6 +105,13 @@ class Executable:
             return True
 
     @property
+    def no_display(self):
+        if self.parsed:
+            return self.entry.getNoDisplay()
+        else:
+            return False
+
+    @property
     def only_show_in(self):
         if not self.parsed:
             return None

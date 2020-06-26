@@ -40,9 +40,11 @@ class Application:
 
     def __lt__(self, other):
         if self.executable.is_hidden == other.executable.is_hidden:
-            if self.filename == other.filename:
-                return self.fullpath < other.fullpath
-            return self.filename < other.filename
+            if self.executable.no_display == other.executable.no_display:
+                if self.filename == other.filename:
+                    return self.fullpath < other.fullpath
+                return self.filename < other.filename
+            return self.executable.no_display < other.executable.no_display
         return self.executable.is_hidden < other.executable.is_hidden
 
     def __eq__(self, other):
@@ -50,6 +52,8 @@ class Application:
             (self.fullpath == other.fullpath)
             and
             (self.executable.is_hidden == other.executable.is_hidden)
+            and
+            (self.executable.no_display == other.executable.no_display)
         )
 
 
