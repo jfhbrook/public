@@ -1,4 +1,5 @@
 from collections import defaultdict
+from functools import total_ordering
 import os
 import os.path
 
@@ -16,13 +17,15 @@ from korbenware.xdg.executable import Executable
 XDG_APPLICATIONS_DIRS = list(load_data_paths('applications'))
 
 
+@total_ordering
 @markdownable
 @representable
-@attr.s
+@attr.s(order=False)
 class Application:
     fullpath = attr.ib()
     filename = attr.ib()
     executable = attr.ib()
+    overrides = attr.ib(default=None)
 
     @classmethod
     def from_path(cls, fullpath):
@@ -34,6 +37,20 @@ class Application:
         executable = Executable.from_path(fullpath)
 
         return cls(fullpath, filename, executable)
+
+    def __lt__(self, other):
+        if self.executable.is_hidden == other.executable.is_hidden:
+            if self.filename == other.filename:
+                return self.fullpath < other.fullpath
+            return self.filename < other.filename
+        return self.executable.is_hidden < other.executable.is_hidden
+
+    def __eq__(self, other):
+        return (
+            (self.fullpath == other.fullpath)
+            and
+            (self.executable.is_hidden == other.executable.is_hidden)
+        )
 
 
 @markdownable
@@ -89,6 +106,12 @@ class ApplicationSet:
                         'Loading {filename} despite parsing issues!',
                         filename=executable.filename
                     )
+
+            entry.overrides = [
+                overridden
+                for overridden in self.entries
+                if overridden != entry
+            ]
 
             return entry
 
