@@ -13,6 +13,7 @@ dependencies:
   - flake8=3.7.9
   - ipykernel=5.1.4
   - ipywidgets=7.5.1
+  - jupyterlab=2.1.5
   - marshmallow=3.5.0
   - nodejs=14.4.0
   - pandas=1.0.5
