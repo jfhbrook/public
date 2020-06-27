@@ -2,6 +2,7 @@ from contextlib import contextmanager
 import datetime
 import sys
 
+import click
 import crayons
 import pandas as pd
 from systemd import journal
@@ -89,7 +90,7 @@ class CliObserver:
 
             pretty_level = PRETTY_BY_LEVEL[level]
 
-            print(
+            click.echo(
                 f'{pretty_level} - {pretty_namespace} - {formatEvent(event)}',  # noqa
                 file=sys.stderr
             )
@@ -98,7 +99,7 @@ class CliObserver:
                 failure = event['log_failure']
 
                 for line in _formatTraceback(failure).split('\n'):
-                    print(
+                    click.echo(
                         f'{pretty_level} - {pretty_namespace} - {line}'  # noqa
                     )
 
@@ -113,7 +114,7 @@ class JsonStdoutObserver:
         ]
 
     def __call__(self, event):
-        print(eventAsJSON(event), file=sys.stderr)
+        click.echo(eventAsJSON(event), file=sys.stderr)
 
 
 @implementer(ILogObserver)

@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from functools import wraps
 
 import attr
+import click
 from twisted.internet import reactor as reactor_
 from twisted.internet.defer import Deferred
 import urwid
@@ -65,4 +66,4 @@ class Session:
             return await self.done
         finally:
             loop.stop()
-            print()
+            click.echo()

@@ -129,7 +129,7 @@ def show_base_config(ctx):
                         color(v)
                     ])
 
-        print(fmt_table(table, title='base config'))
+        click.echo(fmt_table(table, title='base config'))
 
 
 @base.command(
@@ -236,13 +236,13 @@ def show_applications(ctx, application):
             ]:
                 table.append([color(cell) for cell in row])
 
-            print(fmt_table(table, title='application'))
-            print('')
-            print('raw file')
-            print('----------')
+            click.echo(fmt_table(table, title='application'))
+            click.echo('')
+            click.echo('raw file')
+            click.echo('----------')
             with open(app.fullpath, 'r') as f:
-                print(fmt_desktop_file(f.read(), config))
-            print('----------')
+                click.echo(fmt_desktop_file(f.read(), config))
+            click.echo('----------')
 
         else:
             table = [
@@ -299,7 +299,7 @@ def show_applications(ctx, application):
                     color(app.executable.exec_key.raw)
                 ])
 
-            print(fmt_table(table, title='applications'))
+            click.echo(fmt_table(table, title='applications'))
 
 
 class UnresolvedApplicationPathError():
@@ -428,7 +428,7 @@ def show_associations(ctx, mime_type):
                 color(default) if default else crayons.yellow('None')
             ])
 
-        print(fmt_table(table, title='associations and defaults'))
+        click.echo(fmt_table(table, title='associations and defaults'))
 
 
 @mime.group(
@@ -462,7 +462,7 @@ def show_glob_paths(ctx):
                 exists
             ])
 
-        print(fmt_table(table, title='globs database paths'))
+        click.echo(fmt_table(table, title='globs database paths'))
 
 
 @glob.command(
@@ -489,7 +489,7 @@ def show_glob_database(ctx, mime_type):
                     color(flags)
                 ])
 
-        print(fmt_table(table, title='glob database'))
+        click.echo(fmt_table(table, title='glob database'))
 
 
 @glob.command(
@@ -539,7 +539,7 @@ def show_magic_paths(ctx):
                 exists
             ])
 
-        print(fmt_table(table, title='magic database paths'))
+        click.echo(fmt_table(table, title='magic database paths'))
 
 
 def magic_match_any_repr(self):
@@ -573,4 +573,4 @@ def show_magic_database(ctx, mime_type):
                     rule
                 ])
 
-        print(fmt_table(table, title='magic database'))
+        click.echo(fmt_table(table, title='magic database'))
