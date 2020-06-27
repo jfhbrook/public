@@ -3,10 +3,11 @@ import os
 import click
 from twisted.logger import LogLevel
 
+from korbenware.cli.base import command
 from korbenware.logger import LEVEL_BY_NAME, SYSLOG_PRIORITY_BY_LEVEL
 
 
-@click.command(
+@command(
     context_settings=dict(ignore_unknown_options=True),
     help='A thin wrapper around journalctl for loading korbenware-related journald logs'  # noqa
 )

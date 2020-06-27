@@ -12,7 +12,7 @@ from terminaltables import DoubleTable
 import xdg.BaseDirectory
 import xdg.Mime
 
-from korbenware.cli.base import async_command, verbosity
+from korbenware.cli.base import async_command, group, verbosity
 from korbenware.config import load_config
 from korbenware.editor import edit as open_editor
 from korbenware.logger import (
@@ -68,7 +68,7 @@ def fmt_desktop_file(contents, config):
     )
 
 
-@click.group()
+@group()
 @verbosity
 @click.pass_context
 def main(ctx, verbose):

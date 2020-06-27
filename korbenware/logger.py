@@ -56,7 +56,11 @@ VERBOSITY_BY_LEVEL = {
 
 
 def get_level_config(config, verbosity=None):
-    config_level = LEVEL_BY_NAME[config.logger.level]
+    if config:
+        config_level = LEVEL_BY_NAME[config.logger.level]
+    else:
+        config_level = LogLevel.warn
+
     if not verbosity:
         return config_level
     else:
@@ -72,9 +76,18 @@ def create_logger(**kwargs):
 @implementer(ILogObserver)
 class CliObserver:
     def __init__(self, config, level=None, verbosity=None):
-        if not level:
-            level = get_level_config(config, verbosity)
+        self.config = config
+
+        if level:
+            self.set_level(level)
+        else:
+            self.set_verbosity(verbosity)
+
+    def set_level(self, level):
         self.threshold = LogLevel._levelPriorities[level]
+
+    def set_verbosity(self, verbosity):
+        self.set_level(get_level_config(self.config, verbosity))
 
     def __call__(self, event):
         level = event.get('log_level', LogLevel.error)
@@ -189,60 +202,3 @@ class PandasObserver:
             traceback=traceback,
             event=event
         ), ignore_index=True)
-
-
-class Capturer:
-    def __init__(self, log):
-        self.log = log
-        self._has_said_ok = False
-
-    def explain_ok(self):
-        self.log.info('It worked if it ends with OK 👍')
-
-    def signal_ok(self):
-        self.log.info('OK 👍')
-
-    def log_failure_and_exit(self):
-        self.log.failure('== FLAGRANT SYSTEM ERROR ==')
-        self.log.critical('NOT OK 🙅')
-        exit(1)
-
-    @contextmanager
-    def capture(self):
-        if not self._has_said_ok:
-            self.explain_ok()
-            self._has_said_ok = True
-
-        try:
-            yield
-        except:  # noqqa
-            self.log_failure_and_exit()
-
-    @contextmanager
-    def capture_final(self):
-        with self.capture():
-            yield
-
-        self.signal_ok()
-
-
-@contextmanager
-def captured(log):
-    capturer = Capturer(log)
-
-    with capturer.capture_final():
-        yield
-
-
-def greet(log, hed, subhed, subsubhed=None):
-    fields = [('hed', hed), ('subhed', subhed)]
-    if subsubhed:
-        fields.append(('subsubhed', subsubhed))
-
-    max_len = max(len(value) for name, value in fields)
-
-    log.info('┏━' + ('━' * max_len) + '━┓')
-    for name, value in fields:
-        log_format = '┃ {' + name + '}' + (' ' * (max_len - len(value))) + ' ┃'
-        log.info(log_format, **{name: value})
-    log.info('┗━' + ('━' * max_len) + '━┛')
