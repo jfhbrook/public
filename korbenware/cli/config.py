@@ -114,7 +114,7 @@ def show_base_config(ctx):
                     color(v)
                 ])
 
-        click.echo(fmt_table(table, title='base config'))
+    click.echo(fmt_table(table, title='base config'))
 
 
 @base.command(
