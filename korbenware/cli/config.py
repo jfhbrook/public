@@ -1,3 +1,4 @@
+import os.path
 from pathlib import Path
 from shutil import copy2
 
@@ -8,6 +9,8 @@ from pygments.lexers.configs import IniLexer
 from pygments.formatters import Terminal256Formatter
 from pygments.styles import get_style_by_name
 from terminaltables import DoubleTable
+import xdg.BaseDirectory
+import xdg.Mime
 
 from korbenware.cli.base import async_command, verbosity
 from korbenware.config import load_config
@@ -16,6 +19,13 @@ from korbenware.logger import (
     CliObserver, captured, create_logger, greet, publisher
 )
 from korbenware.xdg.applications import ApplicationsRegistry
+from korbenware.xdg.mime import MimeRegistry
+
+
+def _safe_str(entity):
+    # crayons has a bug where entity.str returns the raw thing (instead of
+    # stringifying it) when colors are disabled by the terminal
+    return str(entity.__str__())
 
 
 def _greet(log):
@@ -37,7 +47,7 @@ class ColorCycler:
 
         crayon = getattr(crayons, self.COLORS[self.i])
 
-        return lambda o: str(crayon(o))
+        return lambda o: _safe_str(crayon(o))
 
 
 get_color = ColorCycler()
@@ -45,7 +55,7 @@ get_color = ColorCycler()
 
 def fmt_table(table, **kwargs):
     t = DoubleTable([
-        [str(cell) for cell in row]
+        [_safe_str(cell) for cell in row]
         for row in table
     ], **kwargs)
 
@@ -144,14 +154,15 @@ def edit_base_config(ctx):
 @main.group(
     help='Commands related to XDG applications'
 )
-def applications():
-    pass
+@click.pass_context
+def applications(ctx):
+    ctx.obj['APPLICATIONS'] = ApplicationsRegistry(ctx.obj['CONFIG'])
 
 
 @applications.command(
     name='show',
     help=(
-        'Show the applications loaded by Korbenware'
+        'Show the XDG applications loaded by Korbenware'
     )
 )
 @click.option(
@@ -162,11 +173,10 @@ def applications():
 def show_applications(ctx, application):
     config = ctx.obj['CONFIG']
     log = ctx.obj['LOGGER']
+    applications = ctx.obj['APPLICATIONS']
 
     with captured(log):
         _greet(log)
-
-        applications = ApplicationsRegistry(config)
 
         if application:
             app = applications.entries[application]
@@ -189,7 +199,7 @@ def show_applications(ctx, application):
                 parsed = crayons.green('yes')
             else:
                 parsed = '\n'.join([
-                    str(crayons.yellow(line))
+                    _safe_str(crayons.yellow(line))
                     for line in str(app.executable.parse_exc).split('\n')
                 ])
 
@@ -197,7 +207,7 @@ def show_applications(ctx, application):
                 validated = crayons.green('yes')
             else:
                 validated = '\n'.join([
-                    str(crayons.yellow(line))
+                    _safe_str(crayons.yellow(line))
                     for line in str(app.executable.validate_exc).split('\n')
                 ])
 
@@ -205,7 +215,7 @@ def show_applications(ctx, application):
                 exec_key_parsed = crayons.green('yes')
             else:
                 exec_key_parsed = '\n'.join([
-                    str(crayons.yellow(line))
+                    _safe_str(crayons.yellow(line))
                     for line in (
                         str(app.executable.exec_key_parse_exc).split('\n')
                     )
@@ -321,14 +331,13 @@ class UnresolvedApplicationPathError():
 def edit_application(ctx, application, copy):
     config = ctx.obj['CONFIG']
     log = ctx.obj['LOGGER']
+    applications = ctx.obj['APPLICATIONS']
 
     should_edit = True
 
     with captured(log):
         try:
             _greet(log)
-
-            applications = ApplicationsRegistry(config)
 
             app = applications.entries[application]
 
@@ -373,3 +382,210 @@ def edit_application(ctx, application, copy):
 
     if should_edit:
         open_editor(dest_path)
+
+
+@main.group(
+    help='Commands related to MIME type lookups'
+)
+def mime():
+    pass
+
+
+
+@main.group(
+    help='Commands related to file type associations'
+)
+@click.pass_context
+def associations(ctx):
+    config = ctx.obj['CONFIG']
+    applications = ApplicationsRegistry(ctx.obj['CONFIG'])
+    mime = MimeRegistry(config, applications)
+
+    ctx.obj['APPLICATIONS'] = applications
+    ctx.obj['MIME'] = mime
+
+
+@associations.command(
+    name='show',
+    help='Show the file type associations recognized by korbenware'
+)
+@click.option('-t', '--mime-type', help='A particular file type to show')
+@click.pass_context
+def show_associations(ctx, mime_type):
+    log = ctx.obj['LOGGER']
+    mime = ctx.obj['MIME']
+
+    with captured(log):
+        _greet(log)
+
+        table = [['mime type', 'applications', 'default']]
+
+        keys = sorted(set(mime.lookup.keys()) | set(mime.defaults.keys()), key=lambda m: str(m))
+
+        for mimetype in keys:
+            applications = mime.lookup.get(mimetype, None)
+            default = mime.defaults.get(mimetype, None)
+
+            table.append([
+                crayons.magenta(mimetype),
+                crayons.magenta(applications) if applications else crayons.yellow('None'),
+                crayons.magenta(default) if default else crayons.yellow('None')
+            ])
+
+        print(fmt_table(table, title='associations and defaults'))
+
+
+@mime.group(
+    help='Commands related to XDG glob databases'
+)
+def glob():
+    pass
+
+
+@glob.command(
+    name='paths',
+    help='Show paths for XDG glob databases'
+)
+@click.pass_context
+def show_glob_paths(ctx):
+    log = ctx.obj['LOGGER']
+
+    with captured(log):
+        _greet(log)
+
+        table = [['file', 'exists?']]
+
+        for directory in xdg.BaseDirectory.xdg_data_dirs:
+            f = os.path.join(directory, 'mime', 'globs2')
+
+            if os.path.isfile(f):
+                exists = crayons.green('yes')
+            else:
+                exists = crayons.yellow('no')
+
+            table.append([
+                crayons.magenta(f),
+                exists
+            ])
+
+        print(fmt_table(table, title='globs database paths'))
+
+
+@glob.command(
+    name='show',
+    help='Show the parsed glob databases'
+)
+@click.pass_context
+@click.option('-t', '--mime-type', help='A particular file type to show')
+def show_glob_database(ctx, mime_type):
+    log = ctx.obj['LOGGER']
+
+    with captured(log):
+        _greet(log)
+        xdg.Mime.update_cache()
+
+        table = [['mime type', 'priority', 'pattern', 'flags']]
+
+        for mime_type, rule in sorted(xdg.Mime.globs.allglobs.items(), key=lambda t: str(t[0])):
+            color = get_color()
+            for priority, glob, flags in sorted(associations, key=lambda t: t[0], reverse=True):
+                table.append([
+                    color(mime_type),
+                    color(priority),
+                    color(glob),
+                    color(flags)
+                ])
+
+        print(fmt_table(table, title='glob database'))
+
+
+@glob.command(
+    name='edit',
+    help='Edit the highest priority globs database file'
+)
+@click.pass_context
+def edit_glob_database(ctx):
+    should_edit = False
+
+    with captured(log):
+        _greet(log)
+
+        f = os.path.join(xdg.BaseDirectory.xdg_data_dirs[0], 'mime', 'globs2')
+
+        log.info('Editing {globs_db_file}', globs_db_file=f)
+
+        should_edit = True
+
+    if should_edit:
+        open_editor(f)
+
+
+@mime.group(
+    help='Commands related to magics'
+)
+def magic():
+    pass
+
+
+@magic.command(
+    name='paths',
+    help='Show paths for magic databases'
+)
+@click.pass_context
+def show_magic_paths(ctx):
+    log = ctx.obj['LOGGER']
+
+    with captured(log):
+        _greet(log)
+
+        table = [['file', 'exists?']]
+
+        for directory in xdg.BaseDirectory.xdg_data_dirs:
+            f = os.path.join(directory, 'mime', 'magic')
+
+            if os.path.isfile(f):
+                exists = crayons.green('yes')
+            else:
+                exists = crayons.yellow('no')
+
+            table.append([
+                crayons.magenta(f),
+                exists
+            ])
+
+        print(fmt_table(table, title='magic database paths'))
+
+
+def magic_match_any_repr(self):
+    return 'MagicMatchAny([\n    {rules}\n])'.format(
+        rules='\n    '.join([str(r) for r in self.rules])
+    )
+
+
+xdg.Mime.MagicMatchAny.__repr__ = magic_match_any_repr
+
+
+@magic.command(
+    name='show'
+)
+@click.pass_context
+@click.option('-t', '--mime-type', help='A particular file type to show')
+def show_magic_database(ctx, mime_type):
+    log = ctx.obj['LOGGER']
+
+    with captured(log):
+        _greet(log)
+        xdg.Mime.update_cache()
+
+        table = [['mime type', 'priority', 'rule']]
+
+        for mime_type, rules in sorted(xdg.Mime.magic.bytype.items(), key=lambda t: str(t[0])):
+            color = get_color()
+            for priority, rule in sorted(rules, key=lambda t: t[0], reverse=True):
+                table.append([
+                    color(mime_type),
+                    color(priority),
+                    rule
+                ])
+
+        print(fmt_table(table, title='magic database'))
