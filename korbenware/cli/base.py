@@ -10,6 +10,7 @@ from click.core import augment_usage_errors, _bashcomplete as bashcomplete, make
 from click.exceptions import Abort, ClickException, Exit
 from click.globals import get_current_context
 from click.utils import PacifyFlushWrapper
+from toml.decoder import TomlDecodeError
 from twisted.internet.defer import ensureDeferred
 from twisted.internet.task import react
 
@@ -28,6 +29,9 @@ class Context(click.Context):
     ):
         super().__init__(command, parent, **extra)
 
+        # This Context class differs from its parent in that it loads the
+        # korbenware base config, sets up logging and does a little logging
+        # itself.
         if self.parent:
             self.config = getattr(parent, 'config', None)
             self.config_exc = getattr(parent, 'config_exc', None)
@@ -42,13 +46,29 @@ class Context(click.Context):
         self._defer = []
 
     def defer(self, f):
+        """
+        Defer an action until after a command has been executed but before exit
+        actions take place. This is mostly used for exec calls, which replaces
+        the process such that it effectively exits.
+        """
         self._defer.append(f)
 
-    def run_deferred_actions(self):
+    def _run_deferred_actions(self):
         for f in self._defer:
             f()
 
+    def _log_ok(self):
+        # We only want to log the OK if this is the actual command being ran,
+        # so when it's in the context of a group we stay quiet.
+        if not hasattr(self.command, 'commands'):
+            self.log.info('OK 👍')
+
+    def _log_failure(self):
+        self.log.failure('== FLAGRANT SYSTEM ERROR ==')
+        self.log.critical('NOT OK 🙅')
+
     def invoke(*args, **kwargs):
+        # Starting from here is much the same as click.Context.invoke...
         self, callback = args[:2]
         ctx = self
 
@@ -68,33 +88,11 @@ class Context(click.Context):
 
         args = args[2:]
 
-        if iscoroutinefunction(callback):
-            async def async_runner(*args, **kwargs):
-                try:
-                    rv = await callback(*args, **kwargs)
-                except (
-                    EOFError, KeyboardInterrupt, SystemExit,
-                    ClickException, OSError,
-                    Exit, Abort
-                ):
-                    raise
-                except:  # noqa
-                    self.log.failure('== FLAGRANT SYSTEM ERROR ==')
-                    self.log.critical('NOT OK 🙅')
-
-                    sys.exit(1)
-                else:
-                    if not hasattr(self.command, 'commands'):
-                        self.log.info('OK 👍')
-                    self.run_deferred_actions()
-
-                return rv
-
-            def runner():
-                return react(lambda reactor: ensureDeferred(
-                    async_runner(reactor, *args, **kwargs)
-                ))
-        else:
+        if not iscoroutinefunction(callback):
+            # In our version of invoke, we want custom logging of exits and
+            # failures, so we try/except around the callback, ignoring a big
+            # list of exceptions with special behavior in Click and Python,
+            # and log accordingly.
             def runner():
                 try:
                     rv = callback(*args, **kwargs)
@@ -105,24 +103,59 @@ class Context(click.Context):
                 ):
                     raise
                 except:  # noqa
-                    self.log.failure('== FLAGRANT SYSTEM ERROR ==')
-                    self.log.critical('NOT OK 🙅')
-
+                    self._log_failure()
                     self.exit(1)
                 else:
-                    if not hasattr(self.command, 'commands'):
-                        self.log.info('OK 👍')
-                    self.run_deferred_actions()
+                    self._log_ok()
+                    self._run_deferred_actions()
+
+                return rv
+        else:
+            # We also handle cases where the command is a Twisted coroutine -
+            # in these scenarios we do basically the same thing as before,
+            # except inside of a coroutine function.
+            async def async_runner(*args, **kwargs):
+                try:
+                    rv = await callback(*args, **kwargs)
+                except (
+                    EOFError, KeyboardInterrupt, SystemExit,
+                    ClickException, OSError,
+                    Exit, Abort
+                ):
+                    raise
+                except:  # noqa
+                    self._log_failure()
+                    # Click's default exit mechanism is raising a special Exit
+                    # exception, which it can't capture in an async context.
+                    # Instead, we assume that its exit behaviors only matter
+                    # before "async things happen" and manually exit(1).
+                    sys.exit(1)
+                else:
+                    self._log_ok()
+                    self._run_deferred_actions()
 
                 return rv
 
+            # This coroutine function is ran using task.react and ensureDeferred
+            # - note that the return value that Click receives is that of
+            # task.react and not of our coroutine. Such is life.
+            def runner():
+                return react(lambda reactor: ensureDeferred(
+                    async_runner(reactor, *args, **kwargs)
+                ))
+
+        # These two context managers are as in Click...
         with augment_usage_errors(self):
             with ctx:
+                # If necessary, we load the korbenware config, set up a
+                # logger for the context and configure a CLI observer with
+                # appropriate verbosity. If this is a child context, then it
+                # should already have these properties.
                 if not self.config:
                     try:
                         self.config = load_config()
                         self.config_exc = None
-                    except (NoConfigurationFoundError,) as exc:
+                    except (NoConfigurationFoundError, TomlDecodeError) as exc:
                         self.config = None
                         self.config_exc = exc
 
