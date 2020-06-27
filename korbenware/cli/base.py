@@ -53,12 +53,52 @@ class Context(click.Context):
         args = args[2:]
 
         if iscoroutinefunction(callback):
-            wrapped = callback
-            @wraps(wrapped)
-            def callback(*arg, **kwarg):
+            async def async_runner(*args, **kwargs):
+                try:
+                    rv = await callback(*args, **kwargs)
+                except (
+                    EOFError, KeyboardInterrupt, SystemExit,
+                    ClickException, OSError,
+                    Exit, Abort
+                ):
+                    raise
+                except:  # noqa
+                    ctx
+                    ctx.log.failure('== FLAGRANT SYSTEM ERROR ==')
+                    ctx.log.critical('NOT OK 🙅')
+
+                    sys.exit(1)
+                else:
+                    ctx.log.info('OK 👍')
+                    ctx.run_deferred_actions()
+
+                return rv
+
+            def runner():
                 return react(lambda reactor: ensureDeferred(
-                    wrapped(reactor, *arg, **kwarg)
+                    async_runner(reactor, *args, **kwargs)
                 ))
+        else:
+            def runner():
+                try:
+                    rv = callback(*args, **kwargs)
+                except (
+                    EOFError, KeyboardInterrupt, SystemExit,
+                    ClickException, OSError,
+                    Exit, Abort
+                ):
+                    raise
+                except:  # noqa
+                    ctx
+                    ctx.log.failure('== FLAGRANT SYSTEM ERROR ==')
+                    ctx.log.critical('NOT OK 🙅')
+
+                    ctx.exit(1)
+                else:
+                    ctx.log.info('OK 👍')
+                    ctx.run_deferred_actions()
+
+                return rv
 
         with augment_usage_errors(self):
             with ctx:
@@ -91,7 +131,7 @@ class Context(click.Context):
                 if self.config_exc:
                     raise self.config_exc
 
-                callback(*args, **kwargs)
+                return runner()
 
 
 class KorbenwareCommand:
@@ -104,81 +144,6 @@ class KorbenwareCommand:
         with ctx.scope(cleanup=False):
             self.parse_args(ctx, args)
         return ctx
-
-    def main(
-        self,
-        args=None,
-        prog_name=None,
-        complete_var=None,
-        standalone_mode=True,
-        **extra
-    ):
-        verify_python_env()
-
-        if args is None:
-            args = sys.argv[1:]
-        else:
-            args = list(args)
-
-        if prog_name is None:
-            prog_name = make_str(
-                os.path.basename(sys.argv[0] if sys.argv else __file__)
-            )
-
-        bashcomplete(self, prog_name, complete_var)
-
-        try:
-            try:
-                with self.make_context(prog_name, args, **extra) as ctx:
-                    try:
-                        rv = self.invoke(ctx)
-                    except (
-                        EOFError, KeyboardInterrupt, SystemExit,
-                        ClickException, OSError,
-                        Exit, Abort
-                    ):
-                        raise
-                    except:  # noqa
-                        ctx.log.failure('== FLAGRANT SYSTEM ERROR ==')
-                        ctx.log.critical('NOT OK 🙅')
-
-                        ctx.exit(1)
-                    else:
-                        ctx.log.info('OK 👍')
-                        ctx.run_deferred_actions()
-
-                        if not standalone_mode:
-                            return rv
-
-                        ctx.exit()
-            except (EOFError, KeyboardInterrupt):
-                click.echo(file=sys.stderr)
-                raise Abort()
-            except ClickException as e:
-                if not standalone_mode:
-                    raise
-
-                file = get_text_stderr()
-                click.echo(f"Error: {e.format_message()}", file=file)
-
-                sys.exit(e.exit_code)
-            except OSError as e:
-                if e.errno == errno.EPIPE:
-                    sys.stdout = PacifyFlushWrapper(sys.stdout)
-                    sys.stderr = PacifyFlushWrapper(sys.stderr)
-                    sys.exit(1)
-                else:
-                    raise
-        except Exit as e:
-            if standalone_mode:
-                sys.exit(e.exit_code)
-            else:
-                return e.exit_code
-        except Abort:
-            if not standalone_mode:
-                raise
-            click.echo("Aborted!", file=sys.stderr)
-            sys.exit(1)
 
 
 class Command(KorbenwareCommand, click.Command):
