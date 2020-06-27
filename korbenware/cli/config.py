@@ -16,7 +16,7 @@ from korbenware.cli.base import async_command, verbosity
 from korbenware.config import load_config
 from korbenware.editor import edit as open_editor
 from korbenware.logger import (
-    CliObserver, captured, create_logger, greet, publisher
+    CliObserver, Capturer, create_logger, greet, publisher
 )
 from korbenware.xdg.applications import ApplicationsRegistry
 from korbenware.xdg.mime import MimeRegistry
@@ -26,12 +26,6 @@ def _safe_str(entity):
     # crayons has a bug where entity.str returns the raw thing (instead of
     # stringifying it) when colors are disabled by the terminal
     return str(entity.__str__())
-
-
-def _greet(log):
-    hed = "Korben's Cool Petsitter's Configuration Manager 🦜"
-    subhed = 'programmed entirely while Korben was screaming at the neighbors'
-    greet(log, hed, subhed)
 
 
 class ColorCycler:
@@ -82,12 +76,20 @@ def main(ctx, verbose):
 
     log = create_logger(namespace='krbenware.cli.config')
 
+    capturer = Capturer(log)
+
     publisher.addObserver(CliObserver(config, verbosity=verbose))
 
-    ctx.ensure_object(dict)
+    with capturer.capture():
+        hed = "Korben's Cool Petsitter's Configuration Manager 🦜"
+        subhed = 'programmed entirely while Korben was screaming at the neighbors'
+        greet(log, hed, subhed)
 
-    ctx.obj['CONFIG'] = config
-    ctx.obj['LOGGER'] = log
+        ctx.ensure_object(dict)
+
+        ctx.obj['CONFIG'] = config
+        ctx.obj['LOGGER'] = log
+        ctx.obj['CAPTURER'] = capturer
 
 
 @main.group(
@@ -104,11 +106,9 @@ def base():
 @click.pass_context
 def show_base_config(ctx):
     config = ctx.obj['CONFIG']
-    log = ctx.obj['LOGGER']
+    capturer = ctx.obj['CAPTURER']
 
-    with captured(log):
-        _greet(log)
-
+    with capturer.capture_final():
         table = [['section', 'key', 'value']]
 
         for section_attr in config.__attrs_attrs__:
@@ -140,10 +140,9 @@ def show_base_config(ctx):
 def edit_base_config(ctx):
     config = ctx.obj['CONFIG']
     log = ctx.obj['LOGGER']
+    capturer = ctx.obj['CAPTURER']
 
-    with captured(log):
-        _greet(log)
-
+    with capturer.capture_final():
         config_filename = config.meta.config_filename
 
         log.info(f'Editing {config_filename}...')
@@ -156,7 +155,10 @@ def edit_base_config(ctx):
 )
 @click.pass_context
 def applications(ctx):
-    ctx.obj['APPLICATIONS'] = ApplicationsRegistry(ctx.obj['CONFIG'])
+    capturer = ctx.obj['CAPTURER']
+
+    with capturer.capture():
+        ctx.obj['APPLICATIONS'] = ApplicationsRegistry(ctx.obj['CONFIG'])
 
 
 @applications.command(
@@ -173,11 +175,10 @@ def applications(ctx):
 def show_applications(ctx, application):
     config = ctx.obj['CONFIG']
     log = ctx.obj['LOGGER']
+    capturer = ctx.obj['CAPTURER']
     applications = ctx.obj['APPLICATIONS']
 
-    with captured(log):
-        _greet(log)
-
+    with capturer.capture_final():
         if application:
             app = applications.entries[application]
             color = crayons.magenta
@@ -331,57 +332,49 @@ class UnresolvedApplicationPathError():
 def edit_application(ctx, application, copy):
     config = ctx.obj['CONFIG']
     log = ctx.obj['LOGGER']
+    capturer = ctx.obj['CAPTURER']
     applications = ctx.obj['APPLICATIONS']
 
-    should_edit = True
+    with capturer.capture_final():
+        app = applications.entries[application]
 
-    with captured(log):
-        try:
-            _greet(log)
+        directories = [
+            Path(directory)
+            for directory in applications.directories
+        ]
 
-            app = applications.entries[application]
+        src_path = Path(app.fullpath)
 
-            directories = [
-                Path(directory)
-                for directory in applications.directories
-            ]
-
-            src_path = Path(app.fullpath)
-
-            if copy:
-                for directory in directories:
-                    try:
-                        dest_path = (
-                            directories[0]
-                            /
-                            src_path.relative_to(directory)
-                        )
-                    except ValueError:
-                        continue
-
-                if not dest_path:
-                    raise UnresolvedApplicationPathError(src_path, directories)
-
-                if src_path != dest_path:
-                    log.info(
-                        'Copying {src_path} to {dest_path}...',
-                        src_path=src_path,
-                        dest_path=dest_path
+        if copy:
+            for directory in directories:
+                try:
+                    dest_path = (
+                        directories[0]
+                        /
+                        src_path.relative_to(directory)
                     )
-                    copy2(src_path, dest_path)
-            else:
-                dest_path = src_path
-        except:  # noqa
-            should_edit = False
-            raise
-        else:
-            log.info(
-                'Opening {file_path} in the editor...',
-                file_path=dest_path
-            )
+                except ValueError:
+                    continue
 
-    if should_edit:
-        open_editor(dest_path)
+            if not dest_path:
+                raise UnresolvedApplicationPathError(src_path, directories)
+
+            if src_path != dest_path:
+                log.info(
+                    'Copying {src_path} to {dest_path}...',
+                    src_path=src_path,
+                    dest_path=dest_path
+                )
+                copy2(src_path, dest_path)
+        else:
+            dest_path = src_path
+
+        log.info(
+            'Opening {file_path} in the editor...',
+            file_path=dest_path
+        )
+
+    open_editor(dest_path)
 
 
 @main.group(
@@ -392,17 +385,20 @@ def mime():
 
 
 
-@main.group(
+@mime.group(
     help='Commands related to file type associations'
 )
 @click.pass_context
 def associations(ctx):
     config = ctx.obj['CONFIG']
-    applications = ApplicationsRegistry(ctx.obj['CONFIG'])
-    mime = MimeRegistry(config, applications)
+    capturer = ctx.obj['CAPTURER']
 
-    ctx.obj['APPLICATIONS'] = applications
-    ctx.obj['MIME'] = mime
+    with capturer.capture():
+        applications = ApplicationsRegistry(ctx.obj['CONFIG'])
+        mime = MimeRegistry(config, applications)
+
+        ctx.obj['APPLICATIONS'] = applications
+        ctx.obj['MIME'] = mime
 
 
 @associations.command(
@@ -412,12 +408,10 @@ def associations(ctx):
 @click.option('-t', '--mime-type', help='A particular file type to show')
 @click.pass_context
 def show_associations(ctx, mime_type):
-    log = ctx.obj['LOGGER']
+    capturer = ctx.obj['CAPTURER']
     mime = ctx.obj['MIME']
 
-    with captured(log):
-        _greet(log)
-
+    with capturer.capture_final():
         table = [['mime type', 'applications', 'default']]
 
         keys = sorted(set(mime.lookup.keys()) | set(mime.defaults.keys()), key=lambda m: str(m))
@@ -426,10 +420,12 @@ def show_associations(ctx, mime_type):
             applications = mime.lookup.get(mimetype, None)
             default = mime.defaults.get(mimetype, None)
 
+            color = get_color()
+
             table.append([
-                crayons.magenta(mimetype),
-                crayons.magenta(applications) if applications else crayons.yellow('None'),
-                crayons.magenta(default) if default else crayons.yellow('None')
+                color(mimetype),
+                color(applications) if applications else crayons.yellow('None'),
+                color(default) if default else crayons.yellow('None')
             ])
 
         print(fmt_table(table, title='associations and defaults'))
@@ -448,11 +444,9 @@ def glob():
 )
 @click.pass_context
 def show_glob_paths(ctx):
-    log = ctx.obj['LOGGER']
+    capturer = ctx.obj['CAPTURER']
 
-    with captured(log):
-        _greet(log)
-
+    with capturer.capture_final():
         table = [['file', 'exists?']]
 
         for directory in xdg.BaseDirectory.xdg_data_dirs:
@@ -478,17 +472,16 @@ def show_glob_paths(ctx):
 @click.pass_context
 @click.option('-t', '--mime-type', help='A particular file type to show')
 def show_glob_database(ctx, mime_type):
-    log = ctx.obj['LOGGER']
+    capturer = ctx.obj['CAPTURER']
 
-    with captured(log):
-        _greet(log)
+    with capturer.capture_final():
         xdg.Mime.update_cache()
 
         table = [['mime type', 'priority', 'pattern', 'flags']]
 
         for mime_type, rule in sorted(xdg.Mime.globs.allglobs.items(), key=lambda t: str(t[0])):
             color = get_color()
-            for priority, glob, flags in sorted(associations, key=lambda t: t[0], reverse=True):
+            for priority, glob, flags in sorted(rule, key=lambda t: t[0], reverse=True):
                 table.append([
                     color(mime_type),
                     color(priority),
@@ -505,19 +498,14 @@ def show_glob_database(ctx, mime_type):
 )
 @click.pass_context
 def edit_glob_database(ctx):
-    should_edit = False
+    capturer = ctx.obj['CAPTURER']
 
-    with captured(log):
-        _greet(log)
-
+    with capturer.capture_final():
         f = os.path.join(xdg.BaseDirectory.xdg_data_dirs[0], 'mime', 'globs2')
 
         log.info('Editing {globs_db_file}', globs_db_file=f)
 
-        should_edit = True
-
-    if should_edit:
-        open_editor(f)
+    open_editor(f)
 
 
 @mime.group(
@@ -533,11 +521,9 @@ def magic():
 )
 @click.pass_context
 def show_magic_paths(ctx):
-    log = ctx.obj['LOGGER']
+    capturer = ctx.obj['CAPTURER']
 
-    with captured(log):
-        _greet(log)
-
+    with capturer.capture_final():
         table = [['file', 'exists?']]
 
         for directory in xdg.BaseDirectory.xdg_data_dirs:
@@ -571,10 +557,9 @@ xdg.Mime.MagicMatchAny.__repr__ = magic_match_any_repr
 @click.pass_context
 @click.option('-t', '--mime-type', help='A particular file type to show')
 def show_magic_database(ctx, mime_type):
-    log = ctx.obj['LOGGER']
+    capturer = ctx.obj['CAPTURER']
 
-    with captured(log):
-        _greet(log)
+    with capturer.capture_final():
         xdg.Mime.update_cache()
 
         table = [['mime type', 'priority', 'rule']]

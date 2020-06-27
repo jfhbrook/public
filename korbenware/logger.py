@@ -190,28 +190,47 @@ class PandasObserver:
         ), ignore_index=True)
 
 
-def explain_ok(log):
-    log.info('It worked if it ends with OK 👍')
+class Capturer:
+    def __init__(self, log):
+        self.log = log
+        self._has_said_ok = False
 
+    def explain_ok(self):
+        self.log.info('It worked if it ends with OK 👍')
 
-def signal_ok(log):
-    log.info('OK 👍')
+    def signal_ok(self):
+        self.log.info('OK 👍')
 
+    def log_failure_and_exit(self):
+        self.log.failure('== FLAGRANT SYSTEM ERROR ==')
+        self.log.critical('NOT OK 🙅')
+        exit(1)
 
-def log_failure(log):
-    log.failure('== FLAGRANT SYSTEM ERROR ==')
-    log.critical('NOT OK 🙅')
+    @contextmanager
+    def capture(self):
+        if not self._has_said_ok:
+            self.explain_ok()
+            self._has_said_ok = True
+
+        try:
+            yield
+        except:  # noqqa
+            self.log_failure_and_exit()
+
+    @contextmanager
+    def capture_final(self):
+        with self.capture():
+            yield
+
+        self.signal_ok()
 
 
 @contextmanager
 def captured(log):
-    explain_ok(log)
-    try:
+    capturer = Capturer(log)
+
+    with capturer.capture_final():
         yield
-    except:  # noqa
-        log_failure(log)
-    else:
-        signal_ok(log)
 
 
 def greet(log, hed, subhed, subsubhed=None):
