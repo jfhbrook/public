@@ -20,8 +20,24 @@ from korbenware.logger import CliObserver, create_logger, publisher
 
 
 class Context(click.Context):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        command,
+        parent=None,
+        **extra
+    ):
+        super().__init__(command, parent, **extra)
+
+        if self.parent:
+            self.config = getattr(parent, 'config', None)
+            self.config_exc = getattr(parent, 'config_exc', None)
+            self.log = getattr(parent, 'log', None)
+            self.observer = getattr(parent, 'observer', None)
+        else:
+            self.config = None
+            self.config_exc = None
+            self.log = None
+            self.observer = None
 
         self._defer = []
 
@@ -63,14 +79,14 @@ class Context(click.Context):
                 ):
                     raise
                 except:  # noqa
-                    ctx
-                    ctx.log.failure('== FLAGRANT SYSTEM ERROR ==')
-                    ctx.log.critical('NOT OK 🙅')
+                    self.log.failure('== FLAGRANT SYSTEM ERROR ==')
+                    self.log.critical('NOT OK 🙅')
 
                     sys.exit(1)
                 else:
-                    ctx.log.info('OK 👍')
-                    ctx.run_deferred_actions()
+                    if not hasattr(self.command, 'commands'):
+                        self.log.info('OK 👍')
+                    self.run_deferred_actions()
 
                 return rv
 
@@ -89,47 +105,53 @@ class Context(click.Context):
                 ):
                     raise
                 except:  # noqa
-                    ctx
-                    ctx.log.failure('== FLAGRANT SYSTEM ERROR ==')
-                    ctx.log.critical('NOT OK 🙅')
+                    self.log.failure('== FLAGRANT SYSTEM ERROR ==')
+                    self.log.critical('NOT OK 🙅')
 
-                    ctx.exit(1)
+                    self.exit(1)
                 else:
-                    ctx.log.info('OK 👍')
-                    ctx.run_deferred_actions()
+                    if not hasattr(self.command, 'commands'):
+                        self.log.info('OK 👍')
+                    self.run_deferred_actions()
 
                 return rv
 
         with augment_usage_errors(self):
             with ctx:
-                try:
-                    self.config = load_config()
-                    self.config_exc = None
-                except (NoConfigurationFoundError,) as exc:
-                    self.config = None
-                    self.config_exc = exc
+                if not self.config:
+                    try:
+                        self.config = load_config()
+                        self.config_exc = None
+                    except (NoConfigurationFoundError,) as exc:
+                        self.config = None
+                        self.config_exc = exc
 
-                self.log = create_logger(namespace='korbenware.cli.base')
-                self.observer = CliObserver(self.config, verbosity=kwargs.pop('verbose', None))
-                publisher.addObserver(self.observer)
+                if not self.log:
+                    self.log = create_logger(namespace='korbenware.cli.base')
+                if not self.observer:
+                    self.observer = CliObserver(self.config, verbosity=kwargs.pop('verbose', None))
+                    publisher.addObserver(self.observer)
+                else:
+                    del kwargs['verbose']
 
-                self.log.info('It worked if it ends with OK 👍')
+                if not self.parent:
+                    self.log.info('It worked if it ends with OK 👍')
 
-                greet_fields = [('hed', self.command.hed), ('subhed', self.command.subhed)]
+                    greet_fields = [('hed', self.command.hed), ('subhed', self.command.subhed)]
 
-                if self.command.dek:
-                    greet_fields.append(('dek', self.command.dek))
+                    if self.command.dek:
+                        greet_fields.append(('dek', self.command.dek))
 
-                max_len = max(len(value) for name, value in greet_fields)
+                    max_len = max(len(value) for name, value in greet_fields)
 
-                self.log.info('┏━' + ('━' * max_len) + '━┓')
-                for name, value in greet_fields:
-                    log_format = '┃ {' + name + '}' + (' ' * (max_len - len(value))) + ' ┃'
-                    self.log.info(log_format, **{name: value})
-                self.log.info('┗━' + ('━' * max_len) + '━┛')
+                    self.log.info('┏━' + ('━' * max_len) + '━┓')
+                    for name, value in greet_fields:
+                        log_format = '┃ {' + name + '}' + (' ' * (max_len - len(value))) + ' ┃'
+                        self.log.info(log_format, **{name: value})
+                    self.log.info('┗━' + ('━' * max_len) + '━┛')
 
-                if self.config_exc:
-                    raise self.config_exc
+                    if self.config_exc:
+                        raise self.config_exc
 
                 return runner()
 
