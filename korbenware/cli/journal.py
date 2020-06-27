@@ -3,11 +3,13 @@ import os
 import click
 from twisted.logger import LogLevel
 
-from korbenware.cli.base import command
+from korbenware.cli.base import command, pass_context
 from korbenware.logger import LEVEL_BY_NAME, SYSLOG_PRIORITY_BY_LEVEL
 
 
 @command(
+    hed = "Koren's Luddite Paw-Paw's Journald Shimmy-Shim 🦜",
+    subhed="programmed entirely while cursing Lennart Poettering's name",
     context_settings=dict(ignore_unknown_options=True),
     help='A thin wrapper around journalctl for loading korbenware-related journald logs'  # noqa
 )
@@ -18,7 +20,8 @@ from korbenware.logger import LEVEL_BY_NAME, SYSLOG_PRIORITY_BY_LEVEL
 @click.argument(
     'journald_args', nargs=-1, type=click.UNPROCESSED
 )
-def main(level, journald_args):
+@pass_context
+def main(ctx, level, journald_args):
 
     argv = None
 
@@ -37,4 +40,4 @@ def main(level, journald_args):
         syslog_identifier
     ] + list(journald_args)
 
-    os.execvpe('journalctl', argv, os.environ)
+    ctx.defer(lambda: os.execvpe('journalctl', argv, os.environ))

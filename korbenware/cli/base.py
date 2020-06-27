@@ -20,6 +20,18 @@ from korbenware.logger import CliObserver, create_logger, publisher
 
 
 class Context(click.Context):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._defer = []
+
+    def defer(self, f):
+        self._defer.append(f)
+
+    def run_deferred_actions(self):
+        for f in self._defer:
+            f()
+
     def invoke(*args, **kwargs):
         self, callback = args[:2]
         ctx = self
@@ -65,8 +77,8 @@ class Context(click.Context):
 
                 greet_fields = [('hed', self.command.hed), ('subhed', self.command.subhed)]
 
-                if self.command.subsubhed:
-                    greet_fields.append(('subsubhed', self.command.subsubhed))
+                if self.command.dek:
+                    greet_fields.append(('dek', self.command.dek))
 
                 max_len = max(len(value) for name, value in greet_fields)
 
@@ -133,6 +145,7 @@ class KorbenwareCommand:
                         ctx.exit(1)
                     else:
                         ctx.log.info('OK 👍')
+                        ctx.run_deferred_actions()
 
                         if not standalone_mode:
                             return rv
@@ -172,7 +185,7 @@ class Command(KorbenwareCommand, click.Command):
     def __init__(self, *args, **kwargs):
         self.hed = kwargs.pop('hed')
         self.subhed = kwargs.pop('subhed')
-        self.subsubhed = kwargs.pop('subsubhed', None)
+        self.dek = kwargs.pop('dek', None)
 
         super().__init__(*args, **kwargs)
 

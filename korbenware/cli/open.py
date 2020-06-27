@@ -3,6 +3,7 @@ import click
 from korbenware.cli.base import command, pass_context
 from korbenware.config import load_config, log_config
 from korbenware.executor import BaseExecutor
+from korbenware.logger import create_logger
 from korbenware.open import ApplicationFinder, exec_key_fields, OpenError
 from korbenware.urls import UrlRegistry
 from korbenware.xdg.applications import ApplicationsRegistry
@@ -20,8 +21,9 @@ from korbenware.xdg.mime import MimeRegistry
 @click.argument('urls_and_or_files', nargs=-1, required=True)
 @pass_context
 async def main(ctx, reactor, urls_and_or_files):
-    log = ctx.log
+    log = create_logger(namespace='korbenware.cli.open')
     config = ctx.config
+
     applications = ApplicationsRegistry(config)
     mime = MimeRegistry(config, applications)
     urls = UrlRegistry(config, applications)
