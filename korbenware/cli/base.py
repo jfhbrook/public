@@ -145,18 +145,43 @@ class KorbenwareCommand:
             self.parse_args(ctx, args)
         return ctx
 
+    def handle_greet_fields(self, kwargs):
+        self.hed = kwargs.pop(
+            'hed', "Korben's weird uncle's super secret command"
+        )
+        self.subhed = kwargs.pop(
+            'subhed',
+            '"If I told ya I\'d have to shoot cha!"'
+        )
+        self.dek = kwargs.pop('dek', None)
+
 
 class Command(KorbenwareCommand, click.Command):
     def __init__(self, *args, **kwargs):
-        self.hed = kwargs.pop('hed')
-        self.subhed = kwargs.pop('subhed')
-        self.dek = kwargs.pop('dek', None)
-
+        self.handle_greet_fields(kwargs)
         super().__init__(*args, **kwargs)
 
 
 class Group(KorbenwareCommand, click.Group):
-    pass
+    def __init__(self, *args, **kwargs):
+        self.handle_greet_fields(kwargs)
+        super().__init__(*args, **kwargs)
+
+    def command(self, *args, **kwargs):
+        def decorator(f):
+            cmd = command(*args, **kwargs)(f)
+            self.add_command(cmd)
+            return cmd
+
+        return decorator
+
+    def group(self, *args, **kwargs):
+        def decorator(f):
+            cmd = group(*args, **kwargs)(f)
+            self.add_command(cmd)
+            return cmd
+
+        return decorator
 
 
 verbosity = click.option(
@@ -165,8 +190,8 @@ verbosity = click.option(
 )
 
 
-def command(name=None, **attrs):
-    cmd = click.command(name, Command, **attrs)
+def command(name=None, cls=Command, **attrs):
+    cmd = click.command(name, cls, **attrs)
 
     def decorator(f):
         with_verbose_flag = verbosity(f)
@@ -178,7 +203,7 @@ def command(name=None, **attrs):
 
 
 def group(name=None, **attrs):
-    return click.command(name, Group, **attrs)
+    return command(name, Group, **attrs)
 
 
 def pass_context(f):

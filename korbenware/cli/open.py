@@ -16,7 +16,7 @@ from korbenware.xdg.mime import MimeRegistry
     ),
     hed='Korby Jr. The File/Url Opener 🦜',
     subhed='"open up or else!"',
-    subsubhed='programmed entirely while eating a spider plant'
+    dek='programmed entirely while eating a spider plant'
 )
 @click.argument('urls_and_or_files', nargs=-1, required=True)
 @pass_context

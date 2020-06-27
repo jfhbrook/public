@@ -12,12 +12,10 @@ from terminaltables import DoubleTable
 import xdg.BaseDirectory
 import xdg.Mime
 
-from korbenware.cli.base import async_command, group, verbosity
+from korbenware.cli.base import command, group, pass_context
 from korbenware.config import load_config
 from korbenware.editor import edit as open_editor
-from korbenware.logger import (
-    CliObserver, Capturer, create_logger, greet, publisher
-)
+from korbenware.logger import create_logger
 from korbenware.xdg.applications import ApplicationsRegistry
 from korbenware.xdg.mime import MimeRegistry
 
@@ -68,28 +66,17 @@ def fmt_desktop_file(contents, config):
     )
 
 
-@group()
-@verbosity
-@click.pass_context
-def main(ctx, verbose):
-    config = load_config()
-
+@group(
+    hed="Korben's Cool Petsitter's Configuration Manager 🦜",
+    subhed='programmed entirely while Korben was screaming at the neighbors'
+)
+@pass_context
+def main(ctx):
     log = create_logger(namespace='krbenware.cli.config')
 
-    capturer = Capturer(log)
+    ctx.ensure_object(dict)
 
-    publisher.addObserver(CliObserver(config, verbosity=verbose))
-
-    with capturer.capture():
-        hed = "Korben's Cool Petsitter's Configuration Manager 🦜"
-        subhed = 'programmed entirely while Korben was screaming at the neighbors'
-        greet(log, hed, subhed)
-
-        ctx.ensure_object(dict)
-
-        ctx.obj['CONFIG'] = config
-        ctx.obj['LOGGER'] = log
-        ctx.obj['CAPTURER'] = capturer
+    ctx.obj['LOGGER'] = log
 
 
 @main.group(
@@ -103,31 +90,29 @@ def base():
     name='show',
     help='Show the base config'
 )
-@click.pass_context
+@pass_context
 def show_base_config(ctx):
-    config = ctx.obj['CONFIG']
-    capturer = ctx.obj['CAPTURER']
+    config = ctx.config
 
-    with capturer.capture_final():
-        table = [['section', 'key', 'value']]
+    table = [['section', 'key', 'value']]
 
-        for section_attr in config.__attrs_attrs__:
-            section = getattr(config, section_attr.name)
-            color = get_color()
-            if hasattr(section, '__attrs_attrs__'):
-                for attribute in section.__attrs_attrs__:
-                    table.append([
-                        color(section_attr.name),
-                        color(attribute.name),
-                        color(getattr(section, attribute.name))
-                    ])
-            else:
-                for k, v in section.items():
-                    table.append([
-                        color(section_attr.name),
-                        color(k),
-                        color(v)
-                    ])
+    for section_attr in config.__attrs_attrs__:
+        section = getattr(config, section_attr.name)
+        color = get_color()
+        if hasattr(section, '__attrs_attrs__'):
+            for attribute in section.__attrs_attrs__:
+                table.append([
+                    color(section_attr.name),
+                    color(attribute.name),
+                    color(getattr(section, attribute.name))
+                ])
+        else:
+            for k, v in section.items():
+                table.append([
+                    color(section_attr.name),
+                    color(k),
+                    color(v)
+                ])
 
         click.echo(fmt_table(table, title='base config'))
 
@@ -136,18 +121,16 @@ def show_base_config(ctx):
     name='edit',
     help='Edit the base config'
 )
-@click.pass_context
+@pass_context
 def edit_base_config(ctx):
-    config = ctx.obj['CONFIG']
+    config = ctx.config
     log = ctx.obj['LOGGER']
-    capturer = ctx.obj['CAPTURER']
 
-    with capturer.capture_final():
-        config_filename = config.meta.config_filename
+    config_filename = config.meta.config_filename
 
-        log.info(f'Editing {config_filename}...')
+    log.info(f'Editing {config_filename}...')
 
-    open_editor(config_filename)
+    ctx.defer(lambda: open_editor(config_filename))
 
 
 @main.group(
@@ -155,10 +138,7 @@ def edit_base_config(ctx):
 )
 @click.pass_context
 def applications(ctx):
-    capturer = ctx.obj['CAPTURER']
-
-    with capturer.capture():
-        ctx.obj['APPLICATIONS'] = ApplicationsRegistry(ctx.obj['CONFIG'])
+    ctx.obj['APPLICATIONS'] = ApplicationsRegistry(ctx.config)
 
 
 @applications.command(
@@ -171,16 +151,92 @@ def applications(ctx):
     '-a', '--application',
     help='A particular application to show'
 )
-@click.pass_context
+@pass_context
 def show_applications(ctx, application):
-    config = ctx.obj['CONFIG']
+    config = ctx.config
     log = ctx.obj['LOGGER']
-    capturer = ctx.obj['CAPTURER']
     applications = ctx.obj['APPLICATIONS']
 
-    with capturer.capture_final():
-        if application:
-            app = applications.entries[application]
+    if application:
+        app = applications.entries[application]
+        color = crayons.magenta
+
+        if app.executable.is_hidden:
+            hidden = crayons.yellow('yes')
+            color = crayons.blue
+        else:
+            hidden = crayons.green('no')
+
+        if app.executable.no_display:
+            no_display = crayons.yellow('yes')
+            if not app.executable.is_hidden:
+                color = crayons.cyan
+        else:
+            no_display = crayons.green('no')
+
+        if app.executable.parsed:
+            parsed = crayons.green('yes')
+        else:
+            parsed = '\n'.join([
+                _safe_str(crayons.yellow(line))
+                for line in str(app.executable.parse_exc).split('\n')
+            ])
+
+        if app.executable.validated:
+            validated = crayons.green('yes')
+        else:
+            validated = '\n'.join([
+                _safe_str(crayons.yellow(line))
+                for line in str(app.executable.validate_exc).split('\n')
+            ])
+
+        if app.executable.exec_key_parsed:
+            exec_key_parsed = crayons.green('yes')
+        else:
+            exec_key_parsed = '\n'.join([
+                _safe_str(crayons.yellow(line))
+                for line in (
+                    str(app.executable.exec_key_parse_exc).split('\n')
+                )
+            ])
+
+        table = [['key', 'value']]
+
+        for row in [
+            ['full path', app.fullpath],
+            ['overridden paths', [o.fullpath for o in app.overrides]],
+            ['hidden?', hidden],
+            ['no display?', no_display],
+            ['exec key', app.executable.exec_key.raw],
+            ['desktop file parsed?', parsed],
+            ['desktop file validated?', validated],
+            ['exec key parsed?', exec_key_parsed]
+        ]:
+            table.append([color(cell) for cell in row])
+
+        click.echo(fmt_table(table, title='application'))
+        click.echo('')
+        click.echo('raw file')
+        click.echo('----------')
+        with open(app.fullpath, 'r') as f:
+            click.echo(fmt_desktop_file(f.read(), config))
+        click.echo('----------')
+
+    else:
+        table = [
+            [
+                'name',
+                'hidden?',
+                'no display?',
+                'parsed?',
+                'validated?',
+                'exec key parsed?',
+                'exec key'
+            ]
+        ]
+
+        for app in sorted(applications.entries.values()):
+
             color = crayons.magenta
 
             if app.executable.is_hidden:
@@ -199,107 +255,29 @@ def show_applications(ctx, application):
             if app.executable.parsed:
                 parsed = crayons.green('yes')
             else:
-                parsed = '\n'.join([
-                    _safe_str(crayons.yellow(line))
-                    for line in str(app.executable.parse_exc).split('\n')
-                ])
+                parsed = crayons.yellow('no')
 
             if app.executable.validated:
                 validated = crayons.green('yes')
             else:
-                validated = '\n'.join([
-                    _safe_str(crayons.yellow(line))
-                    for line in str(app.executable.validate_exc).split('\n')
-                ])
+                validated = crayons.yellow('no')
 
             if app.executable.exec_key_parsed:
                 exec_key_parsed = crayons.green('yes')
             else:
-                exec_key_parsed = '\n'.join([
-                    _safe_str(crayons.yellow(line))
-                    for line in (
-                        str(app.executable.exec_key_parse_exc).split('\n')
-                    )
-                ])
+                exec_key_parsed = crayons.yellow('no')
 
-            table = [['key', 'value']]
+            table.append([
+                color(app.filename),
+                hidden,
+                no_display,
+                parsed,
+                validated,
+                exec_key_parsed,
+                color(app.executable.exec_key.raw)
+            ])
 
-            for row in [
-                ['full path', app.fullpath],
-                ['overridden paths', [o.fullpath for o in app.overrides]],
-                ['hidden?', hidden],
-                ['no display?', no_display],
-                ['exec key', app.executable.exec_key.raw],
-                ['desktop file parsed?', parsed],
-                ['desktop file validated?', validated],
-                ['exec key parsed?', exec_key_parsed]
-            ]:
-                table.append([color(cell) for cell in row])
-
-            click.echo(fmt_table(table, title='application'))
-            click.echo('')
-            click.echo('raw file')
-            click.echo('----------')
-            with open(app.fullpath, 'r') as f:
-                click.echo(fmt_desktop_file(f.read(), config))
-            click.echo('----------')
-
-        else:
-            table = [
-                [
-                    'name',
-                    'hidden?',
-                    'no display?',
-                    'parsed?',
-                    'validated?',
-                    'exec key parsed?',
-                    'exec key'
-                ]
-            ]
-
-            for app in sorted(applications.entries.values()):
-
-                color = crayons.magenta
-
-                if app.executable.is_hidden:
-                    hidden = crayons.yellow('yes')
-                    color = crayons.blue
-                else:
-                    hidden = crayons.green('no')
-
-                if app.executable.no_display:
-                    no_display = crayons.yellow('yes')
-                    if not app.executable.is_hidden:
-                        color = crayons.cyan
-                else:
-                    no_display = crayons.green('no')
-
-                if app.executable.parsed:
-                    parsed = crayons.green('yes')
-                else:
-                    parsed = crayons.yellow('no')
-
-                if app.executable.validated:
-                    validated = crayons.green('yes')
-                else:
-                    validated = crayons.yellow('no')
-
-                if app.executable.exec_key_parsed:
-                    exec_key_parsed = crayons.green('yes')
-                else:
-                    exec_key_parsed = crayons.yellow('no')
-
-                table.append([
-                    color(app.filename),
-                    hidden,
-                    no_display,
-                    parsed,
-                    validated,
-                    exec_key_parsed,
-                    color(app.executable.exec_key.raw)
-                ])
-
-            click.echo(fmt_table(table, title='applications'))
+        click.echo(fmt_table(table, title='applications'))
 
 
 class UnresolvedApplicationPathError():
@@ -328,53 +306,51 @@ class UnresolvedApplicationPathError():
         "doesn't already exist there"
     )
 )
-@click.pass_context
+@pass_context
 def edit_application(ctx, application, copy):
-    config = ctx.obj['CONFIG']
+    config = ctx.config
     log = ctx.obj['LOGGER']
-    capturer = ctx.obj['CAPTURER']
     applications = ctx.obj['APPLICATIONS']
 
-    with capturer.capture_final():
-        app = applications.entries[application]
+    app = applications.entries[application]
 
-        directories = [
-            Path(directory)
-            for directory in applications.directories
-        ]
+    directories = [
+        Path(directory)
+        for directory in applications.directories
+    ]
 
-        src_path = Path(app.fullpath)
+    src_path = Path(app.fullpath)
 
-        if copy:
-            for directory in directories:
-                try:
-                    dest_path = (
-                        directories[0]
-                        /
-                        src_path.relative_to(directory)
-                    )
-                except ValueError:
-                    continue
-
-            if not dest_path:
-                raise UnresolvedApplicationPathError(src_path, directories)
-
-            if src_path != dest_path:
-                log.info(
-                    'Copying {src_path} to {dest_path}...',
-                    src_path=src_path,
-                    dest_path=dest_path
+    if copy:
+        for directory in directories:
+            try:
+                dest_path = (
+                    directories[0]
+                    /
+                    src_path.relative_to(directory)
                 )
-                copy2(src_path, dest_path)
-        else:
-            dest_path = src_path
+            except ValueError:
+                continue
 
-        log.info(
-            'Opening {file_path} in the editor...',
-            file_path=dest_path
-        )
+        if not dest_path:
+            raise UnresolvedApplicationPathError(src_path, directories)
 
-    open_editor(dest_path)
+        if src_path != dest_path:
+            log.info(
+                'Copying {src_path} to {dest_path}...',
+                src_path=src_path,
+                dest_path=dest_path
+            )
+            copy2(src_path, dest_path)
+    else:
+        dest_path = src_path
+
+    log.info(
+        'Opening {file_path} in the editor...',
+        file_path=dest_path
+    )
+
+    ctx.defer(lambda: open_editor(dest_path))
 
 
 @main.group(
@@ -388,17 +364,16 @@ def mime():
 @mime.group(
     help='Commands related to file type associations'
 )
-@click.pass_context
+@pass_context
 def associations(ctx):
-    config = ctx.obj['CONFIG']
+    config = ctx.config
     capturer = ctx.obj['CAPTURER']
 
-    with capturer.capture():
-        applications = ApplicationsRegistry(ctx.obj['CONFIG'])
-        mime = MimeRegistry(config, applications)
+    applications = ApplicationsRegistry(ctx.obj['CONFIG'])
+    mime = MimeRegistry(config, applications)
 
-        ctx.obj['APPLICATIONS'] = applications
-        ctx.obj['MIME'] = mime
+    ctx.obj['APPLICATIONS'] = applications
+    ctx.obj['MIME'] = mime
 
 
 @associations.command(
@@ -406,29 +381,27 @@ def associations(ctx):
     help='Show the file type associations recognized by korbenware'
 )
 @click.option('-t', '--mime-type', help='A particular file type to show')
-@click.pass_context
+@pass_context
 def show_associations(ctx, mime_type):
-    capturer = ctx.obj['CAPTURER']
     mime = ctx.obj['MIME']
 
-    with capturer.capture_final():
-        table = [['mime type', 'applications', 'default']]
+    table = [['mime type', 'applications', 'default']]
 
-        keys = sorted(set(mime.lookup.keys()) | set(mime.defaults.keys()), key=lambda m: str(m))
+    keys = sorted(set(mime.lookup.keys()) | set(mime.defaults.keys()), key=lambda m: str(m))
 
-        for mimetype in keys:
-            applications = mime.lookup.get(mimetype, None)
-            default = mime.defaults.get(mimetype, None)
+    for mimetype in keys:
+        applications = mime.lookup.get(mimetype, None)
+        default = mime.defaults.get(mimetype, None)
 
-            color = get_color()
+        color = get_color()
 
-            table.append([
-                color(mimetype),
-                color(applications) if applications else crayons.yellow('None'),
-                color(default) if default else crayons.yellow('None')
-            ])
+        table.append([
+            color(mimetype),
+            color(applications) if applications else crayons.yellow('None'),
+            color(default) if default else crayons.yellow('None')
+        ])
 
-        click.echo(fmt_table(table, title='associations and defaults'))
+    click.echo(fmt_table(table, title='associations and defaults'))
 
 
 @mime.group(
@@ -442,70 +415,59 @@ def glob():
     name='paths',
     help='Show paths for XDG glob databases'
 )
-@click.pass_context
-def show_glob_paths(ctx):
-    capturer = ctx.obj['CAPTURER']
+def show_glob_paths():
+    table = [['file', 'exists?']]
 
-    with capturer.capture_final():
-        table = [['file', 'exists?']]
+    for directory in xdg.BaseDirectory.xdg_data_dirs:
+        f = os.path.join(directory, 'mime', 'globs2')
 
-        for directory in xdg.BaseDirectory.xdg_data_dirs:
-            f = os.path.join(directory, 'mime', 'globs2')
+        if os.path.isfile(f):
+            exists = crayons.green('yes')
+        else:
+            exists = crayons.yellow('no')
 
-            if os.path.isfile(f):
-                exists = crayons.green('yes')
-            else:
-                exists = crayons.yellow('no')
+        table.append([
+            crayons.magenta(f),
+            exists
+        ])
 
-            table.append([
-                crayons.magenta(f),
-                exists
-            ])
-
-        click.echo(fmt_table(table, title='globs database paths'))
+    click.echo(fmt_table(table, title='globs database paths'))
 
 
 @glob.command(
     name='show',
     help='Show the parsed glob databases'
 )
-@click.pass_context
 @click.option('-t', '--mime-type', help='A particular file type to show')
-def show_glob_database(ctx, mime_type):
-    capturer = ctx.obj['CAPTURER']
+def show_glob_database(mime_type):
+    xdg.Mime.update_cache()
 
-    with capturer.capture_final():
-        xdg.Mime.update_cache()
+    table = [['mime type', 'priority', 'pattern', 'flags']]
 
-        table = [['mime type', 'priority', 'pattern', 'flags']]
+    for mime_type, rule in sorted(xdg.Mime.globs.allglobs.items(), key=lambda t: str(t[0])):
+        color = get_color()
+        for priority, glob, flags in sorted(rule, key=lambda t: t[0], reverse=True):
+            table.append([
+                color(mime_type),
+                color(priority),
+                color(glob),
+                color(flags)
+            ])
 
-        for mime_type, rule in sorted(xdg.Mime.globs.allglobs.items(), key=lambda t: str(t[0])):
-            color = get_color()
-            for priority, glob, flags in sorted(rule, key=lambda t: t[0], reverse=True):
-                table.append([
-                    color(mime_type),
-                    color(priority),
-                    color(glob),
-                    color(flags)
-                ])
-
-        click.echo(fmt_table(table, title='glob database'))
+    click.echo(fmt_table(table, title='glob database'))
 
 
 @glob.command(
     name='edit',
     help='Edit the highest priority globs database file'
 )
-@click.pass_context
+@pass_context
 def edit_glob_database(ctx):
-    capturer = ctx.obj['CAPTURER']
+    f = os.path.join(xdg.BaseDirectory.xdg_data_dirs[0], 'mime', 'globs2')
 
-    with capturer.capture_final():
-        f = os.path.join(xdg.BaseDirectory.xdg_data_dirs[0], 'mime', 'globs2')
+    log.info('Editing {globs_db_file}', globs_db_file=f)
 
-        log.info('Editing {globs_db_file}', globs_db_file=f)
-
-    open_editor(f)
+    ctx.defer(lambda: open_editor(f))
 
 
 @mime.group(
@@ -519,27 +481,23 @@ def magic():
     name='paths',
     help='Show paths for magic databases'
 )
-@click.pass_context
-def show_magic_paths(ctx):
-    capturer = ctx.obj['CAPTURER']
+def show_magic_paths():
+    table = [['file', 'exists?']]
 
-    with capturer.capture_final():
-        table = [['file', 'exists?']]
+    for directory in xdg.BaseDirectory.xdg_data_dirs:
+        f = os.path.join(directory, 'mime', 'magic')
 
-        for directory in xdg.BaseDirectory.xdg_data_dirs:
-            f = os.path.join(directory, 'mime', 'magic')
+        if os.path.isfile(f):
+            exists = crayons.green('yes')
+        else:
+            exists = crayons.yellow('no')
 
-            if os.path.isfile(f):
-                exists = crayons.green('yes')
-            else:
-                exists = crayons.yellow('no')
+        table.append([
+            crayons.magenta(f),
+            exists
+        ])
 
-            table.append([
-                crayons.magenta(f),
-                exists
-            ])
-
-        click.echo(fmt_table(table, title='magic database paths'))
+    click.echo(fmt_table(table, title='magic database paths'))
 
 
 def magic_match_any_repr(self):
@@ -554,23 +512,19 @@ xdg.Mime.MagicMatchAny.__repr__ = magic_match_any_repr
 @magic.command(
     name='show'
 )
-@click.pass_context
 @click.option('-t', '--mime-type', help='A particular file type to show')
-def show_magic_database(ctx, mime_type):
-    capturer = ctx.obj['CAPTURER']
+def show_magic_database(mime_type):
+    xdg.Mime.update_cache()
 
-    with capturer.capture_final():
-        xdg.Mime.update_cache()
+    table = [['mime type', 'priority', 'rule']]
 
-        table = [['mime type', 'priority', 'rule']]
+    for mime_type, rules in sorted(xdg.Mime.magic.bytype.items(), key=lambda t: str(t[0])):
+        color = get_color()
+        for priority, rule in sorted(rules, key=lambda t: t[0], reverse=True):
+            table.append([
+                color(mime_type),
+                color(priority),
+                rule
+            ])
 
-        for mime_type, rules in sorted(xdg.Mime.magic.bytype.items(), key=lambda t: str(t[0])):
-            color = get_color()
-            for priority, rule in sorted(rules, key=lambda t: t[0], reverse=True):
-                table.append([
-                    color(mime_type),
-                    color(priority),
-                    rule
-                ])
-
-        click.echo(fmt_table(table, title='magic database'))
+    click.echo(fmt_table(table, title='magic database'))
