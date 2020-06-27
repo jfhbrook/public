@@ -1,6 +1,6 @@
 import click
 
-from korbenware.cli.base import async_command, command
+from korbenware.cli.base import command, pass_context
 from korbenware.config import load_config, log_config
 from korbenware.executor import BaseExecutor
 from korbenware.open import ApplicationFinder, exec_key_fields, OpenError
@@ -18,10 +18,8 @@ from korbenware.xdg.mime import MimeRegistry
     subsubhed='programmed entirely while eating a spider plant'
 )
 @click.argument('urls_and_or_files', nargs=-1, required=True)
-@click.pass_context
-@async_command
-async def main(reactor, ctx, urls_and_or_files):
-
+@pass_context
+async def main(ctx, reactor, urls_and_or_files):
     log = ctx.log
     config = ctx.config
     applications = ApplicationsRegistry(config)

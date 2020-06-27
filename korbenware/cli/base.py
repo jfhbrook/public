@@ -1,3 +1,4 @@
+from asyncio import coroutine, iscoroutinefunction
 from functools import wraps, update_wrapper
 import os
 import sys
@@ -7,6 +8,7 @@ from click._compat import get_text_stderr
 from click._unicodefun import _verify_python3_env as verify_python_env
 from click.core import augment_usage_errors, _bashcomplete as bashcomplete, make_str
 from click.exceptions import Abort, ClickException, Exit
+from click.globals import get_current_context
 from click.utils import PacifyFlushWrapper
 from twisted.internet.defer import ensureDeferred
 from twisted.internet.task import react
@@ -15,11 +17,6 @@ from korbenware.config import load_config, NoConfigurationFoundError
 from korbenware.logger import CliObserver, create_logger, publisher
 
 # Note: Click has a BSD 3-clause license
-
-def log_failure_and_exit(self):
-    self.log.failure('== FLAGRANT SYSTEM ERROR ==')
-    self.log.critical('NOT OK 🙅')
-    exit(1)
 
 
 class Context(click.Context):
@@ -42,6 +39,14 @@ class Context(click.Context):
                     kwargs[param.name] = param.get_default(ctx)
 
         args = args[2:]
+
+        if iscoroutinefunction(callback):
+            wrapped = callback
+            @wraps(wrapped)
+            def callback(*arg, **kwarg):
+                return react(lambda reactor: ensureDeferred(
+                    wrapped(reactor, *arg, **kwarg)
+                ))
 
         with augment_usage_errors(self):
             with ctx:
@@ -193,16 +198,27 @@ def command(name=None, **attrs):
 
     return decorator
 
+
 def group(name=None, **attrs):
     return click.command(name, Group, **attrs)
 
 
-def async_command(cmd):
-    @wraps(cmd)
-    def wrapped(*arg, **kwarg):
-        return react(lambda reactor: ensureDeferred(
-            cmd(reactor, *arg, **kwarg)
-        ))
+def pass_context(f):
+    if iscoroutinefunction(f):
+        @wraps(f)
+        async def wrapper(*args, **kwargs):
+            return await f(get_current_context(), *args, **kwargs)
+        return wrapper
 
-    return wrapped
+    return click.pass_context(f)
 
+
+def pass_obj(f):
+    if iscoroutinefunction(f):
+        @wraps(f)
+        async def wrapper(*args, **kwargs):
+            return await f(get_current_context().obj, *args, **kwargs)
+
+        return wrapper
+
+    return click.pass_obj(f)
