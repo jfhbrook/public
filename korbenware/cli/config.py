@@ -8,11 +8,13 @@ from pygments import highlight
 from pygments.lexers.configs import IniLexer
 from pygments.formatters import Terminal256Formatter
 from pygments.styles import get_style_by_name
-from terminaltables import DoubleTable
 import xdg.BaseDirectory
 import xdg.Mime
 
-from korbenware.cli.base import command, group, pass_context
+from korbenware.cli.base import (
+    safe_str, color_text_block, command, echo_table, get_color,
+    group, pass_context
+)
 from korbenware.config import load_config
 from korbenware.editor import edit as open_editor
 from korbenware.logger import create_logger
@@ -20,48 +22,14 @@ from korbenware.xdg.applications import ApplicationsRegistry
 from korbenware.xdg.mime import MimeRegistry
 
 
-def _safe_str(entity):
-    # crayons has a bug where entity.str returns the raw thing (instead of
-    # stringifying it) when colors are disabled by the terminal
-    return str(entity.__str__())
-
-
-class ColorCycler:
-    COLORS = ['blue', 'magenta', 'cyan']
-
-    def __init__(self):
-        self.i = -1
-
-    def __call__(self):
-        self.i += 1
-        if self.i >= len(self.COLORS):
-            self.i = 0
-
-        crayon = getattr(crayons, self.COLORS[self.i])
-
-        return lambda o: _safe_str(crayon(o))
-
-
-get_color = ColorCycler()
-
-
-def fmt_table(table, **kwargs):
-    t = DoubleTable([
-        [_safe_str(cell) for cell in row]
-        for row in table
-    ], **kwargs)
-
-    t.inner_row_border = True
-
-    return t.table
-
-
-def fmt_desktop_file(contents, config):
-    return highlight(
-        contents,
-        IniLexer(),
-        Terminal256Formatter(
-            style=get_style_by_name(config.format.pygments_formatter)
+def echo_desktop_file(contents, config):
+    return click.echo(
+        highlight(
+            contents,
+            IniLexer(),
+            Terminal256Formatter(
+                style=get_style_by_name(config.format.pygments_formatter)
+            )
         )
     )
 
@@ -72,7 +40,7 @@ def fmt_desktop_file(contents, config):
 )
 @pass_context
 def main(ctx):
-    log = create_logger(namespace='krbenware.cli.config')
+    log = create_logger(namespace='korbenware.cli.config')
 
     ctx.ensure_object(dict)
 
@@ -114,7 +82,7 @@ def show_base_config(ctx):
                     color(v)
                 ])
 
-    click.echo(fmt_table(table, title='base config'))
+    echo_table(table, title='base config')
 
 
 @base.command(
@@ -157,8 +125,7 @@ def show_applications(ctx, application):
     log = ctx.obj['LOGGER']
     applications = ctx.obj['APPLICATIONS']
 
-    if application:
-        app = applications.entries[application]
+    def common_settings(app):
         color = crayons.magenta
 
         if app.executable.is_hidden:
@@ -174,31 +141,38 @@ def show_applications(ctx, application):
         else:
             no_display = crayons.green('no')
 
+        return color, hidden, no_display
+
+
+    if application:
+        app = applications.entries[application]
+        color = crayons.magenta
+
+        color, hidden, no_display = common_settings(app)
+
         if app.executable.parsed:
             parsed = crayons.green('yes')
         else:
-            parsed = '\n'.join([
-                _safe_str(crayons.yellow(line))
-                for line in str(app.executable.parse_exc).split('\n')
-            ])
+            parsed = color_text_block(
+                crayons.yellow,
+                app.executable.parse_exc
+            )
 
         if app.executable.validated:
             validated = crayons.green('yes')
         else:
-            validated = '\n'.join([
-                _safe_str(crayons.yellow(line))
-                for line in str(app.executable.validate_exc).split('\n')
-            ])
+            validated = color_text_block(
+                crayons.yellow,
+                app.executable.validate_exc
+            )
 
         if app.executable.exec_key_parsed:
             exec_key_parsed = crayons.green('yes')
         else:
-            exec_key_parsed = '\n'.join([
-                _safe_str(crayons.yellow(line))
-                for line in (
-                    str(app.executable.exec_key_parse_exc).split('\n')
-                )
-            ])
+            exec_key_parsed = color_text_block(
+                crayons.yellow,
+                app.executable.exec_key_parse_exc
+            )
 
         table = [['key', 'value']]
 
@@ -214,12 +188,12 @@ def show_applications(ctx, application):
         ]:
             table.append([color(cell) for cell in row])
 
-        click.echo(fmt_table(table, title='application'))
+        echo_table(table, title='application')
         click.echo('')
         click.echo('raw file')
         click.echo('----------')
         with open(app.fullpath, 'r') as f:
-            click.echo(fmt_desktop_file(f.read(), config))
+            echo_desktop_file(f.read(), config)
         click.echo('----------')
 
     else:
@@ -236,21 +210,7 @@ def show_applications(ctx, application):
         ]
 
         for app in sorted(applications.entries.values()):
-
-            color = crayons.magenta
-
-            if app.executable.is_hidden:
-                hidden = crayons.yellow('yes')
-                color = crayons.blue
-            else:
-                hidden = crayons.green('no')
-
-            if app.executable.no_display:
-                no_display = crayons.yellow('yes')
-                if not app.executable.is_hidden:
-                    color = crayons.cyan
-            else:
-                no_display = crayons.green('no')
+            color, hidden, no_display = common_settings(app)
 
             if app.executable.parsed:
                 parsed = crayons.green('yes')
@@ -360,48 +320,71 @@ def mime():
     pass
 
 
-
 @mime.group(
     help='Commands related to file type associations'
 )
 @pass_context
 def associations(ctx):
     config = ctx.config
-    capturer = ctx.obj['CAPTURER']
 
-    applications = ApplicationsRegistry(ctx.obj['CONFIG'])
+    applications = ApplicationsRegistry(config)
     mime = MimeRegistry(config, applications)
 
     ctx.obj['APPLICATIONS'] = applications
     ctx.obj['MIME'] = mime
 
 
+class MimeType(click.ParamType):
+    def convert(self, value, param, ctx):
+        if not value:
+            return value
+
+        parts = str(value).split('/')
+
+        if len(parts) != 2:
+            self.fail(
+                f'Invalid mime type {value} - must have the format `{{media}}/{{subtype}}`',
+                param,
+                ctx
+            )
+        return xdg.Mime.MIMEtype(parts[0], parts[1])
+
+    def __repr__(self):
+        return 'MimeType'
+
+
 @associations.command(
     name='show',
     help='Show the file type associations recognized by korbenware'
 )
-@click.option('-t', '--mime-type', help='A particular file type to show')
+@click.option('-t', '--mime-type', type=MimeType(), help='A particular file type to show')
 @pass_context
 def show_associations(ctx, mime_type):
     mime = ctx.obj['MIME']
 
     table = [['mime type', 'applications', 'default']]
 
-    keys = sorted(set(mime.lookup.keys()) | set(mime.defaults.keys()), key=lambda m: str(m))
+    if mime_type:
+        keys = [mime_type]
+    else:
+        keys = sorted(
+            set(mime.lookup.keys()) | set(mime.defaults.keys()),
+            key=str
+        )
 
-    for mimetype in keys:
-        applications = mime.lookup.get(mimetype, None)
-        default = mime.defaults.get(mimetype, None)
+    for mime_type in keys:
+        applications = mime.lookup.get(mime_type, None)
+        default = mime.defaults.get(mime_type, None)
 
         color = get_color()
 
         table.append([
-            color(mimetype),
+            color(mime_type),
             color(applications) if applications else crayons.yellow('None'),
             color(default) if default else crayons.yellow('None')
         ])
 
-    click.echo(fmt_table(table, title='associations and defaults'))
+    echo_table(table, title='associations and defaults')
 
 
 @mime.group(
