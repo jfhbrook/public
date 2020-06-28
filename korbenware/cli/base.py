@@ -10,6 +10,8 @@ from click.core import augment_usage_errors, _bashcomplete as bashcomplete, make
 from click.exceptions import Abort, ClickException, Exit
 from click.globals import get_current_context
 from click.utils import PacifyFlushWrapper
+import crayons
+from terminaltables import DoubleTable
 from toml.decoder import TomlDecodeError
 from twisted.internet.defer import ensureDeferred
 from twisted.internet.task import react
@@ -280,3 +282,48 @@ def pass_obj(f):
         return wrapper
 
     return click.pass_obj(f)
+
+
+def safe_str(entity):
+    """crayons has a bug where entity.str returns the raw thing (instead of
+    stringifying it) when colors are disabled by the terminal. This function can
+    be used to work around that.
+    """
+    return str(entity.__str__())
+
+
+class ColorCycler:
+    COLORS = ['blue', 'magenta', 'cyan']
+
+    def __init__(self):
+        self.i = -1
+
+    def __call__(self):
+        self.i += 1
+        if self.i >= len(self.COLORS):
+            self.i = 0
+
+        crayon = getattr(crayons, self.COLORS[self.i])
+
+        return lambda o: safe_str(crayon(o))
+
+
+get_color = ColorCycler()
+
+
+def echo_table(table, **kwargs):
+    t = DoubleTable([
+        [safe_str(cell) for cell in row]
+        for row in table
+    ], **kwargs)
+
+    t.inner_row_border = True
+
+    click.echo(t.table)
+
+
+def color_text_block(crayon, block):
+    return '\n'.join([
+        safe_str(crayon)
+        for line in safe_str(block).split('\n')
+    ])

@@ -19,7 +19,9 @@ from korbenware.config import load_config
 from korbenware.editor import edit as open_editor
 from korbenware.logger import create_logger
 from korbenware.xdg.applications import ApplicationsRegistry
-from korbenware.xdg.mime import MimeRegistry
+from korbenware.xdg.mime import (
+    MimeRegistry, xdg_mimeapps_files, XDG_MIMEINFO_CACHE_FILES
+)
 
 
 def echo_desktop_file(contents, config):
@@ -33,6 +35,22 @@ def echo_desktop_file(contents, config):
         )
     )
 
+
+def file_path_table(paths):
+    table = [['file path', 'exists?']]
+
+    for f in paths:
+        if os.path.isfile(f):
+            exists = crayons.green('yes')
+        else:
+            exists = crayons.yellow('no')
+
+        table.append([
+            crayons.magenta(f),
+            exists
+        ])
+
+    return table
 
 @group(
     hed="Korben's Cool Petsitter's Configuration Manager 🦜",
@@ -388,7 +406,7 @@ def show_associations(ctx, mime_type):
 
 
 @mime.group(
-    help='Commands related to XDG glob databases'
+    help='Commands related to the XDG glob database'
 )
 def glob():
     pass
@@ -396,38 +414,33 @@ def glob():
 
 @glob.command(
     name='paths',
-    help='Show paths for XDG glob databases'
+    help='Show paths for XDG glob database files'
 )
 def show_glob_paths():
-    table = [['file', 'exists?']]
+    paths = [
+        os.path.join(directory, 'mime', 'globs2')
+        for directory in xdg.BaseDirectory.xdg_data_dirs
+    ]
 
-    for directory in xdg.BaseDirectory.xdg_data_dirs:
-        f = os.path.join(directory, 'mime', 'globs2')
-
-        if os.path.isfile(f):
-            exists = crayons.green('yes')
-        else:
-            exists = crayons.yellow('no')
-
-        table.append([
-            crayons.magenta(f),
-            exists
-        ])
-
-    click.echo(fmt_table(table, title='globs database paths'))
+    echo_table(file_path_table(paths))
 
 
 @glob.command(
     name='show',
-    help='Show the parsed glob databases'
+    help='Show the parsed glob database'
 )
-@click.option('-t', '--mime-type', help='A particular file type to show')
+@click.option('-t', '--mime-type', type=MimeType(), help='A particular file type to show globs for')
 def show_glob_database(mime_type):
     xdg.Mime.update_cache()
 
     table = [['mime type', 'priority', 'pattern', 'flags']]
 
-    for mime_type, rule in sorted(xdg.Mime.globs.allglobs.items(), key=lambda t: str(t[0])):
+    if mime_type:
+        rule_sets = [(mime_type, xdg.Mime.globs.allglobs[mime_type])]
+    else:
+        rule_sets = sorted(xdg.Mime.globs.allglobs.items(), key=lambda t: str(t[0]))
+
+    for mime_type, rule in rule_sets:
         color = get_color()
         for priority, glob, flags in sorted(rule, key=lambda t: t[0], reverse=True):
             table.append([
@@ -437,7 +450,7 @@ def show_glob_database(mime_type):
                 color(flags)
             ])
 
-    click.echo(fmt_table(table, title='glob database'))
+    echo_table(table, title='glob database')
 
 
 @glob.command(
@@ -454,7 +467,7 @@ def edit_glob_database(ctx):
 
 
 @mime.group(
-    help='Commands related to magics'
+    help='Commands related to the XDG magic bytes matching database'
 )
 def magic():
     pass
@@ -462,25 +475,15 @@ def magic():
 
 @magic.command(
     name='paths',
-    help='Show paths for magic databases'
+    help='Show paths for magic byte matching database files'
 )
 def show_magic_paths():
-    table = [['file', 'exists?']]
+    paths = [
+        os.path.join(directory, 'mime', 'magic')
+        for directory in xdg.BaseDirectory.xdg_data_dirs
+    ]
 
-    for directory in xdg.BaseDirectory.xdg_data_dirs:
-        f = os.path.join(directory, 'mime', 'magic')
-
-        if os.path.isfile(f):
-            exists = crayons.green('yes')
-        else:
-            exists = crayons.yellow('no')
-
-        table.append([
-            crayons.magenta(f),
-            exists
-        ])
-
-    click.echo(fmt_table(table, title='magic database paths'))
+    echo_table(file_path_table(paths))
 
 
 def magic_match_any_repr(self):
@@ -493,15 +496,21 @@ xdg.Mime.MagicMatchAny.__repr__ = magic_match_any_repr
 
 
 @magic.command(
-    name='show'
+    name='show',
+    help='Show the parsed magic byte matching database'
 )
-@click.option('-t', '--mime-type', help='A particular file type to show')
+@click.option('-t', '--mime-type', type=MimeType(), help='A particular file type to show')
 def show_magic_database(mime_type):
     xdg.Mime.update_cache()
 
     table = [['mime type', 'priority', 'rule']]
 
-    for mime_type, rules in sorted(xdg.Mime.magic.bytype.items(), key=lambda t: str(t[0])):
+    if mime_type:
+        rule_set = [(mime_type, xdg.Mime.magic.bytype[mime_type])]
+    else:
+        rule_set =  sorted(xdg.Mime.magic.bytype.items(), key=lambda t: str(t[0]))
+
+    for mime_type, rules in rule_set:
         color = get_color()
         for priority, rule in sorted(rules, key=lambda t: t[0], reverse=True):
             table.append([
@@ -510,4 +519,33 @@ def show_magic_database(mime_type):
                 rule
             ])
 
-    click.echo(fmt_table(table, title='magic database'))
+    echo_table(table, title='magic database')
+
+
+@mime.group(
+    help='Commands related to application mimeinfo caches'
+)
+def mimeinfo():
+    pass
+
+
+@mimeinfo.command(
+    name='paths'
+)
+def show_mimeinfo_paths():
+    echo_table(file_path_table(XDG_MIMEINFO_CACHE_FILES))
+
+
+@mime.group(
+    help='Commands related to mimeapps.list files'
+)
+def mimeapps():
+    pass
+
+
+@mimeapps.command(
+    name='paths'
+)
+@pass_context
+def show_mimeapps_paths(ctx):
+    echo_table(file_path_table(xdg_mimeapps_files(ctx.config.mime.environment)))

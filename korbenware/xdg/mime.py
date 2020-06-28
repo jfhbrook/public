@@ -23,6 +23,11 @@ XDG_MIMEAPPS_DIRS = xdg_config_dirs + [
     '/usr/share/applications'
 ]
 
+XDG_MIMEINFO_CACHE_FILES = [
+    os.path.join(directory, 'mimeinfo.cache')
+    for directory in XDG_APPLICATIONS_DIRS
+]
+
 
 def xdg_mimeapps_files(environment=None):
     for directory in xdg_config_dirs:
@@ -151,13 +156,14 @@ class MimeRegistry:
         self.lookup = dict()
         self.defaults = dict()
 
-        for directory in XDG_APPLICATIONS_DIRS:
-            filename = os.path.join(directory, 'mimeinfo.cache')
+        for filename in XDG_MIMEINFO_CACHE_FILES:
             self.log.debug(
                 'Loading desktop mimeinfo database {filename}',
                 filename=filename
             )
             database = DesktopDatabase.from_file(filename)
+
+            self.databases.insert(0, (filename, database))
 
             if not database.parsed:
                 self.log.warn(
