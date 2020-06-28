@@ -1,3 +1,4 @@
+from functools import total_ordering
 import os.path
 from pathlib import Path
 from shutil import copy2
@@ -19,6 +20,7 @@ from korbenware.config import load_config
 from korbenware.editor import edit as open_editor
 from korbenware.logger import create_logger
 from korbenware.xdg.applications import ApplicationsRegistry
+from korbenware.xdg.autostart import Autostart, AutostartRegistry
 from korbenware.xdg.mime import (
     MimeRegistry, xdg_mimeapps_files, XDG_MIMEINFO_CACHE_FILES
 )
@@ -41,14 +43,13 @@ def file_path_table(paths):
 
     for f in paths:
         if os.path.isfile(f):
+            f = crayons.magenta(f)
             exists = crayons.green('yes')
         else:
+            f = crayons.cyan(f)
             exists = crayons.yellow('no')
 
-        table.append([
-            crayons.magenta(f),
-            exists
-        ])
+        table.append([f, exists])
 
     return table
 
@@ -127,6 +128,192 @@ def applications(ctx):
     ctx.obj['APPLICATIONS'] = ApplicationsRegistry(ctx.config)
 
 
+@main.group(
+    help='Commands related to XDG autostart entries'
+)
+@click.pass_context
+def autostart(ctx):
+   ctx.obj['AUTOSTART'] = AutostartRegistry(ctx.config)
+
+
+def render_app_partials(app):
+    color = crayons.magenta
+
+    if app.executable.is_hidden:
+        hidden = crayons.yellow('yes')
+        color = crayons.blue
+    else:
+        hidden = crayons.green('no')
+
+    if app.executable.no_display:
+        no_display = crayons.yellow('yes')
+        if not app.executable.is_hidden:
+            color = crayons.cyan
+    else:
+        no_display = crayons.green('no')
+
+    return color, hidden, no_display
+
+
+def render_autostart_partials(app, config):
+    color = crayons.magenta
+
+    if app.should_autostart(
+        config.autostart.environment_name
+    ):
+        should_start = crayons.green('yes')
+    else:
+        should_start = crayons.yellow('no')
+        color = crayons.blue
+
+    if app.executable.is_hidden:
+        hidden = crayons.yellow('yes')
+    else:
+        hidden = crayons.green('no')
+
+    if app.executable.no_display:
+        no_display = crayons.yellow('yes')
+    else:
+        no_display = crayons.green('no')
+
+    return color, should_start, hidden, no_display
+
+
+
+def render_app_detail(app, title, config):
+    color = crayons.magenta
+
+    is_autostart = isinstance(app, Autostart)
+
+    if is_autostart:
+        (
+            color,
+            should_start,
+            hidden,
+            no_display
+        ) = render_autostart_partials(app, config)
+
+    else:
+        color, hidden, no_display = render_app_partials(app)
+
+    if app.executable.parsed:
+        parsed = crayons.green('yes')
+    else:
+        parsed = color_text_block(
+            crayons.yellow,
+            app.executable.parse_exc
+        )
+
+    if app.executable.validated:
+        validated = crayons.green('yes')
+    else:
+        validated = color_text_block(
+            crayons.yellow,
+            app.executable.validate_exc
+        )
+
+    if app.executable.exec_key_parsed:
+        exec_key_parsed = crayons.green('yes')
+    else:
+        exec_key_parsed = color_text_block(
+            crayons.yellow,
+            app.executable.exec_key_parse_exc
+        )
+
+    table = [['key', 'value']]
+
+    rows = [
+        ['full path', app.fullpath],
+        ['overridden paths', [o.fullpath for o in app.overrides]]
+    ]
+
+    if is_autostart:
+        rows.append(['should autostart?', should_start])
+
+    rows += [
+        ['hidden?', hidden],
+        ['no display?', no_display],
+        ['exec key', app.executable.exec_key.raw],
+        ['desktop file parsed?', parsed],
+        ['desktop file validated?', validated],
+        ['exec key parsed?', exec_key_parsed]
+    ]
+
+    for row in rows:
+        table.append([color(cell) for cell in row])
+
+    echo_table(table, title=title)
+    click.echo('')
+    click.echo('raw file')
+    click.echo('----------')
+    with open(app.fullpath, 'r') as f:
+        echo_desktop_file(f.read(), config)
+    click.echo('----------')
+
+
+def render_apps_overview(apps, title, config):
+    is_autostart = isinstance(apps[0], Autostart)
+    header = ['name']
+
+    if is_autostart:
+        header.append('should autostart?')
+
+    header += [
+        'hidden?',
+        'no display?',
+        'parsed?',
+        'validated?',
+        'exec key parsed?',
+        'exec key'
+    ]
+
+    table = [header]
+
+    for app in apps:
+        if is_autostart:
+            (
+                color,
+                should_start,
+                hidden,
+                no_display
+            ) = render_autostart_partials(app, config)
+        else:
+            color, hidden, no_display = render_app_partials(app)
+
+        if app.executable.parsed:
+            parsed = crayons.green('yes')
+        else:
+            parsed = crayons.yellow('no')
+
+        if app.executable.validated:
+            validated = crayons.green('yes')
+        else:
+            validated = crayons.yellow('no')
+
+        if app.executable.exec_key_parsed:
+            exec_key_parsed = crayons.green('yes')
+        else:
+            exec_key_parsed = crayons.yellow('no')
+
+        row = [color(app.filename)]
+
+        if is_autostart:
+            row.append(should_start)
+
+        row += [
+            hidden,
+            no_display,
+            parsed,
+            validated,
+            exec_key_parsed,
+            color(app.executable.exec_key.raw)
+        ]
+
+        table.append(row)
+
+    echo_table(table, title=title)
+
+
 @applications.command(
     name='show',
     help=(
@@ -143,119 +330,87 @@ def show_applications(ctx, application):
     log = ctx.obj['LOGGER']
     applications = ctx.obj['APPLICATIONS']
 
-    def common_settings(app):
-        color = crayons.magenta
+    if application:
+        render_app_detail(
+            applications.entries[application],
+            title='application',
+            config=config
+        )
+    else:
+        render_apps_overview(
+            sorted(applications.entries.values()),
+            title='applications',
+            config=config
+        )
 
-        if app.executable.is_hidden:
-            hidden = crayons.yellow('yes')
-            color = crayons.blue
-        else:
-            hidden = crayons.green('no')
 
-        if app.executable.no_display:
-            no_display = crayons.yellow('yes')
-            if not app.executable.is_hidden:
-                color = crayons.cyan
-        else:
-            no_display = crayons.green('no')
+def sort_by_autostart(apps, environment_name):
+    @total_ordering
+    class SortElement:
+        def __init__(self, app):
+            self.app = app
+            self.should_start = app.should_autostart(
+                environment_name
+            )
 
-        return color, hidden, no_display
+        def __lt__(self, other):
+            if self.should_start == other.should_start:
+                return self.app < other.app
+            return self.should_start > other.should_start
 
+        def __eq__(self, other):
+            return (
+                (self.should_start == other.should_start)
+                and
+                (self.app == other.app)
+            )
+
+    sorter = [
+        SortElement(app)
+        for app in apps
+    ]
+
+    sorter.sort()
+
+    return [
+        element.app
+        for element in sorter
+    ]
+
+
+@autostart.command(
+    name='show',
+    help=(
+        'Show the XDG applications autstarted by Korbenware'
+    )
+)
+@click.option(
+    '-a', '--application',
+    help='A particular autostart entry to show'
+)
+@pass_context
+def show_autostart(ctx, application):
+    config = ctx.config
+    log = ctx.obj['LOGGER']
+    autostart = ctx.obj['AUTOSTART']
+
+    environment_name = config.autostart.environment_name
 
     if application:
-        app = applications.entries[application]
-        color = crayons.magenta
-
-        color, hidden, no_display = common_settings(app)
-
-        if app.executable.parsed:
-            parsed = crayons.green('yes')
-        else:
-            parsed = color_text_block(
-                crayons.yellow,
-                app.executable.parse_exc
-            )
-
-        if app.executable.validated:
-            validated = crayons.green('yes')
-        else:
-            validated = color_text_block(
-                crayons.yellow,
-                app.executable.validate_exc
-            )
-
-        if app.executable.exec_key_parsed:
-            exec_key_parsed = crayons.green('yes')
-        else:
-            exec_key_parsed = color_text_block(
-                crayons.yellow,
-                app.executable.exec_key_parse_exc
-            )
-
-        table = [['key', 'value']]
-
-        for row in [
-            ['full path', app.fullpath],
-            ['overridden paths', [o.fullpath for o in app.overrides]],
-            ['hidden?', hidden],
-            ['no display?', no_display],
-            ['exec key', app.executable.exec_key.raw],
-            ['desktop file parsed?', parsed],
-            ['desktop file validated?', validated],
-            ['exec key parsed?', exec_key_parsed]
-        ]:
-            table.append([color(cell) for cell in row])
-
-        echo_table(table, title='application')
-        click.echo('')
-        click.echo('raw file')
-        click.echo('----------')
-        with open(app.fullpath, 'r') as f:
-            echo_desktop_file(f.read(), config)
-        click.echo('----------')
-
+        render_app_detail(
+            autostart.entries[application],
+            title='autostart entry',
+            config=config
+        )
     else:
-        table = [
-            [
-                'name',
-                'hidden?',
-                'no display?',
-                'parsed?',
-                'validated?',
-                'exec key parsed?',
-                'exec key'
-            ]
-        ]
-
-        for app in sorted(applications.entries.values()):
-            color, hidden, no_display = common_settings(app)
-
-            if app.executable.parsed:
-                parsed = crayons.green('yes')
-            else:
-                parsed = crayons.yellow('no')
-
-            if app.executable.validated:
-                validated = crayons.green('yes')
-            else:
-                validated = crayons.yellow('no')
-
-            if app.executable.exec_key_parsed:
-                exec_key_parsed = crayons.green('yes')
-            else:
-                exec_key_parsed = crayons.yellow('no')
-
-            table.append([
-                color(app.filename),
-                hidden,
-                no_display,
-                parsed,
-                validated,
-                exec_key_parsed,
-                color(app.executable.exec_key.raw)
-            ])
-
-        click.echo(fmt_table(table, title='applications'))
+        render_apps_overview(
+            sort_by_autostart(
+                autostart.entries.values(),
+                environment_name
+            ),
+            title='autostart entries',
+            config=config
+        )
 
 
 class UnresolvedApplicationPathError():
@@ -265,39 +420,23 @@ class UnresolvedApplicationPathError():
             f"{directories.join(', ')}"
         )
 
+# TODO Both of these functions are very, very wrong
+def get_desktop_path_from_name(application, registry):
+    try:
+        app = registry.entries[application]
+    except KeyError:
+        return os.path.join(registry.directories[0], application)
+    else:
+        return app.fullpath
 
-@applications.command(
-    name='edit',
-    help=(
-        'Edit an application loaded by Korbenware'
-    )
-)
-@click.option(
-    '-a', '--application',
-    help='An application to edit',
-    required=True
-)
-@click.option(
-    '-c', '--copy/--no-copy',
-    help=(
-        'Copy the .desktop file to the highest priority search path if it '
-        "doesn't already exist there"
-    )
-)
-@pass_context
-def edit_application(ctx, application, copy):
-    config = ctx.config
-    log = ctx.obj['LOGGER']
-    applications = ctx.obj['APPLICATIONS']
 
-    app = applications.entries[application]
-
+def edit_desktop_file(ctx, log, path, directories):
     directories = [
         Path(directory)
-        for directory in applications.directories
+        for directory in directories
     ]
 
-    src_path = Path(app.fullpath)
+    src_path = Path(path)
 
     if copy:
         for directory in directories:
@@ -329,6 +468,66 @@ def edit_application(ctx, application, copy):
     )
 
     ctx.defer(lambda: open_editor(dest_path))
+
+
+@applications.command(
+    name='edit',
+    help=(
+        'Edit an application loaded by korbenware'
+    )
+)
+@click.option(
+    '-a', '--application',
+    help='An application to edit',
+    required=True
+)
+@click.option(
+    '-c', '--copy/--no-copy',
+    help=(
+        'Copy the .desktop file to the highest priority search path if it '
+        "doesn't already exist there"
+    )
+)
+@pass_context
+def edit_application(ctx, application, copy):
+    log = ctx.obj['LOGGER']
+    applications = ctx.obj['APPLICATIONS']
+
+    path = get_desktop_path_from_name(application, applications)
+
+    edit_desktop_file(ctx, log, path, applications.directories, copy)
+
+
+@autostart.command(
+    name='edit',
+    help=(
+        'Edit an autostart entry loaded by korbenware'
+    )
+)
+@click.option(
+    '-a', '--application',
+    help='An entry name to edit',
+    required=True
+)
+@click.option(
+    '-c', '--copy/--no-copy',
+    help=(
+        'Copy the .desktop file to the highest priorty search path if it '
+        "doesn't already exist there, either from an existing autostart "
+        'entry or from an existing desktop entry if none is found'
+    )
+)
+@pass_context
+def edit_autostart(ctx, application, copy):
+    log = ctx.obj['LOGGER']
+    autostart = ctx.obj['AUTOSTART']
+    applications = ApplicationsRegistry(ctx.config)
+
+    path = get_desktop_path_from_name(application, autostart)
+
+    directories = autostart.directories + applications.directories
+
+    edit_desktop_file(ctx, log, path, autostart.directories, copy)
 
 
 @main.group(

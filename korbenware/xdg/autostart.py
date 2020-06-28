@@ -60,10 +60,10 @@ class Autostart(Application):
 class AutostartRegistry(ApplicationsRegistry):
     log = create_logger()
 
-    def __init__(self, config, environment_name='korbenware'):
+    def __init__(self, config):
         super().__init__(config, key='autostart', cls=Autostart)
 
-        self.environment_name = environment_name
+        self.environment_name = config.autostart.environment_name
         self.autostart_entries = dict()
 
         for name, entry in self.entries.items():
