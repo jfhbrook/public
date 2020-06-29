@@ -4,6 +4,6 @@ from korbenware.presentation import representable
 
 
 @representable
-@attr.s(cmp=False)
+@attr.s(eq=False, order=False)
 class Symbol:
     name = attr.ib(default='<symbol>')
