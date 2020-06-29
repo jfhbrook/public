@@ -2,15 +2,15 @@ import pytest
 
 import attr
 
-from pyxsession.dbus.marshmallow.fields import (
+from korbenware.dbus.marshmallow.fields import (
     Int32, UInt32, Str, Nested, List, Tuple
 )
-from pyxsession.dbus.marshmallow.schema import (
+from korbenware.dbus.marshmallow.schema import (
     DBusSchema, DBUS_FIELD, DBUS_NESTED,
     from_attrs, from_field,
     WrappedField, WrappedFieldSchema
 )
-from pyxsession.dbus.marshmallow.signature import (
+from korbenware.dbus.marshmallow.signature import (
     schema_signature
 )
 

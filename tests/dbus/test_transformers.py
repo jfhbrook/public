@@ -1,17 +1,17 @@
 import pytest
 
-from pyxsession.config import (
+from korbenware.config import (
     BaseConfig, AutostartConfig, MenuConfig, MimeConfig, ApplicationsConfig
 )
-from pyxsession.dbus.transformers import Transformer
-from pyxsession.dbus.marshmallow.fields import Str
+from korbenware.dbus.transformers import Transformer
+from korbenware.dbus.marshmallow.fields import Str
 
 
 # TODO: Create a pytest fixture for this
 config_loaded = BaseConfig(
     autostart=AutostartConfig(
         directories=['/home/josh/.config/autostart', '/etc/xdg/autostart'],
-        environment_name='pyxsession',
+        environment_name='korbenware',
         skip_unparsed=False,
         skip_invalid=False
     ),
@@ -20,7 +20,7 @@ config_loaded = BaseConfig(
     ),
     mime=MimeConfig(
         cache='/usr/share/applications/mimeinfo.cache',
-        environment='pyxsession'
+        environment='korbenware'
     ),
     applications=ApplicationsConfig(
         directories=['/usr/share/applications'],
@@ -33,7 +33,7 @@ config_loaded = BaseConfig(
 config_dumped = [
     [
         ['/home/josh/.config/autostart', '/etc/xdg/autostart'],
-        'pyxsession',
+        'korbenware',
         False,
         False
     ],
@@ -42,7 +42,7 @@ config_dumped = [
     ],
     [
         '/usr/share/applications/mimeinfo.cache',
-        'pyxsession'
+        'korbenware'
     ],
     [
         ['/usr/share/applications'],
