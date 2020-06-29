@@ -1,4 +1,5 @@
 import os.path
+from typing import Dict
 
 import attr
 import cattr
@@ -90,6 +91,28 @@ class MetaConfig:
 
 
 @config
+class ProcessConfig:
+    exec = value(attr.Factory(list))
+    monitor = value(True)
+    restart = value(False)
+    cleanup = value(False)
+
+
+@config
+class CriticalProcessConfig:
+    exec = value(attr.Factory(list))
+    monitor = value(True)
+    restart = value(True)
+    cleanup = value(False)
+
+
+@config
+class ExecutorsConfig:
+    primary = attr.ib(type=Dict[str, ProcessConfig], default=attr.Factory(dict))
+    critical = attr.ib(type=Dict[str, CriticalProcessConfig], default=attr.Factory(dict))
+
+
+@config
 class BaseConfig:
     dbus = subconfig(DBusConfig)
     autostart = subconfig(AutostartConfig)
@@ -100,6 +123,7 @@ class BaseConfig:
     logger = subconfig(LoggerConfig)
     format = subconfig(FormatConfig)
     urls = value(dict(), field=DBusField('a{ss}'))
+    executors = subconfig(ExecutorsConfig)
 
 
 def load_config():
