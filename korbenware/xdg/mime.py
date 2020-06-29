@@ -163,8 +163,6 @@ class MimeRegistry:
             )
             database = DesktopDatabase.from_file(filename)
 
-            self.databases.insert(0, (filename, database))
-
             if not database.parsed:
                 self.log.warn(
                     'INI file parse error while loading mimeinfo database {filename} - skipping!',  # noqa
