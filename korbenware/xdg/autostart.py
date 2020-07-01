@@ -10,10 +10,7 @@ from korbenware.presentation.markdown import markdownable
 from korbenware.xdg.applications import Application, ApplicationsRegistry
 
 
-XDG_AUTOSTART_DIRS = [
-    os.path.join(base, 'autostart')
-    for base in xdg_config_dirs
-]
+XDG_AUTOSTART_DIRS = [os.path.join(base, "autostart") for base in xdg_config_dirs]
 
 
 class Autostart(Application):
@@ -33,10 +30,8 @@ class Autostart(Application):
                 exec_key_parsed=self.executable.exec_key_parsed,
                 not_hidden=not self.executable.is_hidden,
                 not_dbus_activatable=not self.executable.dbus_activatable,
-                should_show_in=(
-                    self.executable.should_show_in(environment_name)
-                ),
-                passes_try_exec=self.executable.passes_try_exec()
+                should_show_in=(self.executable.should_show_in(environment_name)),
+                passes_try_exec=self.executable.passes_try_exec(),
             )
             self._conditions[environment_name] = conditions
         return conditions
@@ -51,17 +46,12 @@ class Autostart(Application):
 
 @markdownable
 @representable
-@keys([
-    'directories',
-    'environment_name',
-    'entries',
-    'autostart_entries'
-])
+@keys(["directories", "environment_name", "entries", "autostart_entries"])
 class AutostartRegistry(ApplicationsRegistry):
     log = create_logger()
 
     def __init__(self, config):
-        super().__init__(config, key='autostart', cls=Autostart)
+        super().__init__(config, key="autostart", cls=Autostart)
 
         self.environment_name = config.autostart.environment_name
         self.autostart_entries = dict()
@@ -69,41 +59,27 @@ class AutostartRegistry(ApplicationsRegistry):
         for name, entry in self.entries.items():
             if entry.should_autostart(self.environment_name):
                 self.log.debug(
-                    'Entry {filename} elligible for autostart',
-                    filename=entry.filename
+                    "Entry {filename} elligible for autostart", filename=entry.filename
                 )
                 self.autostart_entries[entry.filename] = entry
             else:
                 self.log.warn(
-                    'Entry {filename} not eligible for autostart',
+                    "Entry {filename} not eligible for autostart",
                     filename=entry.filename,
-                    conditions=entry.autostart_conditions(
-                        self.environment_name
-                    )
+                    conditions=entry.autostart_conditions(self.environment_name),
                 )
 
-    def init_executor(
-        self,
-        executor,
-        monitor=True,
-        cleanup=False,
-        env=None,
-        cwd=None
-    ):
+    def init_executor(self, executor, monitor=True, cleanup=False, env=None, cwd=None):
         for name, entry in self.autostart_entries.items():
             self.log.info(
-                'Adding {name} to executor...',
+                "Adding {name} to executor...",
                 name=name,
                 executor=executor,
                 monitor=monitor,
                 cleanup=cleanup,
                 env=env,
-                cwd=cwd
+                cwd=cwd,
             )
             executor.run_xdg_application(
-                entry,
-                monitor=monitor,
-                cleanup=cleanup,
-                env=env,
-                cwd=cwd
+                entry, monitor=monitor, cleanup=cleanup, env=env, cwd=cwd
             )

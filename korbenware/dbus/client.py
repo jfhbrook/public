@@ -25,18 +25,14 @@ class Object(EventEmitter):
     async def get_property(self, prop_name):
         xform, default, kwargs = self.service_obj.properties[prop_name]
 
-        rv = await self.remote_obj.callRemote(
-            'Get', '', prop_name
-        )
+        rv = await self.remote_obj.callRemote("Get", "", prop_name)
 
         return xform.load(rv)
 
     async def set_property(self, prop_name, value):
         xform, default, kwargs = self.service_obj.properties[prop_name]
 
-        await self.remote_obj.callRemote(
-            'Set', '', prop_name, xform.dump(value)
-        )
+        await self.remote_obj.callRemote("Set", "", prop_name, xform.dump(value))
 
 
 @attr.s
@@ -50,9 +46,7 @@ class Client:
         client_objs = dict()
 
         for obj_path, service_obj in service.objects.items():
-            remote_obj = await connection.getRemoteObject(
-                service.namespace, obj_path
-            )
+            remote_obj = await connection.getRemoteObject(service.namespace, obj_path)
 
             remote_objs[obj_path] = remote_obj
 
@@ -64,6 +58,7 @@ class Client:
             def bind(obj):
                 async def proxy_fn(*args):
                     return await obj.call(method_name, *args)
+
                 return proxy_fn
 
             # Add the shim functions for each method
@@ -80,10 +75,7 @@ class Client:
                     event_name, lambda d: obj.emit(event_name, xform.load(d))
                 )
 
-        client = Client(
-            service,
-            remote_objs
-        )
+        client = Client(service, remote_objs)
 
         for attr_, obj in client_objs.items():
             setattr(client, attr_, obj)

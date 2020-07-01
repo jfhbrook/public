@@ -7,7 +7,7 @@ from korbenware.presentation import representable
 from korbenware.presentation.markdown import markdownable
 
 
-FIELD_CODE_RE = r'(?<!%)(%\S)'
+FIELD_CODE_RE = r"(?<!%)(%\S)"
 
 
 def expand_field_codes(raw, fields):
@@ -15,21 +15,18 @@ def expand_field_codes(raw, fields):
 
     def get_field(match):
         field = match.group(0)
-        return fields.get(field[1:], '')
+        return fields.get(field[1:], "")
 
     return re.sub(FIELD_CODE_RE, get_field, raw)
 
 
 def get_field_codes(raw):
-    return {
-        match[1:]
-        for match in re.findall(FIELD_CODE_RE, raw)
-    }
+    return {match[1:] for match in re.findall(FIELD_CODE_RE, raw)}
 
 
 @markdownable
 @representable
-@keys(['raw'])
+@keys(["raw"])
 class ExecKey:
     def __init__(self, raw):
         self.raw = raw
@@ -65,11 +62,8 @@ class ExecKey:
         fields = fields or dict()
 
         flattened_fields = {
-            field:
-                ' '.join(g_shell_quote(value))
-                if isinstance(value, list)
-                else value
-                for field, value in fields.items()
+            field: " ".join(g_shell_quote(value)) if isinstance(value, list) else value
+            for field, value in fields.items()
         }
 
         return [
@@ -77,5 +71,5 @@ class ExecKey:
             for arg in g_shell_parse_argv(
                 expand_field_codes(self.raw, flattened_fields)
             )
-            if arg != ''
+            if arg != ""
         ]

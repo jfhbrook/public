@@ -27,7 +27,7 @@ class Object(EventEmitter):
 
     def on(self, *args, **kwargs):
         raise NotImplementedError(
-            'Signals can only be emitted by the server, not received'
+            "Signals can only be emitted by the server, not received"
         )
 
 
@@ -53,8 +53,8 @@ class Server:
 
             # Generate and add the interface
             iface = service_obj.iface
-            attrs['iface'] = iface
-            attrs['dbusInterfaces'] = [iface]
+            attrs["iface"] = iface
+            attrs["dbusInterfaces"] = [iface]
 
             def bind(args_xform, returns_xform, fn):
                 @returns_deferred
@@ -62,10 +62,7 @@ class Server:
                     xformed_args = args_xform.load(args)
                     maybe_coro = fn(*xformed_args)
 
-                    if (
-                        iscoroutine(maybe_coro)
-                        or isinstance(maybe_coro, Deferred)
-                    ):
+                    if iscoroutine(maybe_coro) or isinstance(maybe_coro, Deferred):
                         ret = await maybe_coro
                     else:
                         ret = maybe_coro
@@ -77,10 +74,12 @@ class Server:
             # Add the dbus method callbacks
             for (
                 method_name,
-                (args_xform, returns_xform, fn)
+                (args_xform, returns_xform, fn),
             ) in service_obj.methods.items():
 
-                key = f'dbus_{method_name}'
+                print(method_name)
+
+                key = f"dbus_{method_name}"
 
                 proxy_fn = bind(args_xform, returns_xform, fn)
                 attrs[key] = proxy_fn
@@ -89,17 +88,11 @@ class Server:
             defaults = dict()
 
             # Add dbus properties
-            for (
-                prop_name, (xform, default, kwarg)
-            ) in service_obj.properties.items():
+            for (prop_name, (xform, default, kwarg)) in service_obj.properties.items():
                 attrs[prop_name] = DBusProperty(prop_name)
                 defaults[prop_name] = default
 
-            dbus_obj_cls = type(
-                path.basename(obj_path),
-                (DBusObject,),
-                attrs
-            )
+            dbus_obj_cls = type(path.basename(obj_path), (DBusObject,), attrs)
             dbus_obj = dbus_obj_cls(obj_path)
 
             for attr_name, default in defaults.items():
@@ -109,17 +102,9 @@ class Server:
 
             connection.exportObject(dbus_obj)
 
-            bus_names.append(
-                await connection.requestBusName(service.namespace)
-            )
+            bus_names.append(await connection.requestBusName(service.namespace))
 
-        server = server_cls(
-            connection,
-            service,
-            bus_names,
-            dbus_obj_cls,
-            dbus_obj
-        )
+        server = server_cls(connection, service, bus_names, dbus_obj_cls, dbus_obj)
 
         for attr_, obj in objects.items():
             setattr(server, attr_, obj)

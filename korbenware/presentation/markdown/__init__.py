@@ -6,7 +6,7 @@ from korbenware.keys import assert_keys, has_keys, iter_items
 
 
 def is_markdownable(obj):
-    return hasattr(obj, '_repr_markdown_')
+    return hasattr(obj, "_repr_markdown_")
 
 
 def _visit(level, obj, name=None):
@@ -14,7 +14,7 @@ def _visit(level, obj, name=None):
         name = obj.__class__.__name__
     header = f'{"#" * level} {name}'
 
-    lines = [header, '']
+    lines = [header, ""]
 
     listed_attrs = []
     markdownable_attrs = []
@@ -27,29 +27,29 @@ def _visit(level, obj, name=None):
 
     for k, v in listed_attrs:
         if type(v) == list:
-            lines.append(f'* **{k}:**')
+            lines.append(f"* **{k}:**")
             for element in v:
-                lines.append(f'    * {element}')
+                lines.append(f"    * {element}")
         elif type(v) == dict:
-            lines.append(f'* **{k}:**')
+            lines.append(f"* **{k}:**")
             for elem_k, elem_v in v.items():
-                lines.append(f'    * **{elem_k}:** {elem_v}')
+                lines.append(f"    * **{elem_k}:** {elem_v}")
         elif type(v) == datetime.datetime:
-            lines.append(f'* **{k}:** {v} ({arrow.get(v).humanize()})')
+            lines.append(f"* **{k}:** {v} ({arrow.get(v).humanize()})")
         else:
-            lines.append(f'* **{k}:** {v}')
+            lines.append(f"* **{k}:** {v}")
 
-    lines.append('')
+    lines.append("")
 
     for k, v in markdownable_attrs:
         if is_markdownable(v):
-            lines = lines + ['', v._repr_markdown_(level + 1, name=k), '']
+            lines = lines + ["", v._repr_markdown_(level + 1, name=k), ""]
         else:
             lines = lines + _visit(level + 1, v, name=k)
 
-        lines.append('')
+        lines.append("")
 
-    return '\n'.join(lines)
+    return "\n".join(lines)
 
 
 def markdownable(cls):

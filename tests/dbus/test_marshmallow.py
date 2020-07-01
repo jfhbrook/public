@@ -2,17 +2,17 @@ import pytest
 
 import attr
 
-from korbenware.dbus.marshmallow.fields import (
-    Int32, UInt32, Str, Nested, List, Tuple
-)
+from korbenware.dbus.marshmallow.fields import Int32, UInt32, Str, Nested, List, Tuple
 from korbenware.dbus.marshmallow.schema import (
-    DBusSchema, DBUS_FIELD, DBUS_NESTED,
-    from_attrs, from_field,
-    WrappedField, WrappedFieldSchema
+    DBusSchema,
+    DBUS_FIELD,
+    DBUS_NESTED,
+    from_attrs,
+    from_field,
+    WrappedField,
+    WrappedFieldSchema,
 )
-from korbenware.dbus.marshmallow.signature import (
-    schema_signature
-)
+from korbenware.dbus.marshmallow.signature import schema_signature
 
 
 @attr.s
@@ -51,30 +51,27 @@ class BasicTestSchema(DBusSchema):
 basic_test_obj = BasicTestObj(
     int_field=3,
     uint_field=5,
-    str_field='foo',
-    nested_field=NestedTestObj('bar'),
-    list_field=['baz', 'quux'],
-    tuple_field=(7, 'moo')
+    str_field="foo",
+    nested_field=NestedTestObj("bar"),
+    list_field=["baz", "quux"],
+    tuple_field=(7, "moo"),
 )
 
 
-basic_test_signature = '(ius(s)as(is))'
+basic_test_signature = "(ius(s)as(is))"
 
-basic_test_dump = [3, 5, 'foo', ['bar'], ['baz', 'quux'], (7, 'moo')]
+basic_test_dump = [3, 5, "foo", ["bar"], ["baz", "quux"], (7, "moo")]
 
 
-@pytest.mark.parametrize('schema', [
-    BasicTestSchema(),
-    from_attrs(BasicTestObj)
-])
+@pytest.mark.parametrize("schema", [BasicTestSchema(), from_attrs(BasicTestObj)])
 def test_base_schema(schema):
     assert schema.dump(basic_test_obj) == basic_test_dump
     assert schema.load(basic_test_dump) == basic_test_obj
     assert schema_signature(schema) == basic_test_signature
 
 
-wrapped_field = 'hello'
-wrapped_field_signature = 's'
+wrapped_field = "hello"
+wrapped_field_signature = "s"
 
 
 class WrappedFieldTestSchema(WrappedFieldSchema):
@@ -85,11 +82,8 @@ class WrappedFieldTestSchema(WrappedFieldSchema):
 wrapped_field_schema = WrappedFieldTestSchema()
 
 
-@pytest.mark.parametrize('schema', [
-    wrapped_field_schema,
-    from_field(Str())
-])
+@pytest.mark.parametrize("schema", [wrapped_field_schema, from_field(Str())])
 def test_singleton_schema(schema):
     assert schema.dump(wrapped_field) == wrapped_field
     assert schema.load(wrapped_field) == wrapped_field
-    assert schema_signature(schema) == 's'
+    assert schema_signature(schema) == "s"

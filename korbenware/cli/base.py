@@ -23,22 +23,17 @@ from korbenware.logger import CliObserver, create_logger, publisher
 
 
 class Context(click.Context):
-    def __init__(
-        self,
-        command,
-        parent=None,
-        **extra
-    ):
+    def __init__(self, command, parent=None, **extra):
         super().__init__(command, parent, **extra)
 
         # This Context class differs from its parent in that it loads the
         # korbenware base config, sets up logging and does a little logging
         # itself.
         if self.parent:
-            self.config = getattr(parent, 'config', None)
-            self.config_exc = getattr(parent, 'config_exc', None)
-            self.log = getattr(parent, 'log', None)
-            self.observer = getattr(parent, 'observer', None)
+            self.config = getattr(parent, "config", None)
+            self.config_exc = getattr(parent, "config_exc", None)
+            self.log = getattr(parent, "log", None)
+            self.observer = getattr(parent, "observer", None)
         else:
             self.config = None
             self.config_exc = None
@@ -62,12 +57,12 @@ class Context(click.Context):
     def _log_ok(self):
         # We only want to log the OK if this is the actual command being ran,
         # so when it's in the context of a group we stay quiet.
-        if not hasattr(self.command, 'commands'):
-            self.log.info('OK 👍')
+        if not hasattr(self.command, "commands"):
+            self.log.info("OK 👍")
 
     def _log_failure(self):
-        self.log.failure('== FLAGRANT SYSTEM ERROR ==')
-        self.log.critical('NOT OK 🙅')
+        self.log.failure("== FLAGRANT SYSTEM ERROR ==")
+        self.log.critical("NOT OK 🙅")
 
     def invoke(*args, **kwargs):
         # Starting from here is much the same as click.Context.invoke...
@@ -99,9 +94,13 @@ class Context(click.Context):
                 try:
                     rv = callback(*args, **kwargs)
                 except (
-                    EOFError, KeyboardInterrupt, SystemExit,
-                    ClickException, OSError,
-                    Exit, Abort
+                    EOFError,
+                    KeyboardInterrupt,
+                    SystemExit,
+                    ClickException,
+                    OSError,
+                    Exit,
+                    Abort,
                 ):
                     raise
                 except:  # noqa
@@ -112,6 +111,7 @@ class Context(click.Context):
                     self._run_deferred_actions()
 
                 return rv
+
         else:
             # We also handle cases where the command is a Twisted coroutine -
             # in these scenarios we do basically the same thing as before,
@@ -120,9 +120,13 @@ class Context(click.Context):
                 try:
                     rv = await callback(*args, **kwargs)
                 except (
-                    EOFError, KeyboardInterrupt, SystemExit,
-                    ClickException, OSError,
-                    Exit, Abort
+                    EOFError,
+                    KeyboardInterrupt,
+                    SystemExit,
+                    ClickException,
+                    OSError,
+                    Exit,
+                    Abort,
                 ):
                     raise
                 except:  # noqa
@@ -142,9 +146,11 @@ class Context(click.Context):
             # - note that the return value that Click receives is that of
             # task.react and not of our coroutine. Such is life.
             def runner():
-                return react(lambda reactor: ensureDeferred(
-                    async_runner(reactor, *args, **kwargs)
-                ))
+                return react(
+                    lambda reactor: ensureDeferred(
+                        async_runner(reactor, *args, **kwargs)
+                    )
+                )
 
         # These two context managers are as in Click...
         with augment_usage_errors(self):
@@ -162,28 +168,35 @@ class Context(click.Context):
                         self.config_exc = exc
 
                 if not self.log:
-                    self.log = create_logger(namespace='korbenware.cli.base')
+                    self.log = create_logger(namespace="korbenware.cli.base")
                 if not self.observer:
-                    self.observer = CliObserver(self.config, verbosity=kwargs.pop('verbose', None))
+                    self.observer = CliObserver(
+                        self.config, verbosity=kwargs.pop("verbose", None)
+                    )
                     publisher.addObserver(self.observer)
                 else:
-                    del kwargs['verbose']
+                    del kwargs["verbose"]
 
                 if not self.parent:
-                    self.log.info('It worked if it ends with OK 👍')
+                    self.log.info("It worked if it ends with OK 👍")
 
-                    greet_fields = [('hed', self.command.hed), ('subhed', self.command.subhed)]
+                    greet_fields = [
+                        ("hed", self.command.hed),
+                        ("subhed", self.command.subhed),
+                    ]
 
                     if self.command.dek:
-                        greet_fields.append(('dek', self.command.dek))
+                        greet_fields.append(("dek", self.command.dek))
 
                     max_len = max(len(value) for name, value in greet_fields)
 
-                    self.log.info('┏━' + ('━' * max_len) + '━┓')
+                    self.log.info("┏━" + ("━" * max_len) + "━┓")
                     for name, value in greet_fields:
-                        log_format = '┃ {' + name + '}' + (' ' * (max_len - len(value))) + ' ┃'
+                        log_format = (
+                            "┃ {" + name + "}" + (" " * (max_len - len(value))) + " ┃"
+                        )
                         self.log.info(log_format, **{name: value})
-                    self.log.info('┗━' + ('━' * max_len) + '━┛')
+                    self.log.info("┗━" + ("━" * max_len) + "━┛")
 
                     if self.config_exc:
                         raise self.config_exc
@@ -203,14 +216,9 @@ class KorbenwareCommand:
         return ctx
 
     def handle_greet_fields(self, kwargs):
-        self.hed = kwargs.pop(
-            'hed', "Korben's weird uncle's super secret command"
-        )
-        self.subhed = kwargs.pop(
-            'subhed',
-            '"If I told ya I\'d have to shoot cha!"'
-        )
-        self.dek = kwargs.pop('dek', None)
+        self.hed = kwargs.pop("hed", "Korben's weird uncle's super secret command")
+        self.subhed = kwargs.pop("subhed", '"If I told ya I\'d have to shoot cha!"')
+        self.dek = kwargs.pop("dek", None)
 
 
 class Command(KorbenwareCommand, click.Command):
@@ -242,8 +250,10 @@ class Group(KorbenwareCommand, click.Group):
 
 
 verbosity = click.option(
-    '-v', '--verbose', count=True,
-    help="Set the verbosity for the cli logger. More v's means more logs!"
+    "-v",
+    "--verbose",
+    count=True,
+    help="Set the verbosity for the cli logger. More v's means more logs!",
 )
 
 
@@ -265,9 +275,11 @@ def group(name=None, **attrs):
 
 def pass_context(f):
     if iscoroutinefunction(f):
+
         @wraps(f)
         async def wrapper(*args, **kwargs):
             return await f(get_current_context(), *args, **kwargs)
+
         return wrapper
 
     return click.pass_context(f)
@@ -275,6 +287,7 @@ def pass_context(f):
 
 def pass_obj(f):
     if iscoroutinefunction(f):
+
         @wraps(f)
         async def wrapper(*args, **kwargs):
             return await f(get_current_context().obj, *args, **kwargs)
@@ -293,7 +306,7 @@ def safe_str(entity):
 
 
 class ColorCycler:
-    COLORS = ['blue', 'magenta', 'cyan']
+    COLORS = ["blue", "magenta", "cyan"]
 
     def __init__(self):
         self.i = -1
@@ -312,10 +325,7 @@ get_color = ColorCycler()
 
 
 def echo_table(table, **kwargs):
-    t = DoubleTable([
-        [safe_str(cell) for cell in row]
-        for row in table
-    ], **kwargs)
+    t = DoubleTable([[safe_str(cell) for cell in row] for row in table], **kwargs)
 
     t.inner_row_border = True
 
@@ -323,7 +333,4 @@ def echo_table(table, **kwargs):
 
 
 def color_text_block(crayon, block):
-    return '\n'.join([
-        safe_str(crayon)
-        for line in safe_str(block).split('\n')
-    ])
+    return "\n".join([safe_str(crayon) for line in safe_str(block).split("\n")])

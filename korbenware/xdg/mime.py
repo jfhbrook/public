@@ -19,20 +19,19 @@ from korbenware.xdg.applications import XDG_APPLICATIONS_DIRS
 # https://wiki.archlinux.org/index.php/XDG_MIME_Applications
 
 XDG_MIMEAPPS_DIRS = xdg_config_dirs + [
-    '/usr/local/share/applications',
-    '/usr/share/applications'
+    "/usr/local/share/applications",
+    "/usr/share/applications",
 ]
 
 XDG_MIMEINFO_CACHE_FILES = [
-    os.path.join(directory, 'mimeinfo.cache')
-    for directory in XDG_APPLICATIONS_DIRS
+    os.path.join(directory, "mimeinfo.cache") for directory in XDG_APPLICATIONS_DIRS
 ]
 
 
 def xdg_mimeapps_files(environment=None):
     for directory in xdg_config_dirs:
-        filenames = [f'{environment}-mimeapps.list'] if environment else []
-        filenames.append('mimeapps.list')
+        filenames = [f"{environment}-mimeapps.list"] if environment else []
+        filenames.append("mimeapps.list")
 
         for filename in filenames:
             yield os.path.join(directory, filename)
@@ -43,7 +42,7 @@ def _get_group(ini_file, group):
         return dict()
 
     return {
-        MIMEtype(mime_type): [app for app in apps.split(';') if app]
+        MIMEtype(mime_type): [app for app in apps.split(";") if app]
         for mime_type, apps in ini_file.content.get(group, dict()).items()
     }
 
@@ -58,13 +57,13 @@ class MimeAppsList:
     parse_exc = attr.ib()
 
     def get_added_associations(self):
-        return _get_group(self.ini_file, 'Added Associations')
+        return _get_group(self.ini_file, "Added Associations")
 
     def get_removed_associations(self):
-        return _get_group(self.ini_file, 'Removed Associations')
+        return _get_group(self.ini_file, "Removed Associations")
 
     def get_default_applications(self):
-        return _get_group(self.ini_file, 'Default Applications')
+        return _get_group(self.ini_file, "Default Applications")
 
 
 def load_xdg_mime_lists(environment=None):
@@ -74,18 +73,9 @@ def load_xdg_mime_lists(environment=None):
                 ini_file = IniFile()
                 ini_file.parse(filename)
             except ParsingError as exc:
-                yield MimeAppsList(
-                    filename,
-                    None,
-                    False,
-                    exc
-                )
+                yield MimeAppsList(filename, None, False, exc)
             else:
-                yield MimeAppsList(
-                    filename,
-                    ini_file,
-                    True, None
-                )
+                yield MimeAppsList(filename, ini_file, True, None)
 
 
 def _insert(mimetype, apps, target):
@@ -132,21 +122,18 @@ class DesktopDatabase:
             parse_exc = None
 
         return cls(
-            filename=filename,
-            ini_file=ini_file,
-            parsed=parsed,
-            parse_exc=parse_exc
+            filename=filename, ini_file=ini_file, parsed=parsed, parse_exc=parse_exc
         )
 
     def items(self):
         if not self._cache:
-            self._cache = _get_group(self.ini_file, 'MIME Cache')
+            self._cache = _get_group(self.ini_file, "MIME Cache")
         yield from self._cache.items()
 
 
 @markdownable
 @representable
-@keys(['environment', 'lookup', 'defaults'])
+@keys(["environment", "lookup", "defaults"])
 class MimeRegistry:
     log = create_logger()
 
@@ -158,47 +145,46 @@ class MimeRegistry:
 
         for filename in XDG_MIMEINFO_CACHE_FILES:
             self.log.debug(
-                'Loading desktop mimeinfo database {filename}',
-                filename=filename
+                "Loading desktop mimeinfo database {filename}", filename=filename
             )
             database = DesktopDatabase.from_file(filename)
 
             if not database.parsed:
                 self.log.warn(
-                    'INI file parse error while loading mimeinfo database {filename} - skipping!',  # noqa
+                    "INI file parse error while loading mimeinfo database {filename} - skipping!",  # noqa
                     filename=filename,
-                    log_failure=Failure(database.parse_exc)
+                    log_failure=Failure(database.parse_exc),
                 )
             else:
                 for mimetype, apps in database.items():
                     self.log.debug(
-                        'Associating applications {applications} with mimetype {mimetype}...',  # noqa
+                        "Associating applications {applications} with mimetype {mimetype}...",  # noqa
                         mimetype=mimetype,
-                        applications=apps
+                        applications=apps,
                     )
                     _insert(mimetype, apps, self.lookup)
 
         # TODO: Alternate algorithm that doesn't require reversing?
         # The list is short so it's not a big deal
-        for mime_list in reversed(list(
-            load_xdg_mime_lists(
-                environment=self.environment
-            )
-        )):
+        for mime_list in reversed(
+            list(load_xdg_mime_lists(environment=self.environment))
+        ):
             if mime_list.parsed:
                 added_associations = mime_list.get_added_associations()
                 for mimetype, apps in added_associations.items():
-                    self.log.debug('Associating applications {applications} with mimetype {mimetype}...',  # noqa
+                    self.log.debug(
+                        "Associating applications {applications} with mimetype {mimetype}...",  # noqa
                         mimetype=mimetype,
-                        applications=apps
+                        applications=apps,
                     )
                     _insert(mimetype, apps, self.lookup)
 
                 removed_associations = mime_list.get_removed_associations()
                 for mimetype, apps in removed_associations.items():
-                    self.log.debug('Disassociating applications {applications} from mimetype {mimetype}...',  # noqa
+                    self.log.debug(
+                        "Disassociating applications {applications} from mimetype {mimetype}...",  # noqa
                         mimetype=mimetype,
-                        applications=apps
+                        applications=apps,
                     )
                     _remove(mimetype, apps, self.lookup)
 
@@ -208,15 +194,13 @@ class MimeRegistry:
                     # I could change my mind on this.
                     if mimetype in self.defaults:
                         to_remove = {
-                            app
-                            for app in apps
-                            if app in self.defaults[mimetype]
+                            app for app in apps if app in self.defaults[mimetype]
                         }
                         if to_remove:
                             self.log.debug(
-                                'Removing applications {applications} as defaults from mimetype {mimetype}...',  # noqa
+                                "Removing applications {applications} as defaults from mimetype {mimetype}...",  # noqa
                                 mimetype=mimetype,
-                                applications=list(to_remove)
+                                applications=list(to_remove),
                             )
                         for removed_app in to_remove:
                             self.defaults[mimetype] = [
@@ -229,9 +213,9 @@ class MimeRegistry:
 
                 for mimetype, apps in default_applications.items():
                     self.log.debug(
-                        'Registering applications {applications} as the defaults for mimetype {mimetype}...',  # noqa
+                        "Registering applications {applications} as the defaults for mimetype {mimetype}...",  # noqa
                         mimetype=mimetype,
-                        applications=apps
+                        applications=apps,
                     )
                     _insert(mimetype, apps, self.lookup)
 
@@ -242,9 +226,9 @@ class MimeRegistry:
                     self.defaults[mimetype] = apps
             else:
                 self.log.warn(
-                    'Parse issues while loading mimeapp list at {filename} - skipping!',  # noqa
+                    "Parse issues while loading mimeapp list at {filename} - skipping!",  # noqa
                     filename=mime_list.filename,
-                    log_failure=Failure(mime_list.parse_exc)
+                    log_failure=Failure(mime_list.parse_exc),
                 )
 
     def applications_by_filename(self, filename):

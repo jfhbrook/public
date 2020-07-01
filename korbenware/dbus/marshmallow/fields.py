@@ -66,7 +66,7 @@ class Signature(fields.Str):
 
 class List(fields.List):
     def __init__(self, field_or_attrs, **kwargs):
-        if hasattr(field_or_attrs, '__attrs_attrs__'):
+        if hasattr(field_or_attrs, "__attrs_attrs__"):
             field = fields.Nested(from_attrs(field_or_attrs))
         else:
             field = field_or_attrs
@@ -100,17 +100,17 @@ class DateTime(SerializedField):
 
 
 BASE_FIELDS = {
-    Bytes: 'y',
-    Bool: 'b',
-    Int16: 'n',
-    UInt16: 'q',
-    Int32: 'i',
-    UInt32: 'u',
-    Int64: 'x',
-    UInt64: 't',
-    Double: 'd',
-    Str: 's',
-    ObjectPath: 'o',
-    Signature: 'g',
-    Variant: 'v'
+    Bytes: "y",
+    Bool: "b",
+    Int16: "n",
+    UInt16: "q",
+    Int32: "i",
+    UInt32: "u",
+    Int64: "x",
+    UInt64: "t",
+    Double: "d",
+    Str: "s",
+    ObjectPath: "o",
+    Signature: "g",
+    Variant: "v",
 }

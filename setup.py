@@ -11,27 +11,30 @@ setup(
     author="Joshua Holbrook",
     author_email="josh.holbrook@gmail.com",
     url="https://github.com/jfhbrook/korbenware",
-    scripts=[
-        'bin/korbenware-environment-loader'
-    ],
+    scripts=["bin/korbenware-environment-loader"],
     entry_points=dict(
         console_scripts=[
-            'kbconfig=korbenware.cli.config:main',
-            'kbsession=korbenware.cli.session:main',
-            'kbmenu=korbenware.cli.menu:main',
-            'kbopen=korbenware.cli.open:main',
-            'kbjournal=korbenware.cli.journal:main'
+            "kbconfig=korbenware.cli.config:main",
+            "kbsession=korbenware.cli.session:main",
+            "kbmenu=korbenware.cli.menu:main",
+            "kbopen=korbenware.cli.open:main",
+            "kbjournal=korbenware.cli.journal:main",
         ]
     ),
     keywords=[
-        "X11", "window manager", "desktop environment", "X session",
-        "session manager", "XDG", "dbus"
+        "X11",
+        "window manager",
+        "desktop environment",
+        "X session",
+        "session manager",
+        "XDG",
+        "dbus",
     ],
     classifiers=[
         "Programming Language :: Python",
         "Development Status :: 4 - Beta",
         "Operating System :: Linux",
         "Programming Language :: Python :: 3.7",
-        "Topic :: Other/Nonlisted Topic"
-    ]
+        "Topic :: Other/Nonlisted Topic",
+    ],
 )

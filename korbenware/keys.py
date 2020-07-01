@@ -2,7 +2,7 @@ import attr
 
 
 def asdict(obj):
-    if hasattr(obj.__class__, '__attrs_attrs__'):
+    if hasattr(obj.__class__, "__attrs_attrs__"):
         return attr.asdict(obj)
     else:
         return obj.asdict()
@@ -11,15 +11,15 @@ def asdict(obj):
 class UndictableError(TypeError):
     def __init__(cls):
         super().__init__(
-            f'{cls} must be dictable. This functionality can either be '
-            'supplied by the @attr.s decorator, the '
-            '@korbenware.keys.keys decorator, or manually '
-            'implementing the {cls}.asdict method.'
+            f"{cls} must be dictable. This functionality can either be "
+            "supplied by the @attr.s decorator, the "
+            "@korbenware.keys.keys decorator, or manually "
+            "implementing the {cls}.asdict method."
         )
 
 
 def is_dictable(cls):
-    return hasattr(cls, 'asdict') or hasattr(cls, '__attrs_attrs__')
+    return hasattr(cls, "asdict") or hasattr(cls, "__attrs_attrs__")
 
 
 def assert_dictable(cls):
@@ -35,17 +35,17 @@ def try_asdict(obj, else_=None):
 
 
 def has_keys(cls):
-    has_keys = hasattr(cls, '__keys__')
-    has_attrs = hasattr(cls, '__attrs_attrs__')
+    has_keys = hasattr(cls, "__keys__")
+    has_attrs = hasattr(cls, "__attrs_attrs__")
     return has_keys or has_attrs
 
 
 class UnkeysableError(Exception):
     def __init__(self, cls):
         super().__init__(
-            f'{cls} must have keys. This functionality can either be '
-            'supplied by the @attr.s decorator or the '
-            '@korbenware.keys.keys decorator.'
+            f"{cls} must have keys. This functionality can either be "
+            "supplied by the @attr.s decorator or the "
+            "@korbenware.keys.keys decorator."
         )
 
 
@@ -57,8 +57,7 @@ def assert_keys(cls):
 def iter_keys(obj):
     yield from (
         getattr(
-            obj, '__keys__',
-            [attr.name for attr in getattr(obj, '__attrs_attrs__', [])]
+            obj, "__keys__", [attr.name for attr in getattr(obj, "__attrs_attrs__", [])]
         )
     )
 
@@ -77,7 +76,7 @@ def _default_keys(cls):
     return [
         k
         for k in dir(cls)
-        if not k.startswith('_') and not hasattr(getattr(cls, k), '__call__')
+        if not k.startswith("_") and not hasattr(getattr(cls, k), "__call__")
     ]
 
 
@@ -105,7 +104,7 @@ def keys(keys=None):
     def decorator(cls):
         cls.__keys__ = __keys__ or _default_keys(cls)
 
-        if not hasattr(cls, 'asdict'):
+        if not hasattr(cls, "asdict"):
             cls.asdict = asdict
 
         cls.keys = keys

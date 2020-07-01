@@ -42,9 +42,7 @@ class Executable:
 
     @classmethod
     def from_desktop_entry(cls, entry):
-        return cls._construct(
-            getattr(entry, 'filename', None), None, entry, True, None
-        )
+        return cls._construct(getattr(entry, "filename", None), None, entry, True, None)
 
     @classmethod
     def _construct(cls, fullpath, filename, entry, parsed, parse_exc):
@@ -87,13 +85,13 @@ class Executable:
             validate_exc,
             exec_key,
             exec_key_parsed,
-            exec_key_parse_exc
+            exec_key_parse_exc,
         )
 
     @property
     def is_application(self):
         if self.parsed:
-            return self.entry.getType() == 'Application'
+            return self.entry.getType() == "Application"
         else:
             return False
 
@@ -125,9 +123,9 @@ class Executable:
 
     def should_show_in(self, show_in):
         if (
-            (not self.parsed) or
-            (self.only_show_in and self.not_show_in) or
-            (show_in in self.not_show_in)
+            (not self.parsed)
+            or (self.only_show_in and self.not_show_in)
+            or (show_in in self.not_show_in)
         ):
             return False
 
@@ -147,7 +145,7 @@ class Executable:
         if not self.parsed:
             return False
 
-        return self.entry.get('DBusActivatable', type='boolean')
+        return self.entry.get("DBusActivatable", type="boolean")
 
     @property
     def runtime_path(self):

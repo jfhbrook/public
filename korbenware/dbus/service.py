@@ -12,7 +12,7 @@ property_ = property
 class Object:
     def __init__(self, service, obj_path, iface_name=None):
         if not iface_name:
-            iface_name = f'{basename(obj_path)}Iface'
+            iface_name = f"{basename(obj_path)}Iface"
         self.service = service
         self.obj_path = obj_path
         self.iface_name = iface_name
@@ -26,11 +26,7 @@ class Object:
             returns_xform = Transformer(returns)
             method_name = name or fn.__name__
 
-            self.methods[method_name] = (
-                args_xform,
-                returns_xform,
-                fn
-            )
+            self.methods[method_name] = (args_xform, returns_xform, fn)
             return fn
 
         if method:
@@ -47,18 +43,18 @@ class Object:
 
     @property_
     def iface(self):
-        if hasattr(self, '_iface'):
+        if hasattr(self, "_iface"):
             iface = self._iface
         else:
             iface_methods = []
-            for method_name, (
-                args_xform, returns_xform, fn
-            ) in self.methods.items():
-                iface_methods.append(Method(
-                    method_name,
-                    arguments=args_xform.signature(),
-                    returns=returns_xform.signature()
-                ))
+            for method_name, (args_xform, returns_xform, fn) in self.methods.items():
+                iface_methods.append(
+                    Method(
+                        method_name,
+                        arguments=args_xform.signature(),
+                        returns=returns_xform.signature(),
+                    )
+                )
 
             iface_properties = []
             for prop_name, (xform, default, kwargs) in self.properties.items():
@@ -68,20 +64,17 @@ class Object:
 
             iface_signals = []
             for signal_name, xform in self.signals.items():
-                iface_signals.append(
-                    Signal(signal_name, xform.signature())
-                )
+                iface_signals.append(Signal(signal_name, xform.signature()))
 
             iface = DBusInterface(
-                f'{self.service.namespace}.{self.iface_name}',
-                *(iface_methods + iface_properties + iface_signals)
+                f"{self.service.namespace}.{self.iface_name}",
+                *(iface_methods + iface_properties + iface_signals),
             )
             self._iface = iface
         return iface
 
 
 class Service:
-
     @classmethod
     def from_config(cls, config):
         return cls(config.dbus.namespace)

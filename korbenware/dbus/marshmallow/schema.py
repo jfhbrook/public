@@ -19,10 +19,7 @@ class DBusSchema(Schema, metaclass=SchemaMeta):
             return [self._flatten_attrs_dicts(self, u) for u in unstructured]
 
         # TODO: What if not dealing with an attrs class?
-        return [
-            unstructured[attr.name]
-            for attr in self.cls.__attrs_attrs__
-        ]
+        return [unstructured[attr.name] for attr in self.cls.__attrs_attrs__]
 
     @pre_load
     def _restructure_flattened_attrs(self, unstructured, many, **kwargs):
@@ -32,10 +29,12 @@ class DBusSchema(Schema, metaclass=SchemaMeta):
                 for one in many
             ]
 
-        return OrderedDict([
-            (attr.name, value)
-            for attr, value in zip(self.cls.__attrs_attrs__, unstructured)
-        ])
+        return OrderedDict(
+            [
+                (attr.name, value)
+                for attr, value in zip(self.cls.__attrs_attrs__, unstructured)
+            ]
+        )
 
     @post_load
     def _inflate_flattened_attrs(self, unstructured, many, **kwargs):
@@ -44,11 +43,9 @@ class DBusSchema(Schema, metaclass=SchemaMeta):
         return self.cls(**unstructured)
 
 
-DBUS_FIELD = Symbol(
-    'attrs metadata for generating a dbus schema from a field'
-)
+DBUS_FIELD = Symbol("attrs metadata for generating a dbus schema from a field")
 DBUS_NESTED = Symbol(
-    'attrs metadata for generating a dbus schema from nested attrs class'
+    "attrs metadata for generating a dbus schema from nested attrs class"
 )
 
 
@@ -71,7 +68,7 @@ class WrappedFieldSchema(Schema, metaclass=SchemaMeta):
     def _flatten_dict(self, unstructured, many, **kwargs):
         if many:
             return [self._extract_field(u) for u in unstructured]
-        return unstructured['wrapped_field']
+        return unstructured["wrapped_field"]
 
     @pre_load
     def _dictify_field(self, unstructured, many, **kwargs):
@@ -84,7 +81,7 @@ class WrappedFieldSchema(Schema, metaclass=SchemaMeta):
     def _extract_field(self, structured, many, **kwargs):
         if many:
             return [self._extract_field(s) for s in structured]
-        return structured['wrapped_field']
+        return structured["wrapped_field"]
 
 
 def from_field(field):
@@ -92,7 +89,7 @@ def from_field(field):
         cls = WrappedField
         wrapped_field = field
 
-    FieldSchemaClass.__name__ = f'{field.__class__.__name__}Schema'
+    FieldSchemaClass.__name__ = f"{field.__class__.__name__}Schema"
 
     return FieldSchemaClass()
 
@@ -100,9 +97,7 @@ def from_field(field):
 def from_attrs(attrs_cls):
     class AttrsSchemaMeta(SchemaMeta):
         @classmethod
-        def get_declared_fields(
-            mcls, klass, cls_fields, inherited_fields, dict_cls
-        ):
+        def get_declared_fields(mcls, klass, cls_fields, inherited_fields, dict_cls):
             fields = super().get_declared_fields(
                 klass, cls_fields, inherited_fields, dict_cls
             )
@@ -111,15 +106,13 @@ def from_attrs(attrs_cls):
                 if DBUS_FIELD in attr_.metadata:
                     fields[attr_.name] = attr_.metadata[DBUS_FIELD]
                 elif DBUS_NESTED in attr_.metadata:
-                    fields[attr_.name] = Nested(
-                        from_attrs(attr_.metadata[DBUS_NESTED])
-                    )
+                    fields[attr_.name] = Nested(from_attrs(attr_.metadata[DBUS_NESTED]))
 
             return fields
 
     class AttrsSchemaClass(DBusSchema, metaclass=AttrsSchemaMeta):
         cls = attrs_cls
 
-    AttrsSchemaClass.__name__ = f'{attrs_cls.__name__}Schema'
+    AttrsSchemaClass.__name__ = f"{attrs_cls.__name__}Schema"
 
     return AttrsSchemaClass()

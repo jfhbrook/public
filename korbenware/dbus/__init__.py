@@ -5,17 +5,51 @@ from marshmallow.fields import Field
 
 from korbenware.dbus.service import Service  # noqa
 from korbenware.dbus.marshmallow.fields import (
-    DBusField, Bytes, Bool, Int16, UInt16, Int32, UInt32, Int64, UInt64,
-    Double, Str, ObjectPath, Signature, List, Tuple, Nested, Variant,
-    DateTime
+    DBusField,
+    Bytes,
+    Bool,
+    Int16,
+    UInt16,
+    Int32,
+    UInt32,
+    Int64,
+    UInt64,
+    Double,
+    Str,
+    ObjectPath,
+    Signature,
+    List,
+    Tuple,
+    Nested,
+    Variant,
+    DateTime,
 )
 from korbenware.dbus.marshmallow.schema import DBUS_FIELD, DBUS_NESTED
 
 __all__ = [
-    'Field', 'Service', 'DBusField', 'Bytes', 'Bool', 'Int16', 'UInt16',
-    'Int32', 'UInt32', 'Int64', 'UInt64', 'Double', 'Str', 'ObjectPath',
-    'Signature', 'List', 'Tuple', 'Nested', 'Variant', 'DateTime',
-    'DBUS_FIELD', 'DBUS_NESTED', 'dbus_attr'
+    "Field",
+    "Service",
+    "DBusField",
+    "Bytes",
+    "Bool",
+    "Int16",
+    "UInt16",
+    "Int32",
+    "UInt32",
+    "Int64",
+    "UInt64",
+    "Double",
+    "Str",
+    "ObjectPath",
+    "Signature",
+    "List",
+    "Tuple",
+    "Nested",
+    "Variant",
+    "DateTime",
+    "DBUS_FIELD",
+    "DBUS_NESTED",
+    "dbus_attr",
 ]
 
 
@@ -28,10 +62,10 @@ SENSIBLE_DEFAULTS = {
     Int64: -1,
     UInt64: 0,
     Double: -1,
-    Str: '',
+    Str: "",
     List: attr.Factory(list),
     Tuple: attr.Factory(tuple),
-    DateTime: datetime.datetime.fromtimestamp(0)
+    DateTime: datetime.datetime.fromtimestamp(0),
 }
 
 

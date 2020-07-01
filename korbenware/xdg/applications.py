@@ -14,7 +14,7 @@ from korbenware.presentation.markdown import markdownable
 from korbenware.xdg.executable import Executable
 
 
-XDG_APPLICATIONS_DIRS = list(load_data_paths('applications'))
+XDG_APPLICATIONS_DIRS = list(load_data_paths("applications"))
 
 
 @total_ordering
@@ -50,16 +50,14 @@ class Application:
     def __eq__(self, other):
         return (
             (self.fullpath == other.fullpath)
-            and
-            (self.executable.is_hidden == other.executable.is_hidden)
-            and
-            (self.executable.no_display == other.executable.no_display)
+            and (self.executable.is_hidden == other.executable.is_hidden)
+            and (self.executable.no_display == other.executable.no_display)
         )
 
 
 @markdownable
 @representable
-@keys(['entries'])
+@keys(["entries"])
 class ApplicationSet:
     def __init__(self, log):
         self.log = log
@@ -76,45 +74,39 @@ class ApplicationSet:
 
             if not executable.parsed:
                 self.log.warn(
-                    'Desktop file parse error while loading {filename}!',
+                    "Desktop file parse error while loading {filename}!",
                     filename=executable.filename,
-                    log_failure=Failure(executable.parse_exc)
+                    log_failure=Failure(executable.parse_exc),
                 )
             elif not executable.exec_key_parsed:
                 self.log.warn(
-                    'Exec key parse error while loading {filename}!',
+                    "Exec key parse error while loading {filename}!",
                     filename=executable.filename,
-                    log_failure=Failure(executable.exec_key_parse_exc)
+                    log_failure=Failure(executable.exec_key_parse_exc),
                 )
 
             if executable.parsed and not valid:
                 self.log.debug(
-                    'Desktop file validation issue while loading {filename}!',
+                    "Desktop file validation issue while loading {filename}!",
                     filename=executable.filename,
-                    log_failure=Failure(executable.validate_exc)
+                    log_failure=Failure(executable.validate_exc),
                 )
 
-            if (
-                (not parsed and skip_unparsed)
-                or
-                (not valid and skip_invalid)
-            ):
+            if (not parsed and skip_unparsed) or (not valid and skip_invalid):
                 self.log.info(
-                    'Skipping loading {filename} due to loading issues',
-                    filename=executable.filename
+                    "Skipping loading {filename} due to loading issues",
+                    filename=executable.filename,
                 )
                 continue
             else:
                 if not parsed:
                     self.log.warn(
-                        'Loading {filename} despite parsing issues!',
-                        filename=executable.filename
+                        "Loading {filename} despite parsing issues!",
+                        filename=executable.filename,
                     )
 
             entry.overrides = [
-                overridden
-                for overridden in self.entries
-                if overridden != entry
+                overridden for overridden in self.entries if overridden != entry
             ]
 
             return entry
@@ -129,13 +121,10 @@ def _load_application_dir(dirpath, log, cls):
         return
 
     for filename in filenames:
-        if filename.endswith('.desktop'):
+        if filename.endswith(".desktop"):
             fullpath = os.path.join(dirpath, filename)
 
-            log.debug(
-                'Loading application desktop file {filename}',
-                filename=fullpath
-            )
+            log.debug("Loading application desktop file {filename}", filename=fullpath)
 
             yield cls.from_path(fullpath)
 
@@ -144,7 +133,7 @@ def load_application_sets(dirs, log, cls=Application):
     entry_sets = defaultdict(lambda: ApplicationSet(log))
 
     for dirname in dirs:
-        log.debug('Loading application directory {dirname}', dirname=dirname)
+        log.debug("Loading application directory {dirname}", dirname=dirname)
 
         for entry in _load_application_dir(dirname, log, cls):
             entry_sets[entry.filename].add_entry(entry)
@@ -154,24 +143,19 @@ def load_application_sets(dirs, log, cls=Application):
 
 @markdownable
 @representable
-@keys([
-    'directories',
-    'entries'
-])
+@keys(["directories", "entries"])
 class ApplicationsRegistry:
     log = create_logger()
 
-    def __init__(self, config, key='applications', cls=Application):
+    def __init__(self, config, key="applications", cls=Application):
         self.directories = getattr(config, key).directories
-        self.entry_sets = load_application_sets(
-            self.directories, self.log, cls
-        )
+        self.entry_sets = load_application_sets(self.directories, self.log, cls)
         self.entries = dict()
 
         for filename, entry_set in self.entry_sets.items():
             entry = entry_set.coalesce(
                 skip_unparsed=getattr(config, key).skip_unparsed,
-                skip_invalid=getattr(config, key).skip_invalid
+                skip_invalid=getattr(config, key).skip_invalid,
             )
             if entry:
                 self.entries[filename] = entry

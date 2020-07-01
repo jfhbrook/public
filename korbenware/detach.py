@@ -24,15 +24,10 @@ def spawn(argv, *, env=None, cwd=None):
     # very grumpy if you call os.fork while the reactor is running. See:
     # https://stackoverflow.com/questions/13181561/python-twisted-fork-for-background-non-returning-processing  # noqa
 
-    shim_argv = [sys.executable, '-m', 'korbenware.detach'] + argv
+    shim_argv = [sys.executable, "-m", "korbenware.detach"] + argv
 
     return Popen(
-        shim_argv,
-        env=env,
-        cwd=cwd,
-        stdin=DEVNULL,
-        stdout=DEVNULL,
-        stderr=DEVNULL
+        shim_argv, env=env, cwd=cwd, stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL
     )
 
 
@@ -53,5 +48,5 @@ def _fork_and_popen(argv, env):
         os.execlpe(cmd, env)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     _fork_and_popen(sys.argv[1:], os.environ)

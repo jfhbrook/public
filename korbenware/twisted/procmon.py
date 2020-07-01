@@ -30,19 +30,13 @@ from korbenware.presentation.markdown import markdownable
 from twisted.runner.procmon import LineLogger, LoggingProtocol
 
 
-
 def patchedLineReceived(self, line):
     try:
-        line = line.decode('utf-8')
+        line = line.decode("utf-8")
     except UnicodeDecodeError:
         line = repr(line)
 
-    self.service.log.info(
-        u'[{tag}] {line}',
-        tag=self.tag,
-        line=line
-    )
-
+    self.service.log.info("[{tag}] {line}", tag=self.tag, line=line)
 
 
 def patchedConnectionMade(self):
@@ -50,17 +44,14 @@ def patchedConnectionMade(self):
     self.output.service = self.service
 
 
-
-if not hasattr(BaseMonitor, 'log'):
+if not hasattr(BaseMonitor, "log"):
     LineLogger.lineReceived = patchedLineReceived
     originalConnectionMade = LoggingProtocol.connectionMade
 
     LoggingProtocol.connectionMade = patchedConnectionMade
 
 
-
 # OK cool, hand me my beer.
-
 
 
 class LifecycleState(Enum):
@@ -68,12 +59,11 @@ class LifecycleState(Enum):
     The lifecycle state enum of a process monitored by a ProcessMonitor.
     """
 
-    STARTING='STARTING'
-    RUNNING='RUNNING'
-    RESTARTING='RESTARTING'
-    STOPPING='STOPPING'
-    STOPPED='STOPPED'
-
+    STARTING = "STARTING"
+    RUNNING = "RUNNING"
+    RESTARTING = "RESTARTING"
+    STOPPING = "STOPPING"
+    STOPPED = "STOPPED"
 
 
 @markdownable
@@ -89,7 +79,6 @@ class ProcessSettings:
     killTime = attr.ib(default=None)
     minRestartDelay = attr.ib(default=None)
     maxRestartDelay = attr.ib(default=None)
-
 
 
 @markdownable
@@ -109,10 +98,9 @@ class ProcessState:
     settings = attr.ib(default=None)
 
 
-
 @markdownable
 @representable
-@keys(['settings', 'states'])
+@keys(["settings", "states"])
 class ProcessMonitor(BaseMonitor, EventEmitter):
     """
     A subclass of twisted.runner.procmon#ProcessMonitor. While it implements
@@ -160,7 +148,6 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
     restart = False
     log = create_logger()
 
-
     def __init__(self, log=None, reactor=None):
         if reactor:
             BaseMonitor.__init__(self, reactor=reactor)
@@ -173,26 +160,22 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         self.settings = dict()
         self.states = dict()
 
-
     def isRegistered(self, name):
         """
         Is this process registered?
         """
         return name in self.states
 
-
     def assertRegistered(self, name):
         """
         Raises a KeyError if the process isn't registered.
         """
         if not self.isRegistered(name):
-            raise KeyError(f'Unrecognized process name: {name}')
-
+            raise KeyError(f"Unrecognized process name: {name}")
 
     def _setProcessState(self, name, state):
         self.states[name] = state
-        self.emit('stateChange', dict(name=name, state=state))
-
+        self.emit("stateChange", dict(name=name, state=state))
 
     def getState(self, name):
         """
@@ -204,22 +187,24 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         return ProcessState(
             name=name,
             state=self.states.get(name, None),
-            settings=self.settings.get(name, None)
+            settings=self.settings.get(name, None),
         )
-
 
     def addProcess(
         self,
         name,
         args,
         *,
-        env=None, cwd=None,
-        uid=None, gid=None,
+        env=None,
+        cwd=None,
+        uid=None,
+        gid=None,
         restart=None,
         cleanup=None,
-        threshold=None, killTime=None,
+        threshold=None,
+        killTime=None,
         minRestartDelay=None,
-        maxRestartDelay=None
+        maxRestartDelay=None,
     ):
         """
         Add a new monitored process. If the service is running, start it
@@ -229,46 +214,31 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         env = dict() if env is None else env
 
         if name in self.states:
-            raise KeyError(
-                f'Process {name} already exists! Try removing it first.'
-            )
+            raise KeyError(f"Process {name} already exists! Try removing it first.")
 
         state = LifecycleState.STARTING
 
         settings = ProcessSettings(restart=restart)
 
         if restart:
-            settings.threshold = (
-                threshold if threshold is not None else self.threshold
-            )
-            settings.killTime = (
-                killTime if killTime is not None else self.killTime
-            )
+            settings.threshold = threshold if threshold is not None else self.threshold
+            settings.killTime = killTime if killTime is not None else self.killTime
             settings.minRestartDelay = (
-                minRestartDelay
-                if minRestartDelay is not None
-                else self.minRestartDelay
+                minRestartDelay if minRestartDelay is not None else self.minRestartDelay
             )
             settings.maxRestartDelay = (
-                maxRestartDelay
-                if maxRestartDelay is not None
-                else self.maxRestartDelay
+                maxRestartDelay if maxRestartDelay is not None else self.maxRestartDelay
             )
             settings.cleanup = False
         else:
-            settings.cleanup = (
-                cleanup
-                if cleanup is not None
-                else True
-            )
+            settings.cleanup = cleanup if cleanup is not None else True
 
         self._setProcessState(name, state)
         self.settings[name] = settings
 
-        self.emit('addProcess', self.getState(name))
+        self.emit("addProcess", self.getState(name))
 
         super().addProcess(name, args, uid, gid, env, cwd)
-
 
     def removeProcess(self, name):
         """
@@ -280,54 +250,42 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         It's therefore recommended that you manually stop processes first,
         before exiting.
         """
-        self.emit('removeProcess', self.getState(name))
+        self.emit("removeProcess", self.getState(name))
         super().removeProcess(name)
         del self.settings[name]
         del self.states[name]
-
 
     def startService(self):
         """
         Start the service, which starts all the processes.
         """
-        self.emit('startService')
+        self.emit("startService")
         super().startService()
 
-
     def _allServicesStopped(self):
-        return all(
-            state == LifecycleState.STOPPED
-            for state in self.states.values()
-        )
-
+        return all(state == LifecycleState.STOPPED for state in self.states.values())
 
     def stopService(self):
         """
         Stop the service, which stops all the processes.
         """
-        self.emit('stopService')
+        self.emit("stopService")
         super().stopService()
 
         def maybe_emit(state):
             if self._allServicesStopped():
-                self.emit('serviceStopped')
+                self.emit("serviceStopped")
 
         if self._allServicesStopped():
-            self.emit('serviceStopped')
+            self.emit("serviceStopped")
         else:
-            self.on('stateChange', maybe_emit)
-
+            self.on("stateChange", maybe_emit)
 
     def _isActive(self, name):
-        return (
-            self.isRegistered(name)
-            and
-            self.states[name] in {
-                LifecycleState.RUNNING,
-                LifecycleState.STOPPING
-            }
-        )
-
+        return self.isRegistered(name) and self.states[name] in {
+            LifecycleState.RUNNING,
+            LifecycleState.STOPPING,
+        }
 
     def startProcess(self, name):
         """
@@ -340,7 +298,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         if self._isActive(name):
             return
 
-        self.emit('startProcess', self.getState(name))
+        self.emit("startProcess", self.getState(name))
 
         # Should be smooth sailing - This section is the same as in procmon
         process = self._processes[name]
@@ -350,13 +308,18 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         proto.name = name
         self.protocols[name] = proto
         self.timeStarted[name] = self._reactor.seconds()
-        self._reactor.spawnProcess(proto, process.args[0], process.args,
-                                          uid=process.uid, gid=process.gid,
-                                          env=process.env, path=process.cwd)
+        self._reactor.spawnProcess(
+            proto,
+            process.args[0],
+            process.args,
+            uid=process.uid,
+            gid=process.gid,
+            env=process.env,
+            path=process.cwd,
+        )
 
         # This is new though!
         self._setProcessState(name, LifecycleState.RUNNING)
-
 
     def connectionLost(self, name):
         """
@@ -368,7 +331,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         priorState = self.states[name]
         settings = self.settings[name]
 
-        self.emit('connectionLost', self.getState(name))
+        self.emit("connectionLost", self.getState(name))
 
         restartSetting = settings.restart
 
@@ -380,9 +343,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
 
             # State should either be RESTARTING or STOPPED
             self.states[name] = (
-                LifecycleState.RESTARTING
-                if shouldRestart
-                else LifecycleState.STOPPED
+                LifecycleState.RESTARTING if shouldRestart else LifecycleState.STOPPED
             )
         elif priorState == LifecycleState.RESTARTING:
             # OK, we're explicitly restarting
@@ -425,38 +386,32 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
 
             if self.running and name in self._processes:
                 self.restart[name] = self._reactor.callLater(
-                    nextDelay,
-                    self.startProcess,
-                    name
+                    nextDelay, self.startProcess, name
                 )
         elif shouldCleanup:
             # If this is a no-restart yes-cleanup process then remove it
             # on exit
             self.removeProcess(name)
 
-
     def _forceStopProcess(self, name, proc):
-        self.emit('forceStop', self.getState(name))
+        self.emit("forceStop", self.getState(name))
         super()._forceStopProcess(proc)
-
 
     def restartProcess(self, name):
         """
         Manually restart a process, regardless of how it's been configured,
         """
         self._setProcessState(name, LifecycleState.RESTARTING)
-        self.emit('restartProcess', self.getState(name))
+        self.emit("restartProcess", self.getState(name))
         self._stopProcess(self, name)
-
 
     def stopProcess(self, name):
         """
         Stop a process.
         """
         self._setProcessState(name, LifecycleState.STOPPING)
-        self.emit('stopProcess', self.getState(name))
+        self.emit("stopProcess", self.getState(name))
         self._stopProcess(name)
-
 
     def _stopProcess(self, name):
         self.assertRegistered(name)
@@ -473,14 +428,13 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
             # Same as procmon
             proc = proto.transport
             try:
-                proc.signalProcess('TERM')
+                proc.signalProcess("TERM")
             except ProcessExitedAlready:
                 pass
             else:
                 self.murder[name] = self._reactor.callLater(
-                                            self.killTime,
-                                            self._forceStopProcess, name, proc)
-
+                    self.killTime, self._forceStopProcess, name, proc
+                )
 
     def restartAll(self):
         """
@@ -489,12 +443,8 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         for name in self._processes:
             self.restartProcess(name)
 
-
     def asdict(self):
         return dict(
             running=self.running,
-            processes={
-                name: self.getState(name)
-                for name in self.states
-            }
+            processes={name: self.getState(name) for name in self.states},
         )

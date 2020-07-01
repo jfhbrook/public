@@ -9,16 +9,16 @@ from korbenware.logger import create_logger
 
 
 @command(
-    help='Display a TUI for the configured XDG app menu',
+    help="Display a TUI for the configured XDG app menu",
     hed="Grandmaw Korben's XDG Menu Explorer 🦜",
     subhed='"nice work, pixel birdie!"',
-    dek='programmed entirely while unemployed'
+    dek="programmed entirely while unemployed",
 )
 @pass_context
 async def main(ctx, reactor):
     config = ctx.config
 
-    log = create_logger(namespace='korbenware.cli.menu')
+    log = create_logger(namespace="korbenware.cli.menu")
 
     executor = BaseExecutor()
 
@@ -33,9 +33,6 @@ async def main(ctx, reactor):
             "Looks like you didn't end up choosing an item from the menu; doing nothing"  # noqa
         )
     else:
-        log.info(
-            "Opening {name}...",
-            name=desktop_entry.getName()
-        )
+        log.info("Opening {name}...", name=desktop_entry.getName())
 
         executor.run_xdg_desktop_entry(desktop_entry)

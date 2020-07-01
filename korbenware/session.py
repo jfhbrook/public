@@ -18,24 +18,20 @@ from korbenware.xdg.mime import MimeRegistry
 
 class AlreadyStartedError(Exception):
     def __init__(self):
-        super().__init__(
-            "This session is already started and can't be started twice"
-        )
+        super().__init__("This session is already started and can't be started twice")
 
 
 class AlreadyStoppedError(Exception):
     def __init__(self):
-        super().__init__(
-            "This session is already stopped and can't be stopped twice"
-        )
+        super().__init__("This session is already stopped and can't be stopped twice")
 
 
 @markdownable
 @representable
 @attr.s
 class ProcessState:
-    name = dbus_attr(Str(), default='???')
-    state = dbus_attr(Str(), default='UNKNOWN')
+    name = dbus_attr(Str(), default="???")
+    state = dbus_attr(Str(), default="UNKNOWN")
     restart = dbus_attr(Bool(), default=False)
     threshold = dbus_attr(Int64())
     killTime = dbus_attr(Int64())
@@ -51,7 +47,7 @@ class ProcessState:
             threshold=state.settings.threshold or -1,
             killTime=state.settings.killTime or -1,
             minRestartDelay=state.settings.minRestartDelay or -1,
-            maxRestartDelay=state.settings.maxRestartDelay or -1
+            maxRestartDelay=state.settings.maxRestartDelay or -1,
         )
 
 
@@ -66,11 +62,11 @@ class ExecutorState:
     def from_executor(cls, executor):
         monitor = executor.monitor.asdict()
         return cls(
-            running=monitor.get('running', -1),
+            running=monitor.get("running", -1),
             processes=[
                 ProcessState.from_procmon_state(state)
-                for state in monitor.get('processes', {}).values()
-            ]
+                for state in monitor.get("processes", {}).values()
+            ],
         )
 
 
@@ -94,29 +90,27 @@ class SessionState:
             started_at=session.started_at,
             stopped_at=session.stopped_at,
             config=session.config,
-            critical_executor=ExecutorState.from_executor(
-                session.critical_executor
-            ),
-            primary_executor=ExecutorState.from_executor(
-                session.primary_executor
-            )
+            critical_executor=ExecutorState.from_executor(session.critical_executor),
+            primary_executor=ExecutorState.from_executor(session.primary_executor),
         )
 
 
 @markdownable
 @representable
-@keys([
-    'running',
-    'loaded_at',
-    'started_at',
-    'stopped_at',
-    'config',
-    'applications',
-    'autostart',
-    'mime',
-    'critical_executor',
-    'primary_executor'
-])
+@keys(
+    [
+        "running",
+        "loaded_at",
+        "started_at",
+        "stopped_at",
+        "config",
+        "applications",
+        "autostart",
+        "mime",
+        "critical_executor",
+        "primary_executor",
+    ]
+)
 class Session(EventEmitter):
     def __init__(self, reactor, config):
         super().__init__()
@@ -133,8 +127,7 @@ class Session(EventEmitter):
         self.critical_executor = MonitoringExecutor(reactor)
 
         self.primary_executor = ApplicationExecutor(
-            reactor=reactor,
-            applications=self.applications
+            reactor=reactor, applications=self.applications
         )
 
         self.running = False
@@ -146,7 +139,7 @@ class Session(EventEmitter):
         if self.running:
             raise AlreadyStartedError()
 
-        self.emit('start')
+        self.emit("start")
 
         self.critical_executor.start()
 
@@ -156,13 +149,13 @@ class Session(EventEmitter):
         self.running = True
         self.started_at = datetime.datetime.utcnow()
 
-        self.emit('started')
+        self.emit("started")
 
     def stop(self):
         if not self.running:
             raise AlreadyStoppedError()
 
-        self.emit('stop')
+        self.emit("stop")
 
         self.primary_executor.stop()
         self.critical_executor.stop()
@@ -170,23 +163,24 @@ class Session(EventEmitter):
         self.running = False
         self.stopped_at = datetime.datetime.utcnow()
 
-        self.emit('stopped')
+        self.emit("stopped")
 
     def attach(self, service):
-        obj = service.object('/korbenware/Session')
+        obj = service.object("/korbenware/Session")
 
         @obj.method([], SessionState)
         def get_state():
             return SessionState.from_session(self)
 
-        @obj.method([Str()], Bool())
-        def run_xdg_application(name):
-            self.primary_executor.run_xdg_application_by_name(name)
-            return True
+        # @obj.method([Str()], Bool())
+        # def run_xdg_application(name):
+        #    self.primary_executor.run_xdg_application_by_name(name)
+        #    return True
 
-        @obj.method([], Bool())
-        def shutdown():
-            self.stop()
-            return True
+        # @obj.method([], Bool())
+        # def shutdown():
+        #    print('I am getting called')
+        #    self.stop()
+        #    return True
 
         return obj

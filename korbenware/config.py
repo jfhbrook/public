@@ -23,8 +23,8 @@ class LoadError(Exception):
 class NoConfigurationFoundError(LoadError):
     def __init__(self):
         super().__init__(
-            'No XDG configuration found! Try creating a file '
-            'at `$HOME/.config/korbenware/korbenware.toml`.'
+            "No XDG configuration found! Try creating a file "
+            "at `$HOME/.config/korbenware/korbenware.toml`."
         )
 
 
@@ -33,11 +33,7 @@ def config(cls):
 
 
 def subconfig(cls):
-    return attr.ib(
-        type=cls,
-        default=attr.Factory(cls),
-        metadata={DBUS_NESTED: cls}
-    )
+    return attr.ib(type=cls, default=attr.Factory(cls), metadata={DBUS_NESTED: cls})
 
 
 def value(default=None, field=None):
@@ -61,12 +57,12 @@ class ApplicationsConfig:
 
 @config
 class DBusConfig:
-    namespace = value('org.jfhbrook.korbenware')
+    namespace = value("org.jfhbrook.korbenware")
 
 
 @config
 class FormatConfig:
-    pygments_formatter = value('trac')
+    pygments_formatter = value("trac")
 
 
 @config
@@ -76,18 +72,18 @@ class MenuConfig:
 
 @config
 class MimeConfig:
-    cache = value('/usr/share/applications/mimeinfo.cache')
+    cache = value("/usr/share/applications/mimeinfo.cache")
     environment = value(XDG_CURRENT_DESKTOP)
 
 
 @config
 class LoggerConfig:
-    level = value('debug')
+    level = value("debug")
 
 
 @config
 class MetaConfig:
-    config_filename = value('???')
+    config_filename = value("???")
 
 
 @config
@@ -109,7 +105,9 @@ class CriticalProcessConfig:
 @config
 class ExecutorsConfig:
     primary = attr.ib(type=Dict[str, ProcessConfig], default=attr.Factory(dict))
-    critical = attr.ib(type=Dict[str, CriticalProcessConfig], default=attr.Factory(dict))
+    critical = attr.ib(
+        type=Dict[str, CriticalProcessConfig], default=attr.Factory(dict)
+    )
 
 
 @config
@@ -122,7 +120,7 @@ class BaseConfig:
     applications = subconfig(ApplicationsConfig)
     logger = subconfig(LoggerConfig)
     format = subconfig(FormatConfig)
-    urls = value(dict(), field=DBusField('a{ss}'))
+    urls = value(dict(), field=DBusField("a{ss}"))
     executors = subconfig(ExecutorsConfig)
 
 
@@ -132,10 +130,10 @@ def load_config():
     if not basedir:
         raise NoConfigurationFoundError()
 
-    filename = os.path.join(basedir, 'korbenware.toml')
+    filename = os.path.join(basedir, "korbenware.toml")
 
     try:
-        f = open(filename, 'r')
+        f = open(filename, "r")
     except FileNotFoundError as e:
         raise NoConfigurationFoundError() from e
 
@@ -154,21 +152,21 @@ log = create_logger()
 
 def _log_config(path, obj, level):
     for attr_ in obj.__attrs_attrs__:
-        if hasattr(attr_.type, '__attrs_attrs__'):
+        if hasattr(attr_.type, "__attrs_attrs__"):
             _log_config(path + [attr_.name], getattr(obj, attr_.name), level)
         else:
             log.emit(
                 level,
-                'config: {path}={value}',
-                path='.'.join(path + [attr_.name]),
-                value=getattr(obj, attr_.name)
+                "config: {path}={value}",
+                path=".".join(path + [attr_.name]),
+                value=getattr(obj, attr_.name),
             )
 
 
 def log_config(config, level=LogLevel.debug):
     log.emit(
         level,
-        'Loaded configuration from {filename}...',
-        filename=config.meta.config_filename
+        "Loaded configuration from {filename}...",
+        filename=config.meta.config_filename,
     )
-    _log_config(['config'], config, level)
+    _log_config(["config"], config, level)

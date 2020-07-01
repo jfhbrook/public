@@ -11,7 +11,7 @@ import urwid
 def on_q(run):
     @wraps(run)
     def run_on_q(key):
-        if key in {'q', 'Q'}:
+        if key in {"q", "Q"}:
             run()
 
     return run_on_q
@@ -54,8 +54,7 @@ class Session:
         loop = urwid.MainLoop(
             self.widget,
             event_loop=urwid.TwistedEventLoop(
-                reactor=self.reactor,
-                manage_reactor=False
+                reactor=self.reactor, manage_reactor=False
             ),
             **self.loop_kwarg
         )

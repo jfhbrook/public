@@ -17,7 +17,7 @@ class Transformer:
 
     def signature(self):
         if not self.schema:
-            return ''
+            return ""
         return schema_signature(self.schema)
 
     def dump(self, structured):
@@ -38,14 +38,10 @@ class MultiTransformer(Transformer):
         self.transformers = [Transformer(type_) for type_ in types]
 
     def signature(self):
-        return ''.join([xform.signature() for xform in self.transformers])
+        return "".join([xform.signature() for xform in self.transformers])
 
     def dump(self, structured):
-        return [
-            xform.dump(s) for xform, s in zip(self.transformers, structured)
-        ]
+        return [xform.dump(s) for xform, s in zip(self.transformers, structured)]
 
     def load(self, unstructured):
-        return [
-            xform.load(u) for xform, u in zip(self.transformers, unstructured)
-        ]
+        return [xform.load(u) for xform, u in zip(self.transformers, unstructured)]

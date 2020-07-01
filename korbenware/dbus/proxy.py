@@ -32,8 +32,7 @@ def dbus_proxy(cls):
         @functools.wraps(method_obj.client_fn)
         def wrapped(self, *args, **kwargs):
             return method_obj.client_fn(
-                getattr(self.remote_obj, method_obj.client_fn.__name__),
-                *args, **kwargs
+                getattr(self.remote_obj, method_obj.client_fn.__name__), *args, **kwargs
             )
 
         return wrapped
@@ -47,11 +46,13 @@ def dbus_proxy(cls):
 
     def server_stub(method_obj):
         """Generates a stub for server implementation methods on the client"""
+
         @functools.wraps(method_obj.server_fn)
         def wrapped(self, *args, **kwargs):
             raise NotImplementedError(
-                f'{method_obj.server_fn.__name__} is only implemented on the server!'  # noqa
+                f"{method_obj.server_fn.__name__} is only implemented on the server!"  # noqa
             )
+
         return wrapped
 
     def remote_method(method_obj):
@@ -59,9 +60,7 @@ def dbus_proxy(cls):
 
         @functools.wraps(method_obj.server_fn)
         def wrapped(self, *args):
-            return getattr(
-                self.remote_obj, method_obj.client_fn.__name__
-            )(*args)
+            return getattr(self.remote_obj, method_obj.client_fn.__name__)(*args)
 
         return wrapped
 
@@ -77,9 +76,10 @@ def dbus_proxy(cls):
             # use the client fn name - necessary for both the client and the
             # server
             self.object.method(
-                method_obj.argv_types, method_obj.rv_type,
+                method_obj.argv_types,
+                method_obj.rv_type,
                 method_obj.server_fn,
-                method_obj.client_fn.__name__
+                method_obj.client_fn.__name__,
             )
 
     async def client_connect(self, connection):
@@ -91,17 +91,11 @@ def dbus_proxy(cls):
         self.mount(service=service, obj_path=obj_path)
         for method_obj in self.__dbus_methods__:
             # Set the main method to proxy the remote call
-            setattr(
-                self, method_obj.client_fn.__name__,
-                client_side_method(method_obj)
-            )
+            setattr(self, method_obj.client_fn.__name__, client_side_method(method_obj))
 
             # Stub out the server-side method so we can't accidentally call it
             # on the client
-            setattr(
-                self, method_obj.server_fn.__name__,
-                server_stub(method_obj)
-            )
+            setattr(self, method_obj.server_fn.__name__, server_stub(method_obj))
 
         self.connect = client_connect
 
@@ -117,8 +111,7 @@ def dbus_proxy(cls):
             # Set the main method on the server to just naively call itself
             # without using the remote
             setattr(
-                self, method_obj.client_fn.__name__,
-                server_side_method(self.remote_obj)
+                self, method_obj.client_fn.__name__, server_side_method(self.remote_obj)
             )
 
         self.connect = server_connect

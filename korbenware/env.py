@@ -10,14 +10,13 @@ def load_base_env():
     # Will luckily inherit our current env and cwd
     process = subprocess.run(
         [
-            'bash',
+            "bash",
             os.path.join(
-                os.path.dirname(__file__),
-                '../bin/korbenware-environment-loader'
-            )
+                os.path.dirname(__file__), "../bin/korbenware-environment-loader"
+            ),
         ],
         check=True,
-        capture_output=True
+        capture_output=True,
     )
 
     env = dict()
@@ -27,9 +26,9 @@ def load_base_env():
     encoding = sys.getfilesystemencoding()
     output = process.stdout.decode(encoding)
 
-    for pair in output.split('\n'):
+    for pair in output.split("\n"):
         if pair:  # (blank lines)
-            key, val = pair.split('=', 1)
+            key, val = pair.split("=", 1)
         env[key] = val
 
     return env

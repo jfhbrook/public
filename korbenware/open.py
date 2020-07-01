@@ -8,21 +8,16 @@ class OpenError(Exception):
 def get_target_field(exec_key, url_or_file):
     expected_fields = exec_key.expected_fields()
 
-    for potential_field in 'UuFf':
+    for potential_field in "UuFf":
         if potential_field in expected_fields:
             return potential_field
     raise OpenError(
-        f'Exec key `{exec_key.raw}` needs to contain one of: %U, %u, %F, %f'
+        f"Exec key `{exec_key.raw}` needs to contain one of: %U, %u, %F, %f"
     )
 
 
 def exec_key_fields(application, url_or_file):
-    return {
-        get_target_field(
-            application.executable.exec_key,
-            url_or_file
-        ): url_or_file
-    }
+    return {get_target_field(application.executable.exec_key, url_or_file): url_or_file}
 
 
 class ApplicationFinder:
@@ -35,7 +30,7 @@ class ApplicationFinder:
 
         # If we can parse out a protocol that's not a file then we need to
         # try to open as a url
-        if url_parse.scheme not in {'', 'file'}:
+        if url_parse.scheme not in {"", "file"}:
             app = self.urls.get_application_by_scheme(url_parse.scheme)
         else:
             app = None
@@ -49,7 +44,7 @@ class ApplicationFinder:
 
         if not app:
             raise OpenError(
-                f'No suitable application for opening {url_or_file} was found.'
+                f"No suitable application for opening {url_or_file} was found."
             )
 
         return app

@@ -9,19 +9,19 @@ def representable(cls):
 
     def repr_pretty(self, p, cycle):
         if cycle:
-            p.text(f'{self.__class__.__name__}(...)')
+            p.text(f"{self.__class__.__name__}(...)")
         else:
-            with p.group(4, f'{self.__class__.__name__}(', ')'):
+            with p.group(4, f"{self.__class__.__name__}(", ")"):
                 p.breakable()
                 for i, (k, v) in enumerate(asdict(self).items()):
                     if i:
-                        p.text(',')
+                        p.text(",")
                         p.breakable()
-                    p.text(f'{k}=')
+                    p.text(f"{k}=")
                     p.pretty(v)
 
     # attrs already has a solid repr
-    if not hasattr(cls, '__attrs_attrs__'):
+    if not hasattr(cls, "__attrs_attrs__"):
         cls.__repr__ = repr_
 
     # Proper ipython/jupyter style pretty methods

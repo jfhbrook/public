@@ -15,22 +15,17 @@ class BaseExecutor:
     log = create_logger()
 
     def run_argv(
-        self,
-        process_name,
-        argv,
-        *,
-        env=None,
-        cwd=None,
+        self, process_name, argv, *, env=None, cwd=None,
     ):
         env = load_env(env)
         cwd = cwd or os.getcwd()
 
         self.log.info(
-            'Spawning {process_name} using {argv} as a detached process...',
+            "Spawning {process_name} using {argv} as a detached process...",
             process_name=process_name,
             argv=argv,
             env=env,
-            cwd=cwd
+            cwd=cwd,
         )
         spawn_detached(argv, env=env, cwd=cwd)
 
@@ -42,60 +37,32 @@ class BaseExecutor:
         exec_key_fields=None,
         env=None,
         cwd=None,
-        **kwargs
+        **kwargs,
     ):
         argv = exec_key.build_argv(exec_key_fields)
 
         self.run_argv(process_name, argv, env=env, cwd=cwd, **kwargs)
 
-    def run_command(
-        self,
-        process_name,
-        raw,
-        **kwargs
-    ):
-        return self.run_exec_key(
-            process_name,
-            ExecKey(raw),
-            **kwargs
-        )
+    def run_command(self, process_name, raw, **kwargs):
+        return self.run_exec_key(process_name, ExecKey(raw), **kwargs)
 
-    def run_xdg_executable(
-        self,
-        executable,
-        **kwargs
-    ):
+    def run_xdg_executable(self, executable, **kwargs):
         self.log.debug(
-            'Running XDG executable {filename}...',
-            filename=executable.filename or ('<unknown filename>')
+            "Running XDG executable {filename}...",
+            filename=executable.filename or ("<unknown filename>"),
         )
-        return self.run_exec_key(
-            executable.filename,
-            executable.exec_key,
-            **kwargs
-        )
+        return self.run_exec_key(executable.filename, executable.exec_key, **kwargs)
 
-    def run_xdg_desktop_entry(
-        self,
-        entry,
-        **kwargs
-    ):
-        return self.run_xdg_executable(
-            Executable.from_desktop_entry(entry),
-            **kwargs
-        )
+    def run_xdg_desktop_entry(self, entry, **kwargs):
+        return self.run_xdg_executable(Executable.from_desktop_entry(entry), **kwargs)
 
-    def run_xdg_application(
-        self,
-        app,
-        **kwargs
-    ):
+    def run_xdg_application(self, app, **kwargs):
         return self.run_xdg_executable(app.executable, **kwargs)
 
 
 @markdownable
 @representable
-@keys(['monitor'])
+@keys(["monitor"])
 class MonitoringExecutor(BaseExecutor):
     log = create_logger()
 
@@ -104,11 +71,11 @@ class MonitoringExecutor(BaseExecutor):
         self.monitor = ProcessMonitor(log=self.log, reactor=reactor)
 
     def start(self):
-        self.log.info('Starting monitoring service...')
+        self.log.info("Starting monitoring service...")
         self.monitor.startService()
 
     def stop(self):
-        self.log.info('Stopping monitoring service...')
+        self.log.info("Stopping monitoring service...")
         self.monitor.stopService()
 
     def run_argv(
@@ -121,7 +88,7 @@ class MonitoringExecutor(BaseExecutor):
         cleanup=True,
         monitor_params=None,
         env=None,
-        cwd=None
+        cwd=None,
     ):
         if not monitor:
             return super().run_argv(process_name, argv, env=env, cwd=cwd)
@@ -131,23 +98,18 @@ class MonitoringExecutor(BaseExecutor):
         monitor_params = monitor_params or dict()
 
         self.log.info(
-            'Spawning {process_name} using {argv} as a monitored process...',  # noqa
+            "Spawning {process_name} using {argv} as a monitored process...",  # noqa
             process_name=process_name,
             argv=argv,
             restart=restart,
             cleanup=cleanup,
             monitor_params=monitor_params,
             env=env,
-            cwd=cwd
+            cwd=cwd,
         )
 
         self.monitor.addProcess(
-            process_name,
-            argv,
-            env=env,
-            cwd=cwd,
-            restart=restart,
-            cleanup=cleanup
+            process_name, argv, env=env, cwd=cwd, restart=restart, cleanup=cleanup
         )
 
 
@@ -158,14 +120,9 @@ class ApplicationExecutor(MonitoringExecutor):
         super().__init__(reactor=reactor)
         self.applications = applications
 
-    def run_xdg_application_by_name(
-        self,
-        filename,
-        **kwargs
-    ):
+    def run_xdg_application_by_name(self, filename, **kwargs):
         self.log.debug(
-            'Running XDG application {filename} by name...',
-            filename=filename
+            "Running XDG application {filename} by name...", filename=filename
         )
         app = self.applications.entries[filename]
         return self.run_xdg_application(app, **kwargs)

@@ -1,12 +1,13 @@
 from korbenware.dbus.marshmallow.fields import (
     BASE_FIELDS,
-    List, Tuple, Nested, DBusField, SerializedField
+    List,
+    Tuple,
+    Nested,
+    DBusField,
+    SerializedField,
 )
 
-STRUCTURE_TYPES = {
-    'r': ('(', ')'),
-    'e': ('{', '}')
-}
+STRUCTURE_TYPES = {"r": ("(", ")"), "e": ("{", "}")}
 
 
 def SignatureError(Exception):
@@ -14,17 +15,17 @@ def SignatureError(Exception):
 
 
 def field_signature(field):
-    sig = ''
+    sig = ""
 
     if type(field) == List:
-        sig += 'a'
+        sig += "a"
         inner = field.inner
         sig += field_signature(inner)
     elif type(field) == Tuple:
-        sig += '('
+        sig += "("
         for f in field.tuple_fields:
             sig += field_signature(f)
-        sig += ')'
+        sig += ")"
     elif type(field) == Nested:
         inner = field.schema
         sig += schema_signature(inner)
@@ -37,22 +38,22 @@ def field_signature(field):
         params = field.dbus_type_params
         if params:
             raise NotImplementedError(
-                'Nested schemas with custom masks not implemented yet!'
+                "Nested schemas with custom masks not implemented yet!"
             )
         sig += base_type
     else:
-        raise SignatureError(f'Unknown field type {field}')
+        raise SignatureError(f"Unknown field type {field}")
 
     return sig
 
 
 def schema_signature(schema):
-    if 'wrapped_field' in schema.fields:
-        return field_signature(schema.fields['wrapped_field'])
+    if "wrapped_field" in schema.fields:
+        return field_signature(schema.fields["wrapped_field"])
 
-    sig = '('
+    sig = "("
     for name, field in schema.fields.items():
         sig += field_signature(field)
-    sig += ')'
+    sig += ")"
 
     return sig

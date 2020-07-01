@@ -16,7 +16,7 @@ def menu_session(hed, subhed, xdg_menu):
             name = entry.getName()
             comment = entry.getComment()
             if comment:
-                return f'{name} - {comment}'
+                return f"{name} - {comment}"
             else:
                 return name
 
@@ -30,7 +30,7 @@ def menu_session(hed, subhed, xdg_menu):
         @session.catch
         def keypress(self, size, key):
             key = super().keypress(size, key)
-            if key == 'enter':
+            if key == "enter":
                 session.succeed(self.get_node().get_value().DesktopEntry)
             return key
 
@@ -43,7 +43,7 @@ def menu_session(hed, subhed, xdg_menu):
         @session.catch
         def get_display_text(self):
             menu_entry = self.get_node().get_value()
-            return f'{menu_entry.getName()}:'
+            return f"{menu_entry.getName()}:"
 
     class MenuNode(urwid.ParentNode):
         @session.catch
@@ -81,22 +81,17 @@ def menu_session(hed, subhed, xdg_menu):
     session.root = root
 
     session.list_box = list_box
-    session.header = urwid.Columns([
-        urwid.Text(hed, align='left'),
-        urwid.Text(subhed, align='right')
-    ])
+    session.header = urwid.Columns(
+        [urwid.Text(hed, align="left"), urwid.Text(subhed, align="right")]
+    )
     session.footer = urwid.Text(
-        'Nav: up/down, page up/page down, home/end 🌹 Collapse/expand: +/- 🌹'
-        'Select: [enter] 🌹 Bail: q/Q'
+        "Nav: up/down, page up/page down, home/end 🌹 Collapse/expand: +/- 🌹"
+        "Select: [enter] 🌹 Bail: q/Q"
     )
 
     # TODO: It would be cool if there was an API that made it more obvious
     # that we were "finalizing" the session
-    session.widget = urwid.Frame(
-        list_box,
-        header=session.header,
-        footer=session.footer
-    )
-    session.loop_kwarg['unhandled_input'] = on_q(session.succeed)
+    session.widget = urwid.Frame(list_box, header=session.header, footer=session.footer)
+    session.loop_kwarg["unhandled_input"] = on_q(session.succeed)
 
     return session

@@ -1,8 +1,8 @@
 import os
 from xdg.BaseDirectory import load_first_config
 
-XDG_RESOURCE = 'korbenware'
-XDG_CURRENT_DESKTOP = os.environ.get('XDG_CURRENT_DESKTOP', XDG_RESOURCE)
+XDG_RESOURCE = "korbenware"
+XDG_CURRENT_DESKTOP = os.environ.get("XDG_CURRENT_DESKTOP", XDG_RESOURCE)
 
 
 def config_basedir(resource=XDG_RESOURCE):
