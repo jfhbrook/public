@@ -162,4 +162,4 @@ def dbus_attr(field=None, type=None, default=None, metadata=None, **kwargs):
     else:
         metadata[DBUS_NESTED] = field
 
-    return attr.ib(metadata=metadata, default=default, **kwargs)
+    return attr.ib(type=type, default=default, metadata=metadata, **kwargs)
