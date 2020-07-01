@@ -1,5 +1,7 @@
 import pytest
 
+import attr
+
 from korbenware.config import (
     BaseConfig,
     AutostartConfig,
@@ -14,30 +16,37 @@ from korbenware.config import (
     ProcessConfig,
     CriticalProcessConfig,
 )
+from korbenware.dbus import dbus_attr
 from korbenware.dbus.transformers import Transformer
-from korbenware.dbus.marshmallow.fields import Str
+from korbenware.dbus.marshmallow.fields import Int32, Str, List
+
+
+@attr.s
+class TestContainerType:
+    some_str = dbus_attr(Str())
+    some_int32 = dbus_attr(Int32())
+    some_list = dbus_attr(List(Str()))
+
+
+test_container_loaded = TestContainerType(
+    some_str="hello", some_int32=42, some_list=["hello"]
+)
+
+test_container_dumped = ["hello", 42, ["hello"]]
 
 
 # TODO: Create a pytest fixture for this
 config_loaded = BaseConfig(
-    dbus=DBusConfig(namespace="org.jfhbrook.korbenware"),
+    applications=ApplicationsConfig(
+        directories=["/usr/share/applications"], skip_unparsed=False, skip_invalid=False
+    ),
     autostart=AutostartConfig(
         directories=["/home/josh/.config/autostart", "/etc/xdg/autostart"],
         environment_name="korbenware",
         skip_unparsed=False,
         skip_invalid=False,
     ),
-    meta=MetaConfig(config_filename="/home/josh/.config/korbenware/korbenware.toml"),
-    menu=MenuConfig(filename="/etc/xdg/menus/arch-applications.menu"),
-    mime=MimeConfig(
-        cache="/usr/share/applications/mimeinfo.cache", environment="korbenware"
-    ),
-    applications=ApplicationsConfig(
-        directories=["/usr/share/applications"], skip_unparsed=False, skip_invalid=False
-    ),
-    logger=LoggerConfig(level="debug"),
-    format=FormatConfig(pygments_formatter="trac"),
-    urls={"https": "firefox.desktop"},
+    dbus=DBusConfig(namespace="org.jfhbrook.korbenware"),
     executors=ExecutorsConfig(
         primary={
             "foo": ProcessConfig(
@@ -50,6 +59,14 @@ config_loaded = BaseConfig(
             )
         },
     ),
+    format=FormatConfig(pygments_formatter="trac"),
+    logger=LoggerConfig(level="debug"),
+    meta=MetaConfig(config_filename="/home/josh/.config/korbenware/korbenware.toml"),
+    menu=MenuConfig(filename="/etc/xdg/menus/arch-applications.menu"),
+    mime=MimeConfig(
+        cache="/usr/share/applications/mimeinfo.cache", environment="korbenware"
+    ),
+    urls={"https": "firefox.desktop"},
 )
 
 config_dumped = [
@@ -65,13 +82,15 @@ config_dumped = [
     {"https": "firefox.desktop"},
 ]
 
-config_signature = "((asvvv)(v)(vv)(asvv)a{ss})"
+config_signature = "((asvv)(asvvv)(v)({s(asvvv)})({s(asvvv)})(v)(v)(v)(v)(vv)a{ss})"
 
 
 @pytest.mark.parametrize(
     "type_,dumped,loaded,sig",
     [
         (Str(), "hello", "hello", "s"),
+        (List(Str()), ["hello"], ["hello"], "as"),
+        (TestContainerType, test_container_dumped, test_container_loaded, "(sias)"),
         (BaseConfig, config_dumped, config_loaded, config_signature),
     ],
 )

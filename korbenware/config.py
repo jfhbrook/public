@@ -41,16 +41,16 @@ def value(default=None, field=None):
 
 
 @config
-class AutostartConfig:
-    directories = value(XDG_AUTOSTART_DIRS, field=List(Str()))
-    environment_name = value(XDG_CURRENT_DESKTOP)
+class ApplicationsConfig:
+    directories = value(XDG_APPLICATIONS_DIRS, field=List(Str()))
     skip_unparsed = value(False)
     skip_invalid = value(False)
 
 
 @config
-class ApplicationsConfig:
-    directories = value(XDG_APPLICATIONS_DIRS, field=List(Str()))
+class AutostartConfig:
+    directories = value(XDG_AUTOSTART_DIRS, field=List(Str()))
+    environment_name = value(XDG_CURRENT_DESKTOP)
     skip_unparsed = value(False)
     skip_invalid = value(False)
 
@@ -66,24 +66,24 @@ class FormatConfig:
 
 
 @config
+class LoggerConfig:
+    level = value("debug")
+
+
+@config
 class MenuConfig:
     filename = value()
+
+
+@config
+class MetaConfig:
+    config_filename = value("???")
 
 
 @config
 class MimeConfig:
     cache = value("/usr/share/applications/mimeinfo.cache")
     environment = value(XDG_CURRENT_DESKTOP)
-
-
-@config
-class LoggerConfig:
-    level = value("debug")
-
-
-@config
-class MetaConfig:
-    config_filename = value("???")
 
 
 @config
@@ -112,16 +112,16 @@ class ExecutorsConfig:
 
 @config
 class BaseConfig:
-    dbus = subconfig(DBusConfig)
-    autostart = subconfig(AutostartConfig)
-    meta = subconfig(MetaConfig)
-    menu = subconfig(MenuConfig)
-    mime = subconfig(MimeConfig)
     applications = subconfig(ApplicationsConfig)
-    logger = subconfig(LoggerConfig)
-    format = subconfig(FormatConfig)
-    urls = value(dict(), field=DBusField("a{ss}"))
+    autostart = subconfig(AutostartConfig)
+    dbus = subconfig(DBusConfig)
     executors = subconfig(ExecutorsConfig)
+    format = subconfig(FormatConfig)
+    logger = subconfig(LoggerConfig)
+    menu = subconfig(MenuConfig)
+    meta = subconfig(MetaConfig)
+    mime = subconfig(MimeConfig)
+    urls = value(dict(), field=DBusField("a{ss}"))
 
 
 def load_config():
