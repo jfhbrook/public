@@ -65,12 +65,20 @@ class Signature(fields.Str):
 
 
 class List(fields.List):
-    def __init__(self, field_or_attrs, **kwargs):
-        if hasattr(field_or_attrs, "__attrs_attrs__"):
-            field = fields.Nested(from_attrs(field_or_attrs))
+    def __init__(self, cls_or_instance, **kwargs):
+        if hasattr(cls_or_instance, "__attrs_attrs__"):
+            field = fields.Nested(from_attrs(cls_or_instance))
         else:
-            field = field_or_attrs
-        super().__init__(field)
+            field = cls_or_instance
+        super().__init__(field, **kwargs)
+
+
+class Dict(fields.Dict):
+    # TODO: Validate that keys is a base field type
+    def __init__(self, keys, values, **kwargs):
+        if hasattr(values, "__attrs_attrs__"):
+            values = fields.Nested(from_attrs(values))
+        super().__init__(keys, values, **kwargs)
 
 
 Tuple = fields.Tuple

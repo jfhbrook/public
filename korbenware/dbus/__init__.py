@@ -20,6 +20,7 @@ from korbenware.dbus.marshmallow.fields import (
     Signature,
     List,
     Tuple,
+    Dict,
     Nested,
     Variant,
     DateTime,
@@ -45,6 +46,7 @@ __all__ = [
     "List",
     "Tuple",
     "Nested",
+    "Dict",
     "Variant",
     "DateTime",
     "DBUS_FIELD",
@@ -65,13 +67,14 @@ SENSIBLE_DEFAULTS = {
     Str: "",
     List: attr.Factory(list),
     Tuple: attr.Factory(tuple),
+    Dict: attr.Factory(dict),
     DateTime: datetime.datetime.fromtimestamp(0),
 }
 
 
 def dbus_attr(field=None, metadata=None, default=None, **kwargs):
     if not default:
-        default = SENSIBLE_DEFAULTS.get(field, attr.Factory(field))
+        default = SENSIBLE_DEFAULTS.get(type(field), attr.Factory(field))
 
     metadata = metadata or dict()
 

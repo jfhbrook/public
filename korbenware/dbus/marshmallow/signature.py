@@ -2,6 +2,7 @@ from korbenware.dbus.marshmallow.fields import (
     BASE_FIELDS,
     List,
     Tuple,
+    Dict,
     Nested,
     DBusField,
     SerializedField,
@@ -26,6 +27,11 @@ def field_signature(field):
         for f in field.tuple_fields:
             sig += field_signature(f)
         sig += ")"
+    elif type(field) == Dict:
+        sig += "a{"
+        sig += field_signature(field.key_field)
+        sig += field_signature(field.value_field)
+        sig += "}"
     elif type(field) == Nested:
         inner = field.schema
         sig += schema_signature(inner)

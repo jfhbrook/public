@@ -1,12 +1,11 @@
 import os.path
-from typing import Dict
 
 import attr
 import cattr
 import toml
 from twisted.logger import LogLevel
 
-from korbenware.dbus import DBusField, List, Str, Variant
+from korbenware.dbus import Bool, DBusField, Dict, List, Str, Variant
 from korbenware.dbus.marshmallow.schema import DBUS_FIELD, DBUS_NESTED
 from korbenware.logger import create_logger
 from korbenware.presentation import representable
@@ -43,71 +42,69 @@ def value(default=None, field=None):
 @config
 class ApplicationsConfig:
     directories = value(XDG_APPLICATIONS_DIRS, field=List(Str()))
-    skip_unparsed = value(False)
-    skip_invalid = value(False)
+    skip_unparsed = value(False, field=Bool())
+    skip_invalid = value(False, field=Bool())
 
 
 @config
 class AutostartConfig:
     directories = value(XDG_AUTOSTART_DIRS, field=List(Str()))
-    environment_name = value(XDG_CURRENT_DESKTOP)
-    skip_unparsed = value(False)
-    skip_invalid = value(False)
+    environment_name = value(XDG_CURRENT_DESKTOP, field=Str())
+    skip_unparsed = value(False, field=Bool())
+    skip_invalid = value(False, field=Bool())
 
 
 @config
 class DBusConfig:
-    namespace = value("org.jfhbrook.korbenware")
+    namespace = value("org.jfhbrook.korbenware", field=Str())
 
 
 @config
 class FormatConfig:
-    pygments_formatter = value("trac")
+    pygments_formatter = value("trac", field=Str())
 
 
 @config
 class LoggerConfig:
-    level = value("debug")
+    level = value("debug", field=Str())
 
 
 @config
 class MenuConfig:
-    filename = value()
+    filename = value(field=Str())
 
 
 @config
 class MetaConfig:
-    config_filename = value("???")
+    config_filename = value("???", field=Str())
 
 
 @config
 class MimeConfig:
-    cache = value("/usr/share/applications/mimeinfo.cache")
-    environment = value(XDG_CURRENT_DESKTOP)
+    cache = value("/usr/share/applications/mimeinfo.cache", field=Str())
+    environment = value(XDG_CURRENT_DESKTOP, field=Str())
 
 
 @config
 class ProcessConfig:
-    exec = value(attr.Factory(list))
-    monitor = value(True)
-    restart = value(False)
-    cleanup = value(False)
+    exec = value(attr.Factory(list), field=List(Str()))
+    monitor = value(True, field=Bool())
+    restart = value(False, field=Bool())
+    cleanup = value(False, field=Bool())
 
 
 @config
 class CriticalProcessConfig:
-    exec = value(attr.Factory(list))
-    monitor = value(True)
-    restart = value(True)
-    cleanup = value(False)
+    exec = value(attr.Factory(list), field=List(Str()))
+    monitor = value(True, field=Bool())
+    restart = value(True, field=Bool())
+    cleanup = value(False, field=Bool())
 
 
 @config
 class ExecutorsConfig:
-    primary = attr.ib(type=Dict[str, ProcessConfig], default=attr.Factory(dict))
-    critical = attr.ib(
-        type=Dict[str, CriticalProcessConfig], default=attr.Factory(dict)
-    )
+    primary = value(field=Dict(Str(), ProcessConfig))
+    critical = value(field=Dict(Str(), CriticalProcessConfig))
 
 
 @config
@@ -121,7 +118,7 @@ class BaseConfig:
     menu = subconfig(MenuConfig)
     meta = subconfig(MetaConfig)
     mime = subconfig(MimeConfig)
-    urls = value(dict(), field=DBusField("a{ss}"))
+    urls = value(attr.Factory(dict), field=Dict(Str(), Str()))
 
 
 def load_config():
