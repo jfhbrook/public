@@ -1,21 +1,24 @@
 import pytest
 
+import datetime
+
 import attr
 
 from korbenware.config import (
     BaseConfig,
+    ApplicationsConfig,
     AutostartConfig,
+    CriticalProcessConfig,
+    ExecutorsConfig,
+    DBusConfig,
+    FormatConfig,
+    LoggerConfig,
     MenuConfig,
     MimeConfig,
-    ApplicationsConfig,
-    DBusConfig,
     MetaConfig,
-    LoggerConfig,
-    FormatConfig,
-    ExecutorsConfig,
     ProcessConfig,
-    CriticalProcessConfig,
 )
+from korbenware.session import ProcessState, ExecutorState, SessionState
 from korbenware.dbus import dbus_attr
 from korbenware.dbus.transformers import Transformer
 from korbenware.dbus.marshmallow.fields import Dict, Int32, List, Str
@@ -52,7 +55,6 @@ nested_container_dumped = [
     dict(key=["hello", 42, ["hello"], dict(hello=12)]),
 ]
 
-# TODO: Create a pytest fixture for this
 config_loaded = BaseConfig(
     applications=ApplicationsConfig(
         directories=["/usr/share/applications"], skip_unparsed=False, skip_invalid=False
@@ -109,6 +111,46 @@ config_dumped = [
 
 config_signature = "((asbb)(assbb)(s)(a{s(asbbb)}a{s(asbbb)})(s)(s)(s)(s)(ss)a{ss})"
 
+executor_empty_loaded = ExecutorState(running=-1, processes=[])
+
+executor_empty_dumped = [-1, []]
+
+executor_some_loaded = ExecutorState(
+    running=1, processes=[ProcessState(name="xmonad", state="STOPPED", restart=True)]
+)
+
+executor_some_dumped = [1, [["xmonad", "STOPPED", True, -1, -1, -1, -1]]]
+
+executor_signature = "(na(ssbxxxx))"
+
+ages_ago_loaded = datetime.datetime.fromtimestamp(0)
+ages_ago_dumped = 0
+
+recently_loaded = datetime.datetime(month=6, day=23, year=2020)
+recently_dumped = 1592884800000
+
+session_loaded = SessionState(
+    running=False,
+    loaded_at=recently_loaded,
+    started_at=ages_ago_loaded,
+    stopped_at=ages_ago_loaded,
+    config=config_loaded,
+    critical_executor=executor_empty_loaded,
+    primary_executor=executor_some_loaded,
+)
+
+session_dumped = [
+    False,
+    recently_dumped,
+    ages_ago_dumped,
+    ages_ago_dumped,
+    config_dumped,
+    executor_empty_dumped,
+    executor_some_dumped,
+]
+
+session_signature = f"(bxxx{config_signature}{executor_signature}{executor_signature})"
+
 
 @pytest.mark.parametrize(
     "type_,dumped,loaded,sig",
@@ -129,6 +171,14 @@ config_signature = "((asbb)(assbb)(s)(a{s(asbbb)}a{s(asbbb)})(s)(s)(s)(s)(ss)a{s
             "(a(siasa{si})a{s(siasa{si})})",
         ),
         (BaseConfig, config_dumped, config_loaded, config_signature),
+        (
+            ExecutorState,
+            executor_empty_dumped,
+            executor_empty_loaded,
+            executor_signature,
+        ),
+        (ExecutorState, executor_some_dumped, executor_some_loaded, executor_signature),
+        (SessionState, session_dumped, session_loaded, session_signature),
     ],
 )
 def test_transformer(type_, dumped, loaded, sig):
