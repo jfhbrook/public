@@ -67,6 +67,9 @@ class Server:
                     else:
                         ret = maybe_coro
 
+                    print('this is the thing')
+                    print(ret)
+
                     return returns_xform.dump(ret)
 
                 return proxy_fn

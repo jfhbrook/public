@@ -5,7 +5,7 @@ import cattr
 import toml
 from twisted.logger import LogLevel
 
-from korbenware.dbus import Bool, DBusField, Dict, List, Str, Variant
+from korbenware.dbus import Bool, dbus_attr, DBusField, Dict, List, Str, Variant
 from korbenware.dbus.marshmallow.schema import DBUS_FIELD, DBUS_NESTED
 from korbenware.logger import create_logger
 from korbenware.presentation import representable
@@ -41,70 +41,70 @@ def value(default=None, field=None):
 
 @config
 class ApplicationsConfig:
-    directories = value(XDG_APPLICATIONS_DIRS, field=List(Str()))
-    skip_unparsed = value(False, field=Bool())
-    skip_invalid = value(False, field=Bool())
+    directories = dbus_attr(List(Str()), default=XDG_APPLICATIONS_DIRS)
+    skip_unparsed = dbus_attr(Bool(), default=False)
+    skip_invalid = dbus_attr(Bool(), default=False)
 
 
 @config
 class AutostartConfig:
-    directories = value(XDG_AUTOSTART_DIRS, field=List(Str()))
-    environment_name = value(XDG_CURRENT_DESKTOP, field=Str())
-    skip_unparsed = value(False, field=Bool())
-    skip_invalid = value(False, field=Bool())
+    directories = dbus_attr(List(Str()), default=XDG_AUTOSTART_DIRS)
+    environment_name = dbus_attr(Str(), default=XDG_CURRENT_DESKTOP)
+    skip_unparsed = dbus_attr(Bool(), default=False)
+    skip_invalid = dbus_attr(Bool(), default=False)
 
 
 @config
 class DBusConfig:
-    namespace = value("org.jfhbrook.korbenware", field=Str())
+    namespace = dbus_attr(Str(), default="org.jfhbrook.korbenware")
 
 
 @config
 class FormatConfig:
-    pygments_formatter = value("trac", field=Str())
+    pygments_formatter = dbus_attr(Str(), default="trac")
 
 
 @config
 class LoggerConfig:
-    level = value("debug", field=Str())
+    level = dbus_attr(Str(), default="debug")
 
 
 @config
 class MenuConfig:
-    filename = value(field=Str())
+    filename = dbus_attr(Str())
 
 
 @config
 class MetaConfig:
-    config_filename = value("???", field=Str())
+    config_filename = dbus_attr(Str(), default="????")
 
 
 @config
 class MimeConfig:
-    cache = value("/usr/share/applications/mimeinfo.cache", field=Str())
-    environment = value(XDG_CURRENT_DESKTOP, field=Str())
+    cache = dbus_attr(Str(), default="/usr/share/applications/mimeinfo.cache")
+    environment = dbus_attr(Str(), default=XDG_CURRENT_DESKTOP)
 
 
 @config
 class ProcessConfig:
-    exec = value(attr.Factory(list), field=List(Str()))
-    monitor = value(True, field=Bool())
-    restart = value(False, field=Bool())
-    cleanup = value(False, field=Bool())
+    exec = dbus_attr(List(Str()))
+    monitor = dbus_attr(Bool(), default=False)
+    restart = dbus_attr(Bool(), default=False)
+    cleanup = dbus_attr(Bool(), default=False)
 
 
 @config
 class CriticalProcessConfig:
-    exec = value(attr.Factory(list), field=List(Str()))
-    monitor = value(True, field=Bool())
-    restart = value(True, field=Bool())
-    cleanup = value(False, field=Bool())
+    exec = dbus_attr(List(Str()))
+    monitor = dbus_attr(Bool(), default=True)
+    restart = dbus_attr(Bool(), default=True)
+    cleanup = dbus_attr(Bool(), default=False)
 
 
 @config
 class ExecutorsConfig:
-    primary = value(field=Dict(Str(), ProcessConfig))
-    critical = value(field=Dict(Str(), CriticalProcessConfig))
+    primary = dbus_attr(Dict(Str(), ProcessConfig))
+    critical = dbus_attr(Dict(Str(), CriticalProcessConfig))
 
 
 @config
@@ -118,7 +118,7 @@ class BaseConfig:
     menu = subconfig(MenuConfig)
     meta = subconfig(MetaConfig)
     mime = subconfig(MimeConfig)
-    urls = value(attr.Factory(dict), field=Dict(Str(), Str()))
+    urls = dbus_attr(Dict(Str(), Str()))
 
 
 def load_config():
