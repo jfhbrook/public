@@ -1,5 +1,7 @@
 import pytest
 
+import attr
+
 from korbenware.dbus.tree import Node
 
 
@@ -108,9 +110,27 @@ class NonNode:
 def test_insert_non_node():
     root = Node()
 
-    c = NonNode()
+    b = NonNode()
 
-    root.set("/a/b/c", c)
+    root.set("/a/b", b)
 
-    root.a.b.c is c
-    root.get("/a/b/c") is c
+    assert root.a.b is b
+    assert root.get("/a/b") is b
+
+
+@attr.s
+class AttrNode(Node):
+    _branches = attr.ib(type=dict, default=attr.Factory(dict))
+
+
+def test_insert_attr_node():
+    root = AttrNode()
+
+    b = AttrNode()
+
+    root.set('/a/b', b)
+
+    assert root.get('/') is root
+    assert root.get('/a/b') is b
+    assert root.get('/a').b is b
+    assert root.a.b is b
