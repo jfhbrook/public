@@ -32,7 +32,7 @@ def test_properties():
     a.property("property_u", Str(), "pony")
     a.property("property_v", Bool(), True)
 
-    b = srv.get("/thing/B")
+    b = srv.object("/thing/B")
 
     @b.method([Thing], Str())
     def method_three(thing):
@@ -51,11 +51,8 @@ def test_properties():
 
     assert srv.namespace == "some.namespace"
 
-    assert len(list(srv.keys())) == 2
-
     assert srv.has("/thing/A")
     assert srv.has("/thing/B")
 
-    assert repr(srv.thing) == "pony"
     assert srv.thing.A is srv.get("/thing/A")
     assert srv.thing.B is srv.get("/thing/B")

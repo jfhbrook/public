@@ -89,51 +89,13 @@ def test_replaced_node():
     assert root.get("/a/b/c") is c
 
 
-def test_complicated_set():
+def test_inherited_node():
     root = Node()
 
-    a = Node()
-    b = Node()
     c = Node()
-    d = Node()
-    e = Node()
-    e_prime = Node()
-    f = Node()
-    g = Node()
-    h = Node()
+    d = Node({"/e": Node()})
 
-    root.set("/a", a)
-    root.set("/b", b)
-    root.set("/c/", c)
-    root.set("/a/d", d)
-    root.set(["b", "e"], e)
-    root.set("/b/f", f)
-    root.set("/a/d/g", g)
-    root.set("/b/e/h", h)
-    root.set("/b/e", e_prime)
+    root.set("/a/b/c", c)
+    root.set("/a/b/c/d", d)
 
-    assert root.a is a
-    assert root.get("/a") is a
-    assert root.b is b
-    assert root.get("/b") is b
-    assert root.c is c
-    assert root.get("/c") is c
-    assert root.a.d is d
-    assert root.get("/a/d") is d
-    assert root.b.e is e_prime
-    assert root.get("/b/e") is e
-    assert root.b.f is f
-    assert root.get("/b/f") is f
-    assert root.a.d.g is g
-    assert root.get("/a/d/g") is g
-    assert root.b.e.h is h
-    assert root.get("/b/e/h") is h
-
-    i = Node()
-    l = Node()
-
-    i.set("/j/k/l", l)
-    root.set("/a/d/g/i", i)
-
-    assert root.a.d.g.i.j.k.l is l
-    assert root.get("/a/d/g/i/j/k/l") is l
+    assert root.a.b.c.d.has("/e")

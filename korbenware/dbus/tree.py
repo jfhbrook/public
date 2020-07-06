@@ -31,15 +31,9 @@ class Node:
             child_path = f"/{'/'.join(path_parts)}"
             this_path = f"/{slug}{child_path}"
 
-            print(parent)
-            print(this_path)
-            print(parent_path)
-            print(full_path)
             if parent.has(full_path):
-                print("has")
                 this = parent.get(full_path)
             else:
-                print("no has")
                 # Create a fresh node if necessary to complete the path
                 this = Node()
                 setattr(parent, slug, this)
@@ -97,6 +91,16 @@ class Node:
         for k, v in self._branches.items():
             if k != "/":
                 yield k, v
+
+    def keys(self):
+        for k in self._branches.keys():
+            if k != "/":
+                yield k
+
+    def values(self):
+        for k, v in self._branches.items():
+            if k != "/":
+                yield v
 
     def __repr__(self):
         return repr(self._branches.keys())
