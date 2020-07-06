@@ -91,6 +91,20 @@ class Service(Node):
 
         return obj
 
+    def items(self):
+        for k, v in super().items():
+            if isinstance(v, Object):
+                yield k, v
+
+    def keys(self):
+        for k, v in self.items():
+            yield k
+
+    def values(self):
+        for v in super().values():
+            if isinstance(v, Object):
+                yield v
+
     async def server(self, connection):
         return await Server.create(connection, self)
 

@@ -172,15 +172,14 @@ class Session(EventEmitter):
         def get_state():
             return SessionState.from_session(self)
 
-        # @obj.method([Str()], Bool())
-        # def run_xdg_application(name):
-        #    self.primary_executor.run_xdg_application_by_name(name)
-        #    return True
+        @obj.method([Str()], Bool())
+        def run_xdg_application(name):
+            self.primary_executor.run_xdg_application_by_name(name)
+            return True
 
-        # @obj.method([], Bool())
-        # def shutdown():
-        #    print('I am getting called')
-        #    self.stop()
-        #    return True
+        @obj.method([], Bool())
+        def shutdown():
+            self.stop()
+            return True
 
         return obj

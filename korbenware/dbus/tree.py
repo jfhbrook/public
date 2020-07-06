@@ -103,4 +103,6 @@ class Node:
                 yield v
 
     def __repr__(self):
-        return repr(self._branches.keys())
+        keys = list(self.keys())
+        keys.sort()
+        return f"{self.__class__.__name__}({keys})"
