@@ -99,3 +99,18 @@ def test_inherited_node():
     root.set("/a/b/c/d", d)
 
     assert root.a.b.c.d.has("/e")
+
+
+class NonNode:
+    pass
+
+
+def test_insert_non_node():
+    root = Node()
+
+    c = NonNode()
+
+    root.set("/a/b/c", c)
+
+    root.a.b.c is c
+    root.get("/a/b/c") is c

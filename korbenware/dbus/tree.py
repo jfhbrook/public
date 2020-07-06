@@ -49,37 +49,38 @@ class Node:
         setattr(this, path_parts[0], node)
         this._branches[f"/{path_parts[0]}"] = node
 
-        # Add inherited branches going upwards on the tree
-        this_slug = path_parts[0]
-        this = node
-        branches = list(this._branches.keys())
+        if isinstance(node, Node):
+            # Add inherited branches going upwards on the tree
+            this_slug = path_parts[0]
+            this = node
+            branches = list(this._branches.keys())
 
-        while ancestors:
-            _, parent_slug, parent = ancestors.pop()
-            parent_branches = []
+            while ancestors:
+                _, parent_slug, parent = ancestors.pop()
+                parent_branches = []
 
-            for child_path in branches:
-                # Suppose we have a structure root -> a -> b
-                # and we're on node "a"
-                # then these branches are "/" (self) and "/b" (node b)
-                # this slug is "a"
-                # the parent slug is None
-                # and the parent itself is the root
-                child = this._branches[child_path]
+                for child_path in branches:
+                    # Suppose we have a structure root -> a -> b
+                    # and we're on node "a"
+                    # then these branches are "/" (self) and "/b" (node b)
+                    # this slug is "a"
+                    # the parent slug is None
+                    # and the parent itself is the root
+                    child = this._branches[child_path]
 
-                if child_path == "/":
-                    # for branch "/", we want to set the parent branch to "/a"
-                    parent_branch = f"/{this_slug}"
-                else:
-                    # and for branch "/b", we want to set the parent branch to "/a/b"
-                    parent_branch = f"/{this_slug}{child_path}"
+                    if child_path == "/":
+                        # for branch "/", we want to set the parent branch to "/a"
+                        parent_branch = f"/{this_slug}"
+                    else:
+                        # and for branch "/b", we want to set the parent branch to "/a/b"
+                        parent_branch = f"/{this_slug}{child_path}"
 
-                # Set the parent branch
-                parent._branches[parent_branch] = child
+                    # Set the parent branch
+                    parent._branches[parent_branch] = child
 
-            branches = list(parent._branches.keys())
-            this_slug = parent_slug
-            this = parent
+                branches = list(parent._branches.keys())
+                this_slug = parent_slug
+                this = parent
 
     def get(self, name):
         return self._branches[name]

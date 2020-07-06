@@ -39,6 +39,7 @@ class Object(EventEmitter):
 class Client(Node):
     service = attr.ib()
     remote_objs = attr.ib()
+    _branches = attr.ib(type=dict, default=attr.Factory(dict))
 
     @classmethod
     async def create(cls, connection, service):

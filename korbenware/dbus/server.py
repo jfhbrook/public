@@ -10,9 +10,10 @@ from korbenware.dbus.tree import Node
 from korbenware.twisted.util import returns_deferred
 
 
-class Object(EventEmitter):
+class Object(Node, EventEmitter):
     def __init__(self, service_obj, dbus_obj=None):
-        super().__init__()
+        Node.__init__(self)
+        EventEmitter.__init__(self)
         self.service_obj = service_obj
         self.dbus_obj = dbus_obj
 
@@ -38,6 +39,7 @@ class Server(Node):
     bus_names = attr.ib()
     dbus_obj_cls = attr.ib()
     dbus_obj = attr.ib()
+    _branches = attr.ib(type=dict, default=attr.Factory(dict))
 
     @classmethod
     async def create(server_cls, connection, service):
@@ -109,7 +111,7 @@ class Server(Node):
 
         server = server_cls(connection, service, bus_names, dbus_obj_cls, dbus_obj)
 
-        for path, obj in objects.items():
-            server.set(path, obj)
+        for p, obj in objects.items():
+            server.set(p, obj)
 
         return server
