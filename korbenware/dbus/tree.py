@@ -1,31 +1,102 @@
-class Node:
-    # TODO: Give this a pretty representation
-    def __init__(self):
-        self._branches = {}
+class InsertionError(Exception):
+    pass
 
-    def _set_branch(self, name, node):
-        setattr(self, name, node)
-        self._branches[name] = node
+
+class Node:
+    def __init__(self, branches=None):
+        self._branches = {}
+        self._branches["/"] = self
+        if branches:
+            for path, node in branches.items():
+                self.set(path, node)
+
+    def set(self, name, node):
+        if type(name) == str:
+            path_parts = [part for part in name.split("/") if part]
+        else:
+            path_parts = list(name)
+
+        if len(path_parts) == 0:
+            raise InsertionError(f"Can't insert an empty path!")
+
+        # Insert node into correct position of the tree
+        ancestors = [(None, None, self)]
+        this = self
+        while len(path_parts) > 1:
+            slug = path_parts.pop(0)
+
+            parent_full_path, parent_slug, parent = ancestors[-1]
+            parent_path = f"/{parent_slug}/{slug}" if parent_slug else f"/{slug}"
+            full_path = f"{parent_path}/{slug}" if parent_full_path else f"/{slug}"
+            child_path = f"/{'/'.join(path_parts)}"
+            this_path = f"/{slug}{child_path}"
+
+            print(parent)
+            print(this_path)
+            print(parent_path)
+            print(full_path)
+            if parent.has(full_path):
+                print("has")
+                this = parent.get(full_path)
+            else:
+                print("no has")
+                # Create a fresh node if necessary to complete the path
+                this = Node()
+                setattr(parent, slug, this)
+                parent._branches[this_path] = this
+            ancestors.append((full_path, slug, this))
+
+        # Retain existing nodes in the tree
+        if this.has(f"/{path_parts[0]}"):
+            for p, o in this.get(f"/{path_parts[0]}").items():
+                node.set(p, o)
+
+        # set last bit
+        setattr(this, path_parts[0], node)
+        this._branches[f"/{path_parts[0]}"] = node
+
+        # Add inherited branches going upwards on the tree
+        this_slug = path_parts[0]
+        this = node
+        branches = list(this._branches.keys())
+
+        while ancestors:
+            _, parent_slug, parent = ancestors.pop()
+            parent_branches = []
+
+            for child_path in branches:
+                # Suppose we have a structure root -> a -> b
+                # and we're on node "a"
+                # then these branches are "/" (self) and "/b" (node b)
+                # this slug is "a"
+                # the parent slug is None
+                # and the parent itself is the root
+                child = this._branches[child_path]
+
+                if child_path == "/":
+                    # for branch "/", we want to set the parent branch to "/a"
+                    parent_branch = f"/{this_slug}"
+                else:
+                    # and for branch "/b", we want to set the parent branch to "/a/b"
+                    parent_branch = f"/{this_slug}{child_path}"
+
+                # Set the parent branch
+                parent._branches[parent_branch] = child
+
+            branches = list(parent._branches.keys())
+            this_slug = parent_slug
+            this = parent
+
+    def get(self, name):
+        return self._branches[name]
+
+    def has(self, name):
+        return name in self._branches
+
+    def items(self):
+        for k, v in self._branches.items():
+            if k != "/":
+                yield k, v
 
     def __repr__(self):
-        return repr(self._branches)
-
-
-def insert_into_tree(root, path_parts, leaf):
-    path_parts = list(path_parts)
-    first_part = path_parts.pop(0)
-    try:
-        last_part = path_parts.pop()
-    except IndexError:
-        this_node = leaf
-    else:
-        this_node = Node()
-        for path_part in path_parts:
-            this_node._set_branch(path_part, Node())
-            this_node = getattr(this_node, path_part)
-        setattr(this_node, last_part, leaf)
-
-    if type(root) == dict:
-        root[first_part] = this_node
-    else:
-        setattr(root, first_part, this_node)
+        return repr(self._branches.keys())

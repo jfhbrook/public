@@ -1,6 +1,6 @@
 import attr
 from pyee import TwistedEventEmitter as EventEmitter
-from korbenware.dbus.tree import insert_into_tree
+from korbenware.dbus.tree import Node
 from korbenware.dbus.path import split
 
 
@@ -36,24 +36,25 @@ class Object(EventEmitter):
 
 
 @attr.s
-class Client:
+class Client(Node):
     service = attr.ib()
     remote_objs = attr.ib()
 
     @classmethod
     async def create(cls, connection, service):
-        remote_objs = dict()
+        remote_objs = Node()
         client_objs = dict()
 
-        for obj_path, service_obj in service.objects.items():
+        for obj_path, service_obj in service.items():
+            # Collect the remote object
             remote_obj = await connection.getRemoteObject(service.namespace, obj_path)
 
-            remote_objs[obj_path] = remote_obj
+            remote_objs.set(obj_path, remote_obj)
 
             # Generate and attach the client object
             obj = Object(remote_obj, service_obj)
 
-            insert_into_tree(client_objs, split(obj_path), obj)
+            client_objs[obj_path] = obj
 
             def bind(obj):
                 async def proxy_fn(*args):
@@ -77,7 +78,7 @@ class Client:
 
         client = Client(service, remote_objs)
 
-        for attr_, obj in client_objs.items():
-            setattr(client, attr_, obj)
+        for path, obj in client_objs.items():
+            client.set(path, obj)
 
         return client

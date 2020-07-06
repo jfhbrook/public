@@ -74,18 +74,13 @@ DEFAULTS_FOR_FIELDS = {
 
 
 def default_for_field(field):
-    if hasattr(field, '__attrs_attrs__'):
+    if hasattr(field, "__attrs_attrs__"):
         return attr.Factory(field)
 
     return DEFAULTS_FOR_FIELDS[type(field)]
 
 
-FIELDS_FOR_DEFAULTS = {
-    bool: Bool,
-    int: Int64,
-    str: Str,
-    datetime.datetime: DateTime
-}
+FIELDS_FOR_DEFAULTS = {bool: Bool, int: Int64, str: Str, datetime.datetime: DateTime}
 
 
 def field_for_default(default):
@@ -102,14 +97,14 @@ TYPES_FOR_FIELDS = {
     UInt64: int,
     Double: float,
     Str: str,
-    DateTime: datetime.datetime
+    DateTime: datetime.datetime,
 }
 
 
 def type_for_field(field):
-    if hasattr(field, '__attrs_attrs__'):
+    if hasattr(field, "__attrs_attrs__"):
         return field
-    if hasattr(field, 'cls') and hasattr(field.cls, '__attrs_attrs__'):
+    if hasattr(field, "cls") and hasattr(field.cls, "__attrs_attrs__"):
         return field.cls
 
     t = type(field)
@@ -135,8 +130,8 @@ def type_for_field(field):
 class DBusAttrSpecificationError(Exception):
     def __init__(self, field, type, default):
         super().__init__(
-            'Could not create a DBus attr specification with '
-            f'field={field}, type={type}, default={default}'
+            "Could not create a DBus attr specification with "
+            f"field={field}, type={type}, default={default}"
         )
 
 
@@ -144,7 +139,7 @@ def dbus_attr(field=None, type=None, default=None, metadata=None, **kwargs):
     try:
         if default is None:
             if field is None:
-                raise KeyError('Must either define default or field')
+                raise KeyError("Must either define default or field")
             default = default_for_field(field)
         elif field is None:
             field = field_for_default(default)

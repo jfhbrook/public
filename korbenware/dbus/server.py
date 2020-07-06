@@ -6,7 +6,7 @@ from twisted.internet.defer import Deferred
 from txdbus.objects import DBusObject, DBusProperty
 
 import korbenware.dbus.path as path
-from korbenware.dbus.tree import insert_into_tree
+from korbenware.dbus.tree import Node
 from korbenware.twisted.util import returns_deferred
 
 
@@ -32,7 +32,7 @@ class Object(EventEmitter):
 
 
 @attr.s
-class Server:
+class Server(Node):
     connection = attr.ib()
     service = attr.ib()
     bus_names = attr.ib()
@@ -45,11 +45,11 @@ class Server:
         attrs = dict()
         objects = dict()
 
-        for obj_path, service_obj in service.objects.items():
+        for obj_path, service_obj in service.items():
             obj = Object(service_obj)
 
             # Attach our object ot the server cls
-            insert_into_tree(objects, path.split(obj_path), obj)
+            objects[obj_path] = obj
 
             # Generate and add the interface
             iface = service_obj.iface
@@ -67,7 +67,7 @@ class Server:
                     else:
                         ret = maybe_coro
 
-                    print('this is the thing')
+                    print("this is the thing")
                     print(ret)
 
                     return returns_xform.dump(ret)
@@ -109,7 +109,7 @@ class Server:
 
         server = server_cls(connection, service, bus_names, dbus_obj_cls, dbus_obj)
 
-        for attr_, obj in objects.items():
-            setattr(server, attr_, obj)
+        for path, obj in objects.items():
+            server.set(path, obj)
 
         return server

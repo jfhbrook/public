@@ -4,13 +4,14 @@ from korbenware.dbus.client import Client
 from korbenware.dbus.server import Server
 from korbenware.dbus.path import basename, split
 from korbenware.dbus.transformers import MultiTransformer, Transformer
-from korbenware.dbus.tree import insert_into_tree
+from korbenware.dbus.tree import Node
 
 property_ = property
 
 
-class Object:
+class Object(Node):
     def __init__(self, service, obj_path, iface_name=None):
+        super().__init__()
         if not iface_name:
             iface_name = f"{basename(obj_path)}Iface"
         self.service = service
@@ -74,20 +75,20 @@ class Object:
         return iface
 
 
-class Service:
+class Service(Node):
     @classmethod
     def from_config(cls, config):
         return cls(config.dbus.namespace)
 
     def __init__(self, namespace):
+        super().__init__()
         self.namespace = namespace
-        self.objects = dict()
 
     def object(self, obj_path, iface_name=None):
         obj = Object(self, obj_path, iface_name)
 
-        insert_into_tree(self, split(obj_path), obj)
-        self.objects[obj_path] = obj
+        self.set(obj_path, obj)
+
         return obj
 
     async def server(self, connection):
