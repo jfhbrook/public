@@ -39,7 +39,6 @@ class Object(EventEmitter):
 class Client(Node):
     service = attr.ib()
     remote_objs = attr.ib()
-    _branches = attr.ib(type=dict, default=attr.Factory(dict))
 
     @classmethod
     async def create(cls, connection, service):
@@ -47,8 +46,12 @@ class Client(Node):
         client_objs = dict()
 
         for obj_path, service_obj in service.items():
+            print(obj_path)
+            print(service_obj)
             # Collect the remote object
             remote_obj = await connection.getRemoteObject(service.namespace, obj_path)
+
+            print(remote_obj)
 
             remote_objs.set(obj_path, remote_obj)
 
@@ -80,6 +83,7 @@ class Client(Node):
         client = Client(service, remote_objs)
 
         for path, obj in client_objs.items():
+            print(path, obj)
             client.set(path, obj)
 
         return client

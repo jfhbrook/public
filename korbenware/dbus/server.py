@@ -39,7 +39,6 @@ class Server(Node):
     bus_names = attr.ib()
     dbus_obj_cls = attr.ib()
     dbus_obj = attr.ib()
-    _branches = attr.ib(type=dict, default=attr.Factory(dict))
 
     @classmethod
     async def create(server_cls, connection, service):

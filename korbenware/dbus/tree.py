@@ -4,11 +4,14 @@ class InsertionError(Exception):
 
 class Node:
     def __init__(self, branches=None):
-        self._branches = {}
-        self._branches["/"] = self
+        self.__attrs_post_init__()
         if branches:
             for path, node in branches.items():
                 self.set(path, node)
+
+    def __attrs_post_init__(self):
+        self._branches = {}
+        self._branches["/"] = self
 
     def set(self, name, node):
         if type(name) == str:
