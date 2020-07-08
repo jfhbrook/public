@@ -128,9 +128,9 @@ def test_insert_attr_node():
 
     b = AttrNode()
 
-    root.set('/a/b', b)
+    root.set("/a/b", b)
 
-    assert root.get('/') is root
-    assert root.get('/a/b') is b
-    assert root.get('/a').b is b
+    assert root.get("/") is root
+    assert root.get("/a/b") is b
+    assert root.get("/a").b is b
     assert root.a.b is b

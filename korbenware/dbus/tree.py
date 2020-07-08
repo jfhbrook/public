@@ -31,17 +31,21 @@ class Node:
             parent_full_path, parent_slug, parent = ancestors[-1]
             parent_path = f"/{parent_slug}/{slug}" if parent_slug else f"/{slug}"
             full_path = f"{parent_path}/{slug}" if parent_full_path else f"/{slug}"
-            child_path = f"/{'/'.join(path_parts)}"
-            this_path = f"/{slug}{child_path}"
 
             if parent.has(full_path):
                 this = parent.get(full_path)
             else:
                 # Create a fresh node if necessary to complete the path
                 this = Node()
+
+                # Set the property on the parent. TODO: It would be more elegant
+                # to set this on the traversal back up at the same place where
+                # we set the key in _branches, but this also passes tests and
+                # this code is really hairy to begin with
                 setattr(parent, slug, this)
-                parent._branches[this_path] = this
             ancestors.append((full_path, slug, this))
+
+            print("---")
 
         # Retain existing nodes in the tree
         if this.has(f"/{path_parts[0]}"):
@@ -52,38 +56,41 @@ class Node:
         setattr(this, path_parts[0], node)
         this._branches[f"/{path_parts[0]}"] = node
 
+        # Add inherited branches going upwards on the tree
+        this_slug = path_parts[0]
+        this = node
+
         if isinstance(node, Node):
-            # Add inherited branches going upwards on the tree
-            this_slug = path_parts[0]
-            this = node
             branches = list(this._branches.keys())
+        else:
+            branches = []
 
-            while ancestors:
-                _, parent_slug, parent = ancestors.pop()
-                parent_branches = []
+        while ancestors:
+            _, parent_slug, parent = ancestors.pop()
+            parent_branches = []
 
-                for child_path in branches:
-                    # Suppose we have a structure root -> a -> b
-                    # and we're on node "a"
-                    # then these branches are "/" (self) and "/b" (node b)
-                    # this slug is "a"
-                    # the parent slug is None
-                    # and the parent itself is the root
-                    child = this._branches[child_path]
+            for child_path in branches:
+                # Suppose we have a structure root -> a -> b
+                # and we're on node "a"
+                # then these branches are "/" (self) and "/b" (node b)
+                # this slug is "a"
+                # the parent slug is None
+                # and the parent itself is the root
+                child = this._branches[child_path]
 
-                    if child_path == "/":
-                        # for branch "/", we want to set the parent branch to "/a"
-                        parent_branch = f"/{this_slug}"
-                    else:
-                        # and for branch "/b", we want to set the parent branch to "/a/b"
-                        parent_branch = f"/{this_slug}{child_path}"
+                if child_path == "/":
+                    # for branch "/", we want to set the parent branch to "/a"
+                    parent_branch = f"/{this_slug}"
+                else:
+                    # and for branch "/b", we want to set the parent branch to "/a/b"
+                    parent_branch = f"/{this_slug}{child_path}"
 
-                    # Set the parent branch
-                    parent._branches[parent_branch] = child
+                # Set the parent branch
+                parent._branches[parent_branch] = child
 
-                branches = list(parent._branches.keys())
-                this_slug = parent_slug
-                this = parent
+            branches = list(parent._branches.keys())
+            this_slug = parent_slug
+            this = parent
 
     def get(self, name):
         return self._branches[name]
