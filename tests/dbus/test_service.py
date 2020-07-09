@@ -1,6 +1,9 @@
 import pytest
 
+from unittest.mock import Mock
+
 import attr
+from txdbus.interface import Method, Property, Signal
 
 from korbenware.dbus import Bool, dbus_attr, Str
 from korbenware.dbus.service import Object, Service
@@ -28,7 +31,76 @@ def assert_property(obj, property, expected):
     assert (xform.signature(), default, kwargs) == expected
 
 
-def test_properties():
+@pytest.fixture
+def hashtag_content():
+    return Thing(string="#content")
+
+
+@pytest.fixture
+def mock_dbus_iface_cls(monkeypatch):
+    mock_iface_cls = Mock()
+
+    monkeypatch.setattr("korbenware.dbus.service.DBusInterface", mock_iface_cls)
+
+    return mock_iface_cls
+
+
+@pytest.fixture
+def mock_dbus_method_cls(monkeypatch):
+    mock_method_cls = Mock(return_value="method")
+
+    monkeypatch.setattr("korbenware.dbus.service.Method", mock_method_cls)
+
+    return mock_method_cls
+
+
+@pytest.fixture
+def mock_dbus_property_cls(monkeypatch):
+    mock_property_cls = Mock(return_value="property")
+
+    monkeypatch.setattr("korbenware.dbus.service.Property", mock_property_cls)
+
+    return mock_property_cls
+
+
+@pytest.fixture
+def mock_dbus_signal_cls(monkeypatch):
+    mock_signal_cls = Mock(return_value="signal")
+
+    monkeypatch.setattr("korbenware.dbus.service.Signal", mock_signal_cls)
+
+    return mock_signal_cls
+
+
+@pytest.fixture
+def assert_iface(
+    mock_dbus_iface_cls,
+    mock_dbus_method_cls,
+    mock_dbus_property_cls,
+    mock_dbus_signal_cls,
+):
+    def asserts(obj, namespace, expected):
+        _ = obj.iface
+
+        iface_args = []
+
+        classes = {
+            "method": mock_dbus_method_cls,
+            "property": mock_dbus_property_cls,
+            "signal": mock_dbus_signal_cls,
+        }
+
+        for type_, args, kwargs in expected:
+            classes[type_].assert_any_call(*args, **kwargs)
+            iface_args.append(type_)
+
+        mock_dbus_iface_cls.assert_called_once()
+        mock_dbus_iface_cls.assert_called_with(namespace, *sorted(iface_args))
+
+    return asserts
+
+
+def test_service(hashtag_content, assert_iface):
     srv = Service("some.namespace")
 
     a = srv.object("/thing/A")
@@ -64,8 +136,6 @@ def test_properties():
     b.signal("signal_c", Bool())
     b.signal("signal_d", Thing)
 
-    hashtag_content = Thing(string="#content")
-
     b.property("property_w", Thing, hashtag_content)
 
     assert srv.namespace == "some.namespace"
@@ -77,10 +147,25 @@ def test_properties():
     assert srv.get("/thing/A") is a
     assert_method(a, "method_one", ("s", "b", method_one))
     assert_method(a, "method_two", ("(s)", "(s)", method_two))
+
     assert_signal(a, "signal_a", "s")
     assert_signal(a, "signal_b", "(s)")
+
     assert_property(a, "property_u", ("s", "pony", dict()))
     assert_property(a, "property_v", ("b", True, dict(foo="bar")))
+
+    assert_iface(
+        a,
+        "some.namespace.AIface",
+        [
+            ("method", ["method_one"], dict(arguments="s", returns="b")),
+            ("method", ["method_two"], dict(arguments="(s)", returns="(s)")),
+            ("signal", ["signal_a", "s"], dict()),
+            ("signal", ["signal_b", "(s)"], dict()),
+            ("property", ["property_u", "s"], dict()),
+            ("property", ["property_v", "b"], dict(foo="bar")),
+        ],
+    )
 
     assert srv.thing.B is b
     assert srv.get("/thing/B") is b
