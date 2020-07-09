@@ -45,8 +45,6 @@ class Node:
                 setattr(parent, slug, this)
             ancestors.append((full_path, slug, this))
 
-            print("---")
-
         # Retain existing nodes in the tree
         if this.has(f"/{path_parts[0]}"):
             for p, o in this.get(f"/{path_parts[0]}").items():
