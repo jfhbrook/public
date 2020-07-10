@@ -322,5 +322,8 @@ async def test_server(
 
     server = await srv.server(mock_connection)
 
+    assert server.connection is mock_connection
+    assert server.service is srv
+
     assert server.has("/thing/A")
     assert server.has("/thing/B")
