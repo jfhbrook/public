@@ -274,6 +274,24 @@ def dbus_method_factory_call(service_obj, method_name):
     return call(attr_name, args_xform, returns_xform, fn)
 
 
+@pytest.fixture
+def mock_client_method_factory(monkeypatch):
+    mock = Mock()
+
+    monkeypatch.setattr("korbenware.dbus.client.client_method_factory", mock)
+
+    return mock
+
+
+@pytest.fixture
+def mock_client_emitter_factory(monkeypatch):
+    mock = Mock()
+
+    monkeypatch.setattr("korbenware.dbus.client.client_emitter_factory", mock)
+
+    return mock
+
+
 def test_service(dbus_service, hashtag_content, assert_iface):
     svc = dbus_service["svc"]
     a = dbus_service["a"]
@@ -424,3 +442,90 @@ async def test_server(
     )
 
     assert server_b.dbus_obj.property_w is hashtag_content
+
+
+@pytest_twisted.ensureDeferred
+async def test_client(
+    dbus_service, mock_client_method_factory, mock_client_emitter_factory
+):
+    svc = dbus_service["svc"]
+    a = dbus_service["a"]
+    b = dbus_service["b"]
+    method_one = dbus_service["method_one"]
+    method_two = dbus_service["method_two"]
+    method_three = dbus_service["method_three"]
+    method_four = dbus_service["method_four"]
+
+    mock_connection = Mock()
+
+    mock_remote_a = Mock()
+    mock_remote_b = Mock()
+
+    side_effects = []
+
+    for mock in [mock_remote_a, mock_remote_b]:
+        d = Deferred()
+        d.callback(mock)
+        side_effects.append(d)
+
+    mock_connection.getRemoteObject.side_effect = side_effects
+
+    client = await svc.client(mock_connection)
+
+    assert client.service is svc
+
+    mock_connection.getRemoteObject.assert_has_calls(
+        [call("some.namespace", "/thing/A"), call("some.namespace", "/thing/B")]
+    )
+
+    client_a = client.get("/thing/A")
+
+    assert client.remote_objs.get("/thing/A") is mock_remote_a
+    assert client_a.remote_obj is mock_remote_a
+
+    mock_client_method_factory.assert_has_calls(
+        [call(client_a, "method_one"), call(client_a, "method_two")]
+    )
+
+    assert client_a.method_one is mock_client_method_factory.return_value
+    assert client_a.method_two is mock_client_method_factory.return_value
+
+    mock_client_emitter_factory.assert_has_calls(
+        [
+            call(client_a, "signal_a", a.signals["signal_a"]),
+            call(client_a, "signal_b", a.signals["signal_b"]),
+        ]
+    )
+
+    mock_remote_a.notifyOnSignal.assert_has_calls(
+        [
+            call("signal_a", mock_client_emitter_factory.return_value),
+            call("signal_b", mock_client_emitter_factory.return_value),
+        ]
+    )
+
+    client_b = client.get("/thing/B")
+
+    assert client.remote_objs.get("/thing/B") is mock_remote_b
+    assert client_b.remote_obj is mock_remote_b
+
+    mock_client_method_factory.assert_has_calls(
+        [call(client_b, "method_three"), call(client_b, "method_four")]
+    )
+
+    assert client_b.method_three is mock_client_method_factory.return_value
+    assert client_b.method_four is mock_client_method_factory.return_value
+
+    mock_client_emitter_factory.assert_has_calls(
+        [
+            call(client_b, "signal_c", b.signals["signal_c"]),
+            call(client_b, "signal_d", b.signals["signal_d"]),
+        ]
+    )
+
+    mock_remote_b.notifyOnSignal.assert_has_calls(
+        [
+            call("signal_c", mock_client_emitter_factory.return_value),
+            call("signal_d", mock_client_emitter_factory.return_value),
+        ]
+    )

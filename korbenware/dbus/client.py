@@ -35,6 +35,22 @@ class Object(EventEmitter):
         await self.remote_obj.callRemote("Set", "", prop_name, xform.dump(value))
 
 
+def client_method_factory(obj, method_name):
+    async def method(*args):
+        return await obj.call(method_name, *args)
+
+    method.__name__ = method_name
+
+    return method
+
+
+def client_emitter_factory(obj, event_name, xform):
+    def callback(data):
+        obj.emit(event_name, xform.load(data))
+
+    return callback
+
+
 @attr.s
 class Client(Node):
     service = attr.ib()
@@ -46,12 +62,8 @@ class Client(Node):
         client_objs = dict()
 
         for obj_path, service_obj in service.items():
-            print(obj_path)
-            print(service_obj)
             # Collect the remote object
             remote_obj = await connection.getRemoteObject(service.namespace, obj_path)
-
-            print(remote_obj)
 
             remote_objs.set(obj_path, remote_obj)
 
@@ -68,22 +80,18 @@ class Client(Node):
 
             # Add the shim functions for each method
             for method_name in service_obj.methods.keys():
-
-                proxy_fn = bind(obj)
-                proxy_fn.__name__ = method_name
-
-                setattr(obj, method_name, proxy_fn)
+                client_method = client_method_factory(obj, method_name)
+                setattr(obj, method_name, client_method)
 
             # Signals
             for event_name, xform in service_obj.signals.items():
                 remote_obj.notifyOnSignal(
-                    event_name, lambda d: obj.emit(event_name, xform.load(d))
+                    event_name, client_emitter_factory(obj, event_name, xform)
                 )
 
         client = Client(service, remote_objs)
 
         for path, obj in client_objs.items():
-            print(path, obj)
             client.set(path, obj)
 
         return client
