@@ -93,7 +93,7 @@ class Server(Node):
             for (prop_name, (xform, default, kwarg)) in service_obj.properties.items():
                 attrs[prop_name] = DBusProperty(prop_name)
                 defaults[prop_name] = default
-
+            # TODO: This is wrong, there is more than one dbus object, one for each object on the service
             dbus_obj_cls = create_dbus_obj_subcls(path.basename(obj_path), attrs)
             dbus_obj = dbus_obj_cls(obj_path)
 
