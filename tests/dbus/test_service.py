@@ -1,7 +1,7 @@
 import pytest
 import pytest_twisted
 
-from unittest.mock import Mock
+from unittest.mock import call, Mock
 
 import attr
 from twisted.internet.defer import Deferred
@@ -125,8 +125,13 @@ def mock_dbus_iface_cls(mock_dbus_iface_inst, monkeypatch):
 
 
 @pytest.fixture
-def mock_dbus_property_cls(monkeypatch):
-    mock = Mock()
+def mock_dbus_property_inst():
+    return Mock()
+
+
+@pytest.fixture
+def mock_dbus_property_cls(mock_dbus_property_inst, monkeypatch):
+    mock = Mock(return_value=mock_dbus_property_inst)
 
     monkeypatch.setattr("korbenware.dbus.server.DBusProperty", mock)
 
@@ -182,9 +187,9 @@ def assert_iface(
 
 @pytest.fixture
 def dbus_service(hashtag_content):
-    srv = Service("some.namespace")
+    svc = Service("some.namespace")
 
-    a = srv.object("/thing/A")
+    a = svc.object("/thing/A")
 
     @a.method([Str()], Bool())
     def method_one(s):
@@ -202,7 +207,7 @@ def dbus_service(hashtag_content):
     a.property("property_u", Str(), "pony")
     a.property("property_v", Bool(), True, foo="bar")
 
-    b = srv.object("/thing/B")
+    b = svc.object("/thing/B")
 
     @b.method([Thing], Str())
     def method_three(thing):
@@ -220,7 +225,7 @@ def dbus_service(hashtag_content):
     b.property("property_w", Thing, hashtag_content)
 
     return dict(
-        srv=srv,
+        svc=svc,
         a=a,
         b=b,
         method_one=method_one,
@@ -231,16 +236,46 @@ def dbus_service(hashtag_content):
 
 
 @pytest.fixture
-def mock_create_dbus_obj_subcls(monkeypatch):
+def mock_dbus_obj(monkeypatch):
     mock = Mock()
-
-    monkeypatch.setattr('korbenware.dbus.server.create_dbus_obj_subcls', mock)
 
     return mock
 
 
+@pytest.fixture
+def mock_dbus_obj_factory(mock_dbus_obj, monkeypatch):
+    mock = Mock(return_value=mock_dbus_obj)
+
+    monkeypatch.setattr("korbenware.dbus.server.dbus_obj_factory", mock)
+
+    return mock
+
+
+@pytest.fixture
+def mock_dbus_method():
+    mock = Mock()
+
+    return mock
+
+
+@pytest.fixture
+def mock_dbus_method_factory(mock_dbus_method, monkeypatch):
+    mock = Mock(return_value=mock_dbus_method)
+
+    monkeypatch.setattr("korbenware.dbus.server.dbus_method_factory", mock)
+
+    return mock
+
+
+def dbus_method_factory_call(service_obj, method_name):
+    (args_xform, returns_xform, fn) = service_obj.methods[method_name]
+
+    attr_name = f"dbus_{method_name}"
+    return call(attr_name, args_xform, returns_xform, fn)
+
+
 def test_service(dbus_service, hashtag_content, assert_iface):
-    srv = dbus_service["srv"]
+    svc = dbus_service["svc"]
     a = dbus_service["a"]
     b = dbus_service["b"]
     method_one = dbus_service["method_one"]
@@ -248,13 +283,13 @@ def test_service(dbus_service, hashtag_content, assert_iface):
     method_three = dbus_service["method_three"]
     method_four = dbus_service["method_four"]
 
-    assert srv.namespace == "some.namespace"
+    assert svc.namespace == "some.namespace"
 
-    assert srv.has("/thing/A")
-    assert srv.has("/thing/B")
+    assert svc.has("/thing/A")
+    assert svc.has("/thing/B")
 
-    assert srv.thing.A is a
-    assert srv.get("/thing/A") is a
+    assert svc.thing.A is a
+    assert svc.get("/thing/A") is a
 
     assert_method(a, "method_one", ("s", "b", method_one))
     assert_method(a, "method_two", ("(s)", "(s)", method_two))
@@ -275,8 +310,8 @@ def test_service(dbus_service, hashtag_content, assert_iface):
         ],
     )
 
-    assert srv.thing.B is b
-    assert srv.get("/thing/B") is b
+    assert svc.thing.B is b
+    assert svc.get("/thing/B") is b
     assert_method(b, "method_three", ("(s)", "s", method_three))
     assert_method(b, "method_four", ("b", "s", method_four))
     assert_signal(b, "signal_c", "b")
@@ -297,16 +332,21 @@ def test_service(dbus_service, hashtag_content, assert_iface):
 
 @pytest_twisted.ensureDeferred
 async def test_server(
+    hashtag_content,
     dbus_service,
     mock_dbus_iface_cls,
+    mock_dbus_property_inst,
     mock_dbus_property_cls,
     mock_dbus_object_cls,
     mock_kb_method_cls,
     mock_kb_property_cls,
     mock_kb_signal_cls,
-    mock_create_dbus_obj_subcls
+    mock_dbus_obj,
+    mock_dbus_obj_factory,
+    mock_dbus_method,
+    mock_dbus_method_factory,
 ):
-    srv = dbus_service["srv"]
+    svc = dbus_service["svc"]
     a = dbus_service["a"]
     b = dbus_service["b"]
     method_one = dbus_service["method_one"]
@@ -320,10 +360,67 @@ async def test_server(
     mock_connection.requestBusName.return_value = Deferred()
     mock_connection.requestBusName.return_value.callback(mock_bus)
 
-    server = await srv.server(mock_connection)
+    server = await svc.server(mock_connection)
 
     assert server.connection is mock_connection
-    assert server.service is srv
+    assert server.service is svc
 
     assert server.has("/thing/A")
+    assert server.thing.A is server.get("/thing/A")
+
+    server_a = server.thing.A
+
+    mock_dbus_method_factory.assert_has_calls(
+        [
+            dbus_method_factory_call(a, "method_one"),
+            dbus_method_factory_call(a, "method_two"),
+        ]
+    )
+
+    assert server_a.service_obj is svc.get("/thing/A")
+    assert server_a.iface is svc.get("/thing/A").iface
+    assert server_a.dbus_obj is mock_dbus_obj
+
+    mock_dbus_obj_factory.assert_any_call(
+        "/thing/A",
+        dict(
+            iface=a.iface,
+            dbusInterfaces=[a.iface],
+            dbus_method_one=mock_dbus_method,
+            dbus_method_two=mock_dbus_method,
+            property_u=mock_dbus_property_inst,
+            property_v=mock_dbus_property_inst,
+        ),
+    )
+
+    assert server_a.dbus_obj.property_u == "pony"
+    assert server_a.dbus_obj.property_v == True
+
     assert server.has("/thing/B")
+    assert server.thing.B is server.get("/thing/B")
+
+    server_b = server.thing.B
+
+    assert server_b.service_obj is svc.get("/thing/B")
+    assert server_b.iface is svc.get("/thing/B").iface
+    assert server_b.dbus_obj is mock_dbus_obj
+
+    mock_dbus_method_factory.assert_has_calls(
+        [
+            dbus_method_factory_call(b, "method_three"),
+            dbus_method_factory_call(b, "method_four"),
+        ]
+    )
+
+    mock_dbus_obj_factory.assert_any_call(
+        "/thing/B",
+        dict(
+            iface=b.iface,
+            dbusInterfaces=[b.iface],
+            dbus_method_three=mock_dbus_method,
+            dbus_method_four=mock_dbus_method,
+            property_w=mock_dbus_property_inst,
+        ),
+    )
+
+    assert server_b.dbus_obj.property_w is hashtag_content
