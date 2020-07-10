@@ -229,7 +229,7 @@ def mock_client_emitter_factory(monkeypatch):
     return mock
 
 
-def test_service(dbus_service, hashtag_content, assert_iface):
+def test_service(dbus_service, assert_iface):
     svc = dbus_service["svc"]
     a = dbus_service["a"]
     b = dbus_service["b"]
@@ -271,14 +271,14 @@ def test_service(dbus_service, hashtag_content, assert_iface):
     assert_method(b, "method_four", ("b", "s", method_four))
     assert_signal(b, "signal_c", "b")
     assert_signal(b, "signal_d", "(s)")
-    assert_property(b, "property_w", ("(s)", hashtag_content))
+    assert_property(b, "property_w", ("i", 12))
     assert_iface(
         b,
         "some.namespace.BIface",
         [
             ("method", ["method_three"], dict(arguments="(s)", returns="s")),
             ("method", ["method_four"], dict(arguments="b", returns="s")),
-            ("property", ["property_w", "(s)"], dict()),
+            ("property", ["property_w", "i"], dict()),
             ("signal", ["signal_c", "b"], dict()),
             ("signal", ["signal_d", "(s)"], dict()),
         ],
@@ -287,7 +287,6 @@ def test_service(dbus_service, hashtag_content, assert_iface):
 
 @pytest_twisted.ensureDeferred
 async def test_server(
-    hashtag_content,
     dbus_service,
     mock_dbus_iface_cls,
     mock_dbus_property_inst,
@@ -378,7 +377,7 @@ async def test_server(
         ),
     )
 
-    assert server_b.dbus_obj.property_w is hashtag_content
+    assert server_b.dbus_obj.property_w == 12
 
 
 @pytest_twisted.ensureDeferred

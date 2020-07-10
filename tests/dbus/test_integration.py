@@ -19,4 +19,4 @@ async def test_integration(dbus_service):
 
     assert dbus_client
 
-    await conn.disconnect()
+    conn.disconnect()

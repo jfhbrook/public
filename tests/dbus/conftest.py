@@ -2,7 +2,7 @@ import pytest
 
 import attr
 
-from korbenware.dbus import dbus_attr, Bool, Str
+from korbenware.dbus import Bool, dbus_attr, Int32, Str
 from korbenware.dbus.service import Service
 
 
@@ -16,12 +16,7 @@ def thing_cls():
 
 
 @pytest.fixture
-def hashtag_content(thing_cls):
-    return thing_cls(string="#content")
-
-
-@pytest.fixture
-def dbus_service(hashtag_content, thing_cls):
+def dbus_service(thing_cls):
     svc = Service("some.namespace")
 
     a = svc.object("/thing/A")
@@ -57,7 +52,7 @@ def dbus_service(hashtag_content, thing_cls):
     b.signal("signal_c", Bool())
     b.signal("signal_d", thing_cls)
 
-    b.property("property_w", thing_cls, hashtag_content)
+    b.property("property_w", Int32(), 12)
 
     return dict(
         svc=svc,
