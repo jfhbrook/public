@@ -1,8 +1,10 @@
 import pytest
+import pytest_twisted
 
 from unittest.mock import Mock
 
 import attr
+from twisted.internet.defer import Deferred
 from txdbus.interface import Method, Property, Signal
 
 from korbenware.dbus import Bool, dbus_attr, Str
@@ -37,17 +39,15 @@ def hashtag_content():
 
 
 @pytest.fixture
-def mock_dbus_iface_cls(monkeypatch):
-    mock_iface_cls = Mock()
+def mock_kb_method_inst(monkeypatch):
+    mock = Mock()
 
-    monkeypatch.setattr("korbenware.dbus.service.DBusInterface", mock_iface_cls)
-
-    return mock_iface_cls
+    return mock
 
 
 @pytest.fixture
-def mock_dbus_method_cls(monkeypatch):
-    mock_method_cls = Mock(return_value="method")
+def mock_kb_method_cls(mock_kb_method_inst, monkeypatch):
+    mock_method_cls = Mock(return_value=mock_kb_method_inst)
 
     monkeypatch.setattr("korbenware.dbus.service.Method", mock_method_cls)
 
@@ -55,8 +55,15 @@ def mock_dbus_method_cls(monkeypatch):
 
 
 @pytest.fixture
-def mock_dbus_property_cls(monkeypatch):
-    mock_property_cls = Mock(return_value="property")
+def mock_kb_property_inst(monkeypatch):
+    mock = Mock()
+
+    return mock
+
+
+@pytest.fixture
+def mock_kb_property_cls(mock_kb_property_inst, monkeypatch):
+    mock_property_cls = Mock(return_value=mock_kb_property_inst)
 
     monkeypatch.setattr("korbenware.dbus.service.Property", mock_property_cls)
 
@@ -64,8 +71,15 @@ def mock_dbus_property_cls(monkeypatch):
 
 
 @pytest.fixture
-def mock_dbus_signal_cls(monkeypatch):
-    mock_signal_cls = Mock(return_value="signal")
+def mock_kb_signal_inst(monkeypatch):
+    mock = Mock()
+
+    return mock
+
+
+@pytest.fixture
+def mock_kb_signal_cls(mock_kb_signal_inst, monkeypatch):
+    mock_signal_cls = Mock(return_value=mock_kb_signal_inst)
 
     monkeypatch.setattr("korbenware.dbus.service.Signal", mock_signal_cls)
 
@@ -73,34 +87,101 @@ def mock_dbus_signal_cls(monkeypatch):
 
 
 @pytest.fixture
+def mock_dbus_iface_inst(
+    mock_kb_method_inst, mock_kb_property_inst, mock_kb_signal_inst
+):
+    mock = Mock()
+
+    def side_effect(t):
+        def iter():
+            for arg in mock.call_args.args:
+                if arg == t:
+                    yield arg
+
+        return iter
+
+    mock.methods.return_value.__iter__ = Mock(
+        side_effect=side_effect(mock_kb_method_inst)
+    )
+
+    mock.properties.return_value.__iter__ = Mock(
+        side_effect=side_effect(mock_kb_property_inst)
+    )
+
+    mock.signals.return_value.__iter__ = Mock(
+        side_effect=side_effect(mock_kb_signal_inst)
+    )
+
+    return mock
+
+
+@pytest.fixture
+def mock_dbus_iface_cls(mock_dbus_iface_inst, monkeypatch):
+    mock_iface_cls = Mock(return_value=mock_dbus_iface_inst)
+
+    monkeypatch.setattr("korbenware.dbus.service.DBusInterface", mock_iface_cls)
+
+    return mock_iface_cls
+
+
+@pytest.fixture
+def mock_dbus_property_cls(monkeypatch):
+    mock = Mock()
+
+    monkeypatch.setattr("korbenware.dbus.server.DBusProperty", mock)
+
+    return mock
+
+
+@pytest.fixture
+def mock_dbus_object_cls(monkeypatch):
+    mock = Mock()
+
+    monkeypatch.setattr("korbenware.dbus.server.DBusObject", mock)
+
+    return mock
+
+
+@pytest.fixture
 def assert_iface(
+    mock_kb_method_inst,
+    mock_kb_method_cls,
+    mock_kb_property_inst,
+    mock_kb_property_cls,
+    mock_kb_signal_inst,
+    mock_kb_signal_cls,
     mock_dbus_iface_cls,
-    mock_dbus_method_cls,
-    mock_dbus_property_cls,
-    mock_dbus_signal_cls,
 ):
     def asserts(obj, namespace, expected):
+        mock_dbus_iface_cls.reset_mock()
         _ = obj.iface
 
         iface_args = []
 
+        instances = {
+            "method": mock_kb_method_inst,
+            "property": mock_kb_property_inst,
+            "signal": mock_kb_signal_inst,
+        }
+
         classes = {
-            "method": mock_dbus_method_cls,
-            "property": mock_dbus_property_cls,
-            "signal": mock_dbus_signal_cls,
+            "method": mock_kb_method_cls,
+            "property": mock_kb_property_cls,
+            "signal": mock_kb_signal_cls,
         }
 
         for type_, args, kwargs in expected:
             classes[type_].assert_any_call(*args, **kwargs)
-            iface_args.append(type_)
+            iface_args.append(instances[type_])
 
         mock_dbus_iface_cls.assert_called_once()
-        mock_dbus_iface_cls.assert_called_with(namespace, *sorted(iface_args))
+        mock_dbus_iface_cls.assert_called_with(namespace, *iface_args)
 
     return asserts
 
 
-def test_service(hashtag_content, assert_iface):
+@pytest.fixture
+def dbus_service(hashtag_content):
     srv = Service("some.namespace")
 
     a = srv.object("/thing/A")
@@ -138,6 +219,35 @@ def test_service(hashtag_content, assert_iface):
 
     b.property("property_w", Thing, hashtag_content)
 
+    return dict(
+        srv=srv,
+        a=a,
+        b=b,
+        method_one=method_one,
+        method_two=method_two,
+        method_three=method_three,
+        method_four=method_four,
+    )
+
+
+@pytest.fixture
+def mock_create_dbus_obj_subcls(monkeypatch):
+    mock = Mock()
+
+    monkeypatch.setattr('korbenware.dbus.server.create_dbus_obj_subcls', mock)
+
+    return mock
+
+
+def test_service(dbus_service, hashtag_content, assert_iface):
+    srv = dbus_service["srv"]
+    a = dbus_service["a"]
+    b = dbus_service["b"]
+    method_one = dbus_service["method_one"]
+    method_two = dbus_service["method_two"]
+    method_three = dbus_service["method_three"]
+    method_four = dbus_service["method_four"]
+
     assert srv.namespace == "some.namespace"
 
     assert srv.has("/thing/A")
@@ -145,25 +255,23 @@ def test_service(hashtag_content, assert_iface):
 
     assert srv.thing.A is a
     assert srv.get("/thing/A") is a
+
     assert_method(a, "method_one", ("s", "b", method_one))
     assert_method(a, "method_two", ("(s)", "(s)", method_two))
-
     assert_signal(a, "signal_a", "s")
     assert_signal(a, "signal_b", "(s)")
-
     assert_property(a, "property_u", ("s", "pony", dict()))
     assert_property(a, "property_v", ("b", True, dict(foo="bar")))
-
     assert_iface(
         a,
         "some.namespace.AIface",
         [
             ("method", ["method_one"], dict(arguments="s", returns="b")),
             ("method", ["method_two"], dict(arguments="(s)", returns="(s)")),
-            ("signal", ["signal_a", "s"], dict()),
-            ("signal", ["signal_b", "(s)"], dict()),
             ("property", ["property_u", "s"], dict()),
             ("property", ["property_v", "b"], dict(foo="bar")),
+            ("signal", ["signal_a", "s"], dict()),
+            ("signal", ["signal_b", "(s)"], dict()),
         ],
     )
 
@@ -174,3 +282,45 @@ def test_service(hashtag_content, assert_iface):
     assert_signal(b, "signal_c", "b")
     assert_signal(b, "signal_d", "(s)")
     assert_property(b, "property_w", ("(s)", hashtag_content, dict()))
+    assert_iface(
+        b,
+        "some.namespace.BIface",
+        [
+            ("method", ["method_three"], dict(arguments="(s)", returns="s")),
+            ("method", ["method_four"], dict(arguments="b", returns="s")),
+            ("property", ["property_w", "(s)"], dict()),
+            ("signal", ["signal_c", "b"], dict()),
+            ("signal", ["signal_d", "(s)"], dict()),
+        ],
+    )
+
+
+@pytest_twisted.ensureDeferred
+async def test_server(
+    dbus_service,
+    mock_dbus_iface_cls,
+    mock_dbus_property_cls,
+    mock_dbus_object_cls,
+    mock_kb_method_cls,
+    mock_kb_property_cls,
+    mock_kb_signal_cls,
+    mock_create_dbus_obj_subcls
+):
+    srv = dbus_service["srv"]
+    a = dbus_service["a"]
+    b = dbus_service["b"]
+    method_one = dbus_service["method_one"]
+    method_two = dbus_service["method_two"]
+    method_three = dbus_service["method_three"]
+    method_four = dbus_service["method_four"]
+
+    mock_connection = Mock()
+
+    mock_bus = Mock()
+    mock_connection.requestBusName.return_value = Deferred()
+    mock_connection.requestBusName.return_value.callback(mock_bus)
+
+    server = await srv.server(mock_connection)
+
+    assert server.has("/thing/A")
+    assert server.has("/thing/B")

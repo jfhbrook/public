@@ -32,6 +32,10 @@ class Object(Node, EventEmitter):
         )
 
 
+def create_dbus_obj_subcls(name, attrs):
+    return type(name, (DBusObject,), attrs)
+
+
 @attr.s
 class Server(Node):
     connection = attr.ib()
@@ -68,9 +72,6 @@ class Server(Node):
                     else:
                         ret = maybe_coro
 
-                    print("this is the thing")
-                    print(ret)
-
                     return returns_xform.dump(ret)
 
                 return proxy_fn
@@ -80,9 +81,6 @@ class Server(Node):
                 method_name,
                 (args_xform, returns_xform, fn),
             ) in service_obj.methods.items():
-
-                print(method_name)
-
                 key = f"dbus_{method_name}"
 
                 proxy_fn = bind(args_xform, returns_xform, fn)
@@ -96,7 +94,7 @@ class Server(Node):
                 attrs[prop_name] = DBusProperty(prop_name)
                 defaults[prop_name] = default
 
-            dbus_obj_cls = type(path.basename(obj_path), (DBusObject,), attrs)
+            dbus_obj_cls = create_dbus_obj_subcls(path.basename(obj_path), attrs)
             dbus_obj = dbus_obj_cls(obj_path)
 
             for attr_name, default in defaults.items():
