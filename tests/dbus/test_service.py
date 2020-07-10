@@ -7,14 +7,6 @@ import attr
 from twisted.internet.defer import Deferred
 from txdbus.interface import Method, Property, Signal
 
-from korbenware.dbus import Bool, dbus_attr, Str
-from korbenware.dbus.service import Object, Service
-
-
-@attr.s
-class Thing:
-    string = dbus_attr(Str())
-
 
 def assert_method(obj, method, expected):
     (args_xform, return_xform, fn) = obj.methods[method]
@@ -28,14 +20,9 @@ def assert_signal(obj, signal, expected):
 
 
 def assert_property(obj, property, expected):
-    (xform, default, kwargs) = obj.properties[property]
+    (xform, default) = obj.properties[property]
 
-    assert (xform.signature(), default, kwargs) == expected
-
-
-@pytest.fixture
-def hashtag_content():
-    return Thing(string="#content")
+    assert (xform.signature(), default) == expected
 
 
 @pytest.fixture
@@ -186,56 +173,6 @@ def assert_iface(
 
 
 @pytest.fixture
-def dbus_service(hashtag_content):
-    svc = Service("some.namespace")
-
-    a = svc.object("/thing/A")
-
-    @a.method([Str()], Bool())
-    def method_one(s):
-        assert type(s) == str
-        return True
-
-    @a.method([Thing], Thing)
-    def method_two(thing):
-        assert isinstance(thing, Thing)
-        return False
-
-    a.signal("signal_a", Str())
-    a.signal("signal_b", Thing)
-
-    a.property("property_u", Str(), "pony")
-    a.property("property_v", Bool(), True, foo="bar")
-
-    b = svc.object("/thing/B")
-
-    @b.method([Thing], Str())
-    def method_three(thing):
-        assert isinstance(thing, Thing)
-        return "that's right"
-
-    @b.method([Bool()], Str())
-    def method_four(b):
-        assert type(s) == bool
-        return "that's not it chief"
-
-    b.signal("signal_c", Bool())
-    b.signal("signal_d", Thing)
-
-    b.property("property_w", Thing, hashtag_content)
-
-    return dict(
-        svc=svc,
-        a=a,
-        b=b,
-        method_one=method_one,
-        method_two=method_two,
-        method_three=method_three,
-        method_four=method_four,
-    )
-
-
-@pytest.fixture
 def mock_dbus_obj(monkeypatch):
     mock = Mock()
 
@@ -313,8 +250,8 @@ def test_service(dbus_service, hashtag_content, assert_iface):
     assert_method(a, "method_two", ("(s)", "(s)", method_two))
     assert_signal(a, "signal_a", "s")
     assert_signal(a, "signal_b", "(s)")
-    assert_property(a, "property_u", ("s", "pony", dict()))
-    assert_property(a, "property_v", ("b", True, dict(foo="bar")))
+    assert_property(a, "property_u", ("s", "pony"))
+    assert_property(a, "property_v", ("b", True,))
     assert_iface(
         a,
         "some.namespace.AIface",
@@ -322,7 +259,7 @@ def test_service(dbus_service, hashtag_content, assert_iface):
             ("method", ["method_one"], dict(arguments="s", returns="b")),
             ("method", ["method_two"], dict(arguments="(s)", returns="(s)")),
             ("property", ["property_u", "s"], dict()),
-            ("property", ["property_v", "b"], dict(foo="bar")),
+            ("property", ["property_v", "b"], dict()),
             ("signal", ["signal_a", "s"], dict()),
             ("signal", ["signal_b", "(s)"], dict()),
         ],
@@ -334,7 +271,7 @@ def test_service(dbus_service, hashtag_content, assert_iface):
     assert_method(b, "method_four", ("b", "s", method_four))
     assert_signal(b, "signal_c", "b")
     assert_signal(b, "signal_d", "(s)")
-    assert_property(b, "property_w", ("(s)", hashtag_content, dict()))
+    assert_property(b, "property_w", ("(s)", hashtag_content))
     assert_iface(
         b,
         "some.namespace.BIface",

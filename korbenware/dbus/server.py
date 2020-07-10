@@ -88,7 +88,7 @@ class Server(Node):
             defaults = dict()
 
             # Collect dbus properties
-            for (prop_name, (xform, default, kwarg)) in service_obj.properties.items():
+            for (prop_name, (xform, default)) in service_obj.properties.items():
                 obj_attrs[prop_name] = DBusProperty(prop_name)
                 defaults[prop_name] = default
 

@@ -39,8 +39,8 @@ class Object(Node):
         xform = Transformer(type_)
         self.signals[name] = xform
 
-    def property(self, name, type_, default, **kwargs):
-        self.properties[name] = (Transformer(type_), default, kwargs)
+    def property(self, name, type_, default):
+        self.properties[name] = (Transformer(type_), default)
 
     @property_
     def iface(self):
@@ -58,10 +58,8 @@ class Object(Node):
                 )
 
             iface_properties = []
-            for prop_name, (xform, default, kwargs) in self.properties.items():
-                iface_properties.append(
-                    Property(prop_name, xform.signature(), **kwargs)
-                )
+            for prop_name, (xform, default) in self.properties.items():
+                iface_properties.append(Property(prop_name, xform.signature()))
 
             iface_signals = []
             for signal_name, xform in self.signals.items():

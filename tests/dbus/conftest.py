@@ -40,7 +40,7 @@ def dbus_service(hashtag_content, thing_cls):
     a.signal("signal_b", thing_cls)
 
     a.property("property_u", Str(), "pony")
-    a.property("property_v", Bool(), True, foo="bar")
+    a.property("property_v", Bool(), True)
 
     b = svc.object("/thing/B")
 
