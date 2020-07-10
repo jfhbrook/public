@@ -24,17 +24,17 @@ def dbus_service(thing_cls):
     @a.method([Str()], Bool())
     def method_one(s):
         assert type(s) == str
-        return True
+        return s == "numberwang"
 
     @a.method([thing_cls], thing_cls)
     def method_two(thing):
         assert isinstance(thing, thing_cls)
-        return False
+        return thing_cls("pong")
 
     a.signal("signal_a", Str())
     a.signal("signal_b", thing_cls)
 
-    a.property("property_u", Str(), "pony")
+    a.property("property_u", Str(), "pony", writeable=True)
     a.property("property_v", Bool(), True)
 
     b = svc.object("/thing/B")
@@ -46,7 +46,7 @@ def dbus_service(thing_cls):
 
     @b.method([Bool()], Str())
     def method_four(b):
-        assert type(s) == bool
+        assert type(b) == bool
         return "that's not it chief"
 
     b.signal("signal_c", Bool())

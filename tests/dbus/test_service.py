@@ -20,9 +20,9 @@ def assert_signal(obj, signal, expected):
 
 
 def assert_property(obj, property, expected):
-    (xform, default) = obj.properties[property]
+    (xform, default, kwargs) = obj.properties[property]
 
-    assert (xform.signature(), default) == expected
+    assert (xform.signature(), default, kwargs) == expected
 
 
 @pytest.fixture
@@ -250,15 +250,15 @@ def test_service(dbus_service, assert_iface):
     assert_method(a, "method_two", ("(s)", "(s)", method_two))
     assert_signal(a, "signal_a", "s")
     assert_signal(a, "signal_b", "(s)")
-    assert_property(a, "property_u", ("s", "pony"))
-    assert_property(a, "property_v", ("b", True,))
+    assert_property(a, "property_u", ("s", "pony", dict(writeable=True)))
+    assert_property(a, "property_v", ("b", True, dict()))
     assert_iface(
         a,
         "some.namespace.AIface",
         [
             ("method", ["method_one"], dict(arguments="s", returns="b")),
             ("method", ["method_two"], dict(arguments="(s)", returns="(s)")),
-            ("property", ["property_u", "s"], dict()),
+            ("property", ["property_u", "s"], dict(writeable=True)),
             ("property", ["property_v", "b"], dict()),
             ("signal", ["signal_a", "s"], dict()),
             ("signal", ["signal_b", "(s)"], dict()),
@@ -271,7 +271,7 @@ def test_service(dbus_service, assert_iface):
     assert_method(b, "method_four", ("b", "s", method_four))
     assert_signal(b, "signal_c", "b")
     assert_signal(b, "signal_d", "(s)")
-    assert_property(b, "property_w", ("i", 12))
+    assert_property(b, "property_w", ("i", 12, dict()))
     assert_iface(
         b,
         "some.namespace.BIface",
@@ -350,6 +350,9 @@ async def test_server(
     assert server_a.dbus_obj.property_u == "pony"
     assert server_a.dbus_obj.property_v == True
 
+    assert server_a.property_u == "pony"
+    assert server_a.property_v == True
+
     assert server.has("/thing/B")
     assert server.thing.B is server.get("/thing/B")
 
@@ -378,6 +381,7 @@ async def test_server(
     )
 
     assert server_b.dbus_obj.property_w == 12
+    assert server_b.property_w == 12
 
 
 @pytest_twisted.ensureDeferred

@@ -23,14 +23,14 @@ class Object(EventEmitter):
         return returns_xform.load(rv)
 
     async def get_property(self, prop_name):
-        xform, default, kwargs = self.service_obj.properties[prop_name]
+        xform, _, _ = self.service_obj.properties[prop_name]
 
         rv = await self.remote_obj.callRemote("Get", "", prop_name)
 
         return xform.load(rv)
 
     async def set_property(self, prop_name, value):
-        xform, default, kwargs = self.service_obj.properties[prop_name]
+        xform, _, _ = self.service_obj.properties[prop_name]
 
         await self.remote_obj.callRemote("Set", "", prop_name, xform.dump(value))
 

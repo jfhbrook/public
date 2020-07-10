@@ -32,6 +32,9 @@ class Object(Node, EventEmitter):
             "Signals can only be emitted by the server, not received"
         )
 
+    def __getattr__(self, name):
+        return getattr(self.dbus_obj, name)
+
 
 def dbus_obj_factory(obj_path, attrs):
     cls = type(path.basename(obj_path), (DBusObject,), attrs)
@@ -88,7 +91,7 @@ class Server(Node):
             defaults = dict()
 
             # Collect dbus properties
-            for (prop_name, (xform, default)) in service_obj.properties.items():
+            for (prop_name, (xform, default, _)) in service_obj.properties.items():
                 obj_attrs[prop_name] = DBusProperty(prop_name)
                 defaults[prop_name] = default
 
