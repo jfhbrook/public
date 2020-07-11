@@ -170,7 +170,7 @@ class Context(click.Context):
                 if not self.log:
                     self.log = create_logger(namespace="korbenware.cli.base")
                 if not self.observer:
-                    self.observer = CliObserver(
+                    self.observer = self.command.observer_factory(
                         self.config, verbosity=kwargs.pop("verbose", None)
                     )
                     publisher.addObserver(self.observer)
@@ -215,6 +215,9 @@ class KorbenwareCommand:
             self.parse_args(ctx, args)
         return ctx
 
+    def set_observer_factory(self, kwargs):
+        self.observer_factory = kwargs.pop("observer_factory", CliObserver)
+
     def handle_greet_fields(self, kwargs):
         self.hed = kwargs.pop("hed", "Korben's weird uncle's super secret command")
         self.subhed = kwargs.pop("subhed", '"If I told ya I\'d have to shoot cha!"')
@@ -223,12 +226,14 @@ class KorbenwareCommand:
 
 class Command(KorbenwareCommand, click.Command):
     def __init__(self, *args, **kwargs):
+        self.set_observer_factory(kwargs)
         self.handle_greet_fields(kwargs)
         super().__init__(*args, **kwargs)
 
 
 class Group(KorbenwareCommand, click.Group):
     def __init__(self, *args, **kwargs):
+        self.set_observer_factory(kwargs)
         self.handle_greet_fields(kwargs)
         super().__init__(*args, **kwargs)
 

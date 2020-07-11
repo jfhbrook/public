@@ -6,7 +6,7 @@ from pyee import TwistedEventEmitter as EventEmitter
 from korbenware.config import BaseConfig
 from korbenware.dbus import Bool, DateTime, dbus_attr, Int16, Int64, List, Str
 from korbenware.executor import ApplicationExecutor, MonitoringExecutor
-from korbenware.keys import keys
+from korbenware.keys import asdict, keys
 from korbenware.open import ApplicationFinder
 from korbenware.presentation import representable
 from korbenware.presentation.markdown import markdownable
@@ -141,15 +141,24 @@ class Session(EventEmitter):
 
         self.emit("start")
 
-        self.critical_executor.start()
+        for process_name, process_config in self.config.executors.critical.items():
+            self.critical_executor.run_config(process_name, process_config)
 
+        self.autostart.init_executor(self.primary_executor)
+
+        @self.critical_executor.monitor.on("serviceStarted")
+        def start_primary_executor():
+            self.primary_executor.start()
+
+        @self.primary_executor.monitor.on("serviceStarted")
+        def finish():
+            self.emit("started")
+
+        self.critical_executor.start()
         self.primary_executor.start()
-        # self.autostart.init_executor(self.primary_executor)
 
         self.running = True
         self.started_at = datetime.datetime.utcnow()
-
-        self.emit("started")
 
     def stop(self):
         if not self.running:
@@ -157,13 +166,19 @@ class Session(EventEmitter):
 
         self.emit("stop")
 
+        @self.primary_executor.monitor.on("stopped")
+        def stop_critical_executor():
+            self.critical_executor.stop()
+
+        @self.critical_executor.monitor.on("stopped")
+        def finish():
+            self.emit("stopped")
+
         self.primary_executor.stop()
         self.critical_executor.stop()
 
         self.running = False
         self.stopped_at = datetime.datetime.utcnow()
-
-        self.emit("stopped")
 
     def attach(self, service):
         obj = service.object("/korbenware/Session")

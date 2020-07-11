@@ -87,18 +87,22 @@ class MimeConfig:
 
 @config
 class ProcessConfig:
-    exec = dbus_attr(List(Str()))
+    argv = dbus_attr(List(Str()))
     monitor = dbus_attr(Bool(), default=False)
     restart = dbus_attr(Bool(), default=False)
     cleanup = dbus_attr(Bool(), default=False)
+    env = dbus_attr(Dict(Str(), Str()))
+    cwd = dbus_attr(Str())
 
 
 @config
 class CriticalProcessConfig:
-    exec = dbus_attr(List(Str()))
+    argv = dbus_attr(List(Str()))
     monitor = dbus_attr(Bool(), default=True)
     restart = dbus_attr(Bool(), default=True)
     cleanup = dbus_attr(Bool(), default=False)
+    env = dbus_attr(Dict(Str(), Str()))
+    cwd = dbus_attr(Str())
 
 
 @config

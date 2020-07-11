@@ -6,7 +6,7 @@ from korbenware.logger import create_logger
 from korbenware.twisted.procmon import ProcessMonitor
 from korbenware.xdg.exec_key import ExecKey
 from korbenware.xdg.executable import Executable
-from korbenware.keys import keys
+from korbenware.keys import asdict, keys
 from korbenware.presentation import representable
 from korbenware.presentation.markdown import markdownable
 
@@ -28,6 +28,16 @@ class BaseExecutor:
             cwd=cwd,
         )
         spawn_detached(argv, env=env, cwd=cwd)
+
+    def run_config(self, process_name, config):
+        kwargs = asdict(config)
+        for key in list(kwargs.keys()):
+            if not kwargs.get(key, None) and not isinstance(
+                kwargs.get(key, None), bool
+            ):
+                del kwargs[key]
+
+        return self.run_argv(process_name, **kwargs)
 
     def run_exec_key(
         self,
@@ -98,7 +108,7 @@ class MonitoringExecutor(BaseExecutor):
         monitor_params = monitor_params or dict()
 
         self.log.info(
-            "Spawning {process_name} using {argv} as a monitored process...",  # noqa
+            "Adding {process_name} using {argv} as a monitored process...",  # noqa
             process_name=process_name,
             argv=argv,
             restart=restart,

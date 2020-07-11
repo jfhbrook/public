@@ -119,6 +119,8 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
     Events:
 
     * 'startService' - The ProcessMonitor is starting.
+    * 'serviceStarted' - The ProcessMonitor has stopped and all processes have
+      started.
     * 'stopService' - The ProcessMonitor is stopping.
     * 'serviceStopped' - The ProcessMonitor has stopped and all processes have
       exited.
@@ -255,12 +257,25 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         del self.settings[name]
         del self.states[name]
 
+    def _allServicesRunning(self):
+        return all(state == LifecycleState.RUNNING for state in self.states.values())
+
     def startService(self):
         """
         Start the service, which starts all the processes.
         """
         self.emit("startService")
         super().startService()
+
+        def maybe_emit(state):
+            if self._allServicesRunning():
+                self.remove_listener("stateChange", maybe_emit)
+                self.emit("serviceStarted")
+
+        if self._allServicesRunning():
+            self.emit("serviceStarted")
+        else:
+            self.on("stateChange", maybe_emit)
 
     def _allServicesStopped(self):
         return all(state == LifecycleState.STOPPED for state in self.states.values())
