@@ -18,19 +18,16 @@ class Object(Node, EventEmitter):
         self.iface = service_obj.iface
         self.dbus_obj = dbus_obj
 
-    def emit(self, name, data):
-        if name not in self.service_obj.signals:
-            return
+    def _super_emit(self, *args, **kwargs):
+        super().emit(self, *args, **kwargs)
 
-        xform = self.service_obj.signals[name]
-        self.dbus_obj.emitSignal(name, xform.dump(data))
+    def emit(self, name, *args, **kwargs):
+        if name in self.service_obj.signals:
+            data = args[0]
+            xform = self.service_obj.signals[name]
+            self.dbus_obj.emitSignal(name, xform.dump(data))
 
-        super().emit(self, name, data)
-
-    def on(self, *args, **kwargs):
-        raise NotImplementedError(
-            "Signals can only be emitted by the server, not received"
-        )
+        self._super_emit(name, *args, **kwargs)
 
     def __getattr__(self, name):
         return getattr(self.dbus_obj, name)
@@ -38,6 +35,7 @@ class Object(Node, EventEmitter):
 
 def dbus_obj_factory(obj_path, attrs):
     cls = type(path.basename(obj_path), (DBusObject,), attrs)
+
     return cls(obj_path)
 
 
@@ -57,6 +55,14 @@ def dbus_method_factory(name, args_xform, returns_xform, fn):
     dbus_method.__name__ = name
 
     return dbus_method
+
+
+def emit_signal_proxy_factory(ee):
+    def emitSignal(self, signalName, *args, **kwargs):
+        ee.emit("signal", signalName, args)
+        return DBusObject.emitSignal(self, signalName, *args, **kwargs)
+
+    return emitSignal
 
 
 @attr.s
@@ -95,6 +101,10 @@ class Server(Node):
                 obj_attrs[prop_name] = DBusProperty(prop_name)
                 defaults[prop_name] = default
 
+            # Intercept signals sent by the server
+            signal_ee = EventEmitter()
+            obj_attrs["emitSignal"] = emit_signal_proxy_factory(signal_ee)
+
             # Create a dbus object subclass with our callbacks and properties
             dbus_obj = dbus_obj_factory(obj_path, obj_attrs)
 
@@ -105,6 +115,9 @@ class Server(Node):
             # Construct a server object
             obj = Object(service_obj, dbus_obj)
             server.set(obj_path, obj)
+
+            # Proxy signal events
+            signal_ee.on("signal", lambda name, args: obj._super_emit(name, args))
 
             # Grab the iface
             iface = service_obj.iface

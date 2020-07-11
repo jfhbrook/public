@@ -31,6 +31,19 @@ async def test_integration(dbus_service, thing_cls):
     assert (await dbus_client.thing.B.method_four(False)) == "that's not it chief"
 
     # Properties
+    s_emit_u = Deferred()
+    rcv_u = Deferred()
+
+    @dbus_server.thing.A.on("PropertiesChanged")
+    def on_server_property_changed(data):
+        assert data["property_u"] == "not pony"
+        s_emit_u.callback(None)
+
+    @dbus_client.thing.A.on("PropertiesChanged")
+    def on_client_property_changed(data):
+        assert data["property_u"] == "not pony"
+        rcv_u.callback(None)
+
     assert (await dbus_client.thing.A.get_property("property_u")) == "pony"
     await dbus_client.thing.A.set_property("property_u", "not pony")
     assert (await dbus_client.thing.A.get_property("property_u")) == "not pony"
@@ -44,27 +57,52 @@ async def test_integration(dbus_service, thing_cls):
         await dbus_client.thing.B.set_property("property_w", 22)
 
     # Signals
+    s_emit_a = Deferred()
     rcv_a = Deferred()
+
+    s_emit_b = Deferred()
     rcv_b = Deferred()
+
+    s_emit_c = Deferred()
     rcv_c = Deferred()
+
+    s_emit_d = Deferred()
     rcv_d = Deferred()
 
-    rcv_all = DeferredList([rcv_a, rcv_b, rcv_c, rcv_d])
+    @dbus_server.thing.A.on("signal_a")
+    def on_srv_signal_a(yes):
+        assert yes == "yes"
+        s_emit_a.callback(None)
 
     @dbus_client.thing.A.on("signal_a")
     def on_signal_a(yes):
         assert yes == "yes"
         rcv_a.callback(None)
 
+    @dbus_server.thing.A.on("signal_b")
+    def on_srv_signal_b(thing):
+        assert thing == ping
+        s_emit_b.callback(None)
+
     @dbus_client.thing.A.on("signal_b")
     def on_signal_b(thing):
         assert thing == ping
         rcv_b.callback(None)
 
+    @dbus_server.thing.B.on("signal_c")
+    def on_srv_signal_c(b):
+        assert not b
+        s_emit_c.callback(None)
+
     @dbus_client.thing.B.on("signal_c")
     def on_signal_c(b):
         assert not b
         rcv_c.callback(None)
+
+    @dbus_server.thing.B.on("signal_d")
+    def on_srv_signal_d(thing):
+        assert thing == pong
+        s_emit_d.callback(None)
 
     @dbus_client.thing.B.on("signal_d")
     def on_signal_d(thing):
@@ -76,6 +114,19 @@ async def test_integration(dbus_service, thing_cls):
     dbus_server.thing.B.emit("signal_c", False)
     dbus_server.thing.B.emit("signal_d", pong)
 
-    await rcv_all.addTimeout(0.1, reactor)
+    await DeferredList(
+        [
+            s_emit_u,
+            rcv_u,
+            s_emit_a,
+            rcv_a,
+            s_emit_b,
+            rcv_b,
+            s_emit_c,
+            rcv_c,
+            s_emit_d,
+            rcv_d,
+        ]
+    ).addTimeout(0.1, reactor)
 
     conn.disconnect()

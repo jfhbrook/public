@@ -212,6 +212,15 @@ def dbus_method_factory_call(service_obj, method_name):
 
 
 @pytest.fixture
+def mock_emit_signal_proxy_factory(monkeypatch):
+    mock = Mock()
+
+    monkeypatch.setattr("korbenware.dbus.server.emit_signal_proxy_factory", mock)
+
+    return mock
+
+
+@pytest.fixture
 def mock_client_method_factory(monkeypatch):
     mock = Mock()
 
@@ -299,6 +308,7 @@ async def test_server(
     mock_dbus_obj_factory,
     mock_dbus_method,
     mock_dbus_method_factory,
+    mock_emit_signal_proxy_factory,
 ):
     svc = dbus_service["svc"]
     a = dbus_service["a"]
@@ -340,6 +350,7 @@ async def test_server(
         dict(
             iface=a.iface,
             dbusInterfaces=[a.iface],
+            emitSignal=mock_emit_signal_proxy_factory.return_value,
             dbus_method_one=mock_dbus_method,
             dbus_method_two=mock_dbus_method,
             property_u=mock_dbus_property_inst,
@@ -374,6 +385,7 @@ async def test_server(
         dict(
             iface=b.iface,
             dbusInterfaces=[b.iface],
+            emitSignal=mock_emit_signal_proxy_factory.return_value,
             dbus_method_three=mock_dbus_method,
             dbus_method_four=mock_dbus_method,
             property_w=mock_dbus_property_inst,
