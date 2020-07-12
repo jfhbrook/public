@@ -302,6 +302,9 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
             LifecycleState.STOPPING,
         }
 
+    def _spawnProcess(self, *args, **kwargs):
+        return self._reactor.spawnProcess(*args, **kwargs)
+
     def startProcess(self, name):
         """
         Start a process. Updates the state to RUNNING.
@@ -323,7 +326,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         proto.name = name
         self.protocols[name] = proto
         self.timeStarted[name] = self._reactor.seconds()
-        self._reactor.spawnProcess(
+        self._spawnProcess(
             proto,
             process.args[0],
             process.args,
