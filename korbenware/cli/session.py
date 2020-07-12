@@ -17,7 +17,6 @@ from korbenware.twisted.util import wait_for_event
 )
 @pass_context
 async def main(ctx, reactor):
-    ctx.log.info("brohnestly")
     log_config(ctx.config)
 
     service = Service.from_config(ctx.config)
