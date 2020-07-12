@@ -69,12 +69,22 @@ config_loaded = BaseConfig(
     executors=ExecutorsConfig(
         primary={
             "foo": ProcessConfig(
-                exec=["foo", "bar"], monitor=True, restart=False, cleanup=False
+                argv=["foo", "bar"],
+                monitor=True,
+                restart=False,
+                cleanup=False,
+                env=dict(),
+                cwd="",
             )
         },
         critical={
             "bar": CriticalProcessConfig(
-                exec=["baz", "quux"], monitor=True, restart=True, cleanup=False
+                argv=["baz", "quux"],
+                monitor=True,
+                restart=True,
+                cleanup=False,
+                env=dict(),
+                cwd="",
             )
         },
     ),
@@ -98,8 +108,8 @@ config_dumped = [
     ],
     ["org.jfhbrook.korbenware"],
     [
-        dict(foo=[["foo", "bar"], True, False, False]),
-        dict(bar=[["baz", "quux"], True, True, False]),
+        dict(foo=[["foo", "bar"], True, False, False, {}, ""]),
+        dict(bar=[["baz", "quux"], True, True, False, {}, ""]),
     ],
     ["trac"],
     ["debug"],
@@ -109,7 +119,9 @@ config_dumped = [
     dict(https="firefox.desktop"),
 ]
 
-config_signature = "((asbb)(assbb)(s)(a{s(asbbb)}a{s(asbbb)})(s)(s)(s)(s)(ss)a{ss})"
+config_signature = (
+    "((asbb)(assbb)(s)(a{s(asbbba{ss}s)}a{s(asbbba{ss}s)})(s)(s)(s)(s)(ss)a{ss})"
+)
 
 executor_empty_loaded = ExecutorState(running=-1, processes=[])
 
