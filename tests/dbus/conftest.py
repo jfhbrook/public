@@ -2,8 +2,7 @@ import pytest
 
 import attr
 
-from korbenware.dbus import Bool, dbus_attr, Int32, Str
-from korbenware.dbus.service import Service
+from korbenware.dbus import Bool, dbus_attr, Int32, Service, Str
 
 
 @pytest.fixture

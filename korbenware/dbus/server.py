@@ -18,16 +18,20 @@ class Object(Node, EventEmitter):
         self.iface = service_obj.iface
         self.dbus_obj = dbus_obj
 
-    def _super_emit(self, *args, **kwargs):
-        super().emit(self, *args, **kwargs)
+    def _truly_emit(self, name, *args, **kwargs):
+        super().emit(name, *args, **kwargs)
 
     def emit(self, name, *args, **kwargs):
         if name in self.service_obj.signals:
+            # Emits that have names shared with signals call emitSignal
+            # (which is modified)
             data = args[0]
             xform = self.service_obj.signals[name]
+            # (calling _truly_emit is handled by emitSignal)
             self.dbus_obj.emitSignal(name, xform.dump(data))
-
-        self._super_emit(name, *args, **kwargs)
+        else:
+            # "Regular" events emit like normal
+            self._truly_emit(name, *args, **kwargs)
 
     def __getattr__(self, name):
         return getattr(self.dbus_obj, name)
@@ -57,9 +61,11 @@ def dbus_method_factory(name, args_xform, returns_xform, fn):
     return dbus_method
 
 
-def emit_signal_proxy_factory(ee):
+def emit_signal_proxy_factory(proxy_ee):
     def emitSignal(self, signalName, *args, **kwargs):
-        ee.emit("signal", signalName, args)
+        # Allow the proxy ee to handle signals
+        proxy_ee.emit("signal", signalName, args)
+        # Actually emit the signal
         return DBusObject.emitSignal(self, signalName, *args, **kwargs)
 
     return emitSignal
@@ -75,6 +81,20 @@ class Server(Node):
         server = server_cls(connection, service)
 
         bus_names = []
+
+        def bind_signal_listener(obj, signal_ee):
+            signals = obj.service_obj.signals
+
+            # On emitSignal calls, call the object's underlying emitter
+            @signal_ee.on("signal")
+            def handle_signal(name, args):
+                # If this is a known signal, re-hydrate the args
+                if name in signals:
+                    args = list(args)
+                    args[0] = signals[name].load(args[0])
+                    args = tuple(args)
+
+                obj._truly_emit(name, *args)
 
         for obj_path, service_obj in service.items():
             # attributes for our dbus object instance
@@ -114,10 +134,8 @@ class Server(Node):
 
             # Construct a server object
             obj = Object(service_obj, dbus_obj)
+            bind_signal_listener(obj, signal_ee)
             server.set(obj_path, obj)
-
-            # Proxy signal events
-            signal_ee.on("signal", lambda name, args: obj._super_emit(name, args))
 
             # Grab the iface
             iface = service_obj.iface

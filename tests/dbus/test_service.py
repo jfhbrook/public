@@ -27,14 +27,14 @@ def assert_property(obj, property, expected):
 
 @pytest.fixture
 def mock_kb_method_inst(monkeypatch):
-    mock = Mock()
+    mock = Mock(name="mock_kb_method_inst")
 
     return mock
 
 
 @pytest.fixture
 def mock_kb_method_cls(mock_kb_method_inst, monkeypatch):
-    mock_method_cls = Mock(return_value=mock_kb_method_inst)
+    mock_method_cls = Mock(name="mock_kb_method_cls", return_value=mock_kb_method_inst)
 
     monkeypatch.setattr("korbenware.dbus.service.Method", mock_method_cls)
 
@@ -43,14 +43,16 @@ def mock_kb_method_cls(mock_kb_method_inst, monkeypatch):
 
 @pytest.fixture
 def mock_kb_property_inst(monkeypatch):
-    mock = Mock()
+    mock = Mock(name="mock_kb_property_inst")
 
     return mock
 
 
 @pytest.fixture
 def mock_kb_property_cls(mock_kb_property_inst, monkeypatch):
-    mock_property_cls = Mock(return_value=mock_kb_property_inst)
+    mock_property_cls = Mock(
+        name="mock_kb_property_cls", return_value=mock_kb_property_inst
+    )
 
     monkeypatch.setattr("korbenware.dbus.service.Property", mock_property_cls)
 
@@ -59,14 +61,14 @@ def mock_kb_property_cls(mock_kb_property_inst, monkeypatch):
 
 @pytest.fixture
 def mock_kb_signal_inst(monkeypatch):
-    mock = Mock()
+    mock = Mock(name="mock_kb_signal_inst")
 
     return mock
 
 
 @pytest.fixture
 def mock_kb_signal_cls(mock_kb_signal_inst, monkeypatch):
-    mock_signal_cls = Mock(return_value=mock_kb_signal_inst)
+    mock_signal_cls = Mock(name="mock_kb_signal_cls", return_value=mock_kb_signal_inst)
 
     monkeypatch.setattr("korbenware.dbus.service.Signal", mock_signal_cls)
 
@@ -77,7 +79,7 @@ def mock_kb_signal_cls(mock_kb_signal_inst, monkeypatch):
 def mock_dbus_iface_inst(
     mock_kb_method_inst, mock_kb_property_inst, mock_kb_signal_inst
 ):
-    mock = Mock()
+    mock = Mock(name="mock_dbus_iface_inst")
 
     def side_effect(t):
         def iter():
@@ -104,21 +106,21 @@ def mock_dbus_iface_inst(
 
 @pytest.fixture
 def mock_dbus_iface_cls(mock_dbus_iface_inst, monkeypatch):
-    mock_iface_cls = Mock(return_value=mock_dbus_iface_inst)
+    mock = Mock(name="mock_dbus_iface_inst", return_value=mock_dbus_iface_inst)
 
-    monkeypatch.setattr("korbenware.dbus.service.DBusInterface", mock_iface_cls)
+    monkeypatch.setattr("korbenware.dbus.service.DBusInterface", mock)
 
-    return mock_iface_cls
+    return mock
 
 
 @pytest.fixture
 def mock_dbus_property_inst():
-    return Mock()
+    return Mock(name="mock_dbus_property_inst")
 
 
 @pytest.fixture
 def mock_dbus_property_cls(mock_dbus_property_inst, monkeypatch):
-    mock = Mock(return_value=mock_dbus_property_inst)
+    mock = Mock(name="mock_dbus_property_cls", return_value=mock_dbus_property_inst)
 
     monkeypatch.setattr("korbenware.dbus.server.DBusProperty", mock)
 
@@ -126,10 +128,26 @@ def mock_dbus_property_cls(mock_dbus_property_inst, monkeypatch):
 
 
 @pytest.fixture
-def mock_dbus_object_cls(monkeypatch):
-    mock = Mock()
+def mock_dbus_obj(monkeypatch):
+    mock = Mock(name="mock_dbus_obj")
+
+    return mock
+
+
+@pytest.fixture
+def mock_dbus_obj_cls(mock_dbus_obj, monkeypatch):
+    mock = Mock(name="mock_dbus_obj_cls")
 
     monkeypatch.setattr("korbenware.dbus.server.DBusObject", mock)
+
+    return mock
+
+
+@pytest.fixture
+def mock_dbus_obj_factory(mock_dbus_obj, monkeypatch):
+    mock = Mock(name="mock_dbus_obj_factory", return_value=mock_dbus_obj)
+
+    monkeypatch.setattr("korbenware.dbus.server.dbus_obj_factory", mock)
 
     return mock
 
@@ -173,31 +191,15 @@ def assert_iface(
 
 
 @pytest.fixture
-def mock_dbus_obj(monkeypatch):
-    mock = Mock()
-
-    return mock
-
-
-@pytest.fixture
-def mock_dbus_obj_factory(mock_dbus_obj, monkeypatch):
-    mock = Mock(return_value=mock_dbus_obj)
-
-    monkeypatch.setattr("korbenware.dbus.server.dbus_obj_factory", mock)
-
-    return mock
-
-
-@pytest.fixture
 def mock_dbus_method():
-    mock = Mock()
+    mock = Mock(name="mock_dbus_method")
 
     return mock
 
 
 @pytest.fixture
 def mock_dbus_method_factory(mock_dbus_method, monkeypatch):
-    mock = Mock(return_value=mock_dbus_method)
+    mock = Mock(name="mock_dbus_method_factory", return_value=mock_dbus_method)
 
     monkeypatch.setattr("korbenware.dbus.server.dbus_method_factory", mock)
 
@@ -213,7 +215,7 @@ def dbus_method_factory_call(service_obj, method_name):
 
 @pytest.fixture
 def mock_emit_signal_proxy_factory(monkeypatch):
-    mock = Mock()
+    mock = Mock(name="mock_emit_signal_proxy_factory")
 
     monkeypatch.setattr("korbenware.dbus.server.emit_signal_proxy_factory", mock)
 
@@ -222,7 +224,7 @@ def mock_emit_signal_proxy_factory(monkeypatch):
 
 @pytest.fixture
 def mock_client_method_factory(monkeypatch):
-    mock = Mock()
+    mock = Mock(name="mock_client_method_factory")
 
     monkeypatch.setattr("korbenware.dbus.client.client_method_factory", mock)
 
@@ -294,13 +296,44 @@ def test_service(dbus_service, assert_iface):
     )
 
 
+@pytest.fixture
+def mock_remote_a():
+    return Mock(name="mock_remote_a")
+
+
+@pytest.fixture
+def mock_remote_b():
+    return Mock(name="mock_remote_b")
+
+
+@pytest.fixture
+def mock_connection(mock_remote_a, mock_remote_b):
+    mock_connection = Mock()
+    mock_bus = Mock()
+
+    mock_connection.requestBusName.return_value = Deferred()
+    mock_connection.requestBusName.return_value.callback(mock_bus)
+
+    side_effects = []
+
+    for mock in [mock_remote_a, mock_remote_b]:
+        d = Deferred()
+        d.callback(mock)
+        side_effects.append(d)
+
+    mock_connection.getRemoteObject.side_effect = side_effects
+
+    return mock_connection
+
+
 @pytest_twisted.ensureDeferred
 async def test_server(
     dbus_service,
+    mock_connection,
     mock_dbus_iface_cls,
     mock_dbus_property_inst,
     mock_dbus_property_cls,
-    mock_dbus_object_cls,
+    mock_dbus_obj_cls,
     mock_kb_method_cls,
     mock_kb_property_cls,
     mock_kb_signal_cls,
@@ -317,12 +350,6 @@ async def test_server(
     method_two = dbus_service["method_two"]
     method_three = dbus_service["method_three"]
     method_four = dbus_service["method_four"]
-
-    mock_connection = Mock()
-
-    mock_bus = Mock()
-    mock_connection.requestBusName.return_value = Deferred()
-    mock_connection.requestBusName.return_value.callback(mock_bus)
 
     server = await svc.server(mock_connection)
 
@@ -397,8 +424,41 @@ async def test_server(
 
 
 @pytest_twisted.ensureDeferred
+async def test_server_signals(dbus_service, mock_connection, thing_cls, monkeypatch):
+    svc = dbus_service["svc"]
+    a = dbus_service["a"]
+
+    mock_emit_signal = Mock(name="mock_emit_signal")
+
+    monkeypatch.setattr(
+        "korbenware.dbus.server.DBusObject.emitSignal", mock_emit_signal
+    )
+
+    mock_handler = Mock(name="mock_handler")
+
+    server = await svc.server(mock_connection)
+
+    server_a = server.get("/thing/A")
+
+    server_a.on("signal_b", mock_handler)
+
+    server_a.dbus_obj.emitSignal("signal_b", ["ping"], kwarg="kwarg")
+
+    mock_emit_signal.assert_called_with(
+        server_a.dbus_obj, "signal_b", ["ping"], kwarg="kwarg"
+    )
+
+    mock_handler.assert_called_with(thing_cls(string="ping"))
+
+
+@pytest_twisted.ensureDeferred
 async def test_client(
-    dbus_service, mock_client_method_factory, mock_client_emitter_factory
+    dbus_service,
+    mock_connection,
+    mock_remote_a,
+    mock_remote_b,
+    mock_client_method_factory,
+    mock_client_emitter_factory,
 ):
     svc = dbus_service["svc"]
     a = dbus_service["a"]
@@ -407,20 +467,6 @@ async def test_client(
     method_two = dbus_service["method_two"]
     method_three = dbus_service["method_three"]
     method_four = dbus_service["method_four"]
-
-    mock_connection = Mock()
-
-    mock_remote_a = Mock()
-    mock_remote_b = Mock()
-
-    side_effects = []
-
-    for mock in [mock_remote_a, mock_remote_b]:
-        d = Deferred()
-        d.callback(mock)
-        side_effects.append(d)
-
-    mock_connection.getRemoteObject.side_effect = side_effects
 
     client = await svc.client(mock_connection)
 
