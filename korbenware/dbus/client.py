@@ -51,6 +51,13 @@ def client_emitter_factory(obj, event_name, xform):
     return callback
 
 
+def changed_properties_emitter_factory(obj):
+    def callback(iface, changed_values, changed_keys):
+        obj.emit("PropertiesChanged", iface, changed_values, changed_keys)
+
+    return callback
+
+
 @attr.s
 class Client(Node):
     service = attr.ib()
@@ -88,6 +95,10 @@ class Client(Node):
                 remote_obj.notifyOnSignal(
                     event_name, client_emitter_factory(obj, event_name, xform)
                 )
+
+            remote_obj.notifyOnSignal(
+                "PropertiesChanged", changed_properties_emitter_factory(obj)
+            )
 
         client = Client(service, remote_objs)
 

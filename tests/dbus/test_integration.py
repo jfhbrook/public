@@ -41,8 +41,9 @@ async def test_integration(dbus_service, thing_cls):
         s_emit_u.callback(None)
 
     @dbus_client.thing.A.on("PropertiesChanged")
-    def on_client_property_changed(data):
-        assert data["property_u"] == "not pony"
+    def on_client_property_changed(iface, changed_values, changed_keys):
+        assert iface == "some.namespace.AIface"
+        assert changed_values["property_u"] == "not pony"
         rcv_u.callback(None)
 
     assert (await dbus_client.thing.A.get_property("property_u")) == "pony"
