@@ -114,19 +114,15 @@ async def test_integration(dbus_service, thing_cls):
     dbus_server.thing.B.emit("signal_c", False)
     dbus_server.thing.B.emit("signal_d", pong)
 
-    await DeferredList(
-        [
-            s_emit_u,
-            rcv_u,
-            s_emit_a,
-            rcv_a,
-            s_emit_b,
-            rcv_b,
-            s_emit_c,
-            rcv_c,
-            s_emit_d,
-            rcv_d,
-        ]
-    ).addTimeout(0.1, reactor)
+    await s_emit_u.addTimeout(0.1, clock=reactor)
+    await rcv_u.addTimeout(0.1, clock=reactor)
+    await s_emit_a.addTimeout(0.1, clock=reactor)
+    await rcv_a.addTimeout(0.1, clock=reactor)
+    await s_emit_b.addTimeout(0.1, clock=reactor)
+    await rcv_b.addTimeout(0.1, clock=reactor)
+    await s_emit_c.addTimeout(0.1, clock=reactor)
+    await rcv_c.addTimeout(0.1, clock=reactor)
+    await s_emit_d.addTimeout(0.1, clock=reactor)
+    await rcv_d.addTimeout(0.1, clock=reactor)
 
     conn.disconnect()
