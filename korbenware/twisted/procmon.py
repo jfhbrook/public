@@ -201,7 +201,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         cwd=None,
         uid=None,
         gid=None,
-        restart=None,
+        restart=False,
         cleanup=None,
         threshold=None,
         killTime=None,
@@ -218,7 +218,7 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         if name in self.states:
             raise KeyError(f"Process {name} already exists! Try removing it first.")
 
-        state = LifecycleState.STARTING
+        state = LifecycleState.STOPPED
 
         settings = ProcessSettings(restart=restart)
 
