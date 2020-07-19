@@ -179,3 +179,16 @@ async def test_procmon_start_process_happy_path(logging_protocol_cls, monitor):
             maxRestartDelay=3600,
         ),
     )
+
+
+@pytest.mark.parametrize("state", [LifecycleState.RUNNING, LifecycleState.STOPPING])
+@pytest_twisted.ensureDeferred
+async def test_procmon_start_active_process(state, logging_protocol_cls, monitor):
+    monitor.addProcess("some_process", ["some", "argv"], restart=True)
+
+    monitor._setProcessState("some_process", state)
+
+    monitor.startProcess("some_process")
+
+    logging_protocol_cls.assert_not_called()
+    monitor._spawnProcess.assert_not_called()
