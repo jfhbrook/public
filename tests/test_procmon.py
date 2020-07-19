@@ -17,9 +17,18 @@ from korbenware.twisted.procmon import (
 def monitor():
     monitor = ProcessMonitor(reactor=reactor)
 
-    monitor.spawnProcess = Mock()
+    monitor._spawnProcess = Mock(name="_spawnProcess")
 
     return monitor
+
+
+@pytest.fixture
+def logging_protocol_cls(monkeypatch):
+    cls = Mock(name="logging_protocol_cls")
+
+    monkeypatch.setattr("korbenware.twisted.procmon.LoggingProtocol", cls)
+
+    return cls
 
 
 def test_procmon_is_registered(monitor):
@@ -117,3 +126,56 @@ async def test_procmon_remove_process(monitor):
 
     assert "some_process" not in monitor.settings
     assert "some_name" not in monitor.states
+
+
+@pytest_twisted.ensureDeferred
+async def test_procmon_start_process_happy_path(logging_protocol_cls, monitor):
+    start_event = Deferred()
+
+    @monitor.once("startProcess")
+    def on_start_process(state):
+        assert state == ProcessState(
+            name="some_process",
+            state=LifecycleState.STOPPED,
+            settings=ProcessSettings(
+                restart=True,
+                threshold=1,
+                killTime=5,
+                minRestartDelay=1,
+                maxRestartDelay=3600,
+            ),
+        )
+
+        start_event.callback(None)
+
+    monitor.addProcess("some_process", ["some", "argv"], restart=True)
+
+    monitor.startProcess("some_process")
+
+    await start_event.addTimeout(0.1, clock=reactor)
+
+    assert monitor.protocols["some_process"] == logging_protocol_cls.return_value
+    assert monitor.protocols["some_process"].name == "some_process"
+    assert monitor.protocols["some_process"].service == monitor
+    assert isinstance(monitor.timeStarted["some_process"], float)
+    monitor._spawnProcess.assert_called_once_with(
+        monitor.protocols["some_process"],
+        "some",
+        ["some", "argv"],
+        uid=None,
+        gid=None,
+        env=dict(),
+        path=None,
+    )
+
+    assert monitor.getState("some_process") == ProcessState(
+        name="some_process",
+        state=LifecycleState.RUNNING,
+        settings=ProcessSettings(
+            restart=True,
+            threshold=1,
+            killTime=5,
+            minRestartDelay=1,
+            maxRestartDelay=3600,
+        ),
+    )
