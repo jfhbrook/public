@@ -55,6 +55,7 @@ def test_procmon_is_registered(monitor):
                 state=LifecycleState.STOPPED,
                 settings=ProcessSettings(
                     restart=False,
+                    cleanup=True,
                     threshold=None,
                     killTime=None,
                     minRestartDelay=None,
@@ -71,6 +72,7 @@ def test_procmon_is_registered(monitor):
                 state=LifecycleState.STOPPED,
                 settings=ProcessSettings(
                     restart=True,
+                    cleanup=False,
                     threshold=1,
                     killTime=5,
                     minRestartDelay=1,
@@ -111,6 +113,7 @@ async def test_procmon_remove_process(monitor):
             state=LifecycleState.STOPPED,
             settings=ProcessSettings(
                 restart=False,
+                cleanup=True,
                 threshold=None,
                 killTime=None,
                 minRestartDelay=None,
@@ -139,6 +142,7 @@ async def test_procmon_start_process_happy_path(logging_protocol_cls, monitor):
             state=LifecycleState.STOPPED,
             settings=ProcessSettings(
                 restart=True,
+                cleanup=False,
                 threshold=1,
                 killTime=5,
                 minRestartDelay=1,
@@ -173,6 +177,7 @@ async def test_procmon_start_process_happy_path(logging_protocol_cls, monitor):
         state=LifecycleState.RUNNING,
         settings=ProcessSettings(
             restart=True,
+            cleanup=False,
             threshold=1,
             killTime=5,
             minRestartDelay=1,
@@ -192,3 +197,200 @@ async def test_procmon_start_active_process(state, logging_protocol_cls, monitor
 
     logging_protocol_cls.assert_not_called()
     monitor._spawnProcess.assert_not_called()
+
+
+@pytest_twisted.ensureDeferred
+async def test_procmon_connection_lost_unmonitored(monitor):
+    monitor.running = 1
+    monitor.addProcess("some_process", ["some", "argv"])
+
+    monitor._setProcessState("some_process", LifecycleState.RUNNING)
+
+    monitor.protocols["some_process"] = Mock()
+
+    lost_event = Deferred()
+
+    @monitor.once("connectionLost")
+    def on_connection_lost(state):
+        assert state == ProcessState(
+            name="some_process",
+            state=LifecycleState.STOPPED,
+            settings=ProcessSettings(
+                restart=False,
+                cleanup=True,
+                threshold=None,
+                killTime=None,
+                minRestartDelay=None,
+                maxRestartDelay=None,
+            ),
+        )
+
+        lost_event.callback(None)
+
+    monitor.connectionLost("some_process")
+
+    await lost_event.addTimeout(0.1, clock=reactor)
+
+    assert "some_process" not in monitor.protocols
+    assert "some_process" not in monitor.restart
+
+    assert not monitor.isRegistered("some_process")
+
+
+@pytest_twisted.ensureDeferred
+async def test_procmon_connection_lost_unmonitored_no_cleanup(monitor):
+    monitor.running = 1
+    monitor.addProcess("some_process", ["some", "argv"], restart=False, cleanup=False)
+
+    monitor._setProcessState("some_process", LifecycleState.RUNNING)
+
+    monitor.protocols["some_process"] = Mock()
+
+    lost_event = Deferred()
+
+    @monitor.once("connectionLost")
+    def on_connection_lost(state):
+        assert state == ProcessState(
+            name="some_process",
+            state=LifecycleState.STOPPED,
+            settings=ProcessSettings(
+                restart=False,
+                cleanup=False,
+                threshold=None,
+                killTime=None,
+                minRestartDelay=None,
+                maxRestartDelay=None,
+            ),
+        )
+
+        lost_event.callback(None)
+
+    monitor.connectionLost("some_process")
+
+    await lost_event.addTimeout(0.1, clock=reactor)
+
+    assert "some_process" not in monitor.protocols
+    assert "some_process" not in monitor.restart
+
+    assert monitor.getState("some_process") == ProcessState(
+        name="some_process",
+        state=LifecycleState.STOPPED,
+        settings=ProcessSettings(
+            restart=False,
+            cleanup=False,
+            threshold=None,
+            killTime=None,
+            minRestartDelay=None,
+            maxRestartDelay=None,
+        ),
+    )
+
+
+@pytest.mark.parametrize("state", [LifecycleState.STARTING, LifecycleState.RUNNING])
+@pytest_twisted.ensureDeferred
+async def test_procmon_connection_lost_monitored_active(state, monitor):
+    monitor.running = 1
+    monitor.addProcess(
+        "some_process", ["some", "argv"], restart=True, minRestartDelay=0
+    )
+
+    monitor._setProcessState("some_process", state)
+
+    monitor.protocols["some_process"] = Mock()
+    monitor.timeStarted["some_process"] = -1000000
+
+    lost_event = Deferred()
+
+    @monitor.once("connectionLost")
+    def on_connection_lost(state):
+        assert state == ProcessState(
+            name="some_process",
+            state=LifecycleState.RESTARTING,
+            settings=ProcessSettings(
+                restart=True,
+                cleanup=False,
+                threshold=1,
+                killTime=5,
+                minRestartDelay=0,
+                maxRestartDelay=3600,
+            ),
+        )
+
+        lost_event.callback(None)
+
+    restart_event = Deferred()
+
+    @monitor.once("startProcess")
+    def on_start(state):
+        assert state == ProcessState(
+            name="some_process",
+            state=LifecycleState.RESTARTING,
+            settings=ProcessSettings(
+                restart=True,
+                cleanup=False,
+                threshold=1,
+                killTime=5,
+                minRestartDelay=0,
+                maxRestartDelay=3600,
+            ),
+        )
+
+        restart_event.callback(None)
+
+    monitor.connectionLost("some_process")
+
+    await lost_event.addTimeout(0.1, clock=reactor)
+
+    await restart_event.addTimeout(0.1, clock=reactor)
+
+
+@pytest.mark.parametrize("state", [LifecycleState.STOPPING, LifecycleState.STOPPED])
+@pytest_twisted.ensureDeferred
+async def test_procmon_connection_lost_monitored_inactive(state, monitor):
+    monitor.running = 1
+    monitor.addProcess(
+        "some_process", ["some", "argv"], restart=True, minRestartDelay=0
+    )
+
+    monitor._setProcessState("some_process", state)
+
+    monitor.protocols["some_process"] = Mock()
+
+    lost_event = Deferred()
+
+    @monitor.once("connectionLost")
+    def on_connection_lost(state):
+        assert state == ProcessState(
+            name="some_process",
+            state=LifecycleState.STOPPED,
+            settings=ProcessSettings(
+                restart=True,
+                cleanup=False,
+                threshold=1,
+                killTime=5,
+                minRestartDelay=0,
+                maxRestartDelay=3600,
+            ),
+        )
+
+        lost_event.callback(None)
+
+    monitor.connectionLost("some_process")
+
+    await lost_event.addTimeout(0.1, clock=reactor)
+
+    assert "some_process" not in monitor.protocols
+    assert "some_process" not in monitor.restart
+
+    assert monitor.getState("some_process") == ProcessState(
+        name="some_process",
+        state=LifecycleState.STOPPED,
+        settings=ProcessSettings(
+            restart=True,
+            cleanup=False,
+            threshold=1,
+            killTime=5,
+            minRestartDelay=0,
+            maxRestartDelay=3600,
+        ),
+    )

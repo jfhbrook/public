@@ -75,6 +75,7 @@ class ProcessSettings:
     """
 
     restart = attr.ib(default=False)
+    cleanup = attr.ib(default=False)
     threshold = attr.ib(default=None)
     killTime = attr.ib(default=None)
     minRestartDelay = attr.ib(default=None)
@@ -349,8 +350,6 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         priorState = self.states[name]
         settings = self.settings[name]
 
-        self.emit("connectionLost", self.getState(name))
-
         restartSetting = settings.restart
 
         # Update our state depending on what it was when the process exited
@@ -376,6 +375,8 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
             shouldRestart = False
 
         shouldCleanup = not shouldRestart and settings.cleanup
+
+        self.emit("connectionLost", self.getState(name))
 
         # This chunk is straight from procmon - this is clearing force
         # quit timeouts
