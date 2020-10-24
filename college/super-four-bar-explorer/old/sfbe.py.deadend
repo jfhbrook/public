@@ -1,0 +1,162 @@
+#! /usr/bin/env python
+"""This is meant to be an implementation of the Gauss-Newton optimization
+method on the position equations for a four-bar linkage.
+
+Use linkagefit(points,v,tvector) to get a solution."""
+
+from numpy import *
+from scipy import linalg
+import sympy as sym
+
+#sympy expressions used by both jacobian and residuals.
+sym.var('r1 r2 r3 r4 t1 hx hy Ox Oy sigma t2')
+#r1,r2,r3,r4 being member lengths
+#t1 and t2 being corresponding angles
+#sig being the dyad chooser, +/-1
+#Ox and Oy being origin coordinates for r1 and r2
+#hx and hy being transforms related to the traced path
+#x and y being given data points
+
+A=2*r1*r4*sym.cos(t1)-2*r2*r4*sym.cos(t2)
+B=2*r1*r4*sym.sin(t1)-2*r2*r4*sym.sin(t2)
+C=r1**2+r2**2+r4**2-r3**2-2*r1*r2*(sym.cos(t1)*sym.cos(t2)*sym.sin(t1)*sym.sin(t2))
+t4=2*sym.atan((-B+sigma*(B**2-C**2+A**2)**0.5)/(C-A))
+Px=r1*sym.cos(t1)+r4*sym.cos(t4)+Ox
+Py=r1*sym.sin(t1)+r4*sym.sin(t4)+Oy
+Qx=r2*sym.cos(t2)+Ox
+Qy=r2*sym.sin(t2)+Oy
+Sx=(1-hx)*Qx+hx*Px+hy*(Qy-Py)
+Sy=(1-hx)*Qy+hx*Py+hy*(Qx-Px)
+
+def jacobian(v,sig,tvector):
+    #This function defines the Jacobian of my problem.
+    
+    #Building blocks for the Jacobian.
+    
+    #These may get integrated into the Jacobian blocks,
+    #but, as they're unweildy, most of them will likely remain separate.
+    def grad_Sx(v,sig,theta):
+        return array([\
+        float(sym.diff(Sx,r1).subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta)),
+        float(sym.diff(Sx,r2).subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta)),
+        float(sym.diff(Sx,r3).subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta)),
+        float(sym.diff(Sx,r4).subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta)),
+        float(sym.diff(Sx,t1).subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta)),
+        float(sym.diff(Sx,hx).subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta)),
+        float(sym.diff(Sx,hy).subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta)),
+        1,
+        0])
+    
+    def grad_Sy(v,sig,theta):
+        return array([
+        float(sym.diff(Sy,r1).subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta)),
+        float(sym.diff(Sy,r2).subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta)),
+        float(sym.diff(Sy,r3).subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta)),
+        float(sym.diff(Sy,r4).subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta)),
+        float(sym.diff(Sy,t1).subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta)),
+        float(sym.diff(Sy,hx).subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta)),
+        float(sym.diff(Sy,hy).subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta)),
+        0,
+        1])
+    
+    def dSxdt2(v,sig,theta):
+        return float(sym.diff(Sx,t2).subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta))
+    
+    def dSydt2(v,sig,theta):
+        return float(sym.diff(Sy,t2).subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta))
+    
+    #The block matrices for the Jacobian.
+    #v contains all the parameters; It's here that I finally break them down.
+    #There's probably a more elegant way to do it that I'm not aware of.
+    #tvector contains all the \((theta_2)_j\)s,
+    def Jx(v,sig,tvector):
+        Jx=array([])
+        for theta in tvector:
+            if Jx.shape[0]==0:
+                Jx[0]=grad_Sx(v,sig,theta)
+            else:
+                Jx=vstack((Jx,grad_Sx(v,sig,theta)))
+        return Jx
+    def Jy(v,sig,tvector):
+        Jy=array([])
+        for theta in tvector:
+            if Jy.shape[0]==0:
+                Jy[0]=grad_Sy(v,sig,theta)
+            else:
+                Jy=vstack((Jy,grad_Sy(v,sig,theta)))
+        return Jy
+    
+    #there was a floatly slick way to do this, but sympy doesn't like taking numpy arrays. :(
+    def Dx(v,sig,tvector):
+        Dx=zeros((tvector.shape[0],tvector.shape[0]))
+        i=0
+        for theta in tvector:
+            Dx[i,i]=dSxdt2(v,sig,theta)
+            i=i+1
+        return Dx
+
+    def Dy(v,sig,tvector):
+        Dy=zeros((tvector.shape[0],tvector.shape[0]))
+        i=0
+        for theta in tvector:
+            Dy[i,i]=dSydt2(v,sig,theta)
+            i=i+1
+        return Dy
+        
+    return hstack(((vstack((Jx(v,sig,tvector),Jy(v,sig,tvector))),vstack((Dx(v,sig,tvector),Dy(v,sig,tvector))))))
+
+def residuals(x,y,v,sig,tvector):
+    #Generates residuals.
+            
+    r=array([])
+    for theta in tvector:
+        if r.shape[0]==0:
+            r[0]=float(Sx.subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta))
+        else:
+            r=hstack((r,float(Sx.subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta))))
+    for theta in tvector:
+        r=hstack((r,float(Sy.subs(r1,v[0]).subs(r2,v[1]).subs(r3,v[2]).subs(r4,v[3]).subs(t1,v[4]).subs(hx,v[5]).subs(hy,v[6]).subs(Ox,v[7]).subs(Oy,v[8]).subs(sigma,sig).subs(t2,theta))))
+    return r-hstack((x,y))
+
+#A single iteration of the method.
+def iteration(points,v,sig,tvector):
+    x=hstack((v,tvector))
+    J=jacobian(v,sig,tvector)
+    r=residuals(points[:,0],points[:,1],v,sig,tvector)
+    dell=dot(J.T,r)
+    #Not sure how to best solve this yet.
+    pk=linalg.solve(dot(J.T,J),-dell)
+    #Using backtracking to get alpha
+    #Using this method because it's what I know.
+    #http://en.wikipedia.org/wiki/Wolfe_conditions
+    alpha=1.0 #"For Newton and quasi-Newton methods, the step \(\alpha_0 = 1\) should always be used as the initial trial step length."--pg. 59
+    rho=0.7 #between 0 and 1
+    c=0.1**6 #The "C_1" used in the first wolfe condish. between 0 and 1, typically "quite small"
+    xnew=x+alpha*pk
+    rnew=residuals(points[:,0],points[:,1],xnew[0:8],sig,xnew[9:shape(xnew)[0]])
+    while dot(rnew,rnew) > dot(r,r)+c*alpha*dot(dell,pk):
+        alpha=rho*alpha
+        xnew=x+alpha*pk
+        rnew=residuals(points[:,0],points[:,1],xnew[0:8],sig,xnew[9:shape(x)[0]-1])
+    return xnew[0:8],xnew[9:shape(x)[0]]
+    
+#Everything comes together here.
+def linkagefit(points,v,tvector):
+    #returns fitted v, dyad configuration and fitted thetas in that order.
+    threshhold=0.1*3 #Some measure of how much improvement the algorithm's
+                     #producing.
+    returns=1 #Make sure this is bigger than the threshhold.
+              #Otherwise it doesn't matter.
+    for sig in [-1,1]:
+        vnew=array([v,v])
+        tnew=array([tvector,tvector])
+        rnew=array([residuals(points[:,0],points[:,1],v,sig,tvector),residuals(points[:,0],points[:,1],v,sig,tvector)])
+        while returns > threshhold:
+            vnew[(sig+1)/2],tnew[(sig+1)/2]=iteration(points,vnew[(sig+1)/2],sig,tnew[(sig+1)/2])
+            rold=rnew[(sig+1)/2]
+            rnew[(sig+1)/2]=residuals(points[:,0],points[:,1],vnew[(sig+1)/2],sig,tvector)
+            returns=norm(rold)/norm(rnew[(sig+1)/2])-1
+    if dot(rnew[0],rnew[0])>= dot(rnew[0],rnew[0]):
+        return vnew[0],-1,tnew[0]
+    else: return vnew[1],1,tnew[1]
+    
