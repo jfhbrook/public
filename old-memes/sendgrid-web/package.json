@@ -1,0 +1,24 @@
+{
+  "author": "Joshua Holbrook <josh.holbrook@gmail.com> (http://jesusabdullah.github.com)",
+  "name": "sendgrid-web",
+  "description": "Easily send emails with sendgrid and node.js",
+  "version": "0.0.5",
+  "homepage": "https://github.com/jesusabdullah/node-sendgrid-web",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jesusabdullah/node-sendgrid-web.git"
+  },
+  "main": "lib/sendgrid.js",
+  "scripts": {
+    "test": "nodeunit test/*.js"
+  },
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {
+    "request": "~2.27.0"
+  },
+  "devDependencies": {
+    "nodeunit": "~0.8.2"
+  }
+}

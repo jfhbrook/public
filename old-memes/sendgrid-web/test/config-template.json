@@ -1,0 +1,6 @@
+{
+  "user": "Your sendgrid username/email",
+  "key":  "Your sendgrid API key/password",
+  "to": "The email address at which you want to receive test emails",
+  "from": "The email address at which you want test emails to appear to originate"
+}
