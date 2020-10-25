@@ -1,3 +1,6 @@
 [submodule "college/lolcode"]
 	path = college/lolcode
 	url = git@github.com:jfhbrook/lolcode.git
+[submodule "anisotropy"]
+	path = anisotropy
+	url = git@github.com:jfhbrook/anisotropy.git
