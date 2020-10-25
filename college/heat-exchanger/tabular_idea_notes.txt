@@ -1,0 +1,80 @@
+#Goal here is to make some kinda lookup table sexiness
+#but for now it's just notes.
+#How would this work?
+#Can I do different behaviors based on a base class?
+
+I kinda started doing coding, but I didn't even really know where to start, so here you go.
+
+
+        #idk how that stuff works
+
+        #anyways, here's some sketching:
+        #1-d table
+        header=[a,b,c,d,e]
+        data=[[1,2,3],
+              [4,5,6],
+              [7,8,9],
+              [10,11,12],
+              [13,14,15]]
+        #n_header=m_data
+
+        #How would I do a 2-d table?
+        header_x=[a,b,c,g]
+        header_y=[d,e,f]
+        data=[[1,2,3],
+              [4,5,6],
+              [7,8,9],
+              [10,11,12]]
+        #(n_header_x=m_data, n_header,y=n_data)
+
+        #or:
+        header=[[a,b,c,g],
+                [d,e,f]]
+        data=[[1,2,3],
+              [4,5,6],
+              [7,8,9],
+              [10,11,12]]
+        #Actually, my thinking is that the "y-axis" should be
+        #incorporated into the data. Crazy, I know.
+
+        #but what about the case where there are 3 degrees of freedom?
+        header=[[1,2,3],[1,2,3]]
+        data=[[[1,2,3],[4,5,6],[7,8,9]],
+              [[1,2,3],[4,5,6],[7,8,9]],
+              [[1,2,3],[4,5,6],[7,8,9]]]
+        #? Is this even the same kind of thing anymore?
+        #Should this be implemented as something else?
+        #Because there are actually two cases:
+
+        # 1) a) groups of properties which are all the same for a 
+        #       given state (like property tables)
+        #       i.e., surfaces
+        #    b) groups of properties which all depend on a single 
+        #       variable (engine run data)
+        #    NOTE: Merely set independent and dependent variables!
+        #
+        # 2) z = f(u,v,w,...) (htx correction factor data)
+
+        # But, they're tied. Group 1 cases are built up of simple
+        # group 2 cases bundled together. So maybe an implementation 
+        # can take on both. But perhaps it's wiser to tackle these
+        # problems separately, to start with, starting with #2.
+
+Yeah, I started this as writing python, but it should really be more of personal notes, I think, at this point.
+
+So, the table would be an n-dimensional matrix, with defined axes similar to how you'd do with a plot.
+
+axes=[[x],[y],[z],...]
+     [ [2-d],[2-d],etc]
+axes would have n lists, each list having the same size as one of the dimensions of the array. We can check these things! (assertions? Have not used)
+
+Chances are, if you were to try to represent this as a paper table, you could do the first 2 dimensions as tables, but the rest of them you'd have to separate into headers, and headers of headers, and so on. I think this is doable. Maybe. It should be a TODO, though, and not a priority.
+
+So what about surfaces? You wouldn't want to represent them this way! Heavens! Probably the way I was writing about before would be best. The ideal addition to this would be checking for 1-to-1 correspondences. Not sure how I'd do that, though. Probably another TODO, and I could start out assuming sane use of things.
+
+This leads to the other problem of looking up property b using property a, which is something that isn't a problem with the other one. I feel like this is something sql does, but I don't really understand that too well. Maybe I could use SQLite to do it? But that doesn't seem like it'd work well with interpolation action (which would be hella useful, u noe)
+One way to deal with this would be to choose a column as the "key" column, and relate everything back to this single value. Then, to get answer, go the long way around. XD On one hand, there are two steps, but otoh, gathering God knows how many 1-d functions it would take to cover everything.
+
+(Why not data[col2][value from data[col1]]) ? Seems to do what I was talkin' 'bout right? 'cept index is now the key column. Which is probably good.
+
+Then again, maybe the way to go is to use each row as a datapoint and do a curve fit against them? But then what? Is this better? I'll have to think about that some more.
