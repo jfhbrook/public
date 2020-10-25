@@ -1,0 +1,134 @@
+Entry_ID: (required)
+Entry_Title: Alaska Coastline 1:250,000
+Group: Data_Set_Citation
+  Originator(s): Alaska Department of Natural Resources, Land Records Information Section
+  Title: Alaska Coastline 1:250,000
+  Publication: physical_feature
+  Publication_Date: 1984
+  Publication_Place: Anchorage, AK
+  Publisher: ADNR, LRIS
+  Data_Presentation_Form: vector digital data
+  URL: Server=rex.dnr.state.ak.us; Service=5152; User=gis_base; Version=SDE.DEFAULT
+End_Group
+Keyword: coast
+Keyword: coastline
+Keyword: shore
+Keyword: shoreline
+Keyword: alaska
+Group: Temporal_Coverage
+  Start_date: 1950
+  Stop_date: 1980
+End_Group
+Data_Set_Progress: Complete
+Group: Spatial_Coverage
+  Southernmost_Latitude: 48.159364
+  Northernmost_Latitude: 72.030119
+  Westernmost_Longitude: -179.914419
+  Easternmost_Longitude: 179.937949
+End_Group
+Location: Alaska
+Group: Data_Resolution
+  Latitude_Resolution: 0.010000
+  Longitude_Resolution: 0.010000
+  Altitude_Resolution: 1.000000
+End_Group
+  Access_Constraints: To ensure distribution of the most current public information, please refer requests for data or products to the Alaska Department of Natural Resources, Land Records Information Section.
+  Use_Constraints: It is not recommended the data be used at a scale larger than 1:250,000. Any hardcopies or published datasets utilizing these data sets shall clearly indicate their source.  If the user has modified the data in any way they are obligated to describe the types of modifications they have performed.  User specifically agrees not to misrepresent these data sets, nor to imply that changes they made were approved by the Alaska Department of Natural Resources.
+Originating_Center: (required)
+Group: Data_Center
+  Data_Center_Name: Alaska Department of Natural Resources - Land Records Information Section
+  Dataset_ID: Downloadable Data
+Group: Data_Center_Contact
+  Last_name: Alaska Department of Natural Resources - Land Records Information Section
+  First_name: N/A
+  Phone: 907 269 8833
+  Group: Address
+    550 W. 7th Suite 706
+    Anchorage, AK 99501
+    USA
+  End_Group
+End_Group
+End_Group
+  Storage_Medium: Microsoft Windows 2000 Version 5.1 (Build 2600) Service Pack 1; ESRI ArcCatalog 8.3.0.800
+Group: Distribution
+  Distribution_Media: online
+  Distribution_Format : compressed Arc/Info interchange file
+  Distribution_Size: 5.89 MB
+  Fees: none
+End_Group
+Group: Reference
+End_Group
+Group: Summary
+  For typical GIS purposes of a general coastline.  Do not use
+  for navigation.
+  
+  This coastline coverage of Alaska represents a collective effort
+  by many organizations over the course of the last 15 years.  It began
+  as a digital pen-up-pen-down file from the Department of Natural
+  Resources Division of Oil & Gas and was generated into an ARC coverage by
+  the North Slope Borough.  At that point several agencies --
+  spearheaded by NOAA -- cooperated to have the remainder of the coastline
+  digitized at the scale of 1:250000.  Ninety percent of the features in the
+  coverage are very close to the Alaska coastline because NOAA had no
+  interest in covering the whole state with stream and lake information
+  at the original time of data capture.
+  (null)
+  Our version of the Alaska coastline originated with the North
+  Slope Borough who gave this coverage to EROS on 3-7-89.  At EROS many
+  edits and improvements were made to the coastline coverage.  The State
+  of Alaska Department of Natural Resources received this edited
+  coverage from EROS on 7-29-92 and has continued to make cartographic
+  improvements to the coverage.
+  
+  Revisions:
+  Among the most notable corrections made by DNR:
+  1) placement of the Copper River (July 1992)
+  2) coding changes for Baird Inlet -- Selawik Lake (July 1993)
+  3) deletion of extraneous islands in the Aleutians
+  4) repositioning US/Canadian border to 141 degrees west longitude
+  (January 1994)
+  5) coding changes for Walapka Bay (February 1994)
+  6) coding changes for Selawik Lake and coastline near Wainwright
+  (June July August 1994)
+  (null)
+  4/19/95 K Zeiner
+  Replaced the Canadian border in southeast with the border from the
+  TWPSPOLY.
+  (null)
+  5/4/95 K Zeiner
+  Added an island to the coastline per Dorothy Mortenson.  Buldir
+  Island--located in the Aleutian chain.
+  (null)
+  Related_Spatial_and_Tabular_Data_Sets:
+  LUT:  ALASKA.AFRQ
+  FREQUENCY  CODE     LENGTH        DESC           CODEC
+  1  4370    50.200 65157860.000 COASTLINE         C
+  2   213    50.202   121971.300 CLOSURE LINE      CL
+  3  2509    50.412 18472760.000 STREAM            S
+  4  1178    50.421 10741410.000 LAKE              L
+  5    45    90.197  2180206.000 CANADIAN BORDER   CB
+  (null)
+  Notes:
+  Projection: Albers
+  Date Received: 7/28/92
+  Verified: J. Tam  7/29/92
+  Documented by: J. Tam  7/29/92
+  This coverage has a fuzzy tolerance of 0.100.
+  Cleaned up labelerrors; deleted incorrect Copper River - 7/31/92
+  Changed codec for Baird Inlet from S to C so it will draw on
+  our base maps - J. Tam - 7/14/93
+  Coverage converted from pre-7.0 to Arc/Info 8.x to recover projection
+  file. Work performed by D. Seamount. 4/18/2003.
+End_Group
+Group: DIF_Author
+  Last_name: Martin
+  First_name: Marty
+  Email: marty_martin@dnr.state.ak.us
+  Phone: 907 269 8837
+  Group: Address
+    550 W 7th Ave., Suite 706
+    Anchorage, AK 99501
+  End_Group
+End_Group
+DIF_Revision_Date: 20040416
+Science_Review_Date: 

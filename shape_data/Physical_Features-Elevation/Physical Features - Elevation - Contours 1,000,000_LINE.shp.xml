@@ -1,0 +1,379 @@
+<metadata>
+  <idinfo>
+    <citation>
+      <citeinfo>
+        <origin>Alaska Department of Natural Resources - Land Records Information Section</origin>
+        <pubdate>20100215</pubdate>
+        <title>Alaska Contours, 1:1,000,000</title>
+        <geoform>vector digital data</geoform>
+        <onlink>http://dnr.alaska.gov/SpatialUtility/SUC?cmd=extract&amp;layerid=69</onlink>
+      </citeinfo>
+    </citation>
+    <descript>
+      <abstract>The Alaska Department of Natural Resources (ADNR) has combined
+hypsography for several Digital Chart of the World (DCW) tiles
+into one coverage.  Some edits to the data were made, which allowed
+ADNR to label high elevation points and mountain tops from the
+DCW data.  The coverage contains elevation contours at every
+1,000 feet.  The hypsography used for statewide map products
+is often depicted as a contour line at every 3,000 feet, which
+offers visualization of vertical control as it relates to the other
+map features.
+
+The hypsography data were combined from the HYPOINT and HYNET
+coverages comprising the following 5 degree by 5 degree tiles
+for Alaska:
+
+AK 12,22,23,32,33
+AL 21,31,32
+BK 12,13,22,23,33
+BL 11,12,13,21,22,23,31,32,33
+CK 12,23,33
+CL 11,12,13,21,22,23,31
+DK 12,13,22,23
+ZK 22,32
+
+Please note:  Portions of this product include intellectual property
+of ESRI and are used herein with permission.  Copyright (c) 1992
+Environmental Systems Research Institute, Inc. All rights reserved.
+http://www.asgdc.state.ak.us/homehtml/esri.htm License Agreement</abstract>
+      <purpose>ANDR's purpose for modifying this information was for mapping a
+physical base at 1:1,000,000.</purpose>
+      <supplinf>Originally Documented by: Nicholas vanVeldhuisen</supplinf>
+    </descript>
+    <timeperd>
+      <timeinfo>
+        <sngdate>
+          <caldate>20100215</caldate>
+        </sngdate>
+      </timeinfo>
+      <current>ground condition</current>
+    </timeperd>
+    <status>
+      <progress>Complete</progress>
+      <update>None planned</update>
+    </status>
+    <spdom>
+      <bounding>
+        <westbc>-179.136458465929</westbc>
+        <eastbc>-130.001694221381</eastbc>
+        <northbc>69.7899607469913</northbc>
+        <southbc>51.2278059852567</southbc>
+      </bounding>
+    </spdom>
+    <keywords>
+      <theme>
+        <themekt>ISO 19115 Topic Category</themekt>
+        <themekey>imageryBaseMapsEarthCover</themekey>
+      </theme>
+      <theme>
+        <themekt>none</themekt>
+        <themekey>contours</themekey>
+        <themekey>hypsography</themekey>
+        <themekey>elevation</themekey>
+        <themekey>Digital Chart of the World</themekey>
+        <themekey>DCW</themekey>
+        <themekey>mountains</themekey>
+      </theme>
+      <place>
+        <placekt>none</placekt>
+        <placekey>Alaska</placekey>
+      </place>
+    </keywords>
+    <accconst>To ensure distribution of the most current public information, please
+refer requests for data or products to the Alaska Department of
+Natural Resources, Land Records Information Section.</accconst>
+    <useconst>It is not recommended the data be used at a scale larger
+than 1:1,000,000.
+
+Any hardcopies or published datasets utilizing these data sets shall
+clearly indicate their source.  If the user has modified the data in any
+way they are obligated to describe the types of modifications they
+have performed.  User specifically agrees not to misrepresent
+these data sets, nor to imply that changes they made were
+approved by the Alaska Department of Natural Resources.
+
+ESRI License Agreement: http://www.asgdc.state.ak.us/homehtml/esri.htm</useconst>
+    <ptcontac>
+      <cntinfo>
+        <cntperp>
+          <cntper>GIS Public Access Coordinator</cntper>
+          <cntorg>AK Department of Natural Resources - Land Records Information Section</cntorg>
+        </cntperp>
+        <cntpos>GIS Public Access Coordinator</cntpos>
+        <cntaddr>
+          <addrtype>mailing and physical address</addrtype>
+          <address>550 W. 7th Suite 706</address>
+          <city>Anchorage</city>
+          <state>AK</state>
+          <postal>99501</postal>
+          <country>USA</country>
+        </cntaddr>
+        <cntvoice>907 269 8833</cntvoice>
+        <cntfax>907 269 8920</cntfax>
+        <cntemail>gis_public_access@dnr.state.ak.us</cntemail>
+        <hours>800-1600 AST</hours>
+        <cntinst>See Distribution_Information</cntinst>
+      </cntinfo>
+    </ptcontac>
+    <datacred>Environmental Systems Research Institute</datacred>
+  </idinfo>
+  <dataqual>
+    <attracc>
+      <attraccr>Unknown</attraccr>
+    </attracc>
+    <logic>Chain-node topology present.</logic>
+    <complete>Unknown</complete>
+    <posacc>
+      <horizpa>
+        <horizpar>Unknown</horizpar>
+      </horizpa>
+    </posacc>
+    <lineage>
+      <srcinfo>
+        <srccite>
+          <citeinfo>
+            <origin>Environmental Systems Research Institute, Inc</origin>
+            <pubdate>1991</pubdate>
+            <title>Digital Chart of the World, Hypsography</title>
+            <pubinfo>
+              <pubplace>Redlands, CA</pubplace>
+              <publish>ESRI</publish>
+            </pubinfo>
+          </citeinfo>
+        </srccite>
+        <srcscale>1000000</srcscale>
+        <typesrc>unknown</typesrc>
+        <srctime>
+          <timeinfo>
+            <sngdate>
+              <caldate>1991</caldate>
+            </sngdate>
+          </timeinfo>
+          <srccurr>publication date</srccurr>
+        </srctime>
+        <srccitea>ESRI DCW</srccitea>
+        <srccontr>The DCW hypsography data was the starting base for the statewide hypsography or contour coverage.    The primary source of the DCW is the US Defense Mapping Agency (DMA) Operational Navigation Chart (ONC) series.</srccontr>
+      </srcinfo>
+      <procstep>
+        <procdesc>See Abstract and Supplemental_Information.</procdesc>
+        <procdate>1994</procdate>
+      </procstep>
+      <procstep>
+        <procdesc>CONT1MIL coverage imported into geodatabase.</procdesc>
+        <procdate>unknown</procdate>
+      </procstep>
+      <procstep>
+        <procdesc>Feature class data copied to materialized view.</procdesc>
+        <procdate>unknown</procdate>
+      </procstep>
+      <procstep>
+        <procdesc>Materialized view data extracted and converted to Shape format.</procdesc>
+        <procdate>unknown</procdate>
+      </procstep>
+    </lineage>
+  </dataqual>
+  <spdoinfo>
+    <direct>Vector</direct>
+    <ptvctinf>
+      <sdtsterm>
+        <sdtstype>String</sdtstype>
+        <ptvctcnt>29836</ptvctcnt>
+      </sdtsterm>
+    </ptvctinf>
+  </spdoinfo>
+  <spref>
+    <horizsys>
+      <planar>
+        <mapproj>
+          <mapprojn>Albers Conical Equal Area</mapprojn>
+          <albers>
+            <stdparll>55.000000</stdparll>
+            <stdparll>65.000000</stdparll>
+            <longcm>-154.000000</longcm>
+            <latprjo>50.000000</latprjo>
+            <feast>0.000000</feast>
+            <fnorth>0.000000</fnorth>
+          </albers>
+        </mapproj>
+        <planci>
+          <plance>coordinate pair</plance>
+          <coordrep>
+            <absres>0.000100</absres>
+            <ordres>0.000100</ordres>
+          </coordrep>
+          <plandu>meters</plandu>
+        </planci>
+      </planar>
+      <geodetic>
+        <horizdn>North American Datum of 1983</horizdn>
+        <ellips>Geodetic Reference System 80</ellips>
+        <semiaxis>6378137.000000</semiaxis>
+        <denflat>298.257222</denflat>
+      </geodetic>
+    </horizsys>
+  </spref>
+  <eainfo>
+    <detailed>
+      <enttyp>
+        <enttypl>Physical Features - Elevation - Contours 1,000,000</enttypl>
+        <enttypd>feature class</enttypd>
+        <enttypds>ESRI</enttypds>
+      </enttyp>
+      <attr>
+        <attrlabl>FID</attrlabl>
+        <attrdef>Internal feature number.</attrdef>
+        <attrdefs>ESRI</attrdefs>
+        <attrdomv>
+          <udom>Sequential unique whole numbers that are automatically generated.</udom>
+        </attrdomv>
+      </attr>
+      <attr>
+        <attrlabl>Shape</attrlabl>
+        <attrdef>Feature geometry.</attrdef>
+        <attrdefs>ESRI</attrdefs>
+        <attrdomv>
+          <udom>Coordinates defining the features.</udom>
+        </attrdomv>
+      </attr>
+      <attr>
+        <attrlabl>HYLNVAL</attrlabl>
+        <attrdef>Contour line elevation in feet.</attrdef>
+        <attrdefs>ESRI - DCW</attrdefs>
+        <attrdomv>
+          <edom>
+            <edomv>See Entity_and_Attribute_Overview</edomv>
+            <edomvd>See Entity_and_Attribute_Overview</edomvd>
+            <edomvds>ESRI - DCW</edomvds>
+          </edom>
+        </attrdomv>
+      </attr>
+      <attr>
+        <attrlabl>HYLNTYPE</attrlabl>
+        <attrdef>Linetype</attrdef>
+        <attrdefs>ESRI - DCW</attrdefs>
+        <attrdomv>
+          <edom>
+            <edomv>See Entity_and_Attribute_Overview</edomv>
+            <edomvd>See Entity_and_Attribute_Overview</edomvd>
+            <edomvds>ESRI - DCW</edomvds>
+          </edom>
+        </attrdomv>
+      </attr>
+    </detailed>
+    <overview>
+      <eaover>Excerpts from the DCW Documentation:
+The primary source of the DCW is the US Defense Mapping Agency
+(DMA) Operational Navigation Chart (ONC) series.
+
+HYLNVAL  - Contains the elevation value of the contour line in
+feet above mean sea level, as indicated on the ONC's.  Absence
+of an elevation value is indicated by the number 99999.  When
+contour lines for different elevations become coincident, such
+as in areas of steep topography, the single contour assigend
+the value for the highest elevation.  Valid codes range from -1,000
+feet to 29,000 feet incrementing by 1,000 feet.
+
+HYLNTYPE   DEFINITION
+--------   ----------
+1          Closed land contour
+2          Depression contour
+3          Closed land contour, approximate
+4          Carrying contour, where two or more contour lines with
+different values coalesce
+5          Depression contour, approximate
+8          Connector (an arbitrary connector of the contour network,
+used for areas or lines of discontinuities such as road cut
+and fill situations - not for gaps due to elevation value
+labels.  This connection was made by ESRI to establish a
+network so that elevation ranges are polygons that can be
+shaded or to correct errors in contours.)
+9          None (outer boundary)
+88         Used in situations during the edgematching process where
+differences and the automation module boundary is used for
+closure.</eaover>
+      <eadetcit>The Digital Chart of the World for use with Arc/Info, Environmental
+Systems Research Institute, Inc. 1991</eadetcit>
+    </overview>
+  </eainfo>
+  <distinfo>
+    <distrib>
+      <cntinfo>
+        <cntorgp>
+          <cntorg>Alaska Department of Natural Resources - Land Records Information Section</cntorg>
+        </cntorgp>
+        <cntpos>GIS Public Access Coordinator</cntpos>
+        <cntaddr>
+          <addrtype>mailing and physical address</addrtype>
+          <address>550 W. 7th Suite 706</address>
+          <city>Anchorage</city>
+          <state>AK</state>
+          <postal>99501</postal>
+          <country>USA</country>
+        </cntaddr>
+        <cntvoice>907 269 8833</cntvoice>
+        <cntfax>907 269 8920</cntfax>
+      </cntinfo>
+    </distrib>
+    <resdesc>Downloadable Data</resdesc>
+    <distliab>The State of Alaska makes no express or implied warranties (including warranties of merchantability
+and fitness) with respect to the character, function, or capabilities of the electronic services
+or products or their appropriateness for any users purposes. In no event will the State of Alaska
+be liable for any incidental, indirect, special, consequential or other damages suffered by the
+user or any other person or entity whether from the use of the electronic services or products,
+any failure thereof or otherwise, and in no event will the State of Alaska s liability to the
+requestor or anyone else exceed the fee paid for the electronic service or product.</distliab>
+    <stdorder>
+      <digform>
+        <digtinfo>
+          <formname>zipped shape file</formname>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://dnr.alaska.gov/SpatialUtility/SUC?cmd=extract&amp;layerid=69</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <fees>none</fees>
+    </stdorder>
+  </distinfo>
+  <metainfo>
+    <metd>20080204</metd>
+    <metc>
+      <cntinfo>
+        <cntorgp>
+          <cntorg>AK Department of Natural Resources - Land Records Information Section</cntorg>
+        </cntorgp>
+        <cntpos>GIS Public Access Coordinator</cntpos>
+        <cntaddr>
+          <addrtype>mailing and physical address</addrtype>
+          <address>550 W. 7th Suite 706</address>
+          <city>Anchorage</city>
+          <state>AK</state>
+          <postal>99501</postal>
+          <country>USA</country>
+        </cntaddr>
+        <cntvoice>907 269 8833</cntvoice>
+        <cntfax>907 269 8920</cntfax>
+        <cntemail>gis_public_access@dnr.state.ak.us</cntemail>
+        <hours>800-1600 AST</hours>
+      </cntinfo>
+    </metc>
+    <metstdn>FGDC Content Standards for Digital Geospatial Metadata</metstdn>
+    <metstdv>FGDC-STD-001-1998</metstdv>
+    <mettc>local time</mettc>
+    <metuc>If the user has modified the data in any way they are obligated
+to describe the types of modifications they have performed in the
+supporting metadata file.  User specifically agrees not to imply
+that changes they made were approved by the Alaska Department of
+Natural Resources.</metuc>
+    <metextns>
+      <onlink>http://www.esri.com/metadata/esriprof80.html</onlink>
+      <metprof>ESRI Metadata Profile</metprof>
+    </metextns>
+  </metainfo>
+</metadata>
