@@ -1,0 +1,8 @@
+*~
+*.eps
+*.aux
+*.pyc
+*.log
+*.ps
+*.pdf
+!book.pdf
