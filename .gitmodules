@@ -16,3 +16,6 @@
 [submodule "hacks/hydra/ihydra"]
 	path = hacks/hydra/ihydra
 	url = git@github.com:jfhbrook/ihydra.git
+[submodule "lgpl"]
+	path = lgpl
+	url = git@github.com:jfhbrook/public-lgpl.git
