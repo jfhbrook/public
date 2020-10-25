@@ -1,0 +1,21 @@
+{
+  "name": "godot-log-producer",
+  "version": "0.0.2",
+  "description": "A producer for godot that tails logs",
+  "main": "index.js",
+  "scripts": {
+    "test": "tests-of-the-sierra-madre"
+  },
+  "repository": "git@github.com:jesusabdullah/godot-log-producer.git",
+  "homepage": "https://github.com/jesusabdullah/godot-log-producer",
+  "author": "Joshua Holbrook",
+  "license": "MIT",
+  "dependencies": {
+    "tailing-stream": "0.0.4",
+    "godot-producer": "~0.0.0",
+    "which": "~1.0.5"
+  },
+  "devDependencies": {
+    "tests-of-the-sierra-madre": "0.0.0"
+  }
+}
