@@ -1,0 +1,13 @@
+[Unit]
+Description=Throw up the lock screen on suspend
+Before=sleep.target
+
+[Service]
+User=%I
+Type=forking
+ExecStart=/usr/bin/lockenate-physlock-wrapper
+ExecStartPost=/usr/bin/sleep 1
+
+[Install]
+WantedBy=sleep.target
+
