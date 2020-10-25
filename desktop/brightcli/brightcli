@@ -1,0 +1,29 @@
+#!/bin/bash
+
+BACKLIGHT_FILE=/sys/class/backlight/intel_backlight/brightness
+BACKLIGHT_PERCENT=20
+
+DEFAULT_BRIGHTNESS=10000
+CURRENT_BRIGHTNESS=$(cat "${BACKLIGHT_FILE}")
+
+action="${1}"
+
+case $action in
+  up)
+    icon='🌞' 
+    updated_brightness=$((CURRENT_BRIGHTNESS*(100+BACKLIGHT_PERCENT)/100))    
+  ;;
+  down)
+    icon='⛅'
+    updated_brightness=$((CURRENT_BRIGHTNESS*(100-BACKLIGHT_PERCENT)/100))
+  ;;
+  *)
+    icon=''
+    updated_brightness="${DEFAULT_BRIGHTNESS}"
+  ;;
+esac
+
+echo $updated_brightness > "${BACKLIGHT_FILE}"
+if [ ! -z $icon ]; then
+  notify-send "$icon $updated_brightness"
+fi
