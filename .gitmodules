@@ -7,3 +7,12 @@
 [submodule "pickleback"]
 	path = pickleback
 	url = git@github.com:jfhbrook/pickleback.git
+[submodule "hacks/ihydra/jp-kernel"]
+	path = hacks/ihydra/jp-kernel
+	url = git@github.com:jfhbrook/jp-kernel.git
+[submodule "hacks/hydra/nel"]
+	path = hacks/hydra/nel
+	url = git@github.com:jfhbrook/nel.git
+[submodule "hacks/hydra/ihydra"]
+	path = hacks/hydra/ihydra
+	url = git@github.com:jfhbrook/ihydra.git
