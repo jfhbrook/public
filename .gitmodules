@@ -4,3 +4,6 @@
 [submodule "anisotropy"]
 	path = anisotropy
 	url = git@github.com:jfhbrook/anisotropy.git
+[submodule "pickleback"]
+	path = pickleback
+	url = git@github.com:jfhbrook/pickleback.git
