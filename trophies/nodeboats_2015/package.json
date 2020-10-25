@@ -1,0 +1,17 @@
+{
+  "name": "ss-duplicate-callback",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": ". ./env.sh && node ./index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "heya": "~1.2.0",
+    "johnny-five": "~0.8.76",
+    "spark-io": "~0.6.1"
+  }
+}
