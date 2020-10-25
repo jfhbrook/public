@@ -1,0 +1,32 @@
+# Colors (IR Black)
+colors:
+  # Default colors
+  primary:
+    background: '0x000000'
+    foreground: '0xffffff'
+
+  cursor:
+    text: '0xffffff'
+    cursor: '0xffffff'
+
+  # Normal colors
+  normal:
+    black:   '0x4e4e4e'
+    red:     '0xff6c60'
+    green:   '0xa8ff60'
+    yellow:  '0xffffb6'
+    blue:    '0x96cbfe'
+    magenta: '0xff73fd'
+    cyan:    '0xc6c5fe'
+    white:   '0xeeeeee'
+
+  # Bright colors
+  bright:
+    black:   '0x7c7c7c'
+    red:     '0xffb6b0'
+    green:   '0xceffab'
+    yellow:  '0xffffcb'
+    blue:    '0xb5dcfe'
+    magenta: '0xff9cfe'
+    cyan:    '0xdfdffe'
+    white:   '0xffffff'

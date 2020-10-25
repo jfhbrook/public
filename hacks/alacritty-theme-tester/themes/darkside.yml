@@ -1,0 +1,27 @@
+# Colors (Darkside)
+colors:
+  primary:
+    background: "0x222324"
+    foreground: "0xBABABA"
+
+  # Normal colors
+  normal:
+    black:    "0x000000"
+    red:      "0xE8341C"
+    green:    "0x68C256"
+    yellow:   "0xF2D42C"
+    blue:     "0x1C98E8"
+    magenta:  "0x8E69C9"
+    cyan:     "0x1C98E8"
+    white:    "0xBABABA"
+
+  # Bright colors
+  bright:
+    black:    "0x666666"
+    red:      "0xE05A4F"
+    green:    "0x77B869"
+    yellow:   "0xEFD64B"
+    blue:     "0x387CD3"
+    magenta:  "0x957BBE"
+    cyan:     "0x3D97E2"
+    white:    "0xBABABA"
