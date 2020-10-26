@@ -1,0 +1,51 @@
+#+title: korbenware 🦜
+
+* What
+This repo is my ongoing project to write a Linux desktop environment toolset.
+It's written in Python on top of [[https://twistedmatrix.com/trac/][Twisted]] and has the following features:
+
+- Loads configs from =~/.config/korbenware/korbenware.toml=
+- Implements the XDG autostart spec
+- Monitors processes and optionally restarts them using =twisted.runner.procmon=
+  **CURRENTLY BUGGY**
+- Exposes a DBus object for controlling the desktop session **CURRENTLY VERY LIMITED**
+- Includes a DBus service object framework build on txdbus, attrs and marshmallow
+- Includes a cli tool called =kbconfig= which can be used to inspect the status
+  of XDG resources and edit related config files
+- Includes a cli tool called =kbopen= which will launch a program using XDG
+  mime type and default applications support **CURRENTLY BUGGY**
+- Logs session logs to journald
+- Includes a thin wrapper around =journalctl= for inspecting session logs
+- Includes an Urwid-based TUI for XDG application menus called =kbmenu=
+
+For more information on what these features are and why you might want them,
+see [[https://dev.to/jfhbrook/what-s-a-desktop-session-manager-and-why-do-i-want-one-agl][this blog post]] I wrote about desktop session managers in Linux.
+* Current Status / Getting Started
+**THIS IS ONLY PART WAY DONE**.
+You can currently install korbenware into a Conda env and call kbsession from
+an xinitrc. It's hella broken and missing a lot of features but it's MVP and
+currently running on my Linux laptop.
+* Tests
+Some things are tested - the logic in the dbus framework is covered particularly
+well. They're written in =pytest= and live in the =./tests= directory.
+* Style Guide
+I try to auto-format everything with black, except the code inside the Twisted folder -
+there, I try to follow Twisted's style guide as best I can without tools.
+* Contributing
+Good luck lmao! This is just a fun project for me, but if you wanna get down
+I'll accept pull requests! Keep in mind that I will not be adding contributor
+names to the copyright notices and that your contribution will generally need to
+come without these strings attached. Thanks for understanding.
+* Licensing
+Pieces of this code are borrowed heavily from Click, Twisted and XInit itself;
+those pieces are licensed under a BSD 3-clause license in the case of the former
+and MIT licenses in the two latter. Everything I personally wrote is licensed
+under the Mozilla Public License v2.0. Each file is tagged with its individual
+license restrictions and the licenses themselves are included in the project.
+* Various References
+** [[https://wiki.lxde.org/en/LXSession#autostart_directories][XDG autostart support in lxde-lxsession]]
+** [[https://specifications.freedesktop.org/autostart-spec/autostart-spec-0.5.html][The XDG autostart spec]]
+** [[https://stackoverflow.com/questions/25897836/where-should-i-write-a-user-specific-log-file-to-and-be-xdg-base-directory-comp][StackOverflow post on XDG]]
+** [[https://pyxdg.readthedocs.io/en/latest/desktopentry.html][pyxdg's docs on desktop entry parsing]]
+** [[https://specifications.freedesktop.org/desktop-entry-spec/latest/ar01s06.html][The XDG desktop entry spec]]
+** [[http://raphael.slinckx.net/blog/documents/dbus-tutorial][DBus Activation Tutorial]]
