@@ -31,3 +31,6 @@
 [submodule "pyee"]
 	path = pyee
 	url = git@github.com:jfhbrook/pyee.git
+[submodule "github-profile"]
+	path = github-profile
+	url = git@github.com:jfhbrook/jfhbrook.git
