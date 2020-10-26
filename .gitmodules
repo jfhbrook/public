@@ -5,7 +5,7 @@
 	path = anisotropy
 	url = git@github.com:jfhbrook/anisotropy.git
 [submodule "pickleback"]
-	path = pickleback
+	path = old-memes/pickleback
 	url = git@github.com:jfhbrook/pickleback.git
 [submodule "hacks/ihydra/jp-kernel"]
 	path = hacks/ihydra/jp-kernel
