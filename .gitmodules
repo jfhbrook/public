@@ -22,3 +22,6 @@
 [submodule "gpl"]
 	path = gpl
 	url = git@github.com:jfhbrook/gpl.git
+[submodule "resume"]
+	path = resume
+	url = git@github.com:jfhbrook/resume.git
