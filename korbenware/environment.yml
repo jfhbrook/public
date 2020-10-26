@@ -1,0 +1,38 @@
+name: korbenware
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.7.6
+  - pip=20.0.2
+  - arrow=0.15.5
+  - attrs=19.3.0
+  - black=19.10b0
+  - cattrs=1.0.0
+  - click=7.1.1
+  - crayons=0.3.0
+  - flake8=3.7.9
+  - ipykernel=5.1.4
+  - ipywidgets=7.5.1
+  - jupyterlab=2.1.5
+  - marshmallow=3.5.0
+  - nodejs=14.4.0
+  - pandas=1.0.5
+  - pyee=7.0.1
+  - pyflakes=2.1.1
+  - pygments=2.6.1
+  - pytest=5.4.1
+  - pyxdg=0.26
+  - terminaltables=3.1.0
+  - toml=0.10.0
+  - twisted=20.3.0
+  - urwid=2.1.0
+  - yarn=1.22.4
+  - zope.interface=4.7.1
+  - pip:
+    - -e .
+    - gshell.py==0.0.4
+    - pytest-twisted==1.12
+    - git+https://github.com/systemd/python-systemd.git#egg=systemd
+    - twisted-ipython==2.0.0
+    - txdbus==1.1.1

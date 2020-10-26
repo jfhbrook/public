@@ -1,0 +1,4 @@
+**/__pycache__
+korbenware.egg-info
+.ipynb_checkpoints
+.mypy_cache
