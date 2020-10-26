@@ -1,4 +1,4 @@
-#+title Josh Holbrook's Public Software
+#+title: Josh Holbrook's Public Software
 
 * Hello
 This repository contains most of my open source and source-available code.
