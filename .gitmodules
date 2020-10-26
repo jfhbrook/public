@@ -28,3 +28,6 @@
 [submodule "trophies\\ecstatic"]
 	path = trophies\\ecstatic
 	url = git@github.com:jfhbrook/node-ecstatic.git
+[submodule "pyee"]
+	path = pyee
+	url = git@github.com:jfhbrook/pyee.git
