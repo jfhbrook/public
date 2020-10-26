@@ -25,8 +25,8 @@
 [submodule "resume"]
 	path = resume
 	url = git@github.com:jfhbrook/resume.git
-[submodule "trophies\\ecstatic"]
-	path = trophies\\ecstatic
+[submodule "trophies/ecstatic"]
+	path = trophies/ecstatic
 	url = git@github.com:jfhbrook/node-ecstatic.git
 [submodule "pyee"]
 	path = pyee
