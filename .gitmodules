@@ -37,6 +37,3 @@
 [submodule "trophies/hoarders"]
 	path = trophies/hoarders
 	url = git@github.com:jfhbrook/hoarders.git
-[submodule "stuff"]
-	path = hacks/ihydra/ihydra
-	url = git@github.com:jfhbrook/ihydra.git
