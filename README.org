@@ -1,0 +1,90 @@
+#+title Josh Holbrook's Public Software
+
+* Hello
+This repository contains most of my open source and source-available code.
+
+For my GPL-compatible free software, check out [[https://github.com/jfhbrook/public][my GPL-compatible software
+repository]].
+* Contents
+** anisotropy
+This submodule contains my masters thesis. It is licensed under the Community
+Research and Academic Programming License v0 Beta 0.
+** college
+These are various projects I worked on in college. Each project is "poorly
+licensed" - ~count_crossings~ and ~nomograms~ have no licensing information at
+all and ~super-four-bar-explorer~ has "Everything here's on the wtfpl" in the
+comments - but if someone really needs it I'm happy to add licensing
+information. Let me know.
+** data
+This folder contains various free datasets - currently this contains the IAS
+student survey results for the University of Alaska Fairbanks from 2005 to 2009,
+in difficult-to-parse .pdf form. Sorry y'all.
+** db_hooks
+This is the toolset I made for myself to manage database stuff on my personal
+machines. It is licensed under an Apache v2.0 license.
+** desktop
+This is stuff I'm working on for my Linux desktop. It is available under a MPL
+v2.0 license.
+** github-profile
+This submodule contains my GitHub README profile. It is unlicensed but
+source-available.
+** gpl
+This submodule contains my GPL-compatible free software projects.
+** hacks
+Herein lie my open source hack projects!
+*** alacritty-theme-tester
+This is a series of kludgy scripts I wrote for testing out themes with
+Alacritty, the terminal I use in Linux. It is licensed under a MIT license.
+*** ihydra
+This is a sabbatical project I worked on in Spring 2020 that contains a Jupyter
+kernel for [[https://hydra-editor.glitch.me/][the Hydra visual synthesizer]]. It uses the same license as the
+IJavascript kernel - that is, under a BSD 3-clause license.
+** old-memes
+These are all old Node.js projects from roughly the 2011-2016 time period. These
+are the subset of them which were considered potentially useful to people other
+than myself. I have many other old projects in my private repositories - if you
+remember something and want the source code let me know and I'll put it up.
+
+Most of these projects are licensed under a MIT/X11 license - if any of the
+licensing is unclear let me know.
+
+** openscad
+These are files I've written for OpenSCAD. So far, these are available under a
+MPL v2.0 license.
+** politics
+Source-available work for political organizations - currently contains a favicon
+I made for the Alaska Young Democrats in 2013.
+** PSeudo
+This is a PowerShell module for privilege escalation in Windows 10, using named
+pipes and a bunch of dirty tricks. It is based on code I found and saved from
+the internet. It is licensed under an MIT Expat license.
+** pyee
+This is a loose port of the Node.js EventEmitter with special support for
+coroutines and concurrent programming. It is licensed under an MIT license.
+** resume
+This is my resume. It is source-available.
+** trophies
+This folder contains projects that I don't maintain anymore but that I'm proud
+of and want to showcase.
+*** ecstatic
+Ecstatic is a static fileserving middleware for Node.js that I maintained from
+2011 to 2019, with over 900 stars on GitHub. I shut down the project in May 2019
+[[https://github.com/jfhbrook/node-ecstatic/issues/259][in a big huff]]. It is licensed under an MIT license.
+*** hoarders
+Hoarders was a joke module I made as commentary around "grab bag utility
+modules" like underscore in the Node.js ecosystem around 2013. It was intended
+to make close friends laugh, but ended up getting the attention of most module
+maintainers on npm, making a number of them [[https://github.com/jfhbrook/hoarders/issues/2][pretty angry]]. Eventually, it was
+discovered that starring the package would freeze the npm registry, and Isaac
+deleted it from npm.
+
+Hoarders is licensed under the Tumbolia Public License.
+*** nodeboats_2015
+At JSConf 2015, I teamed up with some friends to make a nodeboat with a sail on
+it. The SS. Duplicate Callback, if memory serves, did about as well in the
+competition as you could trying to control a boat over hotel wifi. Sadly, I
+don't have pictures.
+** twisted_ipython
+This is a module that makes autoawait work in IPython using Twisted. It is
+licened under a BSD 3-clause license. For more information, read [[https://dev.to/jfhbrook/twistedipython-autoawait-in-jupyter-notebooks-with-twisted-lee][the blog post
+on dev.to]].
