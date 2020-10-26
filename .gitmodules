@@ -19,3 +19,6 @@
 [submodule "lgpl"]
 	path = lgpl
 	url = git@github.com:jfhbrook/public-lgpl.git
+[submodule "gpl"]
+	path = gpl
+	url = git@github.com:jfhbrook/gpl.git
