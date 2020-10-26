@@ -10,11 +10,11 @@
 [submodule "hacks/ihydra/jp-kernel"]
 	path = hacks/ihydra/jp-kernel
 	url = git@github.com:jfhbrook/jp-kernel.git
-[submodule "hacks/hydra/nel"]
-	path = hacks/hydra/nel
+[submodule "hacks/ihydra/nel"]
+	path = hacks/ihydra/nel
 	url = git@github.com:jfhbrook/nel.git
-[submodule "hacks/hydra/ihydra"]
-	path = hacks/hydra/ihydra
+[submodule "hacks/ihydra/ihydra"]
+	path = hacks/ihydra/ihydra
 	url = git@github.com:jfhbrook/ihydra.git
 [submodule "lgpl"]
 	path = lgpl
@@ -37,3 +37,6 @@
 [submodule "trophies/hoarders"]
 	path = trophies/hoarders
 	url = git@github.com:jfhbrook/hoarders.git
+[submodule "stuff"]
+	path = hacks/ihydra/ihydra
+	url = git@github.com:jfhbrook/ihydra.git
