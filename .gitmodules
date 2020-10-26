@@ -34,3 +34,6 @@
 [submodule "github-profile"]
 	path = github-profile
 	url = git@github.com:jfhbrook/jfhbrook.git
+[submodule "trophies/hoarders"]
+	path = trophies/hoarders
+	url = git@github.com:jfhbrook/hoarders.git
