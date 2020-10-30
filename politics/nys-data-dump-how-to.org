@@ -70,7 +70,7 @@ basic support for org files. You may also view it on GitHub, where it's rendered
 as relatively pleasant HTML.
 
 * Which Database Should I Use?
-Because of the size of these dumps, it is **highly recommended** that you use a
+Because of the size of these dumps, it is *highly recommended* that you use a
 database to access this data instead of a flat file in such formats as CSV,
 JSON, Avro or Parquet.
 
@@ -147,12 +147,6 @@ This process isn't one I've done personally; however, the BOE does have some
 documentation on this matter, which may be found here:
 
 https://www.elections.ny.gov/FoilRequests.html
-
-
-This is a Makefile and a set of scripts for cleaning and uploading a specific
-data dump, but the principles in here should apply to many dumps coming from
-NYS, including voter files, because they're all using the same broken
-infrastructure.
 
 * File Encoding
 The documentation from the BOE says that the encoding of the files is ASCII;
