@@ -1,0 +1,819 @@
+#+title: The Deets on Loading NYS Campaign Finance Reports and Voter Files
+
+* Introduction
+One cool thing about living in New York is that a lot of political data is
+freely available. Two specific data sets that are of interest to political
+activists are their campaign disclosure reports - which say who donated what to
+who and when - and voter files - which say how people voted when.
+
+Unfortunately, the data is difficult to work with. The datasets are too large to
+comfortably work with in flat files, they have a number of serious data quality
+issues, and are poorly documented.
+
+This document is a guide for how to parse and load these data sets into a
+database for further processing. It also touches slightly on the data model but
+doesn't go too deep into it - it's expected that if you're looking at these
+reports as an analyst or political researcher that you have have a strong
+understanding of the domain. It focuses on the campaign finance reports because
+they're the ones that the author is most familiar with, but many of the
+principles will generalize to voter files as well.
+
+While this document doesn't include a full framework for doing
+this - it's a large task and there's too much variation in how people work with
+these to easily generalize it - it does include some examples and snippets. May
+they be helpful to you.
+
+* License
+This file and associated code is licensed under the Anti-Capitalist Software
+License; the full text is included here.
+
+#+begin_quote
+ANTI-CAPITALIST SOFTWARE LICENSE (v 1.4)
+
+Copyright © 2020 Josh Holbrook
+
+This is anti-capitalist software, released for free use by individuals and
+organizations that do not operate by capitalist principles.
+
+Permission is hereby granted, free of charge, to any person or organization (the
+"User") obtaining a copy of this software and associated documentation files
+(the "Software"), to use, copy, modify, merge, distribute, and/or sell copies of
+the Software, subject to the following conditions:
+
+1. The above copyright notice and this permission notice shall be included in
+   all copies or modified versions of the Software.
+
+2. The User is one of the following:
+a. An individual person, laboring for themselves
+b. A non-profit organization
+c. An educational institution
+d. An organization that seeks shared profit for all of its members, and allows
+   non-members to set the cost of their labor
+
+3. If the User is an organization with owners, then all owners are workers and
+   all workers are owners with equal equity and/or equal vote.
+
+4. If the User is an organization, then the User is not law enforcement or
+   military, or working for or under either.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT EXPRESS OR IMPLIED WARRANTY OF ANY
+KIND, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#+end_quote
+* How to View This Document
+This document is an [[https://orgmode.org/][org file]], meaning it's best if you can open it in Emacs.
+However, you can open and read it in any text editor, many of which include
+basic support for org files. You may also view it on GitHub, where it's rendered
+as relatively pleasant HTML.
+
+* Which Database Should I Use?
+Because of the size of these dumps, it is **highly recommended** that you use a
+database to access this data instead of a flat file in such formats as CSV,
+JSON, Avro or Parquet.
+
+While mongodb may be tempting, a SQL database will be the best choice. This is
+because analytics querying is particularly well-suited for SQL and because data
+scientists and analysts will generally be quite familiar with SQL.
+
+The dataset is relatively large, but not so large that you'll need a special
+analytics database like BigQuery or Redshift to query it; a commodity open
+source database like MySQL or PostgreSQL is fine. The author's preference is for
+PostgreSQL: it's highly regarded and has fewer issues than MySQL around text
+encodings and date and time related data types.
+
+SQLite is also an option. SQLite is nice because you don't need to install or
+run a server of any kind - it's embedded in your script and works against a file
+on disk - but its data types are also limited and other people won't be able to
+query it. This is a judgement call you'll need to make for yourself.
+
+* How to Access Campaign Finance Disclosure Reports
+Campaign finance disclosure reports may be accessed at this website:
+
+https://www.elections.ny.gov/CFViewReports.html
+
+The data is arranged in a star schema, with a "disclosure" facts file and a
+"filer" dimension file. In order to truly go to town, you will need to load both
+into your database.
+
+The Board of Elections breaks the disclosures data up into sections, which may be useful if you're doing
+incremental loads; however, for most uses the "all filings" file is the one you
+want:
+
+https://cfapp.elections.ny.gov/NYSBOE/download/ZipDataFiles/ALL_REPORTS.zip
+
+The zip file comes in at 233Mb, with the unpacked contents being much larger.
+It's not a difficult download on a broadband connection, but as the BOE
+indicates it is a large enough dataset that it should really be loaded in a
+database.
+
+The filers file is more managable, and can be found here:
+
+https://cfapp.elections.ny.gov/NYSBOE/download/ZipDataFiles/commcand.zip
+
+While you can easily download these files in your browser, it's also readily
+automated. For example, here's an example script that downloads the files and
+unzips them into a workspace:
+
+#+begin_src bash
+#!/usr/bin/env bash
+
+WORKING_DIR=${WORKING_DIR:-.}
+ZIPS_DIR="${WORKING_DIR}/zips"
+REPORTS_DIR="${WORKING_DIR}/reports"
+FILERS_DIR="${WORKING_DIR}/filers"
+
+# Ensure that the directories exist
+mkdir -p "${ZIPS_DIR}"
+mkdir -p "${REPORTS_DIR}"
+mkdir -p "${FILERS_DIR}"
+
+# Download the report fact table
+curl https://www.elections.ny.gov/NYSBOE/download/ZipDataFiles/ALL_REPORTS.zip > "${ZIPS_DIR}/ALL_REPORTS.zip"
+unzip "${ZIPS_DIR}/ALL_REPORTS.zip" "${REPORTS_DIR}"
+
+# Download the filers dimension table
+curl https://www.elections.ny.gov/NYSBOE/download/ZipDataFiles/commcand.zip > "${ZIPS_DIR}/commcand.zip"
+unzip "${ZIPS_DIR}/commcand.zip" "${FILERS_DIR}"
+#+end_src
+
+* How to Acquire Voter Files
+Voter files are also available from the BOE but are so large that the BOE likes
+to hand them out on DVDs after an application process.
+
+This process isn't one I've done personally; however, the BOE does have some
+documentation on this matter, which may be found here:
+
+https://www.elections.ny.gov/FoilRequests.html
+
+
+This is a Makefile and a set of scripts for cleaning and uploading a specific
+data dump, but the principles in here should apply to many dumps coming from
+NYS, including voter files, because they're all using the same broken
+infrastructure.
+
+* File Encoding
+The documentation from the BOE says that the encoding of the files is ASCII;
+however, if you try to load them as ASCII they will include invalid bytes.
+
+Unfortunately, it's not in general possible to prove that a supposed encoding is
+the correct encoding for a file. However, we can be fairly certain, due to
+invalid bytes, that the file is not encoded in either ASCII or UTF-8.
+
+At one point in time, the author pointed an encoding sniffer at the campaign
+disclosure reports and found that they were most likely encoded as **latin-1**.
+It's impossible to prove this, since there's no such thing as an invalid byte in
+this encoding, but it will at least decode into unicode and be correct most of
+the time.
+
+* Dimensional Models
+The campaign finance data and voter files are represented using what's called a
+dimensional model. When implemented in SQL, these dimensional models are
+referred to as star schemas.
+
+The classic book on this is called The Data
+Warehouse Toolkit by Ralph Kimball, but it's very dense and highly technical so
+I recommend looking for blog posts and tutorials online instead. For instance,
+here's a pleasant looking high level overview:
+
+[[https://www.guru99.com/dimensional-model-data-warehouse.html][What is Dimensional Modeling in Data Warehouse? - Guru99]]
+
+When querying these data sets, you'll want to be familiar with dimensional
+models so that you can leverage their strengths most easily.
+
+* Fuzzy Matches
+Many common operations, particularly joins and filters, depend on finding columns
+with particular values. For example, you may want to join filers and reports on
+~filer_id~ so that you can associate the name of a filer with the contributions
+they made; or you may want to filter these to be within a certain date range.
+
+However, these operations work best when the fields are an exact match. There are
+many cases where this won't be true with this data. For example, addresses are
+rarely if ever the same in text, even when they represent the same location.
+Names of organizations can also be challenging.
+
+The simplest tool you can use is basic normalization by lower-casing the text.
+You can do this for example by calling ~LOWER(filers_dim.filer_name)~.
+
+Another easy collection of tools to use is [[https://www.postgresql.org/docs/current/functions-matching.html][pattern matching capabilities in your
+database]], particularly the ~LIKE~ keyword. These can be combined with
+lower-casing text and other normalization strategies. For instance, if you're
+trying to find campaign disclosures for police unions, you may want to start
+with filtering for records where ~LOWER(filers_dim.filer_name) LIKE
+'%benevolent%'~.
+
+A more complicated tool is proper text search. While you could upload the data
+to a search service such as Elasticsearch or Solr, many databases - [[https://www.postgresql.org/docs/current/textsearch.html][PostgreSQL]]
+and [[https://dev.mysql.com/doc/refman/8.0/en/fulltext-search.htmlincluded][MySQL]] - contain full text search capabilities.
+
+Another collection of techniques involves "fuzzy text matching", particularly
+using a measurement of how different two strings are called a Levenstein
+distance. PostgreSQL has a [[https://www.postgresql.org/docs/current/fuzzystrmatch.html][fuzzystrmatch]] module which includes similar
+algorithms.
+
+All of these tools - all considered what's called "natural language
+processing" - are error-prone and will require active human effort to work well.
+Sadly, doing these processes with high accuracy in general and without human
+intervention is the sort of difficult problem that requires machine learning.
+Machine learning is difficult to set up in general and is considered out of
+scope for this document.
+
+* Data Schemas
+The zip files tend to include basic documentation of the schema of the data. For
+examples, two of these files from a previously downloaded dump of
+=ALL_REPORTS.txt= are included here.
+
+When uploading this data into your database you'll want to use this data to
+create database tables with the correct column types. For example, here's some
+DDL for creating tables in PostgreSQL:
+
+#+begin_src sql
+BEGIN;
+
+CREATE TABLE reports_fact (
+  filer_id TEXT,
+  freport_id TEXT PRIMARY KEY,
+  transaction_code TEXT NOT NULL,
+  e_year INTEGER NOT NULL,
+  t3_trid INTEGER,
+  date1_10 DATE,
+  date2_12 DATE,
+  contrib_code_20 TEXT,
+  contrib_type_code_25 TEXT,
+  corp_30 TEXT,
+  first_name_40 TEXT,
+  mid_init_41 TEXT,
+  last_name_44 TEXT,
+  addr_1_50 TEXT,
+  city_52 TEXT,
+  state_54 TEXT,
+  zip_56 TEXT,
+  check_no_60 TEXT,
+  check_date_65 DATE,
+  amount_70 FLOAT,
+  amount2_72 FLOAT,
+  description_80 TEXT,
+  other_recpt_code_90 TEXT,
+  purpose_code1_100 TEXT,
+  purpose_code2_201 TEXT,
+  explanation_110 TEXT,
+  xfer_type_120 TEXT,
+  chkbox_130 TEXT,
+  crerec_uid TEXT,
+  crerec_date TIMESTAMP
+);
+
+CREATE TABLE filers_dim (
+  filer_id TEXT PRIMARY KEY,
+  filer_name TEXT,
+  filer_type TEXT,
+  status TEXT,
+  committee_type TEXT,
+  office INTEGER,
+  district INTEGER,
+  treas_first_name TEXT,
+  treas_last_name TEXT,
+  address TEXT,
+  city TEXT,
+  state TEXT,
+  zip TEXT
+);
+
+COMMIT;
+#+end_src
+
+** EFSRECB.txt
+#+begin_src
+NEW YORK STATE BOARD OF ELECTIONS
+
+RECORD LAYOUT FOR EFS DISCLOSURE TRANSACTIONS
+
+                        DELIMITED ASCII
+
+Note: Filer ID: 	A#####  = State Filers
+		C#####  = County Filers
+
+ FIELD                        LOCATION               TYPE        FORMAT                         EFS IMPORT
+
+
+ FILER_ID                       01                   CHAR                                       REQUIRED
+ FREPORT_ID                     02                   CHAR                                       REQUIRED
+ TRANSACTION_CODE               03                   CHAR                                       REQUIRED
+ E_YEAR                         04                   CHAR                                       REQUIRED
+ T3_TRID                        05                   INTEGER
+ DATE1_10                       06                   DATE        'MM/DD/YYYY'
+ DATE2_12                       07                   DATE        'MM/DD/YYYY'
+ CONTRIB_CODE_20                08                   CHAR
+ CONTRIB_TYPE_CODE_25           09                   CHAR
+ CORP_30                        10                   CHAR
+ FIRST_NAME_40                  11                   CHAR
+ MID_INIT_42                    12                   CHAR
+ LAST_NAME_44                   13                   CHAR
+ ADDR_1_50                      14                   CHAR
+ CITY_52                        15                   CHAR
+ STATE_54                       16                   CHAR
+ ZIP_56                         17                   CHAR
+ CHECK_NO_60                    18                   CHAR
+ CHECK_DATE_62                  19                   DATE        'MM/DD/YYYY'
+ AMOUNT_70                      20                   FLOAT
+ AMOUNT2_72                     21                   FLOAT
+ DESCRIPTION_80                 22                   CHAR
+ OTHER_RECPT_CODE_90            23                   CHAR
+ PURPOSE_CODE1_100              24                   CHAR
+ PURPOSE_CODE2_102              25                   CHAR
+ EXPLANATION_110                26                   CHAR
+ XFER_TYPE_120                  27                   CHAR
+ CHKBOX_130                     28                   CHAR
+ CREREC_UID                     29                   CHAR
+ CREREC_DATE                    30                   DATE        'MM/DD/YYYY HH24:MI:SS'
+
+(RecordSeparator): CR-LF
+(FieldSeparator): ,
+(FieldStartDelimiter): "
+(FieldEndDelimiter): "
+(FieldDelimitStyle): all
+(StripLeadingBlanks): True
+(StripTrailingBlanks): True
+
+
+
+
+
+                                                  11/19/99 11:30 am
+
+#+end_src
+
+** EFSSCHED.txt
+#+begin_src
+NEW YORK STATE Board of Elections Campaign Finance Disclosure Filing Codes
+
+
+                                SCHEDULES
+
+FIELD NAMES     A  B  C D  E  F  G  H  I  J K  L  M  N  O  P Q
+--------------------------------------------------------------
+DATE1_10        X  X  X X  X  X  X  X  X  X X  X  X  X     X X
+
+DATE2_12                                    X  X  X
+
+CONTRIB_CODE_2  X       X                               X  X
+0
+
+CONTRIB_TYPE_C          X
+ODE_25
+
+CORP_30         X  X  X X  X  X  X  X  X  X X  X  X  X  X  X X
+
+FIRST_NAME_40   X       X                                  X
+
+MID_INIT_42     X       X                                  X
+
+LAST_NAME_44    X       X                                  X
+
+ADDR_1_50       X  X  X X  X  X  X  X  X  X X  X  X  X     X X
+
+CITY_52         X  X  X X  X  X  X  X  X  X X  X  X  X     X X
+
+STATE_54        X  X  X X  X  X  X  X  X  X X  X  X  X     X X
+
+ZIP_56          X  X  X X  X  X  X  X  X  X X  X  X  X     X X
+
+CHECK_NO_60     X  X  X       X  X  X     X       X        X X
+
+CHECK_DATE_62                             X
+
+AMOUNT_70       X  X  X X  X  X  X  X  X  X X  X  X  X     X X
+
+AMOUNT2_72                                  X        X  X
+
+DESCRIPTION_80          X
+
+OTHER_RECPT_CO             X
+DE_90
+
+PURPOSE_CODE1_                X                      X  X
+100
+
+PURPOSE_CODE2_                                               X
+102
+
+EXPLANATION_11                X                      X  X    X
+0
+
+XFER_TYPE_120                    X  X
+
+CHKBOX_130                             X
+
+A -  Monetary Contributions/Individual & Partnerships
+B -  Monetary Contributions/Corporate
+C -  Monetary Contributions/All Other
+D -  In-Kind Contributions
+E -  Other Receipts
+F -  Expenditure/Payments
+G -  Transfers In
+H -  Transfers Out
+I -  Loans Received
+J -  Loan Repayments
+K -  Liabilities/Loans Forgiven
+L -  Expenditure Refunds
+M -  Contributions Refunded
+N -  Outstanding Liabilities
+O -  Partners / Subcontracts
+P -  Non Campaign Housekeeping Receipts
+Q -  Non Campaign Housekeeping Expenses
+X -  A No Activity Statement Was Submitted
+Y -  A In-Lieu-Of Statement Was Submitted
+
+
+
+
+
+
+DATA ELEMENT INVENTORY for table EFS_Transactions_T3:
+
+Note: Filer ID: 	A#####  = State Filers
+		C#####  = County Filers
+
+Date Element  Data       Len  Sta  End   Table                 Schedule  Description
+Name          Type            rt   Pos                         (s)
+                              Pos
+---------------------------------------------------------------------------------------------------
+  FILER_ID     Char(6)    6    1     6   EFS_TRANSACTIONS_T3   KEY-1     Filer Id Number
+---------------------------------------------------------------------------------------------------
+ FREPORT_ID    Char(5)    1    7     7   EFS_TRANSACTIONS_T3   KEY-2     Report ID1
+---------------------------------------------------------------------------------------------------
+  TRANSAC     Varchar2    1    8     8   EFS_TRANSACTIONS_T3   KEY-3     Transaction Code2
+ TION_CODE       (1)
+---------------------------------------------------------------------------------------------------
+   E_YEAR     Varchar2    4    9    12   EFS_TRANSACTIONS_T3   KEY-4     Election Year
+                 (4)
+---------------------------------------------------------------------------------------------------
+  T3_TRID     Number(3   10   13    22   EFS_TRANSACTIONS_T3   KEY-5     Transaction ID
+                 8)
+---------------------------------------------------------------------------------------------------
+  DATE1_10      Date     10   23    32   EFS_TRANSACTIONS_T3   A-N, P,   Date of Schedule
+                                                               Q         Transaction
+---------------------------------------------------------------------------------------------------
+  DATE2_12      Date     10   33    42   EFS_TRANSACTIONS_T3   K, L, M   Original Date of
+                                                                         Liability, Payment
+                                                                         Date or Date Received
+---------------------------------------------------------------------------------------------------
+  CONTRIB_    Varchar2    4   43    46   EFS_TRANSACTIONS_T3   A, D, O,  Contributor Code3
+  CODE_20        (4)                                           P
+---------------------------------------------------------------------------------------------------
+  CONTRIB_    Varchar2    1   47    47   EFS_TRANSACTIONS_T3   D         Contribution Type Code4
+   TYPE_         (1)
+  CODE_25
+---------------------------------------------------------------------------------------------------
+  CORP_30     Varchar2   50   48    97   EFS_TRANSACTIONS_T3   C-E, G-Q  Corporation Name
+                (40)
+---------------------------------------------------------------------------------------------------
+   FIRST_     Varchar2   10   98    107  EFS_TRANSACTIONS_T3   A         First Name of
+  NAME_40       (10)                                                     Contributor
+---------------------------------------------------------------------------------------------------
+MID_INIT_42   Varchar2    1   108   108  EFS_TRANSACTIONS_T3   A         Middle Initial of
+                 (1)                                                     Contributor
+---------------------------------------------------------------------------------------------------
+LAST_NAME_44  Varchar2   15   109   123  EFS_TRANSACTIONS_T3   A         Last Name of Contributor
+                (15)
+---------------------------------------------------------------------------------------------------
+ ADDR_1_50    Varchar2   40   124   163  EFS_TRANSACTIONS_T3   A-N, P,   Mailing Address
+                (40)                                           Q         (Contributor)
+---------------------------------------------------------------------------------------------------
+  CITY_52     Varchar2   15   164   178  EFS_TRANSACTIONS_T3   A-N, P,   Mailing Address City
+                (15)                                           Q         (Contributor)
+---------------------------------------------------------------------------------------------------
+  STATE_54    Varchar2    2   179   180  EFS_TRANSACTIONS_T3   A-N, P,   Mailing Address State
+                 (2)                                           Q         (Contributor)
+---------------------------------------------------------------------------------------------------
+   ZIP_56     Varchar2    5   181   185  EFS_TRANSACTIONS_T3   A-N, P,   Mailing Address Zip
+                 (5)                                           Q         (Contributor)
+---------------------------------------------------------------------------------------------------
+CHECK_NO_60   Varchar2   10   186   195  EFS_TRANSACTIONS_T3   A-C, F-   Check Number
+                (10)                                           H, J
+                                                               M, P, Q
+---------------------------------------------------------------------------------------------------
+ CHECK_DATE     Date     10   196   205  EFS_TRANSACTIONS_T3   J         Check Date
+    _62
+---------------------------------------------------------------------------------------------------
+ AMOUNT_70    Number(9    9   206   215  EFS_TRANSACTIONS_T3   A-N, P,   Amount on Schedule(s)
+                 ,0)                                           Q
+---------------------------------------------------------------------------------------------------
+ AMOUNT2_72   Number(9    9   216   225  EFS_TRANSACTIONS_T3   K, N, O   Amount Forgiven,
+                  )                                                      Outstanding,
+                                                                         Attributed.
+---------------------------------------------------------------------------------------------------
+DESCRIPTION   Varchar2   36   226   261  EFS_TRANSACTIONS_T3   D         Description
+    _80         (36)
+---------------------------------------------------------------------------------------------------
+OTHER_RECPT_  Varchar2   24   262   285  EFS_TRANSACTIONS_T3   E         Other Receipt Code5
+  CODE_90       (24)
+---------------------------------------------------------------------------------------------------
+  PURPOSE_    Varchar2    5   286   290  EFS_TRANSACTIONS_T3   F, N, O   Expenditure Purpose
+ CODE1_100       (5)                                                     Codes6
+
+---------------------------------------------------------------------------------------------------
+  PURPOSE_    Varchar2    5   291   295  EFS_TRANSACTIONS_T3   Q         Expenditure Purpose
+ CODE2_102       (5)                                                     Codes 7
+                                                                         For Schedule Q only
+---------------------------------------------------------------------------------------------------
+EXPLANATION_  Varchar2   36   296   331  EFS_TRANSACTIONS_T3   F, N, O,  Explanation
+    110         (36)                                           Q
+---------------------------------------------------------------------------------------------------
+XFER_TYPE_12  Varchar2    1   332   332  EFS_TRANSACTIONS_T3   G, H      Transfer type8
+     0           (1)
+---------------------------------------------------------------------------------------------------
+ CHKBOX_130   Varchar2    1   333   333  EFS_TRANSACTIONS_T3   I         Bank Loan Check Box9
+                 (1)
+---------------------------------------------------------------------------------------------------
+ CREREC_UID   Varchar2    8   334   341  EFS_TRANSACTIONS_T3             User ID of User who
+                 (8)                                                     created Rec
+---------------------------------------------------------------------------------------------------
+CREREC_DATE     Date     19   342   360  EFS_TRANSACTIONS_T3   KEY-6     Date Record was created
+---------------------------------------------------------------------------------------------------
+
+
+
+
+
+_______________________________
+
+
+     1.   FReport ID (Report ID):
+          A  32 DAY Pre Primary   G  32 Day Pre Special
+          B  11 Day Pre Primary   H  11 Day Pre Special
+          C  10 Day Post Primary  I  27 Day Post Special
+          D  32 Day Pre General   J  Periodic Jan. 15, 19__
+          E  11 Day Pre General   K  Periodic July 15, 19__
+          F  27 Day Post General  L  24 hour Notice
+
+     2.  Transaction Code (Scedule):
+          A -  Monetary Contributions/Individual & Partnerships
+          B -  Monetary Contributions/Corporate
+          C -  Monetary Contributions/All Other
+          D -  In-Kind Contributions
+          E -  Other Receipts
+          F -  Expenditure/Payments
+          G -  Transfers In
+          H -  Transfers Out
+          I -  Loans Received
+          J -  Loan Repayments
+          K -  Liabilities/Loans Forgiven
+          L -  Expenditure Refunds
+          M -  Contributions Refunded
+          N -  Outstanding Liabilities
+          O -  Partners / Subcontracts
+          P -  Non Campaign Housekeeping Receipts
+          Q -  Non Campaign Housekeeping Expenses
+	  X -  A No Activity Statement Was Submitted
+	  Y -  A In-Lieu-Of Statement Was Submitted
+
+     3.  Contrib_Code_20 (Contributor Code):
+          CAN    - Candidate/Candidate Spouse
+          FAM    - Family Members
+          CORP   - Corporate
+          IND    - Individual
+          PART   - Partnership
+          COM    - Committee
+
+     4.  Contrib_Type_Code_25 (Contribution Type Code):
+          1 = Services/Facilities Provided
+          2 = Property Given
+          3 = Campaign Expenses Paid
+
+     5.  Other_Recpt_Code_90: (Other receipt Codes):
+          INT/DIV    Interest/Dividend
+          PROC       Proceeds Sale/Lease
+          OTH        Other
+
+     6.  Purpose_Code1_100: (Expenditure Purpose Codes):
+          CMAIL                         Campaign Mailings
+          CONSL                         Campaign Consultant
+          POSTA                         Postage
+          CONSV                         Constituent Services
+          CNTRB                         Political Contributions
+          PROFL                         Professional Services
+          FUNDR                         Fundraising
+          RADIO                         Radio Ads
+          LITER                         Campaign Literature
+          OFFCE                         Office Expenses
+          OTHER                         Other: Must Provide Explanation
+          VOTER                         Voter Registration Materials or Services
+          PETIT                         Petition Expenses
+          WAGES                         Campaign Workers Salaries
+          INT                           Interest Expense
+          RENTO                         Office Rent
+          TVADS                         Television Ads
+          POLLS                         Polling Costs
+          PRINT                         Print Ads
+
+
+     7.  Purpose_Code2_102:   (Expenditure Purpose Codes for Schedule Q only):
+          RENTO    Office Rent
+          UTILS    Utilities
+          PAYRL    Payroll
+          POSTA    Postage
+          PROFL    Professional Services
+          OFEXP    Office Expenses
+          MAILS    Mailings
+          OTHER    Other: Provide Explanation
+          VOTER    Voter Registration Materials or Services
+
+     8.  Xfer_Type_120 (Transfer Type):
+          Type 1 - Party/Constituted Committees
+          Type 2 - Committee Solely Supporting Same Candidate
+
+     9.  Chkbox_130 (Bank Loan Check Box):
+          B - If Bank Loan
+          O - If Other
+
+     10.  Filer_Type:
+          C - Committee
+          R - Candidate
+                                                                         11/19/99 02:49 pm
+
+#+end_src
+
+* Date Format
+Using [[https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior][Python's DSL for specifying datetime formats]], the format for dates is:
+
+#+begin_src
+%m/%d/%Y
+#+end_src
+
+and the datetime format is:
+
+#+begin_src
+%m/%d/%Y %H:%M:%S
+#+end_src
+
+Unfortunately, to the author's knowledge, the time zone of the datetimes is not
+specified - it could be ~America/New_York~, ~Eastern Standard Time~ or ~UTC~. We
+have no way of knowing. Luckily, that level of granularity is **usually** not
+required.
+
+* Record Format
+The documentation says that the data is in CSV format, and that's **almost**
+correct; however, the data is not fully valid CSV-formatted.
+
+The specific issues have to do with escaping double-quotes. For those of you
+that know Python, the data dump works less like:
+
+#+begin_src python
+writer.writerow(record)
+#+end_src
+
+and more like:
+
+#+begin_src python
+f.write('","'.join(record) + "\n")
+#+end_src
+
+This means that if you have a record that looks like:
+
+#+begin_quote
+Josh "Data" Holbrook
+#+end_quote
+
+that the CSV output will look like:
+
+#+begin_src csv
+"Josh "Data" Holbrook"
+#+end_src
+
+You can get around this by stripping the ~"~ characters from the ends and
+splitting on ~","~:
+
+#+begin_src python
+line[1:-1].split('","')
+#+end_src
+
+However, this will break for records with newlines in them, which are common for
+addresses and is valid in CSVs:
+
+#+begin_src csv
+"780 Washington Ave
+Brooklyn, NY 11238"
+#+end_src
+
+It will also break in cases where a record happens to have ~","~ in it, which is
+rare but happens in the voter files:
+
+#+begin_src csv
+"Josh "Data","Computers" Holbrook"
+#+end_src
+
+This suggests two strategies. The first of these strategies is the easiest:
+parse the file as a CSV but pass flags that ignore invalid lines. This will
+parse the majority of records and will be good enough for a lot of research
+needs and get you going quickly, but most of the tools don't report well on what
+data is missing.
+
+The author recommends that you parse the file and write a "cleaned" CSV to disk
+before trying to load it into a database. For example, this is how he once handled it
+using the [[https://csvkit.readthedocs.io/en/latest/scripts/csvsql.html][csvsql tool from csvkit]]:
+
+#+begin_src bash
+csvsql \
+  --date-format '%m/%d/%Y' \
+  --datetime-format '%m/%d/%Y %H:%M:%S' \
+  --no-header-row \
+  --dialect postgresql \
+  --db "postgresql+psycopg2://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT}/${PGDATABASE}" \
+  --tables reports_fact filers_dim
+  --no-create \
+  --insert \
+  "${REPORTS_DIR}/ALL_REPORTS.out" "${FILERS_DIR}/commcand.txt"
+#+end_src
+
+The second strategy is to write a custom parser. This has been tried more than
+once and it's difficult! However, there are some lessons and recommendations to
+be gleaned from these efforts:
+
+1. The newlines case is much much more common than the false positive on split
+   case, so on a first pass process multiple lines until you appear to have a
+   complete record before splitting and processing, and treat the prototypal
+   record as an error case if it's too long.
+2. For inspection purposes, it is worthwhile to create warning records which
+   contain the raw record, the particular validation issue, data about the
+   report and the time at which it was processed, and any likely primary keys
+   for the record - in the case of the campaign finance reports, the
+   ~freport_id~ is likely sufficient here - so that the warnings can be joined
+   and compared with the processed data.
+3. Processing a CSV will take "a while" - about 45 minutes with a naive pure
+   Python implementation of a custom parser - and use an entire core on one's
+   CPU. As such, be sure to run these steps on a machine with a powerful
+   processor and good cooling; at least one laptop has ended up in the shop
+   because of this!
+4. Because of the intense processing requirements, it would be worthwhile for
+   anyone developing a custom parser to skip a pure Python implementation and
+   consider using Rust, C or some other compiled language.
+
+* Getting the Data Into a Database
+Once you can successfully parse or process the data, you'll want to get it into
+a database. Bulk loading can be challenging; here are some tips.
+
+First of all, don't try to do the bulk loading with pandas. It's very bad at high
+volume writes and batching.
+
+Many databases have a [[https://www.postgresql.org/docs/current/sql-copy.html][COPY command]] which may be used to load data into a
+database directly from a CSV on disk. If your database and raw data are on the
+same machine this is by far the fastest approach. If your database is in the
+cloud but you have shell access, you can use [[https://linux.die.net/man/1/scp][scp(1)]] or [[https://linux.die.net/man/1/rsync][rsync(1)]] to upload the
+data to the machine and then execute the COPY. Unfortunately, most managed
+databases such as RDS don't support this, though BigQuery and Redshift support
+COPYing data from GCS and S3 respectively.
+
+If you don't have a COPY command, try inserting records in batches of about
+1000 records at a time. You will want to benchmark and tune this to get the
+highest throughput. Note that you may need to find a particular API in your
+database client to enable this - for instance, if you're using psycopg2 with
+Python, the API you'll be looking for is [[https://www.psycopg.org/docs/extras.html#psycopg2.extras.execute_batch][psycopg2.extras.execute_batch]].
+
+Some database access tools come with a bulk uploader that you may use instead of
+a Python script which will automatically do something half-smart with batch
+loading. For instance, the ~psql~ CLI tool has a ~\copy~ meta-command, and
+Datagrip from Jetbrains can upload CSVs from the context menu. If you're doing
+this on an ad-hoc basis, this may be the easiest thing.
+
+Finally: because you won't be able to do this process transactionally, consider
+using staging tables if you want to keep the data online. With this strategy,
+you create a new table that has the same schema and structure as your live
+table, take your time to get it in the shape you want it in, and then rename the
+tables in a transaction. For example, in PostgreSQL it might look like this:
+
+#+begin_src sql
+CREATE stg_reports_fact LIKE reports_fact INCLUDING ALL;
+
+COPY stg_reports_fact FROM '/tmp/all_reports_cleaned.csv';
+
+BEGIN;
+
+ALTER TABLE reports_fact RENAME TO old_reports_fact;
+ALTER TABLE stg_reports_fact RENAME TO reports_fact;
+DROP TABLE old_reports_fact;
+
+COMMIT;
+#+end_src
+
+This snippet has not been run on a real machine and therefore probably has bugs.
+It also doesn't account for particulars of the CSV you output - for instance,
+the output text encoding, quote and escape characters, or the way that NULL
+values are represented.
+
+* Conclusions
+With the sage advice in this document, you should be able to make your way
+towards downloading (or requesting on DVD) data dumps from the NYS BOE; cleaning
+up and formatting the raw data; and getting it into a database.
+
+From there, you should be able to query the data as dimensional models. While
+primary keys and well-formed data will work with exact matches, many fields
+won't - these will require judicious use with text normalization, text pattern
+matching and natural language processing.
+
+With care and patience, you should be able to follow this guide to answer
+questions about the data.
+
+Cheers! 🌹
