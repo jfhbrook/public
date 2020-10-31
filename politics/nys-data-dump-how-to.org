@@ -798,7 +798,7 @@ the output text encoding, quote and escape characters, or the way that NULL
 values are represented.
 
 * Conclusions
-With the sage advice in this document, you should be able to make your way
+With the information in this document, you should be able to make your way
 towards downloading (or requesting on DVD) data dumps from the NYS BOE; cleaning
 up and formatting the raw data; and getting it into a database.
 
@@ -807,7 +807,10 @@ primary keys and well-formed data will work with exact matches, many fields
 won't - these will require judicious use with text normalization, text pattern
 matching and natural language processing.
 
-With care and patience, you should be able to follow this guide to answer
-questions about the data.
+Hopefully this will get you to where you need to be. If not, I'm happy to help!
+Try filing an issue on this repository and I'll look when I can. If I don't
+answer I probably missed the email notification - feel free to ping me on
+Twitter ([[https://twitter.com/jfhbrook][@jfhbrook]]) or on the NYC DSA EWG
+Slack.
 
 Cheers! 🌹
