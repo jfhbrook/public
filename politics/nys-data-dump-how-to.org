@@ -157,7 +157,7 @@ the correct encoding for a file. However, we can be fairly certain, due to
 invalid bytes, that the file is not encoded in either ASCII or UTF-8.
 
 At one point in time, the author pointed an encoding sniffer at the campaign
-disclosure reports and found that they were most likely encoded as **latin-1**.
+disclosure reports and found that they were most likely encoded as *latin-1*.
 It's impossible to prove this, since there's no such thing as an invalid byte in
 this encoding, but it will at least decode into unicode and be correct most of
 the time.
@@ -645,11 +645,11 @@ and the datetime format is:
 
 Unfortunately, to the author's knowledge, the time zone of the datetimes is not
 specified - it could be ~America/New_York~, ~Eastern Standard Time~ or ~UTC~. We
-have no way of knowing. Luckily, that level of granularity is **usually** not
+have no way of knowing. Luckily, that level of granularity is *usually* not
 required.
 
 * Record Format
-The documentation says that the data is in CSV format, and that's **almost**
+The documentation says that the data is in CSV format, and that's *almost*
 correct; however, the data is not fully valid CSV-formatted.
 
 The specific issues have to do with escaping double-quotes. For those of you
