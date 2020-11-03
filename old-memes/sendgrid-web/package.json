@@ -16,7 +16,7 @@
     "node": "*"
   },
   "dependencies": {
-    "request": "~2.27.0"
+    "request": "~2.68.0"
   },
   "devDependencies": {
     "nodeunit": "~0.8.2"
