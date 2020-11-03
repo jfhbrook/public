@@ -52,8 +52,18 @@ licensing is unclear let me know.
 These are files I've written for OpenSCAD. So far, these are available under a
 MPL v2.0 license.
 ** politics
-Source-available work for political organizations - currently contains a favicon
-I made for the Alaska Young Democrats in 2013.
+These are projects I've done for political organizations.
+*** ak-demo-favicon
+This is an icon I made for the Alaska Young Democrats in 2013, intended to be
+used by progressive and democratic-aligned people and organizations in Alaska
+and inspired by the JavaScript logo. It's licensed under a Creative Commons CC0
+1.0 Universal License.
+*** nys-data-dump-howto.org
+Are you a leftist organization in New York State and interested in working with
+their open electoral data? This document details how to get your hands on
+campaign disclosure reports and voter files and successfully load them into a
+database for further exploration and processing. It is licensed under and
+Anti-Capitalist Software License.
 ** PSeudo
 This is a PowerShell module for privilege escalation in Windows 10, using named
 pipes and a bunch of dirty tricks. It is based on code I found and saved from
@@ -62,7 +72,8 @@ the internet. It is licensed under an MIT Expat license.
 This is a loose port of the Node.js EventEmitter with special support for
 coroutines and concurrent programming. It is licensed under an MIT license.
 ** resume
-This is my resume. It is source-available.
+This is my resume! This repository contains PDFs for my standard one-page resume
+and a longer CV. It's written in LaTeX.
 ** trophies
 This folder contains projects that I don't maintain anymore but that I'm proud
 of and want to showcase.
