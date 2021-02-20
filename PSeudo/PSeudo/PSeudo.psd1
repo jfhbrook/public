@@ -1,3 +1,20 @@
+# Copyright 2021 Josh Holbrook
+#
+# The companies, organizations and individuals on this list; and subsidiaries of said
+# companies, organizations or individuals; do not have a license to use this sofware:
+#
+# - Google and Alphabet - This is for many reasons, up to and including the
+#   gutting of the Ethical AI team at Google, including the firings of
+#   Timnit Gebru and Meg Mitchell
+# - Facebook, for their irresponsible handling of false information and right
+#   wing extremism on their platform especially following the 2016 presidential
+#   election
+# - GitHub, for their contracts with ICE
+#
+# This list overrides any license that may be granted by other portions of this
+# software's licensing, excepting for when copyright disallows it.
+#
+#
 # MIT License (Expat)
 #
 # Copyright (c) 2020 Josh Holbrook
@@ -26,7 +43,7 @@
   GUID = 'd540a6db-930e-4b14-bd04-4ed21eeed8c3'
   Author = 'Josh Holbrook'
   CompanyName = 'Josh Holbrook'
-  Copyright = 'Copyright 2020 Josh Holbrook. Copyright (c) 2014 msumimz. Licensed under an MIT/Expat license.'
+  Copyright = 'Copyright 2021 Josh Holbrook. Copyright (c) 2014 msumimz. Licensed under an MIT/Expat license with additional restrictions.'
   Description = 'Execute PowerShell commands as Administrator in Windows 10 "like sudo"'
 
   PowerShellVersion = '5.1'

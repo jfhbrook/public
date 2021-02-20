@@ -21,10 +21,12 @@ student survey results for the University of Alaska Fairbanks from 2005 to 2009,
 in difficult-to-parse .pdf form. Sorry y'all.
 ** db_hooks
 This is the toolset I made for myself to manage database stuff on my personal
-machines. It is licensed under an Apache v2.0 license.
+machines. It is licensed under an Apache v2.0 license with additional
+restrictions. See the included NOTICE file for details.
 ** desktop
 This is stuff I'm working on for my Linux desktop. It is available under a MPL
-v2.0 license.
+v2.0 license with additional restrictions. See the included NOTICE files for
+details.
 ** github-profile
 This submodule contains my GitHub README profile. It is unlicensed but
 source-available.
@@ -47,10 +49,10 @@ remember something and want the source code let me know and I'll put it up.
 
 Most of these projects are licensed under a MIT/X11 license - if any of the
 licensing is unclear let me know.
-
 ** openscad
 These are files I've written for OpenSCAD. So far, these are available under a
-MPL v2.0 license.
+MPL v2.0 license with additional restrictions. See the included NOTICE file for
+details.
 ** politics
 These are projects I've done for political organizations.
 *** ak-demo-favicon
@@ -67,7 +69,8 @@ Anti-Capitalist Software License.
 ** PSeudo
 This is a PowerShell module for privilege escalation in Windows 10, using named
 pipes and a bunch of dirty tricks. It is based on code I found and saved from
-the internet. It is licensed under an MIT Expat license.
+the internet. It is licensed under an MIT Expat license with additional
+restrictions. See the LICENSE file for details.
 ** pyee
 This is a loose port of the Node.js EventEmitter with special support for
 coroutines and concurrent programming. It is licensed under an MIT license.
@@ -97,5 +100,7 @@ competition as you could trying to control a boat over hotel wifi. Sadly, I
 don't have pictures.
 ** twisted_ipython
 This is a module that makes autoawait work in IPython using Twisted. It is
-licened under a BSD 3-clause license. For more information, read [[https://dev.to/jfhbrook/twistedipython-autoawait-in-jupyter-notebooks-with-twisted-lee][the blog post
-on dev.to]].
+licened under a BSD 3-clause license with additional restrictions. See
+the included NOTICE file for details.
+
+For more information, read [[https://dev.to/jfhbrook/twistedipython-autoawait-in-jupyter-notebooks-with-twisted-lee][the blog post on dev.to]].

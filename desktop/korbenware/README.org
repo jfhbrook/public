@@ -40,8 +40,9 @@ come without these strings attached. Thanks for understanding.
 Pieces of this code are borrowed heavily from Click, Twisted and XInit itself;
 those pieces are licensed under a BSD 3-clause license in the case of the former
 and MIT licenses in the two latter. Everything I personally wrote is licensed
-under the Mozilla Public License v2.0. Each file is tagged with its individual
-license restrictions and the licenses themselves are included in the project.
+under the Mozilla Public License v2.0, with additional restrictions as outlined
+in the NOTICE file. Each file is tagged with its individual license restrictions
+and the licenses themselves are included in the project.
 * Various References
 ** [[https://wiki.lxde.org/en/LXSession#autostart_directories][XDG autostart support in lxde-lxsession]]
 ** [[https://specifications.freedesktop.org/autostart-spec/autostart-spec-0.5.html][The XDG autostart spec]]

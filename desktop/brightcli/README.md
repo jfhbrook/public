@@ -29,4 +29,5 @@ for hints, it's largely the same process.
 
 # license
 
-MIT :)
+This software is covered by the Mozilla Public License with additional
+restrictions. See the COPYING and NOTICE files for details.
