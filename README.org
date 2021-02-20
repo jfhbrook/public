@@ -69,7 +69,8 @@ Anti-Capitalist Software License.
 ** PSeudo
 This is a PowerShell module for privilege escalation in Windows 10, using named
 pipes and a bunch of dirty tricks. It is based on code I found and saved from
-the internet. It is licensed under an MIT Expat license.
+the internet. It is licensed under an MIT Expat license with additional
+restrictions. See the LICENSE file for details.
 ** pyee
 This is a loose port of the Node.js EventEmitter with special support for
 coroutines and concurrent programming. It is licensed under an MIT license.
