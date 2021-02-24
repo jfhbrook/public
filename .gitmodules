@@ -34,3 +34,6 @@
 [submodule "trophies/hoarders"]
 	path = trophies/hoarders
 	url = git@github.com:jfhbrook/hoarders.git
+[submodule "de-discord"]
+	path = de-discord
+	url = git@github.com:jfhbrook/de-discord.git
