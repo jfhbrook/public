@@ -23,6 +23,10 @@ in difficult-to-parse .pdf form. Sorry y'all.
 This is the toolset I made for myself to manage database stuff on my personal
 machines. It is licensed under an Apache v2.0 license with additional
 restrictions. See the included NOTICE file for details.
+** de-discord
+This repo is a gitops repo for a Data Engineering Discord that I moderate. The
+Python code has an Apache 2.0 v2.0 license, but the emojis are "poorly
+licensed". See the included NOTICE file for details.
 ** desktop
 This is stuff I'm working on for my Linux desktop. It is available under a MPL
 v2.0 license with additional restrictions. See the included NOTICE files for
