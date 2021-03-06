@@ -36,7 +36,7 @@ async def get_session(ctx, reactor):
 def main(ctx):
     config = ctx.config
 
-    log = create_logger(namespace="korbenware.cli.menu")
+    log = create_logger(namespace="korbenware.cli.ctl")
 
 
 @main.command()
