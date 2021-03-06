@@ -128,6 +128,18 @@ class MonitoringExecutor(BaseExecutor):
             process_name, argv, env=env, cwd=cwd, restart=restart, cleanup=cleanup
         )
 
+    def start_process(self, name):
+        self.monitor.startProcess(name)
+
+    def stop_process(self, name):
+        self.monitor.stopProcess(name)
+
+    def restart_process(self, name):
+        self.monitor.restartProcess(name)
+
+    def has_process(self, name):
+        return self.monitor.hasProcess(name)
+
 
 class ApplicationExecutor(MonitoringExecutor):
     log = create_logger()

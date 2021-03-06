@@ -493,9 +493,15 @@ class ProcessMonitor(BaseMonitor, EventEmitter):
         self.emit("forceStop", self.getState(name))
         super()._forceStopProcess(proc)
 
+    def hasProcess(self, name):
+        """
+        Check whether a process is defined with that name.
+        """
+        return name in self.states
+
     def restartProcess(self, name):
         """
-        Manually restart a process, regardless of how it's been configured,
+        Manually restart a process, regardless of how it's been configured.
         """
         self._setProcessState(name, LifecycleState.RESTARTING)
         self.emit("restartProcess", self.getState(name))

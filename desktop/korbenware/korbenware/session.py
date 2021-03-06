@@ -186,6 +186,12 @@ class Session(EventEmitter):
         self.running = False
         self.stopped_at = datetime.datetime.utcnow()
 
+    def restart_process(self, name):
+        self.primary_executor.restart_process(name)
+
+    def restart_critical_process(self, name):
+        self.critical_executor.restart_process(name)
+
     def attach(self, service):
         obj = service.object("/korbenware/Session")
 
@@ -196,6 +202,26 @@ class Session(EventEmitter):
         @obj.method([Str()], Bool())
         def run_xdg_application(name):
             self.primary_executor.run_xdg_application_by_name(name)
+            return True
+
+        @obj.method([Str()], Bool())
+        def stop_xdg_application(name):
+            self.primary_executor.stop_process(name)
+            return True
+
+        @obj.method([Str()], Bool())
+        def start_xdg_application(name):
+            self.primary_executor.start_process(name)
+            return True
+
+        @obj.method([Str()], Bool())
+        def restart_xdg_application(name):
+            self.primary_executor.restart_process(name)
+            return True
+
+        @obj.method([Str()], Bool())
+        def restart_critical_process(name):
+            self.critical_executor.restart_process(name)
             return True
 
         @obj.method([], Bool())

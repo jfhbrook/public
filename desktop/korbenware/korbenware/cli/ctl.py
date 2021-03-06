@@ -39,8 +39,50 @@ def main(ctx):
     log = create_logger(namespace="korbenware.cli.ctl")
 
 
-@main.command()
+@main.command(help="Log the state of the Korbenware session")
 @pass_context
 async def get_state(ctx, reactor):
     session = await get_session(ctx, reactor)
     print(await session.get_state())
+
+
+@main.command(help="Run an application in the session's application executor")
+@click.argument("name")
+@pass_context
+async def run(ctx, reactor, name):
+    session = await get_session(ctx, reactor)
+
+    await session.run_xdg_application(name)
+
+
+@main.command(help="Start an application that has been stopped")
+@click.argument("name")
+@pass_context
+async def start(ctx, reactor, name):
+    session = await get_session(ctx, reactor)
+
+    await session.start_xdg_application(name)
+
+
+@main.command(help="Stop an application that is running")
+@click.argument("name")
+@pass_context
+async def stop(ctx, reactor, name):
+    session = await get_session(ctx, reactor)
+
+    await session.stop_xdg_application(name)
+
+
+@main.command(help="Restart an application or critical process")
+@click.argument("name")
+@click.option(
+    "--critical", is_flag=True, help="Restart a process in the critical executor"
+)
+@pass_context
+async def restart(ctx, reactor, name, critical):
+    session = await get_session(ctx, reactor)
+
+    if critical:
+        await session.restart_critical_process(name)
+    else:
+        await session.restart_xdg_application(name)
