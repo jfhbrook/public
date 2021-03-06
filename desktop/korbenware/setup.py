@@ -25,6 +25,7 @@ setup(
             "kbmenu=korbenware.cli.menu:main",
             "kbopen=korbenware.cli.open:main",
             "kbjournal=korbenware.cli.journal:main",
+            "kbctl=korbenware.cli.ctl:main",
         ]
     ),
     keywords=[
