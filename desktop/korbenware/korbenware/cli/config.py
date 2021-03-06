@@ -382,7 +382,7 @@ def get_desktop_path_from_name(application, registry):
         return app.fullpath
 
 
-def edit_desktop_file(ctx, log, path, directories):
+def edit_desktop_file(ctx, log, path, directories, copy=False):
     directories = [Path(directory) for directory in directories]
 
     src_path = Path(path)
