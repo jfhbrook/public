@@ -68,7 +68,7 @@ and inspired by the JavaScript logo. It's licensed under a Creative Commons CC0
 Are you a leftist organization in New York State and interested in working with
 their open electoral data? This document details how to get your hands on
 campaign disclosure reports and voter files and successfully load them into a
-database for further exploration and processing. It is licensed under and
+database for further exploration and processing. It is licensed under an
 Anti-Capitalist Software License.
 ** PSeudo
 This is a PowerShell module for privilege escalation in Windows 10, using named
