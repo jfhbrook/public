@@ -3,7 +3,7 @@
 * Hello
 This repository contains most of my open source and source-available code.
 
-For my GPL-compatible free software, check out [[https://github.com/jfhbrook/public][my GPL-compatible software
+For my GPL-compatible free software, check out [[https://github.com/jfhbrook/public-gpl][my GPL-compatible software
 repository]].
 * Contents
 ** anisotropy
