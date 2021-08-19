@@ -31,9 +31,9 @@
 [submodule "github-profile"]
 	path = github-profile
 	url = git@github.com:jfhbrook/jfhbrook.git
-[submodule "trophies/hoarders"]
-	path = trophies/hoarders
-	url = git@github.com:jfhbrook/hoarders.git
 [submodule "de-discord"]
 	path = de-discord
 	url = git@github.com:jfhbrook/de-discord.git
+[submodule "old-memes/hoarders"]
+	path = old-memes/hoarders
+	url = git@github.com:jfhbrook/hoarders.git
