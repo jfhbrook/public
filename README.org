@@ -4,7 +4,8 @@
 This repository contains most of my open source and source-available code.
 
 For my GPL-compatible free software, check out [[https://github.com/jfhbrook/public-gpl][my GPL-compatible software
-repository]].
+repository]]. For software I use at work, check out [[https://github.com/jfhbrook/public-sfw][my SFW repository]].
+
 * Contents
 ** anisotropy
 This submodule contains my masters thesis. It is licensed under the Community
@@ -19,7 +20,7 @@ information. Let me know.
 This folder contains various free datasets - currently this contains the IAS
 student survey results for the University of Alaska Fairbanks from 2005 to 2009,
 in difficult-to-parse .pdf form. Sorry y'all.
-** db_hooks
+
 This is the toolset I made for myself to manage database stuff on my personal
 machines. It is licensed under an Apache v2.0 license with additional
 restrictions. See the included NOTICE file for details.
@@ -75,6 +76,9 @@ This is a PowerShell module for privilege escalation in Windows 10, using named
 pipes and a bunch of dirty tricks. It is based on code I found and saved from
 the internet. It is licensed under an MIT Expat license with additional
 restrictions. See the LICENSE file for details.
+** sfw
+This repo contains my "safe for work" software, namely [[https://github.com/jfhbrook/public-sfw/tree/main/db_hooks][db_hooks]] and [[https://github.com/jfhbrook/public-sfw/tree/main/twisted_ipython][twisted_ipython]].
+
 ** pyee
 This is a loose port of the Node.js EventEmitter with special support for
 coroutines and concurrent programming. It is licensed under an MIT license.
@@ -102,9 +106,3 @@ At JSConf 2015, I teamed up with some friends to make a nodeboat with a sail on
 it. The SS. Duplicate Callback, if memory serves, did about as well in the
 competition as you could trying to control a boat over hotel wifi. Sadly, I
 don't have pictures.
-** twisted_ipython
-This is a module that makes autoawait work in IPython using Twisted. It is
-licened under a BSD 3-clause license with additional restrictions. See
-the included NOTICE file for details.
-
-For more information, read [[https://dev.to/jfhbrook/twistedipython-autoawait-in-jupyter-notebooks-with-twisted-lee][the blog post on dev.to]].

@@ -37,3 +37,6 @@
 [submodule "old-memes/hoarders"]
 	path = old-memes/hoarders
 	url = git@github.com:jfhbrook/hoarders.git
+[submodule "sfw"]
+	path = sfw
+	url = git@github.com:jfhbrook/public-sfw.git
