@@ -46,6 +46,9 @@ Alacritty, the terminal I use in Linux. It is licensed under a MIT license.
 This is a sabbatical project I worked on in Spring 2020 that contains a Jupyter
 kernel for [[https://hydra-editor.glitch.me/][the Hydra visual synthesizer]]. It uses the same license as the
 IJavascript kernel - that is, under a BSD 3-clause license.
+** korbenisabird
+This is the twitter bot which powers [[https://twitter.com/korbenisabird][@korbenisabird]].
+It's written in rust, and licensed under an Apache 2.0 license.
 ** old-memes
 These are all old Node.js projects from roughly the 2011-2016 time period. These
 are the subset of them which were considered potentially useful to people other

@@ -1,0 +1,14 @@
+[package]
+name = "korben-twitter"
+version = "0.1.0"
+authors = ["Josh Holbrook <josh.holbrook@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+clap = "^2.33.3"
+egg-mode = { version =  "^0.15", features = ["rustls"], default-features = false }
+log = "^0.4.6"
+markov = "^1.1.0"
+rand = "^0.8.3"
+simplelog = "^0.10.0"
+tokio = { version = "0.2", features = ["full"] }

@@ -1,0 +1,13 @@
+set dotenv-load := true
+
+check:
+  cargo check
+
+run:
+  cargo run
+
+build:
+  cargo build --release
+
+build-raspi:
+	cross build --release --target armv7-unknown-linux-gnueabihf
