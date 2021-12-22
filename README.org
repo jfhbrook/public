@@ -28,7 +28,6 @@ restrictions. See the included NOTICE file for details.
 This repo is a gitops repo for a Data Engineering Discord that I moderate. The
 Python code has an Apache 2.0 v2.0 license, but the emojis are "poorly
 licensed". See the included NOTICE file for details.
-** desktop
 This is stuff I'm working on for my Linux desktop. It is available under a MPL
 v2.0 license with additional restrictions. See the included NOTICE files for
 details.
@@ -46,9 +45,12 @@ Alacritty, the terminal I use in Linux. It is licensed under a MIT license.
 This is a sabbatical project I worked on in Spring 2020 that contains a Jupyter
 kernel for [[https://hydra-editor.glitch.me/][the Hydra visual synthesizer]]. It uses the same license as the
 IJavascript kernel - that is, under a BSD 3-clause license.
-** korbenisabird
+** korben-twitter
 This is the twitter bot which powers [[https://twitter.com/korbenisabird][@korbenisabird]].
 It's written in rust, and licensed under an Apache 2.0 license.
+** korbenware
+A collection of scripts I use to glue my Linux desktop and general CLI experience
+together. Available under a MPL v2.0 license.
 ** old-memes
 These are all old Node.js projects from roughly the 2011-2016 time period. These
 are the subset of them which were considered potentially useful to people other

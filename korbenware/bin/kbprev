@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+# Copyright 2021 Josh Holbrook
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+set -e
+
+DEBUG="${DEBUG:-}"
+
+function log-info {
+  if [ ! -z "${DEBUG}" ]; then
+    echo "info: $1" 1>&2
+  fi
+}
+
+function log-warn {
+  echo "warn: $1" 1>&2
+}
+
+function log-error {
+  echo "ERROR: $1" 1>&2
+}
+
+function log-help {
+  log-info "Preview files in the terminal!"
+  log-info ""
+  log-info "USAGE:"
+  log-info "  kbprev <path>"
+}
+
+log-info "Korben's Cool Babysitter's File Preview 🦜"
+log-info "programmed while changing Korby Jr's diaper"
+log-info "it worked if it ends with ok"
+
+FILE="${1:-}"
+
+if [ -d "${FILE}" ]; then
+  ls -l
+  exit 0
+elif [ ! -f "${FILE}" ]; then
+  log-help
+  log-error "not ok"
+  exit 1
+fi
+
+EXTENSION="${FILE##*.}"
+
+case $EXTENSION in 
+  pdf)
+    echo "# pdf file"
+    if [ ! -z "$(command -v pdftotext)" ]; then
+      pdftotext -layout -eol unix -nopgbrk "${FILE}" -
+    fi
+    ;;
+  jpg|jpeg|gif|png)
+    if [ ! -z "$(command -v viu)" ]; then
+      viu "${FILE}"
+    else
+      echo "# image file"
+    fi
+    ;;
+  *)
+    if [ -z "$(command -v bat)" ]; then
+      cat "${FILE}"
+    else
+      bat -f "${FILE}"
+    fi
+    ;;
+esac
+
+log-info "ok"

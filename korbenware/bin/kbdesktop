@@ -1,0 +1,166 @@
+#!/usr/bin/python3
+
+# Copyright 2021 Josh Holbrook
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+from argparse import ArgumentParser
+import os
+import os.path
+import re
+import shlex
+import shutil
+import sys
+
+from xdg.BaseDirectory import load_data_paths, xdg_config_dirs
+from xdg.DesktopEntry import DesktopEntry
+
+XDG_AUTOSTART_DIRS = [os.path.join(base, "autostart") for base in xdg_config_dirs]
+XDG_APPLICATION_DIRS = list(load_data_paths("applications"))
+XDG_USER_AUTOSTART_DIR = XDG_AUTOSTART_DIRS[0]
+XDG_USER_APPLICATION_DIR = XDG_APPLICATION_DIRS[0]
+ENVIRONMENT = "korbenware"
+
+HIDDEN_ENTRIES=set()
+ENTRIES={}
+
+
+def log_info(msg):
+    if os.environ.get("DEBUG"):
+        print(f"info: {msg}")
+
+
+def should_show(entry):
+    not_show_in = entry.getNotShowIn()
+    only_show_in = entry.getOnlyShowIn()
+
+    if only_show_in:
+        return ENVIRONMENT in only_show_in
+
+    if not_show_in:
+        return ENVIRONMENT not in not_show_in
+
+    return True
+
+
+def should_autostart(entry):
+    return all([
+        entry.getType() == "Application",
+        not entry.getHidden(),
+        not entry.get("DBusActivatable", type="boolean"),  # dbus activateable
+        should_show(entry)
+    ])
+
+
+AUTOSTART = "autostart"
+APPLICATION = "application"
+
+DESKTOP_ENTRIES = dict()
+DESKTOP_PATHS = dict()
+
+
+def index_files(dirs, filter_=lambda e: True):
+    for dir_ in dirs[::-1]:
+        try:
+            filenames = os.listdir(dir_)
+        except FileNotFoundError:
+            continue
+
+        for filename in filenames:
+            if filename.endswith(".desktop"):
+                full_path = os.path.join(dir_, filename)
+                DESKTOP_PATHS[filename] = full_path
+                entry = DesktopEntry(full_path)
+
+                if filter_(entry):
+                    DESKTOP_ENTRIES[filename] = entry
+                elif filename in DESKTOP_ENTRIES:
+                    del DESKTOP_ENTRIES[filename]
+
+
+parser = ArgumentParser()
+parser.add_argument("resource")
+parser.add_argument("command")
+parser.add_argument("--desktop-file")
+
+log_info("Korben the XDG Desktop File Launcher 🦜")
+log_info("programmed entirely by the windowsill")
+log_info("by Korben c2020")
+log_info("it worked if it ends with ok")
+
+args = parser.parse_args()
+
+FIELD_RE = r"(?<!%)(%\S)"
+
+
+if args.resource == APPLICATION:
+    DESKTOP_USER_DIR = XDG_USER_APPLICATION_DIR
+    index_files(XDG_APPLICATION_DIRS)
+elif args.resource == AUTOSTART:
+    DESKTOP_USER_DIR = XDG_USER_AUTOSTART_DIR
+    index_files(XDG_AUTOSTART_DIRS, filter_=should_autostart)
+else:
+    print(f"Unknown resource {args.resource}")
+    print("not ok")
+    sys.exit(1)
+
+
+if args.command == "show":
+    fn_col_w = 8
+    exec_col_w = 8
+
+    for filename, entry in DESKTOP_ENTRIES.items():
+        fn_col_w = max(fn_col_w, len(filename))
+        exec_col_w = max(exec_col_w, len(entry.getExec()))
+
+    ROW_FMT = f"{{0:<{fn_col_w}}}\t{{1:<{exec_col_w}}}"
+
+    print(ROW_FMT.format("name", "exec"))
+    print(ROW_FMT.format("-" * fn_col_w, "-" * exec_col_w))
+
+    for filename, entry in DESKTOP_ENTRIES.items():
+        print(ROW_FMT.format(filename, entry.getExec()))
+elif args.command == "edit":
+    if not args.desktop_file:
+        print('USAGE: kbdesktop edit --desktop-file "${APP_NAME}.desktop"')
+        print("not ok")
+        sys.exit(1)
+
+    entry = DESKTOP_ENTRIES[args.desktop_file]
+    full_path = DESKTOP_PATHS[args.desktop_file]
+    edit_path = os.path.join(DESKTOP_USER_DIR, args.desktop_file)
+
+    if not os.path.isfile(edit_path) and os.path.isfile(full_path):
+        shutil.copyfile(full_path, edit_path)
+
+    argv = shlex.split(os.environ.get("EDITOR", "vi"))
+    cmd = argv[0]
+    argv.append(edit_path)
+
+    os.execvp(cmd, argv)
+elif args.command == "start":
+    if args.resource != AUTOSTART:
+        print("only know how to start for autostart applications")
+        print("not ok")
+        sys.exit(1)
+
+    for entry in DESKTOP_ENTRIES.values():
+        argv = ["/bin/sh", "-c", re.sub(FIELD_RE, lambda m: "", entry.getExec())]
+        cmd = argv[0]
+        pid = os.fork()
+
+        if pid > 0:
+            continue
+
+        # See: https://stackoverflow.com/questions/45911705/why-use-os-setsid-in-python
+        os.setsid()
+
+        os.execvp(cmd, argv)
+        
+else:
+    print(f"unknown command {args.command}")
+    print("not ok")
+
+log_info("ok")

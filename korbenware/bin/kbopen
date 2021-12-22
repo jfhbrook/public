@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+
+# Copyright 2021 Josh Holbrook
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+set -e
+
+EDITOR="${EDITOR:-nano}"
+DEBUG="${DEBUG:-}"
+
+function log-debug {
+  if [ ! -z "${DEBUG}" ]; then
+    echo "debug: $1"
+  fi
+}
+
+function log-info {
+  echo "info: $1"
+}
+
+function log-error {
+  echo "ERROR: $1" 1>&2
+}
+
+log-info "Korby Jr. The File/Url Opener 🦜"
+log-info "programmed entirely while eating a spider plant"
+log-info '"open up or else!"'
+log-info "it worked if it ends with ok"
+
+function log-help {
+  log-info "Open files and URLs with default and mime-appropriate XDG applications"
+  log-info ""
+  log-info "USAGE:"
+  log-info "  kbopen <path-or-url>"
+}
+
+PATH_OR_URL="${1:-}"
+
+if [ -z "${PATH_OR_URL}" ]; then
+  log-help
+  log-error "not ok"
+  exit 1
+fi
+
+if [ ! -z "$(command -v gio)" ]; then
+  OPEN_CMD="gio open"
+  log-debug "Found gio"
+elif [ ! -z "$(command -v open)" ]; then
+  OPEN_CMD="open"
+  log-debug "Found open"
+elif [ ! -z "$(command -v xdg-open)" ]; then
+  OPEN_CMD="xdg-open"
+  log-debug "Found xdg-open"
+else
+  log-error "Could not find one of: gio, open, xdg-open"
+  log-error "not ok"
+  exit 1
+fi
+
+while [ -d "${PATH_OR_URL}" ]; do
+  log-info "Searching in ${PATH_OR_URL} with fzf"
+  PATH_OR_URL="$(find "${PATH_OR_URL}" | fzf --preview "kbprev {}")"
+done
+
+log-debug "Path or URL: ${PATH_OR_URL}"
+
+PROTOCOL="$(echo "${PATH_OR_URL}" | grep '://' | sed -e 's,^\(.*://\).*,\1,g')"
+
+if [ -z "${PROTOCOL}" ]; then
+  PROTOCOL="file://"
+fi
+
+log-debug "Protocol: ${PROTOCOL}"
+
+MIME_TYPE="url"
+
+if [[ "${PROTOCOL}" == "file://" ]]; then
+  MIME_TYPE="$(file -b --mime-type ${PATH_OR_URL})"
+fi
+
+log-debug "Mime Type: ${MIME_TYPE}"
+
+case $MIME_TYPE in
+  url)
+    eval "${OPEN_CMD} '${PATH_OR_URL}'"
+    ;;
+  text/plain|text/x-tex)
+    eval "${EDITOR} '$PATH_OR_URL'"
+    ;;
+  *)
+    eval "${OPEN_CMD} '${PATH_OR_URL}'"
+esac
+
+log-info "ok"

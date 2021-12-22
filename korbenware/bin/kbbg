@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# Copyright 2021 Josh Holbrook
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+BACKGROUNDS_DIR="${BACKGROUNDS_DIR:-/usr/share/backgrounds}"
+
+swaymsg output '*' background "$(find "${BACKGROUNDS_DIR}" -name '*.png' | fzf --preview 'viu -b -w 60 {}')" fill

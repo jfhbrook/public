@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+
+# Copyright 2021 Josh Holbrook
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+KBLOCK_CONFIG="${KBLOCK_CONFIG:-${HOME}/.config/korbenware/kblock.env}"
+
+if [ -f "${KBLOCK_CONFIG}" ]; then
+  source "${KBLOCK_CONFIG}"
+fi
+
+if [ -z "${COWSAY_COWS_DIR:-}" ]; then
+  if [ -d "/usr/share/cows" ]; then  # arch
+    COWSAY_COWS_DIR="/usr/share/cows"
+  elif [ -d "/usr/share/cowsay" ]; then  # fedora
+    COWSAY_COWS_DIR="/usr/share/cowsay"
+  fi
+fi
+
+KBLOCK_MODE="${KBLOCK_MODE:-swaylock}"
+KBLOCK_MESSAGE="${KBLOCK_MESSAGE:-}"
+
+COWSAY_BIN="$(shuf -n 1 -e cowsay cowthink)"
+FORTUNE_BIN="${FORTUNE_BIN:-fortune}"
+FORTUNE_ARGS="${FORTUNE_ARGS:-}"
+PHYSLOCK_BIN="${PHYSLOCK_BIN:-physlock}"
+PHYSLOCK_ARGS="${PHYSLOCK_ARGS:-}"
+SWAYLOCK_BIN="${SWAYLOCK_BIN:-swaylock}"
+SWAYLOCK_ARGS="${SWAYLOCK_ARGS:-}"
+
+COWSAY_WIDTH="${COWSAY_WIDTH:-77}"
+
+# Cyberpunk Neon theme
+SWAYLOCK_DARKBLUE="${SWAYLOCK_DARKBLUE:-000b1e}"
+SWAYLOCK_BLUE="${SWAYLOCK_BLUE:-091833}"
+SWAYLOCK_LIGHTBLUE="${SWAYLOCK_LIGHTBLUE:-133e7c}"
+SWAYLOCK_LIGHTALT="${SWAYLOCK_LIGHTALT:-0b2956}"
+SWAYLOCK_CYAN="${SWAYLOCK_CYAN:-0abdc6}"
+SWAYLOCK_PINK="${SWAYLOCK_PINK:-ea00d9}"
+SWAYLOCK_PURPLE="${SWAYLOCK_PURPLE:-711c91}"
+SWAYLOCK_PURPLEALT="${SWAYLOCK_PURPLEALT:-321959}"
+SWAYLOCK_RED="${SWAYLOCK_RED:-ff0000}"
+SWAYLOCK_ORANGE="${SWAYLOCK_ORANGE:-f57800}"
+SWAYLOCK_WHITE="${SWAYLOCK_WHITE:-d7d7d5}"
+SWAYLOCK_YELLOW="${SWAYLOCK_YELLOW:-ffff00}"
+SWAYLOCK_GREEN="${SWAYLOCK_GREENL:-00ff00}"
+
+
+case ${KBLOCK_MODE} in
+  physlock)
+    COWSAY_FLAG="-$(shuf -n 1 -e b d g p s t w y)"
+    COW_FILE="$(find "${COWSAY_COWS_DIR}" -type f -iname '*.cow' | sed 's/\.cow$//' | shuf -n 1)"
+    INDENT="            "
+    PHYSLOCK_PROMPT="
+
+
+    $(${FORTUNE_BIN} ${FORTUNE_ARGS} | ${COWSAY_BIN} -w ${COWSAY_WIDTH} -f "${COW_FILE}" | sed "s/^/${INDENT}/g")
+
+    ${INDENT}${KBLOCK_MESSAGE}"
+
+    exec ${PHYSLOCK_BIN} -d -p ${PHYSLOCK_ARGS} "${PHYSLOCK_PROMPT}"
+    ;;
+  swaylock)
+    exec swaylock -f ${SWAYLOCK_ARGS} \
+      --color "${SWAYLOCK_DARKBLUE}" \
+      --inside-color "${SWAYLOCK_DARKBLUE}" \
+      --ring-color "${SWAYLOCK_PURPLE}" \
+      --line-color "${SWAYLOCK_PURPLEALT}" \
+      --separator-color "${SWAYLOCK_PURPLEALT}" \
+      --text-color "${SWAYLOCK_WHITE}" \
+      --key-hl-color "${SWAYLOCK_PINK}" \
+      --bs-hl-color "${SWAYLOCK_LIGHTBLUE}" \
+      --layout-bg-color "${SWAYLOCK_DARKBLUE}" \
+      --layout-border-color "${SWAYLOCK_BLUE}" \
+      --layout-text-color "${SWAYLOCK_WHITE}" \
+      --inside-clear-color "${SWAYLOCK_DARKBLUE}" \
+      --ring-clear-color "${SWAYLOCK_LIGHTBLUE}" \
+      --line-clear-color "${SWAYLOCK_PURPLEALT}" \
+      --text-clear-color "${SWAYLOCK_WHITE}" \
+      --inside-ver-color "${SWAYLOCK_DARKBLUE}" \
+      --ring-ver-color "${SWAYLOCK_LIGHTBLUE}" \
+      --line-ver-color "${SWAYLOCK_PURPLEALT}" \
+      --text-ver-color "${SWAYLOCK_WHJITE}" \
+      --inside-wrong-color "${SWAYLOCK_DARKBLUE}" \
+      --ring-wrong-color "${SWAYLOCK_ORANGE}" \
+      --line-wrong-color "${SWAYLOCK_RED}" \
+      --text-wrong-color "${SWAYLOCK_WHITE}" \
+      --text-caps-lock-color "${SWAYLOCK_PINK}"
+    ;;
+  *)
+    echo "info: Unknown KBLOCK_MODE ${KBLOCK_MODE}"
+    exit 1
+  ;;
+esac
