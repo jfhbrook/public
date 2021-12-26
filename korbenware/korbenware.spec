@@ -19,19 +19,20 @@ Requires: bash coreutils cowsay fortune-mod fzf libnotify python3 python3-pyxdg 
 
 
 %build
+tar -xzf %{SOURCE0}
 
 
 %install
 mkdir -p %{buildroot}%{_bindir}
-install -p -m 755 %{SOURCE0}/bin/kbbg %{buildroot}%{_bindir}
-install -p -m 755 %{SOURCE0}/bin/kbbright %{buildroot}%{_bindir}
-install -p -m 755 %{SOURCE0}/bin/kbdesktop %{buildroot}%{_bindir}
-install -p -m 755 %{SOURCE0}/bin/kblock %{buildroot}%{_bindir}
-install -p -m 755 %{SOURCE0}/bin/kbmenu %{buildroot}%{_bindir}
-install -p -m 755 %{SOURCE0}/bin/kbnotify %{buildroot}%{_bindir}
-install -p -m 755 %{SOURCE0}/bin/kbopen %{buildroot}%{_bindir}
-install -p -m 755 %{SOURCE0}/bin/kbprev %{buildroot}%{_bindir}
-install -p -m 755 %{SOURCE0}/bin/kbscreenshot %{buildroot}%{_bindir}
+install -p -m 755 bin/kbbg %{buildroot}%{_bindir}
+install -p -m 755 bin/kbbright %{buildroot}%{_bindir}
+install -p -m 755 bin/kbdesktop %{buildroot}%{_bindir}
+install -p -m 755 bin/kblock %{buildroot}%{_bindir}
+install -p -m 755 bin/kbmenu %{buildroot}%{_bindir}
+install -p -m 755 bin/kbnotify %{buildroot}%{_bindir}
+install -p -m 755 bin/kbopen %{buildroot}%{_bindir}
+install -p -m 755 bin/kbprev %{buildroot}%{_bindir}
+install -p -m 755 bin/kbscreenshot %{buildroot}%{_bindir}
 
 
 %check
@@ -46,7 +47,7 @@ install -p -m 755 %{SOURCE0}/bin/kbscreenshot %{buildroot}%{_bindir}
 %{_bindir}/kbnotify
 %{_bindir}/kbopen
 %{_bindir}/kbprev
-${_bindir}/kbscreenshot
+%{_bindir}/kbscreenshot
 
 
 %changelog
