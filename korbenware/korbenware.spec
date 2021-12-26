@@ -15,6 +15,7 @@ Requires: bash coreutils cowsay fortune-mod fzf libnotify python3 python3-pyxdg 
 
 
 %prep
+%autosetup
 
 
 %build
