@@ -1,10 +1,5 @@
-%global forgeurl https://github.com/jfhbrook/public
-%global commit a7368bdfc415e737c79dd4a855700a356da1423f
-
-%forgemeta
-
 Name: korbenware
-Version: 
+Version: 0.2.0
 Release: 1%{?dist}
 Summary: linux/unix desktop cli software
 
@@ -19,7 +14,6 @@ Requires:
 
 
 %prep
-%forgesetup
 
 
 %build
