@@ -1,6 +1,6 @@
 Name: korbenware
 Version: 0.2.0
-Release: 0%{?dist}
+Release: 1%{?dist}
 License: MPL-2.0
 Summary: linux/unix desktop cli software
 
@@ -51,4 +51,10 @@ install -p -m 755 bin/kbscreenshot %{buildroot}%{_bindir}
 
 
 %changelog
+* Sun Dec 26 2021 Josh Holbrook <josh.holbrook@gmail.com> 0.2.0-1
+- Build korbenware package using tito
+
+* Sun Dec 26 2021 Josh Holbrook <josh.holbrook@gmail.com>
+- new package built with tito
+
 
