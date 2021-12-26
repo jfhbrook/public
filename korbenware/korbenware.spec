@@ -1,14 +1,12 @@
 Name: korbenware
 Version: 0.2.0
-Release: 1%{?dist}
+Release: 0%{?dist}
+License: MPL-2.0
 Summary: linux/unix desktop cli software
 
-License: MPL-2.0
-URL: %{forgeurl}
-Source: %{forgesource}
-
-BuildRequires:
-Requires:
+URL: https://github.com/jfhbrook/public/tree/main/korbenware
+Source: %{name}-%{version}.tar.gz
+BuildArch: noarch
 
 %description
 
