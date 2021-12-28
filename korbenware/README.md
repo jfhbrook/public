@@ -47,32 +47,6 @@ A screen locking script. Works with swaylock and *probably* works with
 * Either swaylock or physlock
 * If using swaylock, cowsay and fortune-mod
 
-## kbbright
-
-A tool for controlling screen brightness. Currently assumes an `intel_backlight`
-and is tuned to work on a laptop I don't run Linux on anymore. Extremely YMMV,
-read and edit this one before using it.
-
-For background, read: <https://wiki.archlinux.org/index.php/Backlight#ACPI>
-
-In order for non-root users to change screen brightness, you'll need to set up
-some udev rules, something like:
-
-```
-SUBSYSTEM=="backlight", ACTION=="add", \
-KERNEL=="intel_backlight", \
-RUN+="/bin/chgrp video /sys/class/backlight/%k/brightness"
-
-SUBSYSTEM=="backlight", ACTION=="add", \
-KERNEL=="intel_backlight", \
-RUN+="/bin/chmod g+w /sys/class/backlight/%k/brightness"
-```
-
-### Dependencies
-
-* bash
-* notify-send (TODO: Refactor to work more like kbscreenshot)
-
 ## kbmenu
 
 A command line XDG application menu launcher, using fzf.
