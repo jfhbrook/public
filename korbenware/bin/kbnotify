@@ -71,6 +71,7 @@ case $1 in
     else
       dek="Check $2 !"
     fi
+    ;;
   *)
     hed="WHO THE HELL KNOWS"
     dek="$*"
