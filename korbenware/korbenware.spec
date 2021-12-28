@@ -1,5 +1,5 @@
 Name: korbenware
-Version: 0.2.0
+Version: 0.3.0
 Release: 1%{?dist}
 License: MPL-2.0
 Summary: linux/unix desktop cli software
@@ -49,6 +49,9 @@ install -p -m 755 bin/kbscreenshot %{buildroot}%{_bindir}
 
 
 %changelog
+* Tue Dec 28 2021 Josh Holbrook <josh.holbrook@gmail.com> 0.3.0-1
+- Remove kbbright (use brightnessctl) (josh.holbrook@gmail.com)
+- Fix DOA bugs in kbnotify and kbscreenshot (josh.holbrook@gmail.com)
 * Sun Dec 26 2021 Josh Holbrook <josh.holbrook@gmail.com> 0.2.0-1
 - Build korbenware package using tito
 
