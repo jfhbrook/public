@@ -1,0 +1,16 @@
+sync:
+  #!/usr/bin/env bash
+  set -euxo pipefail
+
+  cd pickleback
+
+  if [ -n "$(git remote -v) | grep -E '^upstream')" ]; then
+    git remote add upstream git@github.com:hapijs/shot.git
+  fi
+
+  git checkout master
+  git pull --ff-only upstream master
+  git checkout patches
+  git rebase master
+  git push origin master
+  git push origin patches

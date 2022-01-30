@@ -1,0 +1,14 @@
+{
+  "name": "old-memes",
+  "workspaces": [
+    "clf-parser",
+    "hoarders",
+    "pickleback"
+  ],
+  "scripts": {
+    "pickleback": "node ./pickleback.js"
+  },
+  "devDependencies": {
+    "minimist": "^1.2.5"
+  }
+}
