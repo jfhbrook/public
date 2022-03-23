@@ -52,13 +52,10 @@ It's written in rust, and licensed under an Apache 2.0 license.
 A collection of scripts I use to glue my Linux desktop and general CLI experience
 together. Available under a MPL v2.0 license.
 ** old-memes
-These are all old Node.js projects from roughly the 2011-2016 time period. These
-are the subset of them which were considered potentially useful to people other
-than myself. I have many other old projects in my private repositories - if you
-remember something and want the source code let me know and I'll put it up.
-
-Most of these projects are licensed under a MIT/X11 license - if any of the
-licensing is unclear let me know.
+old memes is an old-school Node.js anti-framework built around the good parts
+of [[https://github.com/flatiron][flatiron]], a selection of classic [[https://github.com/substack][substack]] libraries and the few worthwhile
+things I personally wrote between roughly 2009 and 2016 - with a targeted
+dash of modern conveniences. It's a big project, so see [[./README.md][its README]] for more details.
 ** openscad
 These are files I've written for OpenSCAD. So far, these are available under a
 MPL v2.0 license with additional restrictions. See the included NOTICE file for
@@ -83,7 +80,6 @@ the internet. It is licensed under an MIT Expat license with additional
 restrictions. See the LICENSE file for details.
 ** sfw
 This repo contains my "safe for work" software, namely [[https://github.com/jfhbrook/public-sfw/tree/main/db_hooks][db_hooks]] and [[https://github.com/jfhbrook/public-sfw/tree/main/twisted_ipython][twisted_ipython]].
-
 ** pyee
 This is a loose port of the Node.js EventEmitter with special support for
 coroutines and concurrent programming. It is licensed under an MIT license.
