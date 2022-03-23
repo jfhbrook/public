@@ -1,6 +1,6 @@
 {
   "name": "safe-url",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Scrub basic auth credentials from your urls so they're safe urls",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:jfhbrook/joshiverse.git"
+    "url": "git@github.com:jfhbrook/public.git"
   },
   "keywords": [
     "safe-url",

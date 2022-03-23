@@ -1,7 +1,11 @@
 # safe-url
 
-Want to print out urls with BASIC AUTH CREDS in them? Use this module to
-SCRUB THEM PUPPIES OUT.
+have you ever wanted to print out a url, but were worried about logging
+basic auth credentials? this module will do its best to scrub them out.
+
+note, this comes at ABSOLUTELY NO GUARANTEE on my part, and if you are truly
+concerned about security, either fork and manually review or find a different
+dependency.
 
 ## example
 
@@ -15,12 +19,15 @@ undefined
 > 
 ```
 
-## thx
+## credits
 
-Thanks to [Mikeal Rogers](http://twitter.com/mikeal) for putting this one-liner
-in his node couchapp module.
+this implementation was extracted from [@mikeal](https://twitter.com/mikeal)'s
+[couchapp module](https://www.npmjs.com/package/couchapp) many years ago.
 
 ## license
 
-Same as [node.couchapp.js](https://github.com/mikeal/node.couchapp.js). You'll
-have to ask Mikeal.
+this project would be covered under the same license as
+[the couchapp](https://github.com/mikeal/node.couchapp.js) project.
+unfortunately, it's what you might call "poorly licensed." using it in MIT
+projects is probably safe, but if it's important to you then you'll have to
+ask Mikeal.
