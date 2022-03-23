@@ -1,11 +1,11 @@
 {
-  "author": "Joshua Holbrook <josh.holbrook@gmail.com> (http://jesusabdullah.net)",
+  "author": "Josh Holbrook <josh.holbrook@gmail.com>",
   "name": "linspace",
   "description": "An implementation of MATLAB's linspace",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "homepage": "https://github.com/jfhbrook/node-linspace",
   "repository": {
-    "url": "git@github.com:jfhbrook/node-linspace.git"
+    "url": "git@github.com:jfhbrook/public.git"
   },
   "main": "./index.js",
   "dependencies": {
