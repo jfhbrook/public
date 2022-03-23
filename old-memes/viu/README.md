@@ -43,10 +43,10 @@ user as a last-ditch effort.
 
 ## why?!
 
-"but josh, why don't you use [sidre sorhus's term-image](https://github.com/sindresorhus/term-img),
+"but josh, why don't you use [sidre sorhus's terminal-image](https://github.com/sindresorhus/terminal-image),
 which is in pure javascript?
 
-term-image is great, but it has fewer features than viu - namely, viu supports
+terminal-image is great, but it has fewer features than viu - namely, viu supports
 [kitty's](https://sw.kovidgoyal.net/kitty/graphics-protocol/) graphics protocol
 in addition to iterm's.
 
@@ -55,7 +55,7 @@ binary builds after all - and will fail when an architecture is unsupported
 and cargo isn't installed.
 
 if you want the best of both worlds, consider installing *both*, catching
-errors from calling viu, and fall back to term-img.
+errors from calling viu, and fall back to terminal-image.
 
 ## version info
 
