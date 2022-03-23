@@ -2,10 +2,10 @@
   "author": "Josh Holbrook",
   "name": "logspace",
   "description": "An implementation of MATLAB's logspace in javascript",
-  "version": "1.0.2",
-  "homepage": "https://github.com/jfhbrook/joshiverse",
+  "version": "1.0.3",
+  "homepage": "https://github.com/jfhbrook",
   "repository": {
-    "url": "git@github.com:jfhbrook/joshiverse.git"
+    "url": "git@github.com:jfhbrook/public.git"
   },
   "main": "./index.js",
   "dependencies": {
