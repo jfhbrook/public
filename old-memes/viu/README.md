@@ -54,8 +54,8 @@ on the other hand, this package is a little chonky - it includes a bunch of
 binary builds after all - and will fail when an architecture is unsupported
 and cargo isn't installed.
 
-if you want the best of both worlds, consider installing *both*, catching
-errors from calling viu, and fall back to terminal-image.
+if you want the best of both worlds, consider installing *both*, trying viu
+first, and using terminal-image as a fallback.
 
 ## version info
 
