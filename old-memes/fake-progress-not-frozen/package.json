@@ -27,11 +27,14 @@
   "devDependencies": {
     "@jfhbrook/prettier-config-old-school": "^0.1.0",
     "prettier": "^2.3.2",
-    "tap": "^15.0.9"
+    "tap": "^16.0.1"
   },
   "dependencies": {
     "chalk": "^2.4.2",
     "moment": "^2.29.1",
     "multimeter": "^0.1.1"
+  },
+  "tap": {
+    "check-coverage": false
   }
 }
