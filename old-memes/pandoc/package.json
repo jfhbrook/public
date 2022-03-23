@@ -1,15 +1,12 @@
 {
   "name": "@jfhbrook/pandoc",
-  "version": "1.0.0",
-  "description": "A thin wrapper around pandoc",
+  "version": "1.0.1",
+  "description": "a thin wrapper around pandoc",
   "main": "index.js",
   "scripts": {
-    "test": "tests-of-the-sierra-madre"
+    "test": "node example.js"
   },
   "author": "Josh Holbrook",
   "license": "MPL-2.0",
-  "gitHead": "f84787fc1aa5ae9908c6283c0d20234c65e24985",
-  "devDependencies": {
-    "tests-of-the-sierra-madre": "^1.0.0"
-  }
+  "gitHead": "f84787fc1aa5ae9908c6283c0d20234c65e24985"
 }
