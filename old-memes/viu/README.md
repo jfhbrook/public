@@ -10,7 +10,7 @@ rust that is pretty nice! this package distributes and wraps vue with npm.
 give this a shot:
 
 ```bash
-npx viu ./buddy.jpg
+npx @jfhbrook/viu ./buddy.jpg
 ```
 
 or, call the API:

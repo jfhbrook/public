@@ -1,10 +1,10 @@
 {
   "name": "@jfhbrook/viu",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "viu - the rust terminal image viewer - distributed on npm",
   "main": "index.js",
   "bin": {
-    "viu": "main.js"
+    "viu": "./main.js"
   },
   "scripts": {
     "prepack": "just build",
