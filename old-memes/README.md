@@ -48,7 +48,7 @@ more additions over the coming months.
 ### funny jokes
 
 * [@jfhbrook/fake-progress-not-frozen](./fake-progress-not-frozen) - a fake progress bar
-* [hoarders](https://github.com:jfhbrook/hoarders) - node.js's most complete "utility grab bag"
+* [hoarders](https://github.com/jfhbrook/hoarders) - node.js's most complete "utility grab bag"
 * [tests-of-the-sierra-madre](./tests-of-the-sierra-madre) - a humorous test stub
 
 ## install
