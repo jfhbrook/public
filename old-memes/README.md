@@ -10,48 +10,46 @@ more additions over the coming months.
 
 ## the memes
 
-### framework shit
+### framework stuff
 
-* kenny-loggins - extensions to make logging with winston sensible
-* pickleback - my personal fork of hapi/shot (public)
-* safe-url - strip creds from urls before printing
+* [kenny-loggins](./kenny-loggins) - extensions to make logging with winston sensible
+* [@jfhbrook/http-server-request-accept](./http-server-request-accept) - extract the accept header from a server request
+* [@jfhbrook/http-server-request-ip](./http-server-request-ip) - get the client ip from an http server request, respecting x-forwarded-for headers
+* [pickleback](./pickleback) - my personal fork of hapi/shot
+* [safe-url](./safe-url) - strip creds from urls before printing
 
 ### wrappers, clients and bindings
 
-* @jfhbrook/pandoc - my wrapper for pandoc
+* [@jfhbrook/pandoc](./pandoc) - my wrapper for pandoc
 
 ### cli tools
 
-* licenseify - generate/maintain license info for new projects
+* [licenseify](./licenseify) - generate/maintain license info for new projects
 
-### terminal shit
+### terminal stuff
 
-* @jfhbrook/prompt - prompting library
+* [@jfhbrook/prompt](./prompt) - a prompting library
 
-### math shit
+### math stuff
 
-* integers - like the range operator in python
-* linspace - like linspace in matlab
-* logspace - like logspace in matlab
-* @jfhbrook/piecewise - kronecker delta and sgn functions
+* [integers](./integers) - like the range operator in python
+* [linspace](./linspace) - like linspace in matlab
+* [logspace](./logspace) - like logspace in matlab
+* [@jfhbrook/piecewise](./piecewise) - kronecker delta and sgn functions
 
-### devops shit
+### devops stuff
 
-* clf-parser - parse clf formatted logs (public)
-* prm - package registry manager
+* [clf-parser](./clf-parser) - parse clf formatted logs (public)
+* [@jfhbrook/prm](./prm) - package registry manager
 
 ### funny jokes
 
-* fake-progress-not-frozen - a fake progress bar
-* hoarders - node.js's most complete "utility grab bag"
-
-### the attic
-
-a few retired modules may be found in the attic folder.
+* [@jfhbrook/fake-progress-not-frozen](./fake-progress-not-frozen) - a fake progress bar
+* [hoarders](https://github.com:jfhbrook/hoarders) - node.js's most complete "utility grab bag"
 
 ## install
 
-each of the old memes are on npm and set to public. some of them are
+each of the packages are on npm and set to public. some of them are
 namespaced but many of them are not.
 
 ## usage/api
@@ -60,7 +58,7 @@ every old meme should have a README.md with an example in it at a minimum.
 
 ## developer setup
 
-all of the old memes are installed in an npm workspace. for instance, you may run
+all of the packages are installed in an npm workspace. for instance, you may run
 `npm i --workspaces` to install dependencies for everything post-clone.
 
 ## formatting/linting/style guide
@@ -87,25 +85,3 @@ what you want it to do.
 each old meme has its own licensing. a lot of it, especially older projects,
 use mit licenses, but the apache and mozilla licenses are in there too,
 especially with newer projects.
-
-## release plan
-
-* publish prm to npm
-* for every project:
-  * get tests and/or linting passing, even if it means ripping it out
-  * use prm to configure owners
-  * update the README
-  * if exposes a cli, get COPR to build it
-* add justfile tasks to test/lint the workspace
-* update the parent README
-* dot i's, cross t's
-
-## next steps
-
-* mrs-commanderson - an obnoxious cli framework
-* exercise-bike - a cli template runner
-* bbgurl - a cli wrapper around request^H^H^H^H^H^H^Hundici
-
-## experiments
-
-* my-little-proxy
