@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 
-const display = require('./');
+const viu = require('./');
 
-display(process.argv.slice(2));
+viu(...process.argv.slice(2));

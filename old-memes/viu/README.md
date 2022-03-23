@@ -1,9 +1,9 @@
-# an npm distribution and wrapper for vue
+# an npm distribution and wrapper for viu
 
 ## what
 
-[vue](https://github.com/atanunq/viu) is a terminal image viewer written in
-rust that is pretty nice! this package distributes and wraps vue with npm.
+[viu](https://github.com/atanunq/viu) is a terminal image viewer written in
+rust that is pretty nice! this package distributes and wraps viu with npm.
 
 ## how?
 
@@ -26,7 +26,7 @@ const viu = require('@jfhbrook/viu');
 ## no, I mean *how??*
 
 before publishing, I download and unpack an official release tarball for viu and
-use [cross](https://github.com/cross-rs/cross) to build vue for common
+use [cross](https://github.com/cross-rs/cross) to build viu for common
 architectures:
 
 - linux x64

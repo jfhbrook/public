@@ -1,6 +1,6 @@
 {
   "name": "@jfhbrook/viu",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "viu - the rust terminal image viewer - distributed on npm",
   "main": "index.js",
   "bin": {
