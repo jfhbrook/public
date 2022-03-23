@@ -21,10 +21,12 @@ more additions over the coming months.
 ### wrappers, clients and bindings
 
 * [@jfhbrook/pandoc](./pandoc) - my wrapper for pandoc
+* [@jfhbrook/viu](./viu) - a distribution and wrapper for [viu](https://crates.io/crates/viu)
 
 ### cli tools
 
 * [licenseify](./licenseify) - generate/maintain license info for new projects
+* [@jfhbrook/npm-link](./npm-link) - a targeted and direct alternative to npm link
 
 ### terminal stuff
 
@@ -46,6 +48,7 @@ more additions over the coming months.
 
 * [@jfhbrook/fake-progress-not-frozen](./fake-progress-not-frozen) - a fake progress bar
 * [hoarders](https://github.com:jfhbrook/hoarders) - node.js's most complete "utility grab bag"
+* [tests-of-the-sierra-madre](./tests-of-the-sierra-madre) - a humorous test stub
 
 ## install
 
