@@ -1,0 +1,32 @@
+{
+  "name": "@jfhbrook/logref",
+  "version": "1.2.0",
+  "description": "my implementation of process.logging/logref",
+  "main": "index.js",
+  "scripts": {
+    "format": "prettier . --write",
+    "test": "tap ./test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jfhbrook/joshiverse.git"
+  },
+  "keywords": [
+    "process.logging",
+    "debug",
+    "logging",
+    "logref",
+    "mikeal"
+  ],
+  "author": "Josh Holbrook",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jfhbrook/joshiverse/issues"
+  },
+  "homepage": "https://github.com/jfhbrook/joshiverse#readme",
+  "devDependencies": {
+    "@jfhbrook/prettier-config-old-school": "^0.1.0",
+    "prettier": "^2.3.2",
+    "tap": "^15.0.9"
+  }
+}

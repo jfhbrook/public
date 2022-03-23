@@ -15,6 +15,7 @@ more additions over the coming months.
 * [kenny-loggins](./kenny-loggins) - extensions to make logging with winston sensible
 * [@jfhbrook/http-server-request-accept](./http-server-request-accept) - extract the accept header from a server request
 * [@jfhbrook/http-server-request-ip](./http-server-request-ip) - get the client ip from an http server request, respecting x-forwarded-for headers
+* [@jfhbrook/logref](./logref) - my implementation of `process.logging`
 * [pickleback](./pickleback) - my personal fork of hapi/shot
 * [safe-url](./safe-url) - strip creds from urls before printing
 
