@@ -15,6 +15,8 @@ where dependency is the path to the dependency and --as is the module name. if
 the module name isn't specified, the name of the module according to the
 package.json at that path will be used (this is usually what you want!)
 
+## background & motivation
+
 npm works great when you're installing third party modules into an app. but
 when you're trying to develop coupled dependencies, things can get challenging.
 

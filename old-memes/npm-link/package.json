@@ -1,6 +1,6 @@
 {
   "name": "@jfhbrook/npm-link",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "a targeted and direct alternative to npm link",
   "bin": {
     "npm-link": "npm-link"
