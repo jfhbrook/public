@@ -1,6 +1,6 @@
 {
   "name": "@jfhbrook/http-server-request-accept",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "get what content types are accepted from an http.server request object",
   "main": "index.js",
   "scripts": {
