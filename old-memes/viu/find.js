@@ -31,7 +31,7 @@ async function find(sysemOk = false) {
 
   if (!await exists(bin)) {
     // If not, see if we have a pre-built cross-compiled binary
-    const target = {
+    const target = ({
       "linux": {
         "arm": "armv7-unknown-linux-gnueabihf",
         "arm64": "aarch64-unknown-linux-gnu",
@@ -40,7 +40,7 @@ async function find(sysemOk = false) {
       "windows": {
         "x64": "x86_64-pc-windows-gnu"
       }
-    }[os.platform()][os.arch()];
+    }[os.platform()] || {})[os.arch()];
 
     if (target) {
       bin = path.join(
