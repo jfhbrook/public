@@ -1,16 +1,16 @@
 {
   "name": "@jfhbrook/npm-link",
-  "version": "1.0.0",
-  "description": "a kinder, gentler alternative to npm link",
+  "version": "1.0.1",
+  "description": "a targeted and direct alternative to npm link",
   "bin": {
     "npm-link": "npm-link"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tests-of-the-sierra-madre"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:jfhbrook/joshiverse.git"
+    "url": "git@github.com:jfhbrook/public.git"
   },
   "keywords": [
     "npm",

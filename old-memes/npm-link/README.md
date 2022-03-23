@@ -1,56 +1,48 @@
 # npm-link
-## a kinder, gentler alternative to npm link
-
-## install
-
-$ npm install @jfhbrook/npm-link
+## a targeted and direct alternative to npm link
 
 ## usage
 
-inside the project you want to link into:
+suppose you have some local dependency somewhere on the filesystem and you're
+in the directory of the app you want to use it in. using this tool would look
+like this:
 
-```
-npm-link <dependency> [--as <name>]
+```bash
+$ npx @jfhbrook/npm-link <dependency> [--as <name>]
 ```
 
 where dependency is the path to the dependency and --as is the module name. if
 the module name isn't specified, the name of the module according to the
 package.json at that path will be used (this is usually what you want!)
 
-## rationale
+npm works great when you're installing third party modules into an app. but
+when you're trying to develop coupled dependencies, things can get challenging.
 
-many years ago, I wrote (with some edits):
+if you have your modules in the same folder - or can otherwise hard-code the
+relative paths to the module sources - then [npm workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces)
+(or similar functionality in yarn) should have you covered. if this is your
+situation, then npm workspaces are the recommended approach.
 
-> `npm link` is a nifty little tool that will symlink arbitrary node libraries on
-> the filesystem directly into your project. This is really useful for developing
-> a dependent and dependency concurrently.
-> 
-> However, there's a small but important wrinkle: Linking works in two parts.
-> `npm link` exposes the module as installable by first linking it *globally*.
-> Then, `npm link [dependency]` links the *global* version of the module into
-> your project. Usually this isn't a deal-breaker, but there are some less
-> savoury ramifications:
->
-> * Running `npm link` as a priveleged user (not technically necessary, but the
->   default behavior) requires unsettlingly high permissions given the task at
->   hand
-> * You expose a development version of potential module bins to all your shells
-> * git+ssh urls can cause problems because ssh doesn't properly inherit
->   your known hosts when ran with sudo.
-> 
-> `npm-link` is used to symlink other modules directly into `node_modules`, thus
-> avoiding some of these issues.
+however, in some situations you need to get a little more manual. if you were
+to continue using the tools npm gives you, you would reach for
+[`npm link`](https://docs.npmjs.com/cli/v8/commands/npm-link), which uses
+symlinks to put the packages in the right place.
 
-so here's the thing: I have no idea if this got fixed in the last 5 years, or
-even if it got fixed earlier and I wasn't paying attention. but now I'm used
-to using this homebrewed tool. it used to have a different name that I find
-cringe now but I still want to use it SO I DONT HAVE TO LEARN so I moved it
-here.
+the problem with `npm link` (aside from windows not really having symbolic
+links) is that exposing a module modifies npm's global namespace. as all the
+cool kids know, the only thing more icky than state is global state. this
+doesn't even consider the case where npm is installed on the system instead of
+in a user-scoped environment - don't run npm with sudo, kids!
 
-## Tests
+`npm-link`, in contrast, operates through a direct symlink between the module
+that you point it at and your app's `node_modules` folder. this is *a lot dumber*
+then npm (that may cause us surprises!), but it's also a lot more direct.
 
-Right now, just me using it.
+## tests
 
-## License
+"testing" is largely me just using it. note that I haven't used it recently
+due to adopting workspaces, but plan on integrating it in the near future.
+
+## license
 
 MIT.
