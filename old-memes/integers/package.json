@@ -9,7 +9,13 @@
   },
   "main": "./index.js",
   "scripts": {
-    "test": "node ./test.js"
+    "test": "tap ./test.js"
   },
-  "gitHead": "f84787fc1aa5ae9908c6283c0d20234c65e24985"
+  "gitHead": "f84787fc1aa5ae9908c6283c0d20234c65e24985",
+  "devDependencies": {
+    "tap": "^16.0.1"
+  },
+  "tap": {
+    "check-coverage": false
+  }
 }

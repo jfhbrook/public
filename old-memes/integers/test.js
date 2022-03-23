@@ -1,15 +1,15 @@
 var integers = require('./index'),
-    util = require('util'),
-    numbers = integers(5);
+    tap = require('tap'),
+    util = require('util');
 
-[ 0, 1, 2, 3, 4 ].forEach(function (n, i) {
-  if (n === numbers[i]) {
-    console.log('✓ (%d)th digit is %d', n, i);
-  }
-  else {
-    throw new Error(util.format(
-      '☠☠☠ (%d)th digit should have been %d but was actually %d ☠☠☠',
-      n, n, i
-    ));
-  }
+tap.test('integers(5)', async (t) => {
+  t.same(integers(5), [0, 1, 2, 3, 4]);
+});
+
+tap.test('integers(1, 5)', async (t) => {
+  t.same(integers(1, 5), [1, 2, 3, 4]);
+});
+
+tap.test('integers(1, 5, 2)', async (t) => {
+  t.same(integers(1, 5, 2), [1, 3]);
 });
