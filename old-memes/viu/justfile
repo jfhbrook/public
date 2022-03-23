@@ -1,0 +1,17 @@
+viu_version := "1.4.0"
+
+build: download
+  @just cross x86_64-unknown-linux-gnu
+  @just cross aarch64-unknown-linux-gnu
+  @just cross armv7-unknown-linux-gnueabihf
+  @just cross x86_64-pc-windows-gnu
+
+download:
+  mkdir -p vendor
+  if [ ! -d "vendor/viu-{{ viu_version }}" ]; then curl -L "https://github.com/atanunq/viu/archive/refs/tags/v{{ viu_version }}.tar.gz" | tar -xz -C vendor ; fi
+
+cross TARGET:
+  if [ ! -d "vendor/viu-{{ viu_version }}/target/{{ TARGET }}" ]; then cd "vendor/viu-{{ viu_version }}" && cross build --release --target '{{ TARGET }}'; fi
+
+clean:
+  rm -r vendor

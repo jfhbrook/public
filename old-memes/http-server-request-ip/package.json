@@ -1,0 +1,27 @@
+{
+  "name": "@jfhbrook/http-server-request-ip",
+  "version": "1.0.0",
+  "description": "get the IP address from an http.server request object",
+  "main": "index.js",
+  "scripts": {
+    "test": "tests-of-the-sierra-madre"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jfhbrook/joshiverse.git"
+  },
+  "keywords": [
+    "ip",
+    "address"
+  ],
+  "author": "Josh Holbrook",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jfhbrook/joshiverse/issues"
+  },
+  "homepage": "https://github.com/jfhbrook/joshiverse#readme",
+  "devDependencies": {
+    "tests-of-the-sierra-madre": "^1.0.0"
+  },
+  "gitHead": "f84787fc1aa5ae9908c6283c0d20234c65e24985"
+}

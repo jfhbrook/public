@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [ -z "${FEATURE_COPR}" ]; then
+  log-debug "(feature copr is disabled.)"
+  exit
+fi
+
+if [ -n "${HELP:-}" ] || [ -z "$1" ]; then
+  package_types="$(
+    copr-cli --help \
+      | grep -E '^    [a-z]+-package-' \
+      | awk '{ split($1,cmd,"-"); print cmd[3] }' \
+      | sort | uniq
+  )"
+  echo "USAGE: resource RESOURCE [PACKAGE] [...FLAGS]" 1>&2
+  echo "RESOURCES:" 1>&2
+  echo "    project" 1>&2
+  echo "${package_types}"  | while read -r type; do
+    echo "    package-${type}" 1>&2
+  done
+
+  exit
+fi
+
+if [[ "$1" = --* ]]; then
+  flagrant-error "unexpected resource: $1"
+else
+  RESOURCE="$1"; shift
+fi
+
+if [[ "$1" = --* ]]; then
+  flagrant-error "unexpected project: $1"
+else
+  PROJECT="$1"; shift
+fi
+
+if [[ "${RESOURCE}" != 'project' ]]; then
+  if [[ "$1" = --* ]]; then
+    flagrant-error "unexpected package: ${1}"
+  else
+    PACKAGE="$1"; shift
+  fi
+else
+  PACKAGE=""
+fi
+
+if [ -n "${PACKAGE}" ]; then
+  copr-cli get-package "${PROJECT}" --name "${PACKAGE}" "$@" | jq .
+else
+  copr-cli list-builds "${PROJECT}" --output-format text-row | tidy-viewer -s "\t"
+fi
+

@@ -1,0 +1,253 @@
+{
+  "/home/josh/joshiverse/old-memes/kenny-loggins/minimist.js": {
+    "path": "/home/josh/joshiverse/old-memes/kenny-loggins/minimist.js",
+    "statementMap": {
+      "0": {
+        "start": {"line": 1, "column": 11},
+        "end": {"line": 1, "column": 28}
+      },
+      "1": {
+        "start": {"line": 5, "column": 0},
+        "end": {"line": 25, "column": 2}
+      },
+      "2": {
+        "start": {"line": 6, "column": 2},
+        "end": {"line": 11, "column": 3}
+      },
+      "3": {"start": {"line": 7, "column": 4}, "end": {"line": 9, "column": 5}},
+      "4": {
+        "start": {"line": 8, "column": 6},
+        "end": {"line": 8, "column": 44}
+      },
+      "5": {
+        "start": {"line": 10, "column": 4},
+        "end": {"line": 10, "column": 29}
+      },
+      "6": {
+        "start": {"line": 13, "column": 22},
+        "end": {"line": 13, "column": 47}
+      },
+      "7": {
+        "start": {"line": 15, "column": 2},
+        "end": {"line": 22, "column": 3}
+      },
+      "8": {
+        "start": {"line": 16, "column": 4},
+        "end": {"line": 21, "column": 6}
+      },
+      "9": {
+        "start": {"line": 24, "column": 2},
+        "end": {"line": 24, "column": 40}
+      }
+    },
+    "fnMap": {
+      "0": {
+        "name": "verbosity",
+        "decl": {
+          "start": {"line": 5, "column": 29},
+          "end": {"line": 5, "column": 38}
+        },
+        "loc": {
+          "start": {"line": 5, "column": 59},
+          "end": {"line": 25, "column": 1}
+        },
+        "line": 5
+      }
+    },
+    "branchMap": {
+      "0": {
+        "loc": {
+          "start": {"line": 6, "column": 2},
+          "end": {"line": 11, "column": 3}
+        },
+        "type": "if",
+        "locations": [
+          {"start": {"line": 6, "column": 2}, "end": {"line": 11, "column": 3}},
+          {"start": {"line": 6, "column": 2}, "end": {"line": 11, "column": 3}}
+        ],
+        "line": 6
+      },
+      "1": {
+        "loc": {
+          "start": {"line": 7, "column": 4},
+          "end": {"line": 9, "column": 5}
+        },
+        "type": "if",
+        "locations": [
+          {"start": {"line": 7, "column": 4}, "end": {"line": 9, "column": 5}},
+          {"start": {"line": 7, "column": 4}, "end": {"line": 9, "column": 5}}
+        ],
+        "line": 7
+      },
+      "2": {
+        "loc": {
+          "start": {"line": 15, "column": 2},
+          "end": {"line": 22, "column": 3}
+        },
+        "type": "if",
+        "locations": [
+          {
+            "start": {"line": 15, "column": 2},
+            "end": {"line": 22, "column": 3}
+          },
+          {"start": {"line": 15, "column": 2}, "end": {"line": 22, "column": 3}}
+        ],
+        "line": 15
+      },
+      "3": {
+        "loc": {
+          "start": {"line": 15, "column": 6},
+          "end": {"line": 15, "column": 28}
+        },
+        "type": "binary-expr",
+        "locations": [
+          {
+            "start": {"line": 15, "column": 6},
+            "end": {"line": 15, "column": 12}
+          },
+          {
+            "start": {"line": 15, "column": 16},
+            "end": {"line": 15, "column": 28}
+          }
+        ],
+        "line": 15
+      }
+    },
+    "s": {
+      "0": 1,
+      "1": 1,
+      "2": 3,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 3,
+      "7": 3,
+      "8": 2,
+      "9": 1
+    },
+    "f": {"0": 3},
+    "b": {"0": [0, 3], "1": [0, 0], "2": [2, 1], "3": [3, 2]},
+    "_coverageSchema": "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    "hash": "2c3f027b155c27e0a8cef8d3d01ee07aca458eca",
+    "contentHash": "241f4d0e4f6be6e20154ad3756fd15d6455f6992056338270c210afd24390635"
+  },
+  "/home/josh/joshiverse/old-memes/kenny-loggins/core.js": {
+    "path": "/home/josh/joshiverse/old-memes/kenny-loggins/core.js",
+    "statementMap": {
+      "0": {
+        "start": {"line": 1, "column": 19},
+        "end": {"line": 1, "column": 49}
+      },
+      "1": {
+        "start": {"line": 6, "column": 0},
+        "end": {"line": 12, "column": 2}
+      },
+      "2": {
+        "start": {"line": 14, "column": 0},
+        "end": {"line": 20, "column": 2}
+      },
+      "3": {
+        "start": {"line": 22, "column": 0},
+        "end": {"line": 22, "column": 28}
+      },
+      "4": {
+        "start": {"line": 23, "column": 0},
+        "end": {"line": 23, "column": 28}
+      },
+      "5": {
+        "start": {"line": 26, "column": 0},
+        "end": {"line": 30, "column": 3}
+      },
+      "6": {
+        "start": {"line": 27, "column": 2},
+        "end": {"line": 27, "column": 54}
+      },
+      "7": {
+        "start": {"line": 27, "column": 45},
+        "end": {"line": 27, "column": 54}
+      },
+      "8": {
+        "start": {"line": 28, "column": 2},
+        "end": {"line": 28, "column": 55}
+      },
+      "9": {
+        "start": {"line": 28, "column": 45},
+        "end": {"line": 28, "column": 55}
+      },
+      "10": {
+        "start": {"line": 29, "column": 2},
+        "end": {"line": 29, "column": 11}
+      }
+    },
+    "fnMap": {
+      "0": {
+        "name": "(anonymous_0)",
+        "decl": {
+          "start": {"line": 26, "column": 54},
+          "end": {"line": 26, "column": 55}
+        },
+        "loc": {
+          "start": {"line": 26, "column": 70},
+          "end": {"line": 30, "column": 1}
+        },
+        "line": 26
+      }
+    },
+    "branchMap": {
+      "0": {
+        "loc": {
+          "start": {"line": 27, "column": 2},
+          "end": {"line": 27, "column": 54}
+        },
+        "type": "if",
+        "locations": [
+          {
+            "start": {"line": 27, "column": 2},
+            "end": {"line": 27, "column": 54}
+          },
+          {
+            "start": {"line": 27, "column": 2},
+            "end": {"line": 27, "column": 54}
+          }
+        ],
+        "line": 27
+      },
+      "1": {
+        "loc": {
+          "start": {"line": 28, "column": 2},
+          "end": {"line": 28, "column": 55}
+        },
+        "type": "if",
+        "locations": [
+          {
+            "start": {"line": 28, "column": 2},
+            "end": {"line": 28, "column": 55}
+          },
+          {
+            "start": {"line": 28, "column": 2},
+            "end": {"line": 28, "column": 55}
+          }
+        ],
+        "line": 28
+      }
+    },
+    "s": {
+      "0": 1,
+      "1": 1,
+      "2": 1,
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 4,
+      "7": 4,
+      "8": 0,
+      "9": 0,
+      "10": 0
+    },
+    "f": {"0": 4},
+    "b": {"0": [4, 0], "1": [0, 0]},
+    "_coverageSchema": "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    "hash": "a80a53ea0076d6a8e609f3fc3fab324f82f9f38e",
+    "contentHash": "10e836b6fee0e6513f3221d111e87afd8fa20bd3ceffc2061eab22f3ad3a8e36"
+  }
+}

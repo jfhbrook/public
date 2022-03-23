@@ -7,6 +7,17 @@ const minimist = require('minimist');
 
 const opts = minimist(process.argv.slice(2));
 
+if (opts.h || opts.help) {
+  console.log(`USAGE: ${process.argv[1]} [COMMAND]`);
+  console.log('COMMANDS:');
+  console.log('    sync: the whole kit and caboodle:');
+  console.log('      - rebase the patches branch against upstream master');
+  console.log('      - run the push command');
+  console.log('      - publish to npm');
+  console.log('    push: push master and force push rebased patches');
+  process.exit();
+}
+
 const setRemotes = `if git remote -v | grep -E '^upstream'; then
   git remote set-url upstream "$UPSTREAM_REMOTE"
 else

@@ -1,0 +1,27 @@
+{
+  "name": "safe-url",
+  "version": "1.0.0",
+  "description": "Scrub basic auth credentials from your urls so they're safe urls",
+  "main": "index.js",
+  "scripts": {
+    "test": "tests-of-the-sierra-madre"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jfhbrook/joshiverse.git"
+  },
+  "keywords": [
+    "safe-url",
+    "safeUrl",
+    "basic",
+    "auth",
+    "print",
+    "url"
+  ],
+  "author": "Josh Holbrook",
+  "license": "same as https://github.com/mikeal/node.couchapp.js",
+  "gitHead": "f84787fc1aa5ae9908c6283c0d20234c65e24985",
+  "devDependencies": {
+    "tests-of-the-sierra-madre": "^1.0.0"
+  }
+}

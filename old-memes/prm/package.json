@@ -1,0 +1,29 @@
+{
+  "name": "prm",
+  "version": "1.0.0",
+  "description": "package registry manager",
+  "bin": {
+    "prm": "bin/prm"
+  },
+  "scripts": {
+    "test": "tests-of-the-sierra-madre",
+    "prm": "bin/prm",
+    "build": "tsc ."
+  },
+  "author": "Josh Holbrook",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "ansi-colors": "^4.1.1",
+    "concat-stream": "^2.0.0",
+    "kenny-loggins": "^1.1.1",
+    "merge-stream": "^2.0.0",
+    "minimist": "^1.2.5",
+    "shell-quote": "^1.7.3",
+    "split2": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.10",
+    "tests-of-the-sierra-madre": "^1.0.0",
+    "typescript": "^4.5.5"
+  }
+}

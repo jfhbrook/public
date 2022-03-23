@@ -1,0 +1,15 @@
+{
+  "author": "Josh Holbrook",
+  "name": "integers",
+  "description": "A python-like range() function for node",
+  "version": "1.0.0",
+  "homepage": "https://github.com/jfhbrook/joshiverse",
+  "repository": {
+    "url": "git@github.com:jfhbrook/joshiverse.git"
+  },
+  "main": "./index.js",
+  "scripts": {
+    "test": "node ./test.js"
+  },
+  "gitHead": "f84787fc1aa5ae9908c6283c0d20234c65e24985"
+}

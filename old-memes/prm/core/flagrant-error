@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+
+const { createLogger } = require('kenny-loggins');
+
+const { flagrantError, setShrug, setShellMode } = require('../cli');
+
+setShellMode(true);
+
+if (process.env.SHRUG) {
+  setShrug(true);
+}
+
+const message = process.argv.slice(2).join(' ');
+
+const logger = createLogger({
+  level: 'info',
+  colors: {
+    fatal: 'grey',
+    error: 'red',
+    warn: 'yellow',
+    info: 'magenta',
+    debug: 'cyan'
+  }
+});
+
+const error = new Error(message);
+
+flagrantError(error);

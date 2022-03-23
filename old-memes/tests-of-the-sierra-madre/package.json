@@ -1,0 +1,16 @@
+{
+  "name": "tests-of-the-sierra-madre",
+  "version": "1.0.0",
+  "description": "The Tests of the Sierra Madre (\"Tests? We ain't got no tests.\")",
+  "scripts": {
+    "test": "node main.js"
+  },
+  "bin": {
+    "tests-of-the-sierra-madre": "main.js"
+  },
+  "license": "MIT/X11",
+  "dependencies": {
+    "@jfhbrook/viu": "1.4.4",
+    "terminal-image": "^2.0.0"
+  }
+}

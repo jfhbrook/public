@@ -1,0 +1,40 @@
+{
+  "name": "@jfhbrook/viu",
+  "version": "1.4.4",
+  "description": "viu - the rust terminal image viewer - distributed on npm",
+  "main": "index.js",
+  "bin": {
+    "viu": "main.js"
+  },
+  "scripts": {
+    "prepack": "just build",
+    "postinstall": "node scripts/postinstall.js",
+    "test": "node main.js buddy.jpg"
+  },
+  "files": [
+    "find.js",
+    "index.js",
+    "LICENSE",
+    "main.js",
+    "scripts/postinstall.js",
+    "vendor/viu-1.4.0/Cargo.*",
+    "vendor/viu-1.4.0/LICENSE-MIT",
+    "vendor/viu-1.4.0/README.md",
+    "vendor/viu-1.4.0/src",
+    "vendor/viu-1.4.0/target/**/release/viu",
+    "vendor/viu-1.4.0/target/**/release/viu.exe"
+  ],
+  "author": "Josh Holbrook",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jfhbrook/public.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jfhbrook/public/issues"
+  },
+  "homepage": "https://github.com/jfhbrook/public#readme",
+  "dependencies": {
+    "which": "^2.0.2"
+  }
+}

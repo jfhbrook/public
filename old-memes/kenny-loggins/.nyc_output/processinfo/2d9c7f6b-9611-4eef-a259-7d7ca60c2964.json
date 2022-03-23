@@ -1,0 +1,19 @@
+{
+  "parent": "5d1349ad-7de4-422e-b46f-62ab7f6ca285",
+  "pid": 932107,
+  "argv": [
+    "/home/josh/.nvm/versions/node/v16.5.0/bin/node",
+    "/home/josh/joshiverse/old-memes/kenny-loggins/test/index.js"
+  ],
+  "execArgv": [],
+  "cwd": "/home/josh/joshiverse/old-memes/kenny-loggins",
+  "time": 1643222585738,
+  "ppid": 932082,
+  "coverageFilename": "/home/josh/joshiverse/old-memes/kenny-loggins/.nyc_output/2d9c7f6b-9611-4eef-a259-7d7ca60c2964.json",
+  "externalId": "./test/index.js",
+  "uuid": "2d9c7f6b-9611-4eef-a259-7d7ca60c2964",
+  "files": [
+    "/home/josh/joshiverse/old-memes/kenny-loggins/index.js",
+    "/home/josh/joshiverse/old-memes/kenny-loggins/core.js"
+  ]
+}

@@ -1,0 +1,81 @@
+#!/usr/bin/env node
+
+var format = require('util').format,
+    Stream = require('stream'),
+    fs = require('fs'),
+    lns = fs.symlinkSync,
+    stat = fs.statSync,
+    path = require('path');
+
+var minimist = require('minimist'),
+    mkdirp = require('mkdirp').sync,
+    log = require('npmlog'),
+    read = require('read'),
+    rmrf = require('rimraf').sync;
+
+log.heading = 'link';
+log.addLevel('help', 2000, {fg: 'blue', bg: 'grey'}, 'halp');
+log.prompt = function (txt, cb) {
+  read({
+    prompt:
+      'link ??!? ' + txt,
+  }, cb);
+}
+
+process.on('uncaughtException', function (err) {
+  log.error('wat', err);
+  log.error('bye', 'better luck next time!');
+  process.exit(1);
+});
+
+log.info('hello', 'YES THIS IS NPM-LINK');
+
+var argv = minimist(process.argv.slice(2));
+
+if (!argv._.length) {
+  log.help('usage', 'npm-link <dependency> [--as <name>]');
+  log.help('usage', '');
+  log.help('usage', 'Link the dependency at the path <dependency>.');
+  log.info('bye', 'try again!');
+  process.exit(1);
+}
+
+var dep = path.resolve(argv._[0]),
+    name = argv.as || require(path.join(dep, 'package.json')).name,
+    dst = path.join(process.cwd(), 'node_modules', name),
+    dstDir = path.dirname(dst),
+    s;
+
+try {
+  s = stat(dst);
+}
+catch (err) {
+  if (err.code !== 'ENOENT') {
+    throw err;
+  }
+}
+
+if (s) {
+  log.warn('derf', 'Looks like %s already exists!', dst);
+  log.prompt('rm -rf Nuke it? [y/N]', function (err, res) {
+    if (err) throw err;
+    if (typeof res == 'string') res = res.toLowerCase();
+    if (res != 'y' && res != 'yes') {
+      throw new Error('You didn\'t want to clean up, apparently.');
+    }
+    rmrf(dst);
+    linkItUp();
+  });
+}
+else {
+  linkItUp();
+}
+
+function linkItUp() {
+  log.info('mkdir -p', 'Ensuring directory %s', dstDir);
+  mkdirp(dstDir);
+  log.info('ln -s', 'Linking %s', name);
+  log.info('ln -s', '%s -> %s', dep, dst);
+  lns(dep, dst);
+  log.info('bye', 'good job!');
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@jfhbrook/prompt",
+  "description": "A prompting library I don't hate",
+  "version": "1.0.0",
+  "author": "Josh Holbrook",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/jfhbrook/joshiverse.git"
+  },
+  "dependencies": {
+    "async": "~0.1.22",
+    "colors": "0.6.x",
+    "read": "1.0.x",
+    "revalidator": "0.1.x"
+  },
+  "devDependencies": {
+    "vows": "^0.8.3"
+  },
+  "main": "./lib/prompt",
+  "scripts": {
+    "test": "vows test/prompt-test.js --spec",
+    "test-all": "vows --spec"
+  },
+  "gitHead": "f84787fc1aa5ae9908c6283c0d20234c65e24985"
+}

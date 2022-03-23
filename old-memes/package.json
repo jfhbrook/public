@@ -3,12 +3,31 @@
   "workspaces": [
     "clf-parser",
     "hoarders",
-    "pickleback"
+    "pickleback",
+    "fake-progress-not-frozen",
+    "hoarders",
+    "http-server-request-accept",
+    "http-server-request-ip",
+    "integers",
+    "kenny-loggins",
+    "licenseify",
+    "linspace",
+    "logspace",
+    "npm-link",
+    "pandoc",
+    "pickleback",
+    "piecewise",
+    "prompt",
+    "safe-url",
+    "viu"
   ],
   "scripts": {
     "pickleback": "node ./pickleback.js"
   },
   "devDependencies": {
     "minimist": "^1.2.5"
+  },
+  "dependencies": {
+    "boltzmann-cli": "^0.5.3"
   }
 }

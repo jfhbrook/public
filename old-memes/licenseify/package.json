@@ -1,0 +1,30 @@
+{
+  "name": "licenseify",
+  "version": "1.1.1",
+  "description": "A tool for scaffolding out LICENSE files",
+  "bin": {
+    "licenseify": "./bin.js"
+  },
+  "scripts": {
+    "test": "tests-of-the-sierra-madre"
+  },
+  "keywords": [
+    "license",
+    "template",
+    "generator"
+  ],
+  "author": "Joshua Holbrook",
+  "license": "MIT",
+  "dependencies": {
+    "ansicolors": "~0.3.2",
+    "async": "~2.6.1",
+    "handlebars": "^4.1.2",
+    "kenny-loggins": "^0.0.2",
+    "pinocchio": "^0.1.0",
+    "read": "~1.0.5"
+  },
+  "devDependencies": {
+     "tests-of-the-sierra-madre": "^1.0.0"
+  },
+  "gitHead": "f84787fc1aa5ae9908c6283c0d20234c65e24985"
+}

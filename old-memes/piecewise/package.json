@@ -1,0 +1,30 @@
+{
+  "name": "@jfhbrook/piecewise",
+  "version": "1.0.0",
+  "description": "piecewise functions",
+  "main": "index.js",
+  "scripts": {
+    "test": "tap ./test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jfhbrook/joshiverse.git"
+  },
+  "keywords": [
+    "kronecker",
+    "sgn",
+    "piecewise",
+    "math",
+    "mathematics"
+  ],
+  "author": "Josh Holbrook",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jfhbrook/joshiverse/issues"
+  },
+  "homepage": "https://github.com/jfhbrook/joshiverse#readme",
+  "devDependencies": {
+    "tap": "^15.0.9"
+  },
+  "gitHead": "f84787fc1aa5ae9908c6283c0d20234c65e24985"
+}

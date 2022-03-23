@@ -1,0 +1,67 @@
+set dotenv-load := true
+
+help:
+  @just --list
+
+copr-all: copr-projects copr-packages
+
+homebrew-all:
+  #!/usr/bin/env bash
+
+  set -eou pipefail
+
+  ls */formula.rb | while read -r filename; do
+    package="$(dirname "${filename}")"
+    mkdir -p "homebrew/${package}"
+    cp "${filename}" "homebrew/${package}" 
+  done
+
+  echo "HOMEBREW GIT STATUS:"
+  echo "--------------------"
+  cd homebrew && git status && cd ..
+
+homebrew-formula TARGET:
+  mkdir -p 'homebrew/{{TARGET}}'
+  cp './{{TARGET}}/formula.rb' 'homebrew/{{TARGET}}/formula.rb'
+
+copr-project TARGET:
+  #!/usr/bin/bash
+
+  set -euo pipefail
+  export PATH="{{invocation_directory()}}/bin:${PATH}"
+
+  bash ./{{TARGET}}.sh
+
+  echo "HOMEBREW GIT STATUS:"
+  echo "--------------------"
+  cd homebrew && git status && cd ..
+
+copr-projects:
+  #!/usr/bin/bash
+
+  set -eou pipefail
+  export PATH="{{invocation_directory()}}/bin:${PATH}"
+
+  ls *.sh | while read -r script; do
+    bash "${script}"
+  done
+
+copr-package TARGET:
+  #!/usr/bin/bash
+
+  set -euo pipefail
+  export PATH="{{invocation_directory()}}/bin:${PATH}"
+
+  bash ./{{TARGET}}/copr.sh
+
+copr-packages:
+  #!/usr/bin/bash
+
+  set -eou pipefail
+  export PATH="{{invocation_directory()}}/bin:${PATH}"
+
+  ls */copr.sh | while read -r script; do
+    bash "${script}"
+  done
+
+

@@ -1,0 +1,34 @@
+{
+  "name": "@jfhbrook/npm-link",
+  "version": "1.0.0",
+  "description": "a kinder, gentler alternative to npm link",
+  "bin": {
+    "npm-link": "npm-link"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jfhbrook/joshiverse.git"
+  },
+  "keywords": [
+    "npm",
+    "link"
+  ],
+  "author": "Josh Holbrook",
+  "license": "MIT",
+  "dependencies": {
+    "minimist": "1.2.0",
+    "mkdirp": "0.5.1",
+    "npmlog": "0.0.6",
+    "read": "~1.0.5",
+    "rimraf": "~2.2.6"
+  },
+  "devDependencies": {
+    "tests-of-the-sierra-madre": "^1.0.0"
+  },
+  "scripts": {
+    "test": "tests-of-the-sierra-madre"
+  }
+}
