@@ -1,0 +1,23 @@
+{
+  "author": "Josh Holbrook",
+  "name": "bbgurl",
+  "description": "a cli http client using udici",
+  "version": "2.0.0",
+  "repository": {
+    "url": "git@github.com:jfhbrook/public.git"
+  },
+  "dependencies": {
+    "ansi-colors": "^4.1.1",
+    "minimist": "^1.2.6",
+    "stream-progressbar": "^1.4.0",
+    "tests-of-the-sierra-madre": "^1.0.0",
+    "undici": "^4.16.0"
+  },
+  "bin": {
+    "bbgurl": "main.js"
+  },
+  "scripts": {
+    "test": "tests-of-the-sierra-madre"
+  },
+  "gitHead": "f84787fc1aa5ae9908c6283c0d20234c65e24985"
+}
