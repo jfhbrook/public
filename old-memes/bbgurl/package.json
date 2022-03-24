@@ -2,9 +2,9 @@
   "author": "Josh Holbrook",
   "name": "bbgurl",
   "description": "a cli http client using udici",
-  "version": "2.0.1",
+  "version": "2.0.5",
   "repository": {
-    "url": "git@github.com:jfhbrook/public.git"
+    "url": "git+ssh://git@github.com/jfhbrook/public.git"
   },
   "dependencies": {
     "ansi-colors": "^4.1.1",
@@ -19,5 +19,19 @@
   "scripts": {
     "test": "tests-of-the-sierra-madre"
   },
-  "gitHead": "f84787fc1aa5ae9908c6283c0d20234c65e24985"
+  "bugs": {
+    "url": "https://github.com/jfhbrook/public/issues"
+  },
+  "homepage": "https://github.com/jfhbrook/public#readme",
+  "main": "index.js",
+  "devDependencies": {},
+  "keywords": [
+    "http",
+    "client",
+    "undici",
+    "commandline",
+    "cli",
+    "curl"
+  ],
+  "license": "MIT"
 }

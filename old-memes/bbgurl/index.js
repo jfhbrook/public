@@ -12,7 +12,7 @@ const progress = require('stream-progressbar');
 
 const HELP = `bbgurl: a cli http client using udici
 
-USAGE: ${process.argv[0]} [URL]
+USAGE: bbgurl [URL]
 
 make an HTTP request using udici.request.
 

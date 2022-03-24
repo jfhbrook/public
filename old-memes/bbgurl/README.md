@@ -11,6 +11,50 @@ use it with npx:
 npx bbgurl https://google.com
 ```
 
+## examples
+
+### hit an endpoint
+
+```
+$ bbgurl https://google.com
+[♥] Downloading: ======================================== 100% (220/220)
+<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
+<TITLE>301 Moved</TITLE></HEAD><BODY>
+<H1>301 Moved</H1>
+The document has moved
+<A HREF="https://www.google.com/">here</A>.
+</BODY></HTML>
+```
+
+### set some headers
+
+(this example does *not* work and will be updated as soon as I write tests.
+the api is still like this though!)
+
+```
+$ bbgurl http://whatismyip.jit.su -H '{ "accept": "application/json" }'
+{ "ip": "71.198.76.200" }
+```
+
+### do some basic auth
+
+(this example also needs to be updated, but the functionality hasn't changed
+here at all so it should work!)
+
+```
+$ bbgurl -u josh:supersekritpw http://localhost:8080
+{ "success": true, "message": "Welcome to the inner sanctum." }
+```
+
+### download a tarball
+
+(yes, this ancient url still works!! this is an up-to-date example!)
+
+```
+$ bbgurl --verbose http://nodejs.org/dist/v0.8.4/node-v0.8.4.tar.gz -o node-v0.8.4.tar.gz 
+[♥] data written to /home/josh/joshiverse/old-memes/bbgurl/node-v0.8.4.tar.gz
+```
+
 ## usage
 
 here's the current output of the help, which I think is uncharacteristically
@@ -19,7 +63,7 @@ comprehensive:
 ```
 [♥] bbgurl: a cli http client using udici
 [♥] 
-[♥] USAGE: /home/josh/.nvm/versions/node/v16.5.0/bin/node [URL]
+[♥] USAGE: bbgurl [URL]
 [♥] 
 [♥] make an HTTP request using udici.request.
 [♥] 
@@ -64,49 +108,7 @@ comprehensive:
 [♥] 
 ```
 
-## examples:
 
-### hit an endpoint
-
-```
-$ bbgurl https://google.com
-[♥] Downloading: ======================================== 100% (220/220)
-<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
-<TITLE>301 Moved</TITLE></HEAD><BODY>
-<H1>301 Moved</H1>
-The document has moved
-<A HREF="https://www.google.com/">here</A>.
-</BODY></HTML>
-```
-
-### set some headers
-
-(this example does *not* work and will be updated as soon as I write tests.
-the api is still like this though!)
-
-```
-$ bbgurl http://whatismyip.jit.su -H '{ "accept": "application/json" }'
-{ "ip": "71.198.76.200" }
-```
-
-### do some basic auth
-
-(this example also needs to be updated, but the functionality hasn't changed
-here at all so it should work!)
-
-```
-$ bbgurl -u josh:supersekritpw http://localhost:8080
-{ "success": true, "message": "Welcome to the inner sanctum." }
-```
-
-### download a tarball
-
-(yes, this ancient url still works!! this is an up-to-date example!)
-
-```
-$ bbgurl --verbose http://nodejs.org/dist/v0.8.4/node-v0.8.4.tar.gz -o node-v0.8.4.tar.gz 
-[♥] data written to /home/josh/joshiverse/old-memes/bbgurl/node-v0.8.4.tar.gz
-```
 
 ## what happened to the request wrapper?
 
