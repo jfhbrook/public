@@ -16,11 +16,12 @@ more additions over the coming months.
 * [@jfhbrook/http-server-request-accept](./http-server-request-accept) - extract the accept header from a server request
 * [@jfhbrook/http-server-request-ip](./http-server-request-ip) - get the client ip from an http server request, respecting x-forwarded-for headers
 * [@jfhbrook/logref](./logref) - my implementation of `process.logging`
-* [pickleback](./pickleback) - my personal fork of hapi/shot
+* [pickleback](https://github.com/jfhbrook/pickleback) - my personal fork of hapi/shot
 * [safe-url](./safe-url) - strip creds from urls before printing
 
 ### wrappers, clients and bindings
 
+* [bbgurl](./bbgurl) - a cli http client using udici
 * [@jfhbrook/pandoc](./pandoc) - my wrapper for pandoc
 * [@jfhbrook/viu](./viu) - a distribution and wrapper for [viu](https://crates.io/crates/viu)
 
