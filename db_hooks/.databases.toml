@@ -1,0 +1,14 @@
+password_cmd = "zenity --password"
+password_loader = "bash"
+
+[connections.pg_example]
+protocol = "postgres"
+username = "josh"
+host = "localhost"
+port = "5432"
+database = "josh"
+
+[connections.sqlite_example]
+protocol = "sqlite"
+database = "./sqlite_test.db"
+
