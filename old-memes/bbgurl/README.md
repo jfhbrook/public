@@ -1,6 +1,6 @@
 # bbgurl
 
-a command line http client built on top of [udici](https://npm.im/udici).
+a command line http client built on top of [undici](https://npm.im/undici).
 
 ## install
 
@@ -61,16 +61,16 @@ here's the current output of the help, which I think is uncharacteristically
 comprehensive:
 
 ```
-[♥] bbgurl: a cli http client using udici
+[♥] bbgurl: a cli http client using undici
 [♥] 
 [♥] USAGE: bbgurl [URL]
 [♥] 
-[♥] make an HTTP request using udici.request.
+[♥] make an HTTP request using undici.request.
 [♥] 
 [♥] most undici options are bled straight through the args, using conventions
 [♥] from the optimist and minimist libraries.
 [♥] 
-[♥] for more information on udici, see: https://npm.im/udici
+[♥] for more information on undici, see: https://npm.im/undici
 [♥] 
 [♥] OPTIONS:
 [♥]     --help                   print this message.

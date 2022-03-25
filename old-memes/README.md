@@ -17,22 +17,20 @@ more additions over the coming months.
 * [@jfhbrook/http-server-request-ip](./http-server-request-ip) - get the client ip from an http server request, respecting x-forwarded-for headers
 * [@jfhbrook/logref](./logref) - my implementation of `process.logging`
 * [pickleback](https://github.com/jfhbrook/pickleback) - my personal fork of hapi/shot
+* [@jfhbrook/prompt](./prompt) - a prompting library
 * [safe-url](./safe-url) - strip creds from urls before printing
 
-### wrappers, clients and bindings
+### clients and bindings
 
-* [bbgurl](./bbgurl) - a cli http client using udici
 * [@jfhbrook/pandoc](./pandoc) - my wrapper for pandoc
-* [@jfhbrook/viu](./viu) - a distribution and wrapper for [viu](https://crates.io/crates/viu)
 
 ### cli tools
 
+* [bbgurl](./bbgurl) - a cli http client using udici
+* [exercise-bike](./exercise-bike) - a command line interface for nunjucks
 * [licenseify](./licenseify) - generate/maintain license info for new projects
 * [@jfhbrook/npm-link](./npm-link) - a targeted and direct alternative to npm link
-
-### terminal stuff
-
-* [@jfhbrook/prompt](./prompt) - a prompting library
+* [@jfhbrook/viu](./viu) - a distribution and wrapper for [viu](https://crates.io/crates/viu)
 
 ### math stuff
 

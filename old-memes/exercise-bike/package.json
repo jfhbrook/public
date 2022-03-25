@@ -1,0 +1,38 @@
+{
+  "name": "exercise-bike",
+  "version": "2.0.0",
+  "description": "a command line interface for nunjucks",
+  "bin": {
+    "exercise-bike": "exb",
+    "exb": "exb"
+  },
+  "dependencies": {
+    "concat-stream": "~1.0.0",
+    "minimist": "^1.2.6",
+    "nunjucks": "^3.2.3"
+  },
+  "scripts": {
+    "test": "cat ./input.html.njk | ./exb :stdin: --title hello --message world > output.html && cat output.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jfhbrook/public.git"
+  },
+  "keywords": [
+    "nunjucks",
+    "template",
+    "cli",
+    "commandline",
+    "bash",
+    "shell",
+    "script"
+  ],
+  "author": "Josh Holbrook",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jfhbrook/public/issues"
+  },
+  "homepage": "https://github.com/jfhbrook/public#readme",
+  "main": "index.js",
+  "devDependencies": {}
+}

@@ -1,0 +1,104 @@
+#!/usr/bin/env node
+
+const fs = require('fs/promises');
+
+const Handlebars = require('handlebars');
+const concat = require('concat-stream');
+const minimist = require('minimist');
+const nunjucks = require('nunjucks');
+
+const HELP = `exb: a command line interface for nunjucks
+
+USAGE: exb [INPUT] <OUTPUT>
+
+where INPUT and OUTPUT are file paths. If INPUT is the value ':stdin:',
+input will be read from stdin. If no output is specified, it will be logged
+to the console.
+
+Options:
+    --autoescape    configure nunjucks to use autoescape.
+
+    --{NAME} VALUE  define a variable to pass to nunjucks. if the value starts
+                    with a '@', exb will treat it as a file. if the value
+                    is ':stdin:', exb will populate the variable with the
+                    value of stdin. if the value is valid JSON, it will be
+                    parsed before getting passed to nunjucks.
+`;
+
+async function parseArgs(argv) {
+  const opts = minimist(argv, {
+    boolean: [
+      'help',
+      'autoescape'
+    ],
+    alias: {
+      'help': 'h'
+    },
+    defaults: {
+      autoescape: false
+    }
+  });
+
+  if (opts.help) {
+    console.log(HELP);
+    process.exit(0);
+  }
+
+  let input = opts._.shift();
+  const output = opts._.length ? opts._.shift() : null;
+  return [ input, output, opts ];
+}
+
+async function main() {
+  const [ input, output, opts ] = await parseArgs(process.argv.slice(2));
+
+  let stdin = null;
+
+  if (input === ":stdin:" || Object.values(opts).some(value => value === ":stdin:")) {
+    stdin = await new Promise((resolve, reject) => {
+      process.stdin.pipe(concat((buff) => {
+        _stdin = buff.toString('utf8');
+        resolve(_stdin);
+      }));
+    });
+  }
+
+  let template = null;
+
+  // Load any streams we need
+  if (input === ":stdin:") {
+    template = stdin;
+  } else {
+    template = await fs.readFile(input, 'utf8');
+  }
+
+  for ([name, value] of Object.entries(opts)) {
+    if (typeof value === 'string') {
+      if (value[0] === '@') {
+        opts[name] = await fs.readFile(value.slice(1));
+      } else if (value === ":stdin:") {
+        opts[name] = stdin;
+      }
+    }
+
+    try {
+      const obj = JSON.parse(value);
+      opts[name] = obj;
+    } catch (err) {}
+  }
+
+  nunjucks.configure({ autoescape: opts.autoescape })
+
+  const rendered = nunjucks.renderString(template, opts);
+
+  if (!output) {
+    console.log(rendered);
+    return;
+  }
+
+  await fs.writeFile(output, rendered);
+}
+
+if (require.main) {
+  main();
+}

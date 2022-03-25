@@ -1,7 +1,9 @@
 {
   "name": "old-memes",
   "workspaces": [
+    "bbgurl",
     "clf-parser",
+    "exercise-bike",
     "hoarders",
     "pickleback",
     "fake-progress-not-frozen",
