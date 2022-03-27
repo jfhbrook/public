@@ -37,3 +37,6 @@
 [submodule "old-memes/hoarders"]
 	path = old-memes/hoarders
 	url = git@github.com:jfhbrook/hoarders.git
+[submodule "old-memes/types-galore"]
+	path = old-memes/types-galore
+	url = git@github.com:jfhbrook/types-galore.git
