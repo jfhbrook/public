@@ -6,6 +6,7 @@
     "exercise-bike",
     "hoarders",
     "pickleback",
+    "pickleback-types",
     "fake-progress-not-frozen",
     "hoarders",
     "http-server-request-accept",
@@ -25,9 +26,10 @@
     "viu"
   ],
   "scripts": {
-    "pickleback": "node ./pickleback.js"
+    "pickleback": "just update-pickleback"
   },
   "devDependencies": {
+    "@types/shot": "^4.0.1",
     "minimist": "^1.2.5"
   },
   "dependencies": {

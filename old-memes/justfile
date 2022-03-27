@@ -1,0 +1,75 @@
+set dotenv-load := true
+
+list:
+  @just --list
+
+update-pickleback:
+  @just git-set-remote-url './pickleback' 'upstream' 'git@github.com:hapijs/shot.git'
+  @just update-fork ./pickleback upstream master origin patches
+
+update-pickleback-types:
+  @just update-types ./types-galore origin base main shot pickleback
+
+# top-level lifecycle commands, basically
+
+update-fork REPO_HOME UPSTREAM_REMOTE UPSTREAM_BRANCH PATCH_REMOTE PATCH_BRANCH:
+  @just git-pull-fast-forward '{{ REPO_HOME }}' '{{ UPSTREAM_REMOTE }}' '{{ UPSTREAM_BRANCH }}'
+  @just git-push '{{ REPO_HOME }}' '{{ UPSTREAM_REMOTE }}' '{{ UPSTREAM_BRANCH }}'
+  @just git-pull-fast-forward '{{ REPO_HOME }}' '{{ PATCH_REMOTE }}' '{{ PATCH_BRANCH }}'
+  @just git-rebase '{{ REPO_HOME }}' '{{ UPSTREAM_BRANCH }}' '{{ PATCH_BRANCH }}' || echo "after rebasing, run: just continue-update '{{ REPO_HOME }}' '{{ PATCH_REMOTE }}' '{{ PATCH_BRANCH }}'"
+  @just continue-update '{{ REPO_HOME }}' '{{ PATCH_REMOTE }}' '{{ PATCH_BRANCH }}'
+
+continue-update REPO_HOME PATCH_REMOTE PATCH_BRANCH:
+  @just git-push '{{ REPO_HOME }}''{{ PATCH_REMOTE }}' '{{ PATCH_BRANCH }}'
+  # This step may differ depending
+  @just npm-publish '{{ REPO_HOME }}'
+
+update-types REPO_HOME REMOTE UPSTREAM_BRANCH PATCH_BRANCH UPSTREAM_PKG PATCH_PKG:
+  @just git-pull-fast-forward '{{ REPO_HOME }}' '{{ REMOTE }}' '{{ UPSTREAM_BRANCH }}'
+
+  # this step is custom, the rest are identical, minus UPSTREAM_REMOTE and PATCH_REMOTE being the same
+  @just update-type-definitions '{{ REPO_HOME }}' '{{ UPSTREAM_BRANCH }}' '{{ UPSTREAM_PKG }}' '{{ PATCH_PKG }}'
+
+  @just git-push '{{ REPO_HOME }}' '{{ REMOTE }}' '{{ UPSTREAM_BRANCH }}'
+  @just git-pull-fast-forward '{{ REPO_HOME }}' '{{ REMOTE }}' '{{ PATCH_BRANCH }}'
+  @just git-rebase '{{ REPO_HOME }}' '{{ UPSTREAM_BRANCH }}' '{{ PATCH_BRANCH }}' || echo "after rebasing, run: just continue-update '{{ REPO_HOME }}' '{{ REMOTE }}' '{{ PATCH_BRANCH }}'"
+  @just continue-update '{{ REPO_HOME }}' '{{ REMOTE }}' '{{ PATCH_BRANCH }}'
+
+update-type-definitions REPO_HOME BRANCH UPSTREAM_PKG PATCH_PKG:
+  @just copy-type-definitions '{{ REPO_HOME }}' '{{ BRANCH }}' '{{ UPSTREAM_PKG }}' '{{ PATCH_PKG }}'
+  @just git-add-and-commit '{{ REPO_HOME }}' '{{ BRANCH }}' 'Pulled type definitions for {{ PATCH_PKG }} from DefinitelyTyped'
+
+# Base helper stuff
+
+git-set-remote-url REPO_HOME REMOTE_NAME REMOTE_URL:
+  cd '{{ REPO_HOME }}' && if [ -z "$(git config --get 'remote.{{ REMOTE_NAME }}.url')" ]; then git remote add '{{ REMOTE_NAME }}' '{{ REMOTE_URL }}'; else git remote set-url '{{ REMOTE_NAME }}' '{{ REMOTE_URL }}'; fi
+
+git-checkout REPO_HOME BRANCH:
+  cd '{{ REPO_HOME }}' && git checkout '{{ BRANCH }}'
+
+git-pull-fast-forward REPO_HOME REMOTE BRANCH:
+  @just git-checkout '{{ REPO_HOME }}' '{{ BRANCH }}'
+  cd '{{ REPO_HOME }}' && git pull --ff-only '{{ REMOTE }}' '{{ BRANCH }}'
+
+git-rebase REPO_HOME BASE_BRANCH REBASED_BRANCH:
+  @just git-checkout '{{ REPO_HOME }}' '{{ REBASED_BRANCH }}'
+  cd '{{ REPO_HOME }}' && git rebase '{{ BASE_BRANCH }}'
+
+git-add-and-commit REPO_HOME BRANCH MESSAGE:
+  @just git-checkout '{{ REPO_HOME }}' '{{ BRANCH }}'
+  cd '{{ REPO_HOME }}' && git add .
+  cd '{{ REPO_HOME }}' && git commit -m '{{ MESSAGE }}'
+
+git-push REPO_HOME BRANCH:
+  @just git-checkout '{{ REPO_HOME }}' '{{ BRANCH }}'
+  cd '{{ REPO_HOME }}' && git push origin '{{ BRANCH }}'
+
+npm-publish REPO_HOME BRANCH:
+  @just git-checkout '{{ BRANCH }}'
+  cd '{{ REPO_HOME }}' && npm publish
+
+copy-type-definitions REPO_HOME BRANCH UPSTREAM_PACKAGE_NAME PATCH_PACKAGE_NAME:
+  @just git-checkout '{{ REPO_HOME }}' '{{ BRANCH }}'
+  npm i --save-dev '@types/{{ UPSTREAM_PACKAGE_NAME }}@latest'
+  mkdir -p '{{ REPO_HOME }}/types'
+  cp -r './node_modules/@types/{{ UPSTREAM_PACKAGE_NAME }}' '{{ REPO_HOME }}/types/{{ PATCH_PACKAGE_NAME }}'
