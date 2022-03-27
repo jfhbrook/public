@@ -44,6 +44,10 @@ more additions over the coming months.
 * [clf-parser](./clf-parser) - parse clf formatted logs (public)
 * [@jfhbrook/prm](./prm) - package registry manager
 
+### typescript stuff
+
+* [types-galore](https://github.com/jfhbrook/types-galore) - a collection + tool for third-party type stubs
+
 ### funny jokes
 
 * [@jfhbrook/fake-progress-not-frozen](./fake-progress-not-frozen) - a fake progress bar
@@ -76,12 +80,6 @@ I've used mocha, vows (ugh) and node-tap at various points over the years.
 current tests won't be changing frameworks. tests that are working, are
 working. tests in new projects will probably be written in node-tap, but I'm
 open to changing my mind.
-
-## the weeds
-
-the `pickleback.js` script is being used to manage the fork syncing process
-for the pickleback module. in general, `npm run pickleback -- sync` should do
-what you want it to do.
 
 ## licensing
 
