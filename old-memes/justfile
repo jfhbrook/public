@@ -10,7 +10,12 @@ update-pickleback:
 update-pickleback-types:
   @just update-types ./types-galore origin base main shot pickleback
 
-# tasks for updating general forks and types, respectively
+# tasks for updating general forks and types, respectively. right now these
+# are practically the same task, but with minor modifications to support
+# various use cases.
+#
+# in a flextrek situation, if on environment variables loaded/set by the
+# flextrek runner.
 
 update-fork REPO_HOME UPSTREAM_REMOTE UPSTREAM_BRANCH PATCH_REMOTE PATCH_BRANCH:
   @just update-step-1 '{{ REPO_HOME }}' '{{ UPSTREAM_REMOTE }}' '{{ UPSTREAM_BRANCH }}'
@@ -25,13 +30,13 @@ update-types REPO_HOME REMOTE UPSTREAM_BRANCH PATCH_BRANCH UPSTREAM_PKG PATCH_PK
   @just update-step-1 '{{ REPO_HOME }}' '{{ REMOTE }}' '{{ UPSTREAM_BRANCH }}'
   @just populate-upstream-type-definitions '{{ REPO_HOME }}' '{{ UPSTREAM_BRANCH }}' '{{ UPSTREAM_PKG }}' '{{ PATCH_PKG }}'
   @just update-step-3 '{{ REPO_HOME }}' '{{ UPSTREAM_BRANCH }}' '{{ REMOTE }}' '{{ PATCH_BRANCH }}' "after rebasing, run: just continue-update-fork '{{ REPO_HOME }}' '{{ REMOTE }}' '{{ PATCH_BRANCH }}'"
-  @just continue-update-fork '{{ REPO_HOME }}' '{{ REMOTE }}' '{{ PATCH_BRANCH }}'
+  @just continue-update-types '{{ REPO_HOME }}' '{{ REMOTE }}' '{{ PATCH_BRANCH }}'
 
 continue-update-types REPO_HOME REMOTE PATCH_BRANCH:
   @just update-step-4 '{{ REPO_HOME }}' '{{ REMOTE }}' '{{ PATCH_BRANCH }}'
   @just npm-publish '{{ REPO_HOME }}' '{{ PATCH_BRANCH }}'
 
-# general syncing steps
+# syncing steps:
 
 # step 1: pull upstream remote branch
 update-step-1 REPO_HOME UPSTREAM_REMOTE UPSTREAM_BRANCH:
@@ -45,9 +50,13 @@ update-step-3 REPO_HOME UPSTREAM_BRANCH PATCH_REMOTE PATCH_BRANCH FAILURE_MESSAG
   @just git-pull-fast-forward '{{ REPO_HOME }}' '{{ PATCH_REMOTE }}' '{{ PATCH_BRANCH }}'
   @just git-rebase '{{ REPO_HOME }}' '{{ UPSTREAM_BRANCH }}' '{{ PATCH_BRANCH }}' || echo '{{ FAILURE_MESSAGE }}'
 
-# step 3: push changes
+# step 4: push changes
 update-step-4 REPO_HOME PATCH_REMOTE PATCH_BRANCH:
   @just git-push '{{ REPO_HOME }}' '{{ PATCH_REMOTE }}' '{{ PATCH_BRANCH }}'
+
+# step 5: that's on you
+
+# helpers
 
 git-set-remote-url REPO_HOME REMOTE_NAME REMOTE_URL:
   cd '{{ REPO_HOME }}' && if [ -z "$(git config --get 'remote.{{ REMOTE_NAME }}.url')" ]; then git remote add '{{ REMOTE_NAME }}' '{{ REMOTE_URL }}'; else git remote set-url '{{ REMOTE_NAME }}' '{{ REMOTE_URL }}'; fi
@@ -79,6 +88,19 @@ npm-publish REPO_HOME BRANCH:
 populate-upstream-type-definitions REPO_HOME BRANCH UPSTREAM_PKG PATCH_PKG:
   @just git-checkout '{{ REPO_HOME }}' '{{ BRANCH }}'
   npm i --save-dev '@types/{{ UPSTREAM_PKG }}@latest'
-  mkdir -p '{{ REPO_HOME }}/types'
-  cp -r './node_modules/@types/{{ UPSTREAM_PKG }}' '{{ REPO_HOME }}/types/{{ PATCH_PKG }}'
+  mkdir -p '{{ REPO_HOME }}/types/{{ PATCH_PKG }}'
+  cp -r './node_modules/@types/{{ UPSTREAM_PKG }}/*' '{{ REPO_HOME }}/types/{{ PATCH_PKG }}/'
+  @just update-types-registry '{{ REPO_HOME }}' '{{ PATCH_PKG }}'
   @just git-add-and-commit '{{ REPO_HOME }}' '{{ BRANCH }}' 'Pulled type definitions for {{ PATCH_PKG }} from DefinitelyTyped'
+
+update-types-registry REPO_HOME PATCH_PKG:
+  #!/usr/bin/env node
+
+  const { readFileSync, writeFileSync } = require('fs');
+
+  const json = JSON.parse(readFileSync('{{ REPO_HOME }}/registry.json'));
+
+  json['{{ PATCH_PKG }}'] = `${process.env.TYPES_REGISTRY_URL}/types/{{ PATCH_PKG }}/index.d.ts`
+
+  writeFileSync('{{ REPO_HOME }}/registry.json', JSON.stringify(json, null, 2));
+

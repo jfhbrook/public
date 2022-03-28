@@ -23,6 +23,7 @@
     "piecewise",
     "prompt",
     "safe-url",
+    "types-galore",
     "viu"
   ],
   "scripts": {
