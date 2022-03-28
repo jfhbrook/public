@@ -23,6 +23,7 @@ more additions over the coming months.
 ### clients and bindings
 
 * [@jfhbrook/pandoc](./pandoc) - my wrapper for pandoc
+* [@jfhbrook/just](./just) - a wrapper for [casey/just](https://github.com/casey/just)
 
 ### cli tools
 
