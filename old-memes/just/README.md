@@ -2,7 +2,15 @@
 
 a wrapper for [casey/just](https://github.com/casey/just).
 
-## example
+I like using just to coordinate running pipelines of *mostly* shell code,
+something node is mediocre for at best. but I sometimes want to use it from
+wrapper scripts, which may have more sophisticated options parsing, configure
+environments, and so on. other times, I want to have tighter integration
+between [gulp](https://gulpjs.com/) and just. this lil library helps.
+
+## examples
+
+### running a just recipe
 
 suppose you bundle a `justfile` in your node app:
 
@@ -31,7 +39,24 @@ const { Just } = require('@jfhbrook/just');
 })();
 ```
 
-there are other features, but this is the big one!
+### calling just recipes from gulp (beta)
+
+here's how you can get gulp-cli to run just recipes:
+
+```js
+const path = require('path');
+
+const { registry, series } = require('gulp');
+
+const { JustRegistry } = require('@jfhbrook/just/gulp');
+
+registry(new JustRegistry(path.join(__dirname, 'justfile')));
+
+exports.default = series('just:task');
+```
+
+I haven't figured out how to pass parameters to just in a reasonable way yet,
+so expect this to change quite a bit.
 
 ## install
 
