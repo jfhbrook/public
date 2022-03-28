@@ -1,11 +1,140 @@
 /*
  * router.ts: Base functionality for the router.
  *
+ * This code combines router.js from https://github.com/flatiron/director
+ * with the types from https://github.com/DefinitelyTyped/DefinitelyTyped
+ * and updated to use TypeScript.
+ *
  * (C) 2022 Josh Holbrook.
+ * (C) 2021 the DefinitelyTyped Contributors.
  * (C) 2011, Charlie Robbins, Paolo Fragomeni, & the Contributors.
- * MIT LICENSE
+ * MIT LICENSE - See NOTICE file for details.
  *
  */
+
+/** Utility type */
+export type BaseOrArray<T> = T | readonly T[];
+
+/**
+ * Route handler callback.
+ *
+ * In synchronous mode, the handler is called with all matched tokens as
+ * arguments. If a handler returns `false`, the router will skip all remaining
+ * handlers.
+ *
+ * In asynchronous mode, the last parameter is always a continuation function
+ * which accepts a single argument. If the continuation is called with a truthy
+ * value or `false`, the router will skip all remaining handlers.
+ */
+export type Handler<ThisType> = (this: ThisType, ...args: any[]) => any;
+
+export type RouteEntry<ThisType> = BaseOrArray<Handler<ThisType>>;
+
+export interface RoutingTable<ThisType> {
+    [route: string]: RouteEntry<ThisType> | RoutingTable<ThisType>;
+}
+
+export interface Resource<ThisType> {
+  [handlerName: string]: Handler<ThisType>
+}
+
+// This codebase detects the difference between a string and a RegExp by
+// seeing if the source property is defined
+type StringOrRegExp = (string & { source: undefined}) | RegExp;
+
+// This pattern - easily expressed in javascript as `matcher.source || matcher',
+// is tough to get right with typescript, so we do something more involved
+// here.
+function _matcherSource(matcher: StringOrRegExp): string {
+  if (matcher.source) {
+    return matcher.source;
+  }
+  if (typeof matcher !== 'string') {
+    throw new Error('assert: matcher should be a string');
+  }
+  return matcher;
+}
+
+/**
+ * Router options object
+ */
+export interface RoutingOptions<ThisType> {
+    /**
+     * Controls route recursion.
+     * Default is `false` client-side, and `"backward"` server-side.
+     */
+    recurse?: "forward" | "backward" | false | undefined;
+    /**
+     * If set to `false`, then trailing slashes (or other delimiters) are
+     * allowed in routes. Default is `true`.
+     */
+    strict?: boolean | undefined;
+    /**
+     * Controls async routing. Default is `false`.
+     */
+    async?: boolean | undefined;
+    /**
+     * Character separator between route fragments. Default is `/`.
+     */
+    delimiter?: string | undefined;
+    /**
+     * Function to call if no route is found on a call to `router.dispatch()`.
+     */
+    notfound?: Handler<{ method: string; path: string }> | undefined;
+    /**
+     * A function (or list of functions) to call on every call to
+     * `router.dispatch()` when a route is found.
+     */
+    on?: RouteEntry<ThisType> | undefined;
+    /**
+     *  A function (or list of functions) to call before every call to
+     * `router.dispatch()` when a route is found.
+     */
+    before?: RouteEntry<ThisType> | undefined;
+
+    // Client-only options
+
+    /**
+     * (_Client Only_)
+     * An object to which string-based routes will be bound. This can be
+     * especially useful for late-binding to route functions (such as async
+     * client-side requires).
+     */
+    resource?: Resource<ThisType> | undefined;
+
+    /**
+     * (_Client Only_)
+     * A function (or list of functions) to call when a given route is no longer
+     * the active route.
+     */
+    after?: RouteEntry<ThisType> | undefined;
+    /**
+     * (_Client Only_)
+     * If set to `true` and client supports `pushState()`, then uses HTML5
+     * History API instead of hash fragments.
+     */
+    html5history?: boolean | undefined;
+    /**
+     * (_Client Only_)
+     * If `html5history` is enabled, the route handler by default is executed
+     * upon `Router.init()` since with real URIs the router can not know if it
+     * should call a route handler or not. Setting this to `false` disables the
+     * route handler initial execution.
+     */
+    run_handler_in_init?: boolean | undefined;
+    /**
+     * (_Client Only_)
+     * If `html5history` is enabled, the `window.location` hash by default is
+     * converted to a route upon `Router.init()` since with canonical URIs the
+     * router can not know if it should convert the hash to a route or not.
+     * Setting this to `false` disables the hash conversion on router
+     * initialisation.
+     */
+    convert_hash_in_init?: boolean | undefined;
+}
+
+// TODO: typescript is gonna be REAL mad that the cli router doesn't conform
+// to Router's interface lmao
 
 const QUERY_SEPARATOR = /\?.*/;
 
@@ -149,23 +278,22 @@ function regifyString(str: string, params: any): string {
 //
 // ### Fix unterminated RegExp groups in routes.
 //
-function terminator(routes: string[], delimiter: string, start: string, stop: string): string[] {
-  var last = 0,
-      left = 0,
-      right = 0,
-      start = (start || '(').toString(),
-      stop = (stop || ')').toString(),
-      i;
+function terminator(routes: string[], delimiter: string, start?: string | number, stop?: string | number): string[] {
+  let last = 0;
+  let left = 0;
+  let right = 0;
+  const _start: string = (start || '(').toString();
+  const _stop: string = (stop || ')').toString();
 
-  for (i = 0; i < routes.length; i++) {
+  for (let i = 0; i < routes.length; i++) {
     var chunk = routes[i];
 
-    if ((chunk.indexOf(start, last) > chunk.indexOf(stop, last)) ||
-        (~chunk.indexOf(start, last) && !~chunk.indexOf(stop, last)) ||
-        (!~chunk.indexOf(start, last) && ~chunk.indexOf(stop, last))) {
+    if ((chunk.indexOf(_start, last) > chunk.indexOf(_stop, last)) ||
+        (~chunk.indexOf(_start, last) && !~chunk.indexOf(_stop, last)) ||
+        (!~chunk.indexOf(_start, last) && ~chunk.indexOf(_stop, last))) {
 
-      left = chunk.indexOf(start, last);
-      right = chunk.indexOf(stop, last);
+      left = chunk.indexOf(_start, last);
+      right = chunk.indexOf(_stop, last);
 
       if ((~left && !~right) || (!~left && ~right)) {
         var tmp = routes.slice(0, (i || 1) + 1).join(delimiter);
@@ -182,8 +310,27 @@ function terminator(routes: string[], delimiter: string, start: string, stop: st
 
   return routes;
 }
+/**
+ * The return type of Router._getConfig, which gets mixed in with the instance
+ */
+export interface RoutingConfig<ThisType> {
+    recurse: "forward" | "backward" | false;
+    strict: boolean;
+    async_: boolean;
+    delimiter: string;
+    notfound: Handler<{ method: string; path: string }> | null;
+    resource: Resource<ThisType>;
+    run_in_init: boolean;
+    convert_hash_in_init: boolean;
+    every: Every<ThisType>;
+    history?: boolean;
+}
 
-
+interface Every<ThisType> {
+  before: RouteEntry<ThisType> | null;
+  after: RouteEntry<ThisType> | null;
+  on: RouteEntry<ThisType> | null;
+}
 
 //
 // ### class Router (routes)
@@ -191,23 +338,107 @@ function terminator(routes: string[], delimiter: string, start: string, stop: st
 // The Router object class responsible for building and dispatching from a
 // given routing table.
 //
-class Router {
+export class Router {
   params: Record<string, any>;
   routes: Record<string, any>;
   methods: string[];
   scope: any[];
-  private _methods: any;
-  
+  private _methods: Record<string, boolean>;
+  historySupport?: boolean;
+  private _invoked: boolean;
 
-  constructor (routes: Record<string, any>) {
+  recurse: "forward" | "backward" | false;
+  async_: boolean;
+  delimiter: string;
+  strict: boolean;
+  notfound: Handler<{ method: string; path: string }> | null;
+  resource: Resource<Router>;
+  history?: boolean;
+  run_in_init: boolean;
+  convert_hash_in_init: boolean;
+  every: Every<Router>;
+
+
+  constructor (routes: RoutingTable<Router> = {}) {
     this.params   = {};
     this.routes   = {};
     this.methods  = ['on', 'after', 'before'];
     this.scope    = [];
     this._methods = {};
+    this._invoked = false;
 
-    this.configure();
-    this.mount(routes || {});
+    // TODO: This is repeated in the _getConfig and configure() routes in
+    // order to make typescript happy. Is there an actual use case for calling
+    // configure() after the fact? or can we delete that method?
+    const {
+      recurse,
+      async_,
+      delimiter,
+      strict,
+      notfound,
+      resource,
+      history,
+      run_in_init,
+      convert_hash_in_init,
+      every,
+    } = this._getConfig();
+
+    this._initMethods()
+    this.recurse = recurse;
+    this.async_ = async_;
+    this.delimiter = delimiter;
+    this.strict = strict;
+    this.notfound = notfound;
+    this.resource = resource;
+    this.history = history;
+    this.run_in_init = run_in_init;
+    this.convert_hash_in_init = convert_hash_in_init;
+    this.every = every;
+
+    this.mount(routes);
+  }
+
+  private _getConfig(options: RoutingOptions<Router> = {}): RoutingConfig<Router> {
+    const recurse: 'forward' | 'backward' | false   = typeof options.recurse === 'undefined' ? this.recurse || false : options.recurse;
+    const async_: boolean     = options.async     || false;
+    const delimiter: string  = options.delimiter || '\/';
+    const strict: boolean    = typeof options.strict === 'undefined' ? true : options.strict;
+    const notfound  = options.notfound || null;
+    const resource  = options.resource || {};
+
+    // Client only, but browser.js does not include a super implementation
+    const history: boolean     = (options.html5history && this.historySupport) || false;
+    const run_in_init: boolean = (this.history === true && options.run_handler_in_init !== false);
+    const convert_hash_in_init: boolean = (this.history === true && options.convert_hash_in_init !== false);
+
+    //
+    // TODO: Global once
+    //
+    const every: Every<Router> = {
+      after: options.after || null,
+      before: options.before || null,
+      on: options.on || null
+    };
+
+    return {
+      recurse,
+      async_,
+      delimiter,
+      strict,
+      notfound,
+      resource,
+      history,
+      run_in_init,
+      convert_hash_in_init,
+      every,
+      history
+    };
+  }
+
+  private _initMethods(): void {
+    for (const i = 0; i < this.methods.length; i++) {
+      this._methods[this.methods[i]] = true;
+    }
   }
 
   //
@@ -215,33 +446,31 @@ class Router {
   // #### @options {Object} **Optional** Options to configure this instance with
   // Configures this instance with the specified `options`.
   //
-  configure(options: any) {
-    options = options || {};
+  configure(options?: RoutingOptions<Router>) {
+    const {
+      recurse,
+      async_,
+      delimiter,
+      strict,
+      notfound,
+      resource,
+      history,
+      run_in_init,
+      convert_hash_in_init,
+      every,
+    } = this._getConfig(options);
 
-    for (var i = 0; i < this.methods.length; i++) {
-      this._methods[this.methods[i]] = true;
-    }
-
-    this.recurse   = typeof options.recurse === 'undefined' ? this.recurse || false : options.recurse;
-    this.async     = options.async     || false;
-    this.delimiter = options.delimiter || '\/';
-    this.strict    = typeof options.strict === 'undefined' ? true : options.strict;
-    this.notfound  = options.notfound;
-    this.resource  = options.resource;
-
-    // Client only, but browser.js does not include a super implementation
-    this.history     = (options.html5history && this.historySupport) || false;
-    this.run_in_init = (this.history === true && options.run_handler_in_init !== false);
-    this.convert_hash_in_init = (this.history === true && options.convert_hash_in_init !== false);
-
-    //
-    // TODO: Global once
-    //
-    this.every = {
-      after: options.after || null,
-      before: options.before || null,
-      on: options.on || null
-    };
+    this._initMethods()
+    this.recurse = recurse;
+    this.async_ = async_;
+    this.delimiter = delimiter;
+    this.strict = strict;
+    this.notfound = notfound;
+    this.resource = resource;
+    this.history = history;
+    this.run_in_init = run_in_init;
+    this.convert_hash_in_init = convert_hash_in_init;
+    this.every = every;
 
     return this;
   }
@@ -255,14 +484,14 @@ class Router {
   // have a common regular expression throughout your code base which
   // you wish to be more DRY.
   //
-  param(token, matcher) {
+  param(token: string, matcher: StringOrRegExp) {
     if (token[0] !== ':') {
       token = ':' + token;
     }
 
     var compiled = new RegExp(token, 'g');
-    this.params[token] = function (str) {
-      return str.replace(compiled, matcher.source || matcher);
+    this.params[token] = function (str: string) {
+      return str.replace(compiled, _matcherSource(matcher));
     };
     return this;
   }
@@ -275,18 +504,18 @@ class Router {
   // Adds a new `route` to this instance for the specified `method`
   // and `path`.
   //
-  on(method, path, route) {
-    var self = this;
+  on(path: string, route: BaseOrArray<Handler<Router>>): void
+  on(method: string, path: BaseOrArray<string>, route: BaseOrArray<Handler<Router>>): void
+  on(_method: string, _path: BaseOrArray<string> | BaseOrArray<Handler<Router>>, _route?: BaseOrArray<Handler<Router>>): void {
+    const self = this;
 
-    if (!route && typeof path == 'function') {
-      //
-      // If only two arguments are supplied then assume this
-      // `route` was meant to be a generic `on`.
-      //
-      route = path;
-      path = method;
-      method = 'on';
-    }
+    // SHENANIGANS AFOOT! Typescript is cranky about a ton of things here.
+    // The "right answer" would probably be to fix the type signature, but
+    // this is close enough for now.
+    const hasShortSignature = !_route && typeof _path === 'function';
+    let route = <BaseOrArray<Handler<Router>>>(hasShortSignature ? _path : _route);
+    let path = <BaseOrArray<string>>(hasShortSignature ? _method : _path);
+    const method: string = hasShortSignature ? _method : 'on';
 
     if (Array.isArray(path)) {
       return path.forEach(function(p) {
@@ -294,8 +523,15 @@ class Router {
       });
     }
 
-    if (path.source) {
-      path = path.source.replace(/\\\//ig, '/');
+    if (path instanceof Array) {
+      throw new Error('assert: path is a string');
+    }
+
+    // TODO: What is getting pass in here??
+    const source: string | null = (<any>path).source || null;
+
+    if (source) {
+      path = source.replace(/\\\//ig, '/');
     }
 
     if (Array.isArray(method)) {
@@ -307,14 +543,14 @@ class Router {
     //
     // ### Split the route up by the delimiter.
     //
-    path = path.split(new RegExp(this.delimiter));
+    let split = path.split(new RegExp(this.delimiter));
 
     //
     // ### Fix unterminated groups. Fixes #59
     //
-    path = terminator(path, this.delimiter);
+    split = terminator(split, this.delimiter);
 
-    this.insert(method, this.scope.concat(path), route);
+    this.insert(method, this.scope.concat(split), route);
   }
 
   //
@@ -323,27 +559,26 @@ class Router {
   // #### @routesFn {function} Function to evaluate in the new scope
   // Evalutes the `routesFn` in the given path scope.
   //
-  path(path, routesFn) {
-    var self = this,
-        length = this.scope.length;
+  path(_path: StringOrRegExp, routesFn: Handler<Router>) {
+    let length = this.scope.length;
 
-    if (path.source) {
-      path = path.source.replace(/\\\//ig, '/');
-    }
+    // TODO: refactor _matcherSource?
+    const path = <string>(_path.source ? _path.source.replace(/\\\//ig, '/') : _path);
 
     //
     // ### Split the route up by the delimiter.
     //
-    path = path.split(new RegExp(this.delimiter));
+    let split = path.split(new RegExp(this.delimiter));
 
     //
     // ### Fix unterminated groups.
     //
-    path = terminator(path, this.delimiter);
+    split = terminator(split, this.delimiter);
     this.scope = this.scope.concat(path);
 
+    // TODO: lol!!
     routesFn.call(this, this);
-    this.scope.splice(length, path.length);
+    this.scope.splice(length, split.length);
   }
 
   //
@@ -355,11 +590,11 @@ class Router {
   // `method` and `path` in the core routing table then
   // invokes them based on settings in this instance.
   //
-  dispatch(method, path, callback) {
-    var self = this,
-        fns = this.traverse(method, path.replace(QUERY_SEPARATOR, ''), this.routes, ''),
-        invoked = this._invoked,
-        after;
+  dispatch(method: string, path: string, callback?: (err?: any) => any) {
+    const self = this;
+    const fns = this.traverse(method, path.replace(QUERY_SEPARATOR, ''), this.routes, '');
+    const invoked = this._invoked;
+    let after;
 
     this._invoked = true;
     if (!fns || fns.length === 0) {
