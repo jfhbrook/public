@@ -1,0 +1,9 @@
+set dotenv-load := false
+
+hello message:
+  echo "{{message}}"
+
+test:
+  npx gulp-cli
+
+task: (hello 'gulp')

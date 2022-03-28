@@ -1,0 +1,34 @@
+{
+  "name": "@jfhbrook/just",
+  "version": "1.0.0",
+  "description": "a wrapper for casey/just",
+  "main": "index.js",
+  "scripts": {
+    "test": "tap ./test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jfhbrook/public.git"
+  },
+  "keywords": [
+    "just",
+    "task",
+    "runner",
+    "rust",
+    "command",
+    "line",
+    "make"
+  ],
+  "author": "Josh Holbrook",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jfhbrook/public/issues"
+  },
+  "homepage": "https://github.com/jfhbrook/public#readme",
+  "devDependencies": {
+    "tap": "^16.0.1"
+  },
+  "tap": {
+    "check-coverage": false
+  }
+}
