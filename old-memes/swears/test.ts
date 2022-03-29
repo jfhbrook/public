@@ -1,5 +1,5 @@
 import { test } from 'tap';
-import { when } from '.';
+import { discuss } from '.';
 
 interface A {
   a: true;
@@ -10,7 +10,7 @@ interface B extends A {
 }
 
 test('a boring ol topic', async (assert) => {
-  const topic = when<A>(async () => {
+  const topic = discuss<A>(async () => {
     return { a: true };
   });
 
@@ -22,7 +22,7 @@ test('a boring ol topic', async (assert) => {
   });
 
   assert.test('can execute child swears', async (assert) => {
-    const spicierTopic = await topic.when<B>(async (a: A) => {
+    const spicierTopic = await topic.discuss<B>(async (a: A) => {
       // Doing a side effect to test that we create a new instance
       // every swear
       const ctx: B = <any>a;

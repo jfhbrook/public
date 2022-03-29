@@ -14,7 +14,7 @@ export class Topic<T> {
   constructor(private factory: Factory<T>) {
   }
 
-  async when<U>(fn: Scenario<T, U>): Promise<Topic<U>> {
+  async discuss<U>(fn: Scenario<T, U>): Promise<Topic<U>> {
     return new Topic(async ()  => {
       return fn(await this.factory());
     });
@@ -25,6 +25,6 @@ export class Topic<T> {
   }
 }
 
-export function when<T>(fn: Factory<T>) {
+export function discuss<T>(fn: Factory<T>) {
   return new Topic<T>(fn);
 }

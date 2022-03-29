@@ -24,10 +24,10 @@ that might look like this (loosely ported from the vows example):
 const { readFile } = require('fs/promises');
 
 const { test } = require('tap');
-const { when } = require('@jfhbrook/swears');
+const { describe } = require('@jfhbrook/swears');
 
 test('when we read a file', async (assert) => {
-  const topic = when(async () => {
+  const topic = describe(async () => {
     const file = await readFile('/tmp/fakefile');
   });
 
@@ -43,15 +43,15 @@ like vows, you can also make child topics:
 
 ```javascript
 const { test } = require('tap');
-const { when } = require('@jfhbrook/swears');
+const { describe } = require('@jfhbrook/swears');
 
 test('when Engaging with the Discourse, Online,,', async (test) => {
-  const topic = when(async () => {
+  const topic = describe(async () => {
     return { spiceLevel: 0 };
   });
 
   test('when the discourse gets rowdy', async (assert) => {
-    const spicierTopic = await topic.when(async (discourse) => {
+    const spicierTopic = await topic.describe(async (discourse) => {
       discourse.spiceLevel++;
       return discourse;
     });
