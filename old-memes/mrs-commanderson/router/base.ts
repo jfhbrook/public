@@ -141,7 +141,7 @@ const QUERY_SEPARATOR = /\?.*/;
 //
 // Helper function to turn flatten an array.
 //
-function _flatten<T>(arr: Array<Array<T>>): Array<T> {
+function _flatten<T>(arr: Array<BaseOrArray<T>>): Array<T> {
   var flat: Array<T> = [];
 
   for (var i = 0, n = arr.length; i < n; i++) {
@@ -346,6 +346,7 @@ export class Router {
   private _methods: Record<string, boolean>;
   historySupport?: boolean;
   private _invoked: boolean;
+  private last: RouteEntry<Router>[];
 
   recurse: "forward" | "backward" | false;
   async_: boolean;
@@ -366,6 +367,7 @@ export class Router {
     this.scope    = [];
     this._methods = {};
     this._invoked = false;
+    this.last = [];
 
     // TODO: This is repeated in the _getConfig and configure() routes in
     // order to make typescript happy. Is there an actual use case for calling
@@ -436,7 +438,7 @@ export class Router {
   }
 
   private _initMethods(): void {
-    for (const i = 0; i < this.methods.length; i++) {
+    for (let i = 0; i < this.methods.length; i++) {
       this._methods[this.methods[i]] = true;
     }
   }
@@ -592,7 +594,7 @@ export class Router {
   //
   dispatch(method: string, path: string, callback?: (err?: any) => any) {
     const self = this;
-    const fns = this.traverse(method, path.replace(QUERY_SEPARATOR, ''), this.routes, '');
+    let fns = this.traverse(method, path.replace(QUERY_SEPARATOR, ''), this.routes, '');
     const invoked = this._invoked;
     let after;
 
@@ -630,7 +632,7 @@ export class Router {
       : [this.last];
 
     if (after && after.length > 0 && invoked) {
-      if (this.async) {
+      if (this.async_) {
         this.invoke(after, this, updateAndInvoke);
       }
       else {
@@ -655,8 +657,8 @@ export class Router {
   // 2. Global on (if any)
   // 3. Matched functions from routing table (`['before', 'on'], ['before', 'on`], ...]`)
   //
-  runlist(fns) {
-    var runlist = this.every && this.every.before
+  runlist(fns: Array<Handler<Router>>) {
+    var runlist: RouteEntry<Router>[] = this.every && this.every.before
       ? [this.every.before].concat(_flatten(fns))
       : _flatten(fns);
 
@@ -664,6 +666,9 @@ export class Router {
       runlist.push(this.every.on);
     }
 
+    // TODO: The type required here is an Array which also has these fields -
+    // either optionally or through a cast. Are things passed to runlist
+    // definitely handlers? or RouteEntries?
     runlist.captures = fns.captures;
     runlist.source = fns.source;
     return runlist;
@@ -678,11 +683,12 @@ export class Router {
   // value of `this.async`. Each function must **not** return (or respond)
   // with false, or evaluation will short circuit.
   //
-  invoke(fns, thisArg, callback) {
+  invoke(fns: Array<Handler<Router>>, thisArg: Router, callback?: (err?: unknown) => any) {
     var self = this;
 
-    var apply;
-    if (this.async) {
+    var apply: AsyncIterator<BaseOrArray<Handler<Router>>> | undefined;
+
+    if (this.async_) {
       apply = function(fn, next){
         if (Array.isArray(fn)) {
           return _asyncEverySeries(fn, apply, next);
@@ -698,6 +704,7 @@ export class Router {
         //
 
         if (callback) {
+          // lmao JESUS
           callback.apply(thisArg, arguments);
         }
       });
@@ -729,20 +736,22 @@ export class Router {
   // specified `path` within `this.routes` looking for `method`
   // returning any `fns` that are found.
   //
-  traverse(method, path, routes, regexp, filter) {
-    var fns = [],
+  traverse(method: string, path: string, routes: RoutingTable<Router>, regexp: StringOrRegExp, filter?: (fn: any) => boolean) {
+    var fns: any[] = [],
         current,
         exact,
         match,
         next,
         that;
 
-    function filterRoutes(routes) {
+    function filterRoutes(routes: RoutingTable<Router>) {
       if (!filter) {
         return routes;
       }
 
-      function deepCopy(source) {
+      // TODO: This type annotation is extremely wrong - I think the actual
+      // data structure is, like, a Tree type?
+      function deepCopy<T>(source: T[]): T[] {
         var result = [];
         for (var i = 0; i < source.length; i++) {
           result[i] = Array.isArray(source[i]) ? deepCopy(source[i]) : source[i];
@@ -766,6 +775,7 @@ export class Router {
         }
       }
 
+      // these new function-y annotations!! geez
       var newRoutes = deepCopy(routes);
       newRoutes.matched = routes.matched;
       newRoutes.captures = routes.captures;
@@ -789,7 +799,7 @@ export class Router {
       return filterRoutes(next);
     }
 
-    for (var r in routes) {
+    for (let r in routes) {
       //
       // We dont have an exact match, lets explore the tree
       // in a depth-first, recursive, in-order manner where
@@ -904,12 +914,12 @@ export class Router {
   // this instance at the specified `path` within the `context` provided.
   // If no context is provided then `this.routes` will be used.
   //
-  insert(method, path, route, parent) {
-    var methodType,
-        parentType,
-        isArray,
-        nested,
-        part;
+  insert(method: string, path: string[], route: RouteEntry<Router>, parent?: RouteEntry<Router>[]) {
+    let methodType;
+    let parentType;
+    let isArray;
+    let nested;
+    let part;
 
     path = path.filter(function (p) {
       return p && p.length > 0;
@@ -995,19 +1005,20 @@ export class Router {
   // Extends this instance with simple helper methods to `this.on`
   // for each of the specified `methods`
   //
-  extend(methods) {
+  extend(methods: string[]) {
     var self = this,
         len = methods.length,
         i;
 
-    function extend(method) {
+    function extend(method: string) {
       self._methods[method] = true;
-      self[method] = function () {
-        var extra = arguments.length === 1
+      self[method] = function (...args) {
+        let extra = args.length === 1
           ? [method, '']
           : [method];
 
-        self.on.apply(self, extra.concat(Array.prototype.slice.call(arguments)));
+        // TODO: jesus christ
+        self.on.apply(self, extra.concat(Array.from(args)));
       };
     }
 
@@ -1029,16 +1040,14 @@ export class Router {
   //
   //    { 'foo': 'bar': function foobar() {} } }
   //
-  mount(routes, path) {
+  mount(routes: RoutingTable<Router>, path: BaseOrArray<string> = []) {
     if (!routes || typeof routes !== "object" || Array.isArray(routes)) {
       return;
     }
 
+    const _path = path instanceof Array ? path : path.split(self.delimiter);
+
     var self = this;
-    path = path || [];
-    if (!Array.isArray(path)) {
-      path = path.split(self.delimiter);
-    }
 
     function insertOrMount(route, local) {
       var rename = route,
@@ -1068,7 +1077,7 @@ export class Router {
 
     for (var route in routes) {
       if (routes.hasOwnProperty(route)) {
-        insertOrMount(route, path.slice(0));
+        insertOrMount(route, _path.slice(0));
       }
     }
   }
