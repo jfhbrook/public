@@ -8,36 +8,50 @@
  */
 
 import { test } from 'tap';
+import { discuss } from '@jfhbrook/swears';
 import { Router } from '../router';
 
 test('director/core/dispatch', async (assert) => {
   assert.test("An instance of director.Router", async (assert) => {
-    const matched: any = {};
-    matched['/'] = [];
-    matched['foo'] = [];
-    matched['f*'] = []
-
-    const router = new Router({
-      '/': {
-        before: function () { matched['/'].push('before /') },
-        on: function () { matched['/'].push('on /') },
-        after: function () { matched['/'].push('after /') }
-      },
-      '/foo': {
-        before: function () { matched.foo.push('before foo') },
-        on: function () { matched.foo.push('on foo') },
-        after: function () { matched.foo.push('after foo') },
-        '/bar': {
-          before: function () { matched.foo.push('before foo bar') },
-          on: function () { matched.foo.push('foo bar') },
-          after: function () { matched.foo.push('after foo bar') },
-          '/buzz': function () { matched.foo.push('foo bar buzz') }
-        }
-      },
-      '/f*': {
-        '/barbie': function () { matched['f*'].push('f* barbie') }
+    const routerTopic = discuss(async () => {
+      const matched = {
+        '/': [],
+        'foo': [],
+        'f*': []
       }
+
+      const router = new Router<typeof this>({
+        '/': {
+          before: async () => { matched['/'].push('before /') },
+          on: async () => { matched['/'].push('on /') },
+          after: async () => { matched['/'].push('after /') }
+        },
+        '/foo': {
+          before: async () => { matched.foo.push('before foo') },
+          on: async () => { matched.foo.push('on foo') },
+          after: async () => { matched.foo.push('after foo') },
+          '/bar': {
+            before: async () => { matched.foo.push('before foo bar') },
+            on: async () => { matched.foo.push('foo bar') },
+            after: async () => { matched.foo.push('after foo bar') },
+            '/buzz': async () { matched.foo.push('foo bar buzz') }
+          }
+        },
+        '/f*': {
+          '/barbie': async () => { matched['f*'].push('f* barbie') }
+        }
+      });
+
+      router.configure({
+        recurse: 'backward'
+      });
+
+      return {
+        matched,
+        router
+      };
     });
+
 
     /*
       matched = {};
@@ -54,73 +68,29 @@ test('director/core/dispatch', async (assert) => {
       });
      */
 
-    router.configure({
-      recurse: 'backward'
-    });
-
     assert.test("should have the correct routing table", async (assert) => {
-      assert.ok(router.routes.foo);
-      assert.ok(router.routes.foo.bar);
-      assert.ok(router.routes.foo.bar.buzz);
-      assert.isFunction(router.routes.foo.bar.buzz.on);
+      await routerTopic.swear(async ({ router }) => {
+        assert.ok(router.routes.foo);
+        assert.ok(router.routes.foo.bar);
+        assert.ok(router.routes.foo.bar.buzz);
+        assert.ok(router.routes.foo.bar.buzz.on);
+      });
     });
 
     assert.test("the dispatch() method", async (assert) => {
       assert.test("/", async (assert) => {
-        assert.ok(await router.dispatch('on', '/'));
-        assert.ok(await router.dispatch('on', '/'));
+        await routerTopic.swear(async ({ matched, router }) => {
+          assert.ok(await router.dispatch('on', '/'));
+          assert.ok(await router.dispatch('on', '/'));
 
-        assert.ok(matched['/'][0], 'before /');
-        assert.equal(matched['/'][1], 'on /');
-        assert.equal(matched['/'][2], 'after /');
+          assert.ok(matched['/'][0], 'before /');
+          assert.equal(matched['/'][1], 'on /');
+          assert.equal(matched['/'][2], 'after /');
+        });
       });
 
       assert.test("/foo/bar/buzz", async (assert) => {
-        assert.ok(await router.dispatch('on', '/foo/bar/buzz'));
-
-        assert.equal(matched.foo[0], 'foo bar buzz');
-        assert.equal(matched.foo[1], 'before foo bar');
-        assert.equal(matched.foo[2], 'foo bar');
-        assert.equal(matched.foo[3], 'before foo');
-        assert.equal(matched.foo[4], 'on foo');
-      });
-
-      assert.test("/foo/barbie", async (assert) => {
-        assert.ok(await router.dispatch('on', '/foo/barbie'));
-        assert.equal(matched['f*'][0], 'f* barbie');
-      });
-
-      assert.test("/foo/barbie/", async (assert) => {
-        assert.notOk(await router.dispatch('on', '/foo/barbie/'));
-      });
-
-      assert.test("/foo/BAD", async (assert) => {
-        assert.notOk(await router.dispatch('on', '/foo/BAD'));
-      });
-
-      assert.test("/bar/bar", function (assert) => {
-        assert.notOk(await router.dispatch('on', '/bar/bar'));
-      });
-      
-      assert.test("with the strict option disabled", async (assert) => {
-        // TODO: These "topics are actually running as before hooks to
-        // stand up a new fixture every time - this one builds on top of
-        // the prior fixture.
-        router.configure({
-          recurse: 'backward',
-          strict: false
-        });
-
-        assert.test("should have the proper configuration set", async (assert) => {
-          assert.notOk(router.strict);
-        });
-        
-        assert.test("/foo/barbie/", async (assert) => {
-          assert.ok(await router.dispatch('on', '/foo/barbie/'));
-          assert.equal(matched['f*'][0], 'f* barbie');
-        });
-
-        assert.test("/foo/bar/buzz", async (assert) => {
+        await routerTopic.swear(async ({ matched, router }) => {
           assert.ok(await router.dispatch('on', '/foo/bar/buzz'));
 
           assert.equal(matched.foo[0], 'foo bar buzz');
@@ -130,8 +100,70 @@ test('director/core/dispatch', async (assert) => {
           assert.equal(matched.foo[4], 'on foo');
         });
       });
+
+      assert.test("/foo/barbie", async (assert) => {
+        await routerTopic.swear(async ({ matched, router }) => {
+          assert.ok(await router.dispatch('on', '/foo/barbie'));
+          assert.equal(matched['f*'][0], 'f* barbie');
+        });
+      });
+
+      assert.test("/foo/barbie/", async (assert) => {
+        await routerTopic.swear(async ({ router }) => {
+          assert.notOk(await router.dispatch('on', '/foo/barbie/'));
+        });
+      });
+
+      assert.test("/foo/BAD", async (assert) => {
+        await routerTopic.swear(async ({ router }) => {
+          assert.notOk(await router.dispatch('on', '/foo/BAD'));
+        });
+      });
+
+      assert.test("/bar/bar", async (assert) => {
+        await routerTopic.swear(async ({ router }) => {
+          assert.notOk(await router.dispatch('on', '/bar/bar'));
+        });
+      });
+      
+      assert.test("with the strict option disabled", async (assert) => {
+        const nonStrictTopic = routerTopic.discuss(async ({ matched, router }) => {
+          router.configure({
+            recurse: 'backward',
+            strict: false
+          });
+
+          return { matched, router };
+        });
+
+        assert.test("should have the proper configuration set", async (assert) => {
+          await nonStrictTopic.swear(async ({router}) => {
+            assert.notOk(router.strict);
+          });
+        });
+        
+        assert.test("/foo/barbie/", async (assert) => {
+          await nonStrictTopic.swear(async ({ matched, router }) => {
+            assert.ok(await router.dispatch('on', '/foo/barbie/'));
+            assert.equal(matched['f*'][0], 'f* barbie');
+          });
+        });
+
+        assert.test("/foo/bar/buzz", async (assert) => {
+          await nonStrictTopic.swear(async ({ matched, router }) => {
+            assert.ok(await router.dispatch('on', '/foo/bar/buzz'));
+
+            assert.equal(matched.foo[0], 'foo bar buzz');
+            assert.equal(matched.foo[1], 'before foo bar');
+            assert.equal(matched.foo[2], 'foo bar');
+            assert.equal(matched.foo[3], 'before foo');
+            assert.equal(matched.foo[4], 'on foo');
+          });
+        });
+      });
     });
 
+    /*
     assert.skip("should have the correct routing table (old cli tests)", async (assert) => {
       assert.ok(router.routes.users);
       assert.ok(router.routes.users.create);
@@ -156,5 +188,6 @@ test('director/core/dispatch', async (assert) => {
         assert.notOk(await router.dispatch('on', 'still not here'));
       });
     });
+    */
   });
 });

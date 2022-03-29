@@ -12,10 +12,18 @@
  *
  */
 
-type PathLike = string | string[];
-
-interface FnProps {
+interface RouteProps<ThisType> {
+  captures?: null;
+  source?: string;
+  after?: Handler<ThisType>
 }
+
+interface PathProps {
+  captures?: null;
+  source?: string;
+}
+
+type Path = (string | string[]) & PathProps;
 
 
 /**
@@ -25,15 +33,15 @@ interface FnProps {
  * is awaited. If a handler returns `false`, the router will skip all remaining
  * handlers.
  */
-export type Fn<ThisType> = ((this: ThisType, ...args: any[]) => Promise<boolean>) & FnProps;
+export type Fn<ThisType> = ((this: ThisType, ...args: any[]) => Promise<boolean>) & RouteProps<ThisType>;
 
-// Sometimes we get lists of handlers
-interface RunListProps {
-}
+export type FnList<ThisType> = Array<Fn<ThisType>> & RouteProps<ThisType>;
 
-export type RunList<ThisType> = Array<Fn<ThisType>> & RunListProps;
+export type FnNode<ThisType> = FnList<ThisType> | Fn<ThisType>;
 
-export type Handler<ThisType> = RunList<ThisType> | Fn<ThisType>;
+export type RunList<ThisType> = Array<Handler<ThisType>> & RouteProps<ThisType>;
+
+export type Handler<ThisType> = FnList<ThisType> | Fn<ThisType>;
 
 
 export interface RoutingTable<ThisType> {
@@ -41,12 +49,14 @@ export interface RoutingTable<ThisType> {
 }
 
 export interface Resource<ThisType> {
-  [handlerName: string]: Handler<ThisType>
+  [handlerName: string]: Fn<ThisType>
 }
 
-// This codebase detects the difference between a string and a RegExp by
-// seeing if the source property is defined
-type StringOrRegExp = string | RegExp;
+interface MatcherProps {
+  source?: string
+}
+
+type Matcher = (string & MatcherProps) | (RegExp & MatcherProps);
 
 /**
  * Router options object
@@ -220,30 +230,32 @@ interface Every<ThisType> {
   on?: Handler<ThisType>;
 }
 
+type Filter<ThisType> = (fn: Fn<ThisType>) => boolean;
+
 //
 // ### class Router (routes)
 // #### @routes {Object} **Optional** Routing table for this instance.
 // The Router object class responsible for building and dispatching from a
 // given routing table.
 //
-export class Router {
+export class Router<ThisType> {
   params: Record<string, any>;
   routes: Record<string, any>;
   methods: string[];
   scope: any[];
   private _methods: Record<string, boolean>;
   private _invoked: boolean;
-  private last: Handler<Router>;
+  private last: Handler<ThisType>;
 
   recurse: "forward" | "backward" | false;
   delimiter: string;
   strict: boolean;
-  notfound: Handler<Router> | null;
-  resource: Resource<Router>;
-  every: Every<Router>;
+  notfound: Handler<ThisType> | null;
+  resource: Resource<ThisType>;
+  every: Every<ThisType>;
 
 
-  constructor (routes: RoutingTable<Router> = {}) {
+  constructor (routes: RoutingTable<ThisType> = {}) {
     this.params   = {};
     this.routes   = {};
     this.methods  = ['on', 'after', 'before'];
@@ -276,9 +288,9 @@ export class Router {
     this.mount(routes);
   }
 
-  private _getConfig(options: RoutingOptions<Router> = {}): RoutingConfig<Router> {
+  private _getConfig(options: RoutingOptions<ThisType> = {}): RoutingConfig<ThisType> {
     const recurse: 'forward' | 'backward' | false   = typeof options.recurse === 'undefined' ? this.recurse || false : options.recurse;
-    const delimiter: string  = options.delimiter || '\/';
+    const delimiter: string  = options.delimiter || '\\s';
     const strict: boolean    = typeof options.strict === 'undefined' ? true : options.strict;
     const notfound  = options.notfound || null;
     const resource  = options.resource || {};
@@ -286,7 +298,7 @@ export class Router {
     //
     // TODO: Global once
     //
-    const every: Every<Router> = {
+    const every: Every<ThisType> = {
       after: options.after,
       before: options.before,
       on: options.on
@@ -313,7 +325,7 @@ export class Router {
   // #### @options {Object} **Optional** Options to configure this instance with
   // Configures this instance with the specified `options`.
   //
-  configure(options?: RoutingOptions<Router>) {
+  configure(options?: RoutingOptions<ThisType>) {
     const {
       recurse,
       delimiter,
@@ -343,7 +355,7 @@ export class Router {
   // have a common regular expression throughout your code base which
   // you wish to be more DRY.
   //
-  param(token: string, matcher: StringOrRegExp) {
+  param(token: string, matcher: Matcher) {
     if (token[0] !== ':') {
       token = ':' + token;
     }
@@ -364,9 +376,9 @@ export class Router {
   // Adds a new `route` to this instance for the specified `method`
   // and `path`.
   //
-  on(path: string, route: Handler<Router>): void
-  on(method: string, path: PathLike, route: Handler<Router>): void
-  on(_method: string, _path: PathLike | Handler<Router>, _route?: Handler<Router>): void {
+  on(path: string, route: Handler<ThisType>): void
+  on(method: string, path: Path, route: Handler<ThisType>): void
+  on(_method: string, _path: Path | Handler<ThisType>, _route?: Handler<ThisType>): void {
     const self = this;
 
     //
@@ -377,8 +389,8 @@ export class Router {
     //
 
     let method: string = _method;
-    let path: PathLike = <PathLike>_path;
-    let route: Handler<Router> = <Handler<Router>>_route;
+    let path: Path = <Path>_path;
+    let route: Handler<ThisType> = <Handler<ThisType>>_route;
 
     if (!route && typeof path === 'function') {
       //
@@ -430,7 +442,7 @@ export class Router {
   // #### @routesFn {function} Function to evaluate in the new scope
   // Evalutes the `routesFn` in the given path scope.
   //
-  path(_path: StringOrRegExp, routesFn: Handler<Router>) {
+  path(_path: Matcher, routesFn: Fn<ThisType>) {
     let length = this.scope.length;
 
     // TODO: What is _path.source??
@@ -460,7 +472,14 @@ export class Router {
   // `method` and `path` in the core routing table then
   // invokes them based on settings in this instance.
   //
-  async dispatch(method: string, path: string) {
+  async dispatch(method: string, path: string, tty: ThisType) {
+    //
+    // Prepend a single space onto the path so that the traversal
+    // algorithm will recognize it. This is because we always assume
+    // that the `path` begins with `this.delimiter`.
+    //
+    path = ' ' + path;
+
     let fns = this.traverse(method, path.replace(QUERY_SEPARATOR, ''), this.routes, '');
     const invoked = this._invoked;
     let after;
@@ -469,7 +488,8 @@ export class Router {
     if (!fns || fns.length === 0) {
       this.last = [];
       if (typeof this.notfound === 'function') {
-        await this.invoke([this.notfound], { method: method, path: path });
+        // TODO: Do we really want "tty" to be the this type?
+        await this.invoke([this.notfound], tty);
       }
 
       return false;
@@ -481,7 +501,7 @@ export class Router {
 
     const updateAndInvoke = async () {
       this.last = fns.after;
-      await this.invoke(this.runlist(fns), this);
+      await this.invoke(this.runlist(fns), tty);
     }
 
     //
@@ -519,8 +539,9 @@ export class Router {
   // 2. Global on (if any)
   // 3. Matched functions from routing table (`['before', 'on'], ['before', 'on`], ...]`)
   //
-  runlist(fns: Array<Handler<Router>>) {
-    var runlist: RouteEntry<Router>[] = this.every && this.every.before
+  runlist(fns: FnList<Router>): RunList<Router> {
+    // So here, "every" is a Handler, so we'd have a List<Handler>, but fns is a list of fn's
+    const runlist: RunList<Router> = this.every && this.every.before
       ? [this.every.before].concat(fns.flat())
       : fns.flat();
 
@@ -543,7 +564,8 @@ export class Router {
   // Invokes the `fns` and awaits the results. Each function must **not**
   // return (or respond) with false, or evaluation will short circuit.
   //
-  async invoke(fns: Array<Handler<Router>>, thisArg: Router) {
+  async invoke(fns: FnList<Router>, thisArg: Router) {
+    const self = this;
     async function apply (fn) {
       if (Array.isArray(fn)) {
         for (let f of fn) {
@@ -559,6 +581,7 @@ export class Router {
     await apply(fns);
   }
 
+
   //
   // ### method traverse (method, path, routes, regexp)
   // #### @method {string} Method to find in the `routes` table.
@@ -570,31 +593,28 @@ export class Router {
   // specified `path` within `this.routes` looking for `method`
   // returning any `fns` that are found.
   //
-  traverse(method: string, path: string, routes: RoutingTable<Router>, regexp: StringOrRegExp, filter?: (fn: any) => boolean) {
-    var fns: any[] = [],
-        current,
-        exact,
-        match,
-        next,
-        that;
+  traverse(method: string, path: string, routes: RoutingTable<Router>, regexp: Matcher, filter?: (fn: any) => boolean): FnList<Router> {
+    let fns: any[] = [];
+    let current;
+    let exact;
+    let match;
+    let next;
 
     function filterRoutes(routes: RoutingTable<Router>) {
       if (!filter) {
         return routes;
       }
 
-      // TODO: This type annotation is extremely wrong - I think the actual
-      // data structure is, like, a Tree type?
-      function deepCopy<T>(source: T[]): T[] {
+      function deepCopy<T extends Array<any>>(source: T): T {
         var result = [];
         for (var i = 0; i < source.length; i++) {
           result[i] = Array.isArray(source[i]) ? deepCopy(source[i]) : source[i];
         }
-        return result;
+        return <T>result;
       }
 
-      function applyFilter(fns) {
-        for (var i = fns.length - 1; i >= 0; i--) {
+      function applyFilter(fns: FnNode<Router>[]) {
+        for (let i = fns.length - 1; i >= 0; i--) {
           if (Array.isArray(fns[i])) {
             applyFilter(fns[i]);
             if (fns[i].length === 0) {
@@ -602,7 +622,7 @@ export class Router {
             }
           }
           else {
-            if (!filter(fns[i])) {
+            if (!(<Filter>filter)(fns[i])) {
               fns.splice(i, 1);
             }
           }
@@ -748,7 +768,7 @@ export class Router {
   // this instance at the specified `path` within the `context` provided.
   // If no context is provided then `this.routes` will be used.
   //
-  insert(method: string, path: string[], route: RouteEntry<Router>, parent?: RouteEntry<Router>[]) {
+  insert(method: string, path: string[], route: Handler<Router>, parent?: Handler<Router>[]) {
     let methodType;
     let parentType;
     let isArray;
@@ -874,30 +894,28 @@ export class Router {
   //
   //    { 'foo': 'bar': function foobar() {} } }
   //
-  mount(routes: RoutingTable<Router>, path: BaseOrArray<string> = []) {
+  mount(routes: RoutingTable<ThisType>, path: Path = []) {
     if (!routes || typeof routes !== "object" || Array.isArray(routes)) {
       return;
     }
 
-    const _path = path instanceof Array ? path : path.split(self.delimiter);
+    const _path: string[] = path instanceof Array ? path : path.split(this.delimiter);
 
-    var self = this;
-
-    function insertOrMount(route, local) {
+    const insertOrMount = (route: string, local: string[]) => {
       var rename = route,
-          parts = route.split(self.delimiter),
+          parts = route.split(this.delimiter),
           routeType = typeof routes[route],
-          isRoute = parts[0] === "" || !self._methods[parts[0]],
+          isRoute = parts[0] === "" || !this._methods[parts[0]],
           event = isRoute ? "on" : rename;
 
       if (isRoute) {
-        rename = rename.slice((rename.match(new RegExp('^' + self.delimiter)) || [''])[0].length);
+        rename = rename.slice((rename.match(new RegExp('^' + this.delimiter)) || [''])[0].length);
         parts.shift();
       }
 
       if (isRoute && routeType === 'object' && !Array.isArray(routes[route])) {
         local = local.concat(parts);
-        self.mount(routes[route], local);
+        this.mount(routes[route], local);
         return;
       }
 
@@ -906,13 +924,11 @@ export class Router {
         local = terminator(local, self.delimiter);
       }
 
-      self.insert(event, local, routes[route]);
+      this.insert(event, local, routes[route]);
     }
 
-    for (var route in routes) {
-      if (routes.hasOwnProperty(route)) {
-        insertOrMount(route, _path.slice(0));
-      }
+    for (let route of Object.keys(routes)) {
+      insertOrMount(route, _path.slice(0));
     }
   }
 }

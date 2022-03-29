@@ -4,7 +4,7 @@
   "description": "command line app framework",
   "main": "index.js",
   "scripts": {
-    "test": "tests-of-the-sierra-madre"
+    "test": "tap ./test/*.js"
   },
   "repository": {
     "type": "git",
@@ -29,10 +29,13 @@
   "devDependencies": {
     "@types/director": "^1.2.1",
     "@types/dotenv": "^8.2.0",
-    "tests-of-the-sierra-madre": "^1.0.0",
+    "@types/tap": "^15.0.6",
+    "tap": "^16.0.1",
     "typescript": "^4.6.3"
   },
   "dependencies": {
+    "@jfhbrook/swears": "^1.0.1",
+    "@types/node": "^16.9.1",
     "director": "^1.2.8",
     "dotenv": "^16.0.0",
     "kenny-loggins": "^1.1.1",
