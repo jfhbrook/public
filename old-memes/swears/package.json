@@ -1,0 +1,29 @@
+{
+  "name": "@jfhbrook/swears",
+  "version": "1.0.0",
+  "description": "a fixture generator inspired by vows",
+  "main": "index.js",
+  "scripts": {
+    "test": "tap ./test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jfhbrook/public.git"
+  },
+  "keywords": [
+    "test",
+    "fixture",
+    "vows"
+  ],
+  "author": "Josh Holbrook",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jfhbrook/public/issues"
+  },
+  "homepage": "https://github.com/jfhbrook/public#readme",
+  "devDependencies": {
+    "@types/tap": "^15.0.6",
+    "tap": "^16.0.1",
+    "typescript": "^4.6.3"
+  }
+}
