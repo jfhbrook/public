@@ -15,7 +15,7 @@ vows structures its tests as **batches** of assertion suites executed against
 **topics**. these topics are effectively fixture generators, and the batches
 are effectively a group of tests that operate on the test's fixture.
 this is a structure common with behavior-driven development - 
-"given ,  and ".
+"given {{TOPIC}}, {{X}} and {{Y}}".
 
 vows is extremely opinionated about this test structure, and if your mental
 model for your tests doesn't map to BDD very well then you'll have a bad time.
@@ -45,45 +45,7 @@ ok - here's the [first vows example](https://github.com/vowsjs/vows#example)
 ported to use swears:
 
 ```javascript
-const fs = require('fs');
-const { open } = require('fs/promises');
-const { promisify } = require('util');
-const close = promisify(fs.close);
-const write = promisify(fs.write);
-
-const { test } = require('tap');
-const { discuss } = require('../');
-
-test('my first swears test', async (assert) => {
-  assert.test('when we open a file', async (assert) => {
-    const fileTopic = discuss(async () => {
-      const file = await open('/tmp/fakefile', 'w');
-      return file.fd;
-    }, async (file) => {
-      await close(file);
-    });
-
-    assert.test('it works', async (assert) => {
-      await fileTopic.swear(async (file) => {
-        assert.ok(file);
-      });
-    });
-
-    assert.test('and we write to the file', async (assert) => {
-      const writeTopic = fileTopic.discuss(async (file) => {
-        await write(file, "My dog has fleas\n");
-        return file
-      });
-
-      assert.test('it works', async (assert) => {
-        await writeTopic.swear(async (file) => {
-          assert.ok(file);
-        });
-      });
-    });
-  });
-});
-
+{{ fileExample }}
 ```
 
 this example first creates a parent topic by opening a file (with surprisingly
@@ -99,32 +61,7 @@ if you use typescript (like I do, on occasion), you might appreciate this
 example as well:
 
 ```typescript
-import { test } from 'tap';
-import { discuss } from '../';
-
-interface Discourse {
-  spiceLevel: number;
-}
-
-test('when engaging with the discourse', async (assert) => {
-  const topic = discuss<Discourse>(async () => {
-    return { spiceLevel: 0 };
-  });
-
-  assert.test('and the discourse gets rowdy', async (assert) => {
-    const spicierTopic = topic.discuss<Discourse>(async (discourse) => {
-      discourse.spiceLevel++;
-      return discourse;
-    });
-
-    assert.test('things get a little spicy', async (assert) => {
-      await spicierTopic.swear(async (discourse) => {
-        assert.equal(discourse.spiceLevel, 1);
-      });
-    });
-  });
-});
-
+{{ spicyExample }}
 ```
 
 scenario aside, this is very similar to the file example. Note that `discuss`

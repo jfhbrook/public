@@ -22,7 +22,7 @@ test('a boring ol topic', async (assert) => {
   });
 
   assert.test('can execute child swears', async (assert) => {
-    const spicierTopic = await topic.discuss<B>(async (a: A) => {
+    const spicierTopic = topic.discuss<B>(async (a: A) => {
       // Doing a side effect to test that we create a new instance
       // every swear
       const ctx: B = <any>a;

@@ -4,7 +4,10 @@
   "description": "a fixture generator inspired by vows",
   "main": "index.js",
   "scripts": {
-    "test": "tap ./test.js"
+    "docs": "exb ./README.md.njk ./README.md --fileExample @examples/file.js --spicyExample @examples/spicy.ts",
+    "test": "tap ./test.js ./examples/*.js",
+    "pretest": "tsc",
+    "prepublish": "npm run docs && tsc"
   },
   "repository": {
     "type": "git",
@@ -23,6 +26,7 @@
   "homepage": "https://github.com/jfhbrook/public#readme",
   "devDependencies": {
     "@types/tap": "^15.0.6",
+    "exercise-bike": "^2.0.0",
     "tap": "^16.0.1",
     "typescript": "^4.6.3"
   }

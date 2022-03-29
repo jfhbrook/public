@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tap_1 = require("tap");
 const _1 = require(".");
 (0, tap_1.test)('a boring ol topic', (assert) => __awaiter(void 0, void 0, void 0, function* () {
-    const topic = (0, _1.when)(() => __awaiter(void 0, void 0, void 0, function* () {
+    const topic = (0, _1.discuss)(() => __awaiter(void 0, void 0, void 0, function* () {
         return { a: true };
     }));
     assert.test('can execute swears', (assert) => __awaiter(void 0, void 0, void 0, function* () {
@@ -22,7 +22,7 @@ const _1 = require(".");
         }));
     }));
     assert.test('can execute child swears', (assert) => __awaiter(void 0, void 0, void 0, function* () {
-        const spicierTopic = yield topic.when((a) => __awaiter(void 0, void 0, void 0, function* () {
+        const spicierTopic = topic.discuss((a) => __awaiter(void 0, void 0, void 0, function* () {
             // Doing a side effect to test that we create a new instance
             // every swear
             const ctx = a;

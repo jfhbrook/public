@@ -9,26 +9,39 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.when = exports.Topic = void 0;
+exports.discuss = exports.Topic = void 0;
 class Topic {
-    constructor(factory) {
+    constructor(factory, teardown) {
         this.factory = factory;
+        this.teardown = teardown;
+        this.t = null;
     }
-    when(fn) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new Topic(() => __awaiter(this, void 0, void 0, function* () {
-                return fn(yield this.factory());
-            }));
-        });
+    discuss(scenario, teardown) {
+        return new Topic(() => __awaiter(this, void 0, void 0, function* () {
+            const t = yield this.factory();
+            this.t = t;
+            return scenario(t);
+        }), (u) => __awaiter(this, void 0, void 0, function* () {
+            if (teardown) {
+                yield teardown(u);
+            }
+            if (this.t && this.teardown) {
+                yield this.teardown(this.t);
+            }
+        }));
     }
     swear(fn) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield fn(yield this.factory());
+            const o = yield this.factory();
+            yield fn(o);
+            if (this.teardown) {
+                yield this.teardown(o);
+            }
         });
     }
 }
 exports.Topic = Topic;
-function when(fn) {
+function discuss(fn) {
     return new Topic(fn);
 }
-exports.when = when;
+exports.discuss = discuss;
