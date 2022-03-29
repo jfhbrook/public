@@ -18,15 +18,11 @@ export type BaseOrArray<T> = T | readonly T[];
 /**
  * Route handler callback.
  *
- * In synchronous mode, the handler is called with all matched tokens as
- * arguments. If a handler returns `false`, the router will skip all remaining
+ * The handler is called with all matched tokens as arguments and the result
+ * is awaited. If a handler returns `false`, the router will skip all remaining
  * handlers.
- *
- * In asynchronous mode, the last parameter is always a continuation function
- * which accepts a single argument. If the continuation is called with a truthy
- * value or `false`, the router will skip all remaining handlers.
  */
-export type Handler<ThisType> = (this: ThisType, ...args: any[]) => any;
+export type Handler<ThisType> = (this: ThisType, ...args: any[]) => Promise<boolean>;
 
 export type RouteEntry<ThisType> = BaseOrArray<Handler<ThisType>>;
 
@@ -70,10 +66,6 @@ export interface RoutingOptions<ThisType> {
      */
     strict?: boolean | undefined;
     /**
-     * Controls async routing. Default is `false`.
-     */
-    async?: boolean | undefined;
-    /**
      * Character separator between route fragments. Default is `/`.
      */
     delimiter?: string | undefined;
@@ -92,45 +84,11 @@ export interface RoutingOptions<ThisType> {
      */
     before?: RouteEntry<ThisType> | undefined;
 
-    // Client-only options
-
     /**
-     * (_Client Only_)
-     * An object to which string-based routes will be bound. This can be
-     * especially useful for late-binding to route functions (such as async
-     * client-side requires).
-     */
-    resource?: Resource<ThisType> | undefined;
-
-    /**
-     * (_Client Only_)
-     * A function (or list of functions) to call when a given route is no longer
-     * the active route.
+     * A function (or list of functions) to call after every call to
+     * `router.dispatch()` when a route is found.
      */
     after?: RouteEntry<ThisType> | undefined;
-    /**
-     * (_Client Only_)
-     * If set to `true` and client supports `pushState()`, then uses HTML5
-     * History API instead of hash fragments.
-     */
-    html5history?: boolean | undefined;
-    /**
-     * (_Client Only_)
-     * If `html5history` is enabled, the route handler by default is executed
-     * upon `Router.init()` since with real URIs the router can not know if it
-     * should call a route handler or not. Setting this to `false` disables the
-     * route handler initial execution.
-     */
-    run_handler_in_init?: boolean | undefined;
-    /**
-     * (_Client Only_)
-     * If `html5history` is enabled, the `window.location` hash by default is
-     * converted to a route upon `Router.init()` since with canonical URIs the
-     * router can not know if it should convert the hash to a route or not.
-     * Setting this to `false` disables the hash conversion on router
-     * initialisation.
-     */
-    convert_hash_in_init?: boolean | undefined;
 }
 
 // TODO: typescript is gonna be REAL mad that the cli router doesn't conform
@@ -149,59 +107,6 @@ function _flatten<T>(arr: Array<BaseOrArray<T>>): Array<T> {
   }
 
   return flat;
-}
-
-interface Iterator<T> {
-  (t: T, i: number, arr: T[]): boolean
-}
-
-//
-// Helper function for wrapping Array.every
-// in the browser.
-//
-function _every<T>(arr: T[], iterator: Iterator<T>): void {
-  for (var i = 0; i < arr.length; i += 1) {
-    if (iterator(arr[i], i, arr) === false) {
-      return;
-    }
-  }
-}
-
-interface AsyncCallback {
-  (err?: any): any;
-}
-
-interface AsyncIterator<T> {
-  (t: T, cb: AsyncCallback): any;
-}
-
-//
-// Helper function for performing an asynchronous every
-// in series in the browser and the server.
-//
-function _asyncEverySeries<T>(arr: T[], iterator: AsyncIterator<T>, callback: AsyncCallback): void {
-  if (!arr.length) {
-    return callback();
-  }
-
-  var completed = 0;
-  (function iterate() {
-    iterator(arr[completed], function (err) {
-      if (err || err === false) {
-        callback(err);
-        callback = function () {};
-      }
-      else {
-        completed += 1;
-        if (completed === arr.length) {
-          callback();
-        }
-        else {
-          iterate();
-        }
-      }
-    });
-  })();
 }
 
 //
@@ -239,16 +144,16 @@ function regifyString(str: string, params: any): string {
   let last = 0;
   let out = '';
 
-  while (matches = str.substr(last).match(/[^\w\d\- %@&]*\*[^\w\d\- %@&]*/)) {
+  while (matches = str.substring(last).match(/[^\w\d\- %@&]*\*[^\w\d\- %@&]*/)) {
     if (matches.index == null) {
       throw new Error('assert: matches.index should be defined');
     }
     last = matches.index + matches[0].length;
     matches[0] = matches[0].replace(/^\*/, '([_\.\(\)!\\ %@&a-zA-Z0-9-]+)');
-    out += str.substr(0, matches.index) + matches[0];
+    out += str.substring(0, matches.index) + matches[0];
   }
 
-  str = out += str.substr(last);
+  str = out += str.substring(last);
 
   let captures = str.match(/:([^\/]+)/ig);
   let capture;
@@ -267,7 +172,7 @@ function regifyString(str: string, params: any): string {
         if (!paramified) {
           throw new Error('assert: string should paramify');
         }
-        str = str.replace(capture, paramified));
+        str = str.replace(capture, paramified);
       }
     }
   }
@@ -310,20 +215,17 @@ function terminator(routes: string[], delimiter: string, start?: string | number
 
   return routes;
 }
+
 /**
  * The return type of Router._getConfig, which gets mixed in with the instance
  */
 export interface RoutingConfig<ThisType> {
     recurse: "forward" | "backward" | false;
     strict: boolean;
-    async_: boolean;
     delimiter: string;
     notfound: Handler<{ method: string; path: string }> | null;
     resource: Resource<ThisType>;
-    run_in_init: boolean;
-    convert_hash_in_init: boolean;
     every: Every<ThisType>;
-    history?: boolean;
 }
 
 interface Every<ThisType> {
@@ -344,19 +246,14 @@ export class Router {
   methods: string[];
   scope: any[];
   private _methods: Record<string, boolean>;
-  historySupport?: boolean;
   private _invoked: boolean;
   private last: RouteEntry<Router>[];
 
   recurse: "forward" | "backward" | false;
-  async_: boolean;
   delimiter: string;
   strict: boolean;
   notfound: Handler<{ method: string; path: string }> | null;
   resource: Resource<Router>;
-  history?: boolean;
-  run_in_init: boolean;
-  convert_hash_in_init: boolean;
   every: Every<Router>;
 
 
@@ -374,27 +271,19 @@ export class Router {
     // configure() after the fact? or can we delete that method?
     const {
       recurse,
-      async_,
       delimiter,
       strict,
       notfound,
       resource,
-      history,
-      run_in_init,
-      convert_hash_in_init,
       every,
     } = this._getConfig();
 
     this._initMethods()
     this.recurse = recurse;
-    this.async_ = async_;
     this.delimiter = delimiter;
     this.strict = strict;
     this.notfound = notfound;
     this.resource = resource;
-    this.history = history;
-    this.run_in_init = run_in_init;
-    this.convert_hash_in_init = convert_hash_in_init;
     this.every = every;
 
     this.mount(routes);
@@ -402,16 +291,10 @@ export class Router {
 
   private _getConfig(options: RoutingOptions<Router> = {}): RoutingConfig<Router> {
     const recurse: 'forward' | 'backward' | false   = typeof options.recurse === 'undefined' ? this.recurse || false : options.recurse;
-    const async_: boolean     = options.async     || false;
     const delimiter: string  = options.delimiter || '\/';
     const strict: boolean    = typeof options.strict === 'undefined' ? true : options.strict;
     const notfound  = options.notfound || null;
     const resource  = options.resource || {};
-
-    // Client only, but browser.js does not include a super implementation
-    const history: boolean     = (options.html5history && this.historySupport) || false;
-    const run_in_init: boolean = (this.history === true && options.run_handler_in_init !== false);
-    const convert_hash_in_init: boolean = (this.history === true && options.convert_hash_in_init !== false);
 
     //
     // TODO: Global once
@@ -424,16 +307,11 @@ export class Router {
 
     return {
       recurse,
-      async_,
       delimiter,
       strict,
       notfound,
       resource,
-      history,
-      run_in_init,
-      convert_hash_in_init,
       every,
-      history
     };
   }
 
@@ -451,27 +329,19 @@ export class Router {
   configure(options?: RoutingOptions<Router>) {
     const {
       recurse,
-      async_,
       delimiter,
       strict,
       notfound,
       resource,
-      history,
-      run_in_init,
-      convert_hash_in_init,
       every,
     } = this._getConfig(options);
 
     this._initMethods()
     this.recurse = recurse;
-    this.async_ = async_;
     this.delimiter = delimiter;
     this.strict = strict;
     this.notfound = notfound;
     this.resource = resource;
-    this.history = history;
-    this.run_in_init = run_in_init;
-    this.convert_hash_in_init = convert_hash_in_init;
     this.every = every;
 
     return this;
@@ -584,16 +454,14 @@ export class Router {
   }
 
   //
-  // ### method dispatch (method, path[, callback])
+  // ### method dispatch (method, path)
   // #### @method {string} Method to dispatch
   // #### @path {string} Path to dispatch
-  // #### @callback {function} **Optional** Continuation to respond to for async scenarios.
   // Finds a set of functions on the traversal towards
   // `method` and `path` in the core routing table then
   // invokes them based on settings in this instance.
   //
-  dispatch(method: string, path: string, callback?: (err?: any) => any) {
-    const self = this;
+  async dispatch(method: string, path: string) {
     let fns = this.traverse(method, path.replace(QUERY_SEPARATOR, ''), this.routes, '');
     const invoked = this._invoked;
     let after;
@@ -602,7 +470,7 @@ export class Router {
     if (!fns || fns.length === 0) {
       this.last = [];
       if (typeof this.notfound === 'function') {
-        this.invoke([this.notfound], { method: method, path: path }, callback);
+        await this.invoke([this.notfound], { method: method, path: path });
       }
 
       return false;
@@ -612,9 +480,9 @@ export class Router {
       fns = fns.reverse();
     }
 
-    function updateAndInvoke() {
-      self.last = fns.after;
-      self.invoke(self.runlist(fns), self, callback);
+    const updateAndInvoke = async () {
+      this.last = fns.after;
+      await this.invoke(this.runlist(fns), this);
     }
 
     //
@@ -632,13 +500,8 @@ export class Router {
       : [this.last];
 
     if (after && after.length > 0 && invoked) {
-      if (this.async_) {
-        this.invoke(after, this, updateAndInvoke);
-      }
-      else {
-        this.invoke(after, this);
-        updateAndInvoke();
-      }
+      await this.invoke(after, this);
+      updateAndInvoke();
 
       return true;
     }
@@ -678,51 +541,23 @@ export class Router {
   // ### method invoke (fns, thisArg)
   // #### @fns {Array} Set of functions to invoke in order.
   // #### @thisArg {Object} `thisArg` for each function.
-  // #### @callback {function} **Optional** Continuation to pass control to for async `fns`.
-  // Invokes the `fns` synchronously or asynchronously depending on the
-  // value of `this.async`. Each function must **not** return (or respond)
-  // with false, or evaluation will short circuit.
+  // Invokes the `fns` and awaits the results. Each function must **not**
+  // return (or respond) with false, or evaluation will short circuit.
   //
-  invoke(fns: Array<Handler<Router>>, thisArg: Router, callback?: (err?: unknown) => any) {
-    var self = this;
-
-    var apply: AsyncIterator<BaseOrArray<Handler<Router>>> | undefined;
-
-    if (this.async_) {
-      apply = function(fn, next){
-        if (Array.isArray(fn)) {
-          return _asyncEverySeries(fn, apply, next);
+  async invoke(fns: Array<Handler<Router>>, thisArg: Router) {
+    async function apply (fn) {
+      if (Array.isArray(fn)) {
+        for (let f of fn) {
+          await apply(f);
         }
-        else if (typeof fn == 'function') {
-          fn.apply(thisArg, (fns.captures || []).concat(next));
-        }
-      };
-      _asyncEverySeries(fns, apply, function () {
-        //
-        // Ignore the response here. Let the routed take care
-        // of themselves and eagerly return true.
-        //
-
-        if (callback) {
-          // lmao JESUS
-          callback.apply(thisArg, arguments);
-        }
-      });
-    }
-    else {
-      apply = function(fn){
-        if (Array.isArray(fn)) {
-          return _every(fn, apply);
-        }
-        else if (typeof fn === 'function') {
-          return fn.apply(thisArg, fns.captures || []);
-        }
-        else if (typeof fn === 'string' && self.resource) {
-          self.resource[fn].apply(thisArg, fns.captures || []);
-        }
+      } else if (typeof fn === 'function') {
+        return await fn.apply(thisArg, fns.captures || []);
+      } else if (typeof fn === 'string' && self.resource) {
+        await self.resource[fn].apply(thisArg, fns.captures || []);
       }
-      _every(fns, apply);
     }
+
+    await apply(fns);
   }
 
   //
