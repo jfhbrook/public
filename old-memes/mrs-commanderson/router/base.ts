@@ -12,8 +12,11 @@
  *
  */
 
-/** Utility type */
-export type BaseOrArray<T> = T | readonly T[];
+type PathLike = string | string[];
+
+interface FnProps {
+}
+
 
 /**
  * Route handler callback.
@@ -22,12 +25,19 @@ export type BaseOrArray<T> = T | readonly T[];
  * is awaited. If a handler returns `false`, the router will skip all remaining
  * handlers.
  */
-export type Handler<ThisType> = (this: ThisType, ...args: any[]) => Promise<boolean>;
+export type Fn<ThisType> = ((this: ThisType, ...args: any[]) => Promise<boolean>) & FnProps;
 
-export type RouteEntry<ThisType> = BaseOrArray<Handler<ThisType>>;
+// Sometimes we get lists of handlers
+interface RunListProps {
+}
+
+export type RunList<ThisType> = Array<Fn<ThisType>> & RunListProps;
+
+export type Handler<ThisType> = RunList<ThisType> | Fn<ThisType>;
+
 
 export interface RoutingTable<ThisType> {
-    [route: string]: RouteEntry<ThisType> | RoutingTable<ThisType>;
+    [route: string]: Handler<ThisType>;
 }
 
 export interface Resource<ThisType> {
@@ -36,20 +46,7 @@ export interface Resource<ThisType> {
 
 // This codebase detects the difference between a string and a RegExp by
 // seeing if the source property is defined
-type StringOrRegExp = (string & { source: undefined}) | RegExp;
-
-// This pattern - easily expressed in javascript as `matcher.source || matcher',
-// is tough to get right with typescript, so we do something more involved
-// here.
-function _matcherSource(matcher: StringOrRegExp): string {
-  if (matcher.source) {
-    return matcher.source;
-  }
-  if (typeof matcher !== 'string') {
-    throw new Error('assert: matcher should be a string');
-  }
-  return matcher;
-}
+type StringOrRegExp = string | RegExp;
 
 /**
  * Router options object
@@ -72,42 +69,31 @@ export interface RoutingOptions<ThisType> {
     /**
      * Function to call if no route is found on a call to `router.dispatch()`.
      */
-    notfound?: Handler<{ method: string; path: string }> | undefined;
+    notfound?: Handler<ThisType> | undefined;
     /**
      * A function (or list of functions) to call on every call to
      * `router.dispatch()` when a route is found.
      */
-    on?: RouteEntry<ThisType> | undefined;
+    on?: Handler<ThisType> | undefined;
     /**
      *  A function (or list of functions) to call before every call to
      * `router.dispatch()` when a route is found.
      */
-    before?: RouteEntry<ThisType> | undefined;
+    before?: Handler<ThisType> | undefined;
 
     /**
      * A function (or list of functions) to call after every call to
      * `router.dispatch()` when a route is found.
      */
-    after?: RouteEntry<ThisType> | undefined;
+    after?: Handler<ThisType> | undefined;
+
+    resource?: Resource<ThisType> | undefined;
 }
 
 // TODO: typescript is gonna be REAL mad that the cli router doesn't conform
 // to Router's interface lmao
 
 const QUERY_SEPARATOR = /\?.*/;
-
-//
-// Helper function to turn flatten an array.
-//
-function _flatten<T>(arr: Array<BaseOrArray<T>>): Array<T> {
-  var flat: Array<T> = [];
-
-  for (var i = 0, n = arr.length; i < n; i++) {
-    flat = flat.concat(arr[i]);
-  }
-
-  return flat;
-}
 
 //
 // Helper function for expanding "named" matches
@@ -223,15 +209,15 @@ export interface RoutingConfig<ThisType> {
     recurse: "forward" | "backward" | false;
     strict: boolean;
     delimiter: string;
-    notfound: Handler<{ method: string; path: string }> | null;
+    notfound: Handler<ThisType> | null;
     resource: Resource<ThisType>;
     every: Every<ThisType>;
 }
 
 interface Every<ThisType> {
-  before: RouteEntry<ThisType> | null;
-  after: RouteEntry<ThisType> | null;
-  on: RouteEntry<ThisType> | null;
+  before?: Handler<ThisType>;
+  after?: Handler<ThisType>;
+  on?: Handler<ThisType>;
 }
 
 //
@@ -247,12 +233,12 @@ export class Router {
   scope: any[];
   private _methods: Record<string, boolean>;
   private _invoked: boolean;
-  private last: RouteEntry<Router>[];
+  private last: Handler<Router>;
 
   recurse: "forward" | "backward" | false;
   delimiter: string;
   strict: boolean;
-  notfound: Handler<{ method: string; path: string }> | null;
+  notfound: Handler<Router> | null;
   resource: Resource<Router>;
   every: Every<Router>;
 
@@ -262,6 +248,7 @@ export class Router {
     this.routes   = {};
     this.methods  = ['on', 'after', 'before'];
     this.scope    = [];
+    // methods which have already been added
     this._methods = {};
     this._invoked = false;
     this.last = [];
@@ -300,9 +287,9 @@ export class Router {
     // TODO: Global once
     //
     const every: Every<Router> = {
-      after: options.after || null,
-      before: options.before || null,
-      on: options.on || null
+      after: options.after,
+      before: options.before,
+      on: options.on
     };
 
     return {
@@ -362,8 +349,9 @@ export class Router {
     }
 
     var compiled = new RegExp(token, 'g');
-    this.params[token] = function (str: string) {
-      return str.replace(compiled, _matcherSource(matcher));
+    this.params[token] = (str: string) => {
+      // TODO: Do regular expressions have a "matcher.source" property?
+      return str.replace(compiled, matcher.source | matcher);
     };
     return this;
   }
@@ -376,18 +364,33 @@ export class Router {
   // Adds a new `route` to this instance for the specified `method`
   // and `path`.
   //
-  on(path: string, route: BaseOrArray<Handler<Router>>): void
-  on(method: string, path: BaseOrArray<string>, route: BaseOrArray<Handler<Router>>): void
-  on(_method: string, _path: BaseOrArray<string> | BaseOrArray<Handler<Router>>, _route?: BaseOrArray<Handler<Router>>): void {
+  on(path: string, route: Handler<Router>): void
+  on(method: string, path: PathLike, route: Handler<Router>): void
+  on(_method: string, _path: PathLike | Handler<Router>, _route?: Handler<Router>): void {
     const self = this;
 
-    // SHENANIGANS AFOOT! Typescript is cranky about a ton of things here.
-    // The "right answer" would probably be to fix the type signature, but
-    // this is close enough for now.
-    const hasShortSignature = !_route && typeof _path === 'function';
-    let route = <BaseOrArray<Handler<Router>>>(hasShortSignature ? _path : _route);
-    let path = <BaseOrArray<string>>(hasShortSignature ? _method : _path);
-    const method: string = hasShortSignature ? _method : 'on';
+    //
+    // WARNING: extreme type shenanigans afoot! This function has variadic
+    // arguments and unpacking those in a type-safe way is impractical, so
+    // we typecast these /knowing the types may be wrong/ and count on the
+    // following if block to patch in post.
+    //
+
+    let method: string = _method;
+    let path: PathLike = <PathLike>_path;
+    let route: Handler<Router> = <Handler<Router>>_route;
+
+    if (!route && typeof path === 'function') {
+      //
+      // If only two arguments are supplied then assume this
+      // 'route' was meant to be a generic 'on'.
+      //
+      route = path;
+      path = method;
+      method = 'on';
+    }
+
+    // END SHENANIGANS
 
     if (Array.isArray(path)) {
       return path.forEach(function(p) {
@@ -395,12 +398,8 @@ export class Router {
       });
     }
 
-    if (path instanceof Array) {
-      throw new Error('assert: path is a string');
-    }
-
-    // TODO: What is getting pass in here??
-    const source: string | null = (<any>path).source || null;
+    // TODO: What the hell is path.source?
+    const source: string | null = path.source || null;
 
     if (source) {
       path = source.replace(/\\\//ig, '/');
@@ -434,7 +433,7 @@ export class Router {
   path(_path: StringOrRegExp, routesFn: Handler<Router>) {
     let length = this.scope.length;
 
-    // TODO: refactor _matcherSource?
+    // TODO: What is _path.source??
     const path = <string>(_path.source ? _path.source.replace(/\\\//ig, '/') : _path);
 
     //
@@ -522,8 +521,8 @@ export class Router {
   //
   runlist(fns: Array<Handler<Router>>) {
     var runlist: RouteEntry<Router>[] = this.every && this.every.before
-      ? [this.every.before].concat(_flatten(fns))
-      : _flatten(fns);
+      ? [this.every.before].concat(fns.flat())
+      : fns.flat();
 
     if (this.every && this.every.on) {
       runlist.push(this.every.on);
