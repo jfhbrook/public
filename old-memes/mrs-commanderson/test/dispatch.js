@@ -24,30 +24,30 @@ const router_1 = require("../router");
     assert.test("An instance of Router", (assert) => __awaiter(void 0, void 0, void 0, function* () {
         const routerTopic = (0, swears_1.discuss)(() => __awaiter(void 0, void 0, void 0, function* () {
             const matched = {
-                ' ': [],
+                '<root>': [],
                 'foo': [],
                 'f*': []
             };
             // TODO: these spaces are a wart, how do I fix them?
             const router = new router_1.Router({
-                ' ': {
-                    before: () => __awaiter(void 0, void 0, void 0, function* () { matched[' '].push('before /'); }),
-                    on: () => __awaiter(void 0, void 0, void 0, function* () { matched[' '].push('on /'); }),
-                    after: () => __awaiter(void 0, void 0, void 0, function* () { matched[' '].push('after /'); })
+                '': {
+                    before: () => __awaiter(void 0, void 0, void 0, function* () { matched['<root>'].push('before /'); }),
+                    on: () => __awaiter(void 0, void 0, void 0, function* () { matched['<root>'].push('on /'); }),
+                    after: () => __awaiter(void 0, void 0, void 0, function* () { matched['<root>'].push('after /'); })
                 },
-                ' foo': {
+                'foo': {
                     before: () => __awaiter(void 0, void 0, void 0, function* () { matched.foo.push('before foo'); }),
                     on: () => __awaiter(void 0, void 0, void 0, function* () { matched.foo.push('on foo'); }),
                     after: () => __awaiter(void 0, void 0, void 0, function* () { matched.foo.push('after foo'); }),
-                    ' bar': {
+                    'bar': {
                         before: () => __awaiter(void 0, void 0, void 0, function* () { matched.foo.push('before foo bar'); }),
                         on: () => __awaiter(void 0, void 0, void 0, function* () { matched.foo.push('foo bar'); }),
                         after: () => __awaiter(void 0, void 0, void 0, function* () { matched.foo.push('after foo bar'); }),
-                        ' buzz': () => __awaiter(void 0, void 0, void 0, function* () { matched.foo.push('foo bar buzz'); })
+                        'buzz': () => __awaiter(void 0, void 0, void 0, function* () { matched.foo.push('foo bar buzz'); })
                     }
                 },
-                ' f*': {
-                    ' barbie': () => __awaiter(void 0, void 0, void 0, function* () { matched['f*'].push('f* barbie'); })
+                'f*': {
+                    'barbie': () => __awaiter(void 0, void 0, void 0, function* () { matched['f*'].push('f* barbie'); })
                 }
             });
             router.configure({
@@ -58,56 +58,56 @@ const router_1 = require("../router");
                 router
             };
         }));
-        assert.skip("should have the correct routing table", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+        assert.test("should have the correct routing table", (assert) => __awaiter(void 0, void 0, void 0, function* () {
             yield routerTopic.swear(({ router }) => __awaiter(void 0, void 0, void 0, function* () {
-                assert.ok(router.routes.foo);
-                assert.ok(router.routes.foo.bar);
-                assert.ok(router.routes.foo.bar.buzz);
-                assert.ok(router.routes.foo.bar.buzz.on);
+                assert.ok(router.routes.foo, 'should have a "foo" route');
+                assert.ok(router.routes.foo.bar, 'should have a "foo bar" route');
+                assert.ok(router.routes.foo.bar.buzz, 'should have a "foo bar buzz" route');
+                assert.ok(router.routes.foo.bar.buzz.on, 'should have an "on" handler on the "foo bar buzz" route');
             }));
         }));
-        assert.skip("the dispatch() method", (assert) => __awaiter(void 0, void 0, void 0, function* () {
-            assert.test("/", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+        assert.test("the dispatch() method", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+            assert.skip("<root>", (assert) => __awaiter(void 0, void 0, void 0, function* () {
                 yield routerTopic.swear(({ matched, router }) => __awaiter(void 0, void 0, void 0, function* () {
-                    assert.ok(yield router.dispatch('on', '/'));
-                    assert.ok(yield router.dispatch('on', '/'));
-                    assert.ok(matched[' '][0], 'before /');
-                    assert.equal(matched[' '][1], 'on /');
-                    assert.equal(matched[' '][2], 'after /');
+                    assert.ok(yield router.dispatch('', {}));
+                    assert.ok(yield router.dispatch('', {}));
+                    assert.ok(matched['<root>'][0], 'before /');
+                    assert.equal(matched['<root>'][1], 'on /');
+                    assert.equal(matched['<root>'][2], 'after /');
                 }));
             }));
-            assert.test(" foo bar buzz", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+            assert.test("foo bar buzz", (assert) => __awaiter(void 0, void 0, void 0, function* () {
                 yield routerTopic.swear(({ matched, router }) => __awaiter(void 0, void 0, void 0, function* () {
-                    assert.ok(yield router.dispatch('on', ' foo bar buzz'));
-                    assert.equal(matched.foo[0], 'foo bar buzz');
-                    assert.equal(matched.foo[1], 'before foo bar');
-                    assert.equal(matched.foo[2], 'foo bar');
-                    assert.equal(matched.foo[3], 'before foo');
-                    assert.equal(matched.foo[4], 'on foo');
+                    assert.ok(yield router.dispatch('foo bar buzz', {}), 'dispatch to "foo bar buzz" is successful');
+                    assert.equal(matched.foo[0], 'foo bar buzz', 'first match for "foo" is "foo bar buzz"');
+                    assert.equal(matched.foo[1], 'before foo bar', 'second match for "foo" is "before foo bar"');
+                    assert.equal(matched.foo[2], 'foo bar', 'third match for "foo" is "foo bar"');
+                    assert.equal(matched.foo[3], 'before foo', 'fourth match for "foo" is "before foo"');
+                    assert.equal(matched.foo[4], 'on foo', 'fifth match for "foo" is "on foo"');
                 }));
             }));
-            assert.test(" foo barbie", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+            assert.skip("foo barbie", (assert) => __awaiter(void 0, void 0, void 0, function* () {
                 yield routerTopic.swear(({ matched, router }) => __awaiter(void 0, void 0, void 0, function* () {
-                    assert.ok(yield router.dispatch('on', ' foo barbie'));
+                    assert.ok(yield router.dispatch('foo barbie', {}));
                     assert.equal(matched['f*'][0], 'f* barbie');
                 }));
             }));
-            assert.test(" foo barbie ", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+            assert.skip("foo barbie ", (assert) => __awaiter(void 0, void 0, void 0, function* () {
                 yield routerTopic.swear(({ router }) => __awaiter(void 0, void 0, void 0, function* () {
-                    assert.notOk(yield router.dispatch('on', ' foo barbie '));
+                    assert.notOk(yield router.dispatch('foo barbie ', {}));
                 }));
             }));
-            assert.test(" foo BAD", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+            assert.skip("foo BAD", (assert) => __awaiter(void 0, void 0, void 0, function* () {
                 yield routerTopic.swear(({ router }) => __awaiter(void 0, void 0, void 0, function* () {
-                    assert.notOk(yield router.dispatch('on', ' foo BAD'));
+                    assert.notOk(yield router.dispatch('foo BAD', {}));
                 }));
             }));
-            assert.test(" bar bar", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+            assert.skip("bar bar", (assert) => __awaiter(void 0, void 0, void 0, function* () {
                 yield routerTopic.swear(({ router }) => __awaiter(void 0, void 0, void 0, function* () {
-                    assert.notOk(yield router.dispatch('on', ' bar bar'));
+                    assert.notOk(yield router.dispatch('bar bar', {}));
                 }));
             }));
-            assert.test("with the strict option disabled", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+            assert.skip("with the strict option disabled", (assert) => __awaiter(void 0, void 0, void 0, function* () {
                 const nonStrictTopic = routerTopic.discuss(({ matched, router }) => __awaiter(void 0, void 0, void 0, function* () {
                     router.configure({
                         recurse: 'backward',
@@ -120,15 +120,15 @@ const router_1 = require("../router");
                         assert.notOk(router.strict);
                     }));
                 }));
-                assert.test(" foo barbie ", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+                assert.test("foo barbie ", (assert) => __awaiter(void 0, void 0, void 0, function* () {
                     yield nonStrictTopic.swear(({ matched, router }) => __awaiter(void 0, void 0, void 0, function* () {
-                        assert.ok(yield router.dispatch('on', ' foo barbie '));
+                        assert.ok(yield router.dispatch('on', 'foo barbie '));
                         assert.equal(matched['f*'][0], 'f* barbie');
                     }));
                 }));
-                assert.test(" foo bar buzz", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+                assert.test("foo bar buzz", (assert) => __awaiter(void 0, void 0, void 0, function* () {
                     yield nonStrictTopic.swear(({ matched, router }) => __awaiter(void 0, void 0, void 0, function* () {
-                        assert.ok(yield router.dispatch('on', ' foo bar buzz'));
+                        assert.ok(yield router.dispatch('on', 'foo bar buzz'));
                         assert.equal(matched.foo[0], 'foo bar buzz');
                         assert.equal(matched.foo[1], 'before foo bar');
                         assert.equal(matched.foo[2], 'foo bar');

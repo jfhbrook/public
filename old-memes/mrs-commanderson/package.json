@@ -4,6 +4,8 @@
   "description": "command line app framework",
   "main": "index.js",
   "scripts": {
+    "prepublish": "tsc",
+    "pretest": "tsc",
     "test": "tap ./test/*.js"
   },
   "repository": {
@@ -40,5 +42,8 @@
     "dotenv": "^16.0.0",
     "kenny-loggins": "^1.1.1",
     "minimist": "^1.2.6"
+  },
+  "tap": {
+    "check-coverage": false
   }
 }

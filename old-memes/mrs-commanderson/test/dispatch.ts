@@ -14,7 +14,7 @@ import { Router } from '../router';
 type Ctx = {};
 
 type Matched = {
-  ' ': string[];
+  '<root>': string[];
   'foo': string[];
   'f*': string[];
 };
@@ -23,31 +23,31 @@ test('router/dispatch', async (assert) => {
   assert.test("An instance of Router", async (assert) => {
     const routerTopic = discuss(async () => {
       const matched: Matched = {
-        ' ': [],
+        '<root>': [],
         'foo': [],
         'f*': []
       }
 
       // TODO: these spaces are a wart, how do I fix them?
       const router = new Router<Ctx>({
-        ' ': {
-          before: async () => { matched[' '].push('before /') },
-          on: async () => { matched[' '].push('on /') },
-          after: async () => { matched[' '].push('after /') }
+        '': {
+          before: async () => { matched['<root>'].push('before /') },
+          on: async () => { matched['<root>'].push('on /') },
+          after: async () => { matched['<root>'].push('after /') }
         },
-        ' foo': {
+        'foo': {
           before: async () => { matched.foo.push('before foo') },
           on: async () => { matched.foo.push('on foo') },
           after: async () => { matched.foo.push('after foo') },
-          ' bar': {
+          'bar': {
             before: async () => { matched.foo.push('before foo bar') },
             on: async () => { matched.foo.push('foo bar') },
             after: async () => { matched.foo.push('after foo bar') },
-            ' buzz': async () => { matched.foo.push('foo bar buzz') }
+            'buzz': async () => { matched.foo.push('foo bar buzz') }
           }
         },
-        ' f*': {
-          ' barbie': async () => { matched['f*'].push('f* barbie') }
+        'f*': {
+          'barbie': async () => { matched['f*'].push('f* barbie') }
         }
       });
 
@@ -61,65 +61,65 @@ test('router/dispatch', async (assert) => {
       };
     });
 
-    assert.skip("should have the correct routing table", async (assert) => {
+    assert.test("should have the correct routing table", async (assert) => {
       await routerTopic.swear(async ({ router }) => {
-        assert.ok(router.routes.foo);
-        assert.ok(router.routes.foo.bar);
-        assert.ok(router.routes.foo.bar.buzz);
-        assert.ok(router.routes.foo.bar.buzz.on);
+        assert.ok(router.routes.foo, 'should have a "foo" route');
+        assert.ok(router.routes.foo.bar, 'should have a "foo bar" route');
+        assert.ok(router.routes.foo.bar.buzz, 'should have a "foo bar buzz" route');
+        assert.ok(router.routes.foo.bar.buzz.on, 'should have an "on" handler on the "foo bar buzz" route');
       });
     });
 
-    assert.skip("the dispatch() method", async (assert) => {
-      assert.test("/", async (assert) => {
+    assert.test("the dispatch() method", async (assert) => {
+      assert.skip("<root>", async (assert) => {
         await routerTopic.swear(async ({ matched, router }) => {
-          assert.ok(await router.dispatch('on', '/'));
-          assert.ok(await router.dispatch('on', '/'));
+          assert.ok(await router.dispatch('', {}));
+          assert.ok(await router.dispatch('', {}));
 
-          assert.ok(matched[' '][0], 'before /');
-          assert.equal(matched[' '][1], 'on /');
-          assert.equal(matched[' '][2], 'after /');
+          assert.ok(matched['<root>'][0], 'before /');
+          assert.equal(matched['<root>'][1], 'on /');
+          assert.equal(matched['<root>'][2], 'after /');
         });
       });
 
-      assert.test(" foo bar buzz", async (assert) => {
+      assert.test("foo bar buzz", async (assert) => {
         await routerTopic.swear(async ({ matched, router }) => {
-          assert.ok(await router.dispatch('on', ' foo bar buzz'));
+          assert.ok(await router.dispatch('foo bar buzz', {}), 'dispatch to "foo bar buzz" is successful');
 
-          assert.equal(matched.foo[0], 'foo bar buzz');
-          assert.equal(matched.foo[1], 'before foo bar');
-          assert.equal(matched.foo[2], 'foo bar');
-          assert.equal(matched.foo[3], 'before foo');
-          assert.equal(matched.foo[4], 'on foo');
+          assert.equal(matched.foo[0], 'foo bar buzz', 'first match for "foo" is "foo bar buzz"');
+          assert.equal(matched.foo[1], 'before foo bar', 'second match for "foo" is "before foo bar"');
+          assert.equal(matched.foo[2], 'foo bar', 'third match for "foo" is "foo bar"');
+          assert.equal(matched.foo[3], 'before foo', 'fourth match for "foo" is "before foo"');
+          assert.equal(matched.foo[4], 'on foo', 'fifth match for "foo" is "on foo"');
         });
       });
 
-      assert.test(" foo barbie", async (assert) => {
+      assert.skip("foo barbie", async (assert) => {
         await routerTopic.swear(async ({ matched, router }) => {
-          assert.ok(await router.dispatch('on', ' foo barbie'));
+          assert.ok(await router.dispatch('foo barbie', {}));
           assert.equal(matched['f*'][0], 'f* barbie');
         });
       });
 
-      assert.test(" foo barbie ", async (assert) => {
+      assert.skip("foo barbie ", async (assert) => {
         await routerTopic.swear(async ({ router }) => {
-          assert.notOk(await router.dispatch('on', ' foo barbie '));
+          assert.notOk(await router.dispatch('foo barbie ', {}));
         });
       });
 
-      assert.test(" foo BAD", async (assert) => {
+      assert.skip("foo BAD", async (assert) => {
         await routerTopic.swear(async ({ router }) => {
-          assert.notOk(await router.dispatch('on', ' foo BAD'));
+          assert.notOk(await router.dispatch('foo BAD', {}));
         });
       });
 
-      assert.test(" bar bar", async (assert) => {
+      assert.skip("bar bar", async (assert) => {
         await routerTopic.swear(async ({ router }) => {
-          assert.notOk(await router.dispatch('on', ' bar bar'));
+          assert.notOk(await router.dispatch('bar bar', {}));
         });
       });
       
-      assert.test("with the strict option disabled", async (assert) => {
+      assert.skip("with the strict option disabled", async (assert) => {
         const nonStrictTopic = routerTopic.discuss(async ({ matched, router }) => {
           router.configure({
             recurse: 'backward',
@@ -135,16 +135,16 @@ test('router/dispatch', async (assert) => {
           });
         });
         
-        assert.test(" foo barbie ", async (assert) => {
+        assert.test("foo barbie ", async (assert) => {
           await nonStrictTopic.swear(async ({ matched, router }) => {
-            assert.ok(await router.dispatch('on', ' foo barbie '));
+            assert.ok(await router.dispatch('on', 'foo barbie '));
             assert.equal(matched['f*'][0], 'f* barbie');
           });
         });
 
-        assert.test(" foo bar buzz", async (assert) => {
+        assert.test("foo bar buzz", async (assert) => {
           await nonStrictTopic.swear(async ({ matched, router }) => {
-            assert.ok(await router.dispatch('on', ' foo bar buzz'));
+            assert.ok(await router.dispatch('on', 'foo bar buzz'));
 
             assert.equal(matched.foo[0], 'foo bar buzz');
             assert.equal(matched.foo[1], 'before foo bar');

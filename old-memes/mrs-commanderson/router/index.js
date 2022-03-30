@@ -165,9 +165,31 @@ class Router {
     }
     dispatch(pathOrMethod, ctxOrPath, maybeCtx) {
         return __awaiter(this, void 0, void 0, function* () {
-            let method = maybeCtx ? pathOrMethod : "on";
-            let path = maybeCtx ? ctxOrPath : pathOrMethod;
-            let ctx = maybeCtx ? maybeCtx : ctxOrPath;
+            let method = null;
+            let path = null;
+            // TODO: Ctx can technically be `string` or `null`, but this code assumes
+            // that it's neither of those things. The type needs to be updated to
+            // be objects only.
+            let ctx = null;
+            if (maybeCtx) {
+                method = pathOrMethod;
+                if (typeof ctxOrPath !== 'string') {
+                    throw new Error('path must be a string');
+                }
+                path = ctxOrPath;
+                ctx = maybeCtx;
+            }
+            else {
+                method = "on";
+                path = pathOrMethod;
+                if (typeof maybeCtx === 'string') {
+                    throw new Error('context may not be a string!');
+                }
+                ctx = ctxOrPath;
+            }
+            if (method === null || path === null || ctx === null) {
+                throw new Error('assert: method, path and ctx should be defined');
+            }
             //
             // Prepend a single space onto the path so that the traversal
             // algorithm will recognize it. This is because we always assume
@@ -284,7 +306,7 @@ class Router {
         let current;
         let exact;
         let match;
-        let next;
+        let next = null;
         function filterRoutes(routes) {
             if (!filter) {
                 return routes;
@@ -413,7 +435,7 @@ class Router {
                 // `next.matched` will be true if the depth-first search of the routing
                 // table from this position was successful.
                 //
-                if (next.matched) {
+                if (next && next.matched) {
                     //
                     // Build the in-place tree structure representing the function
                     // in the correct order.

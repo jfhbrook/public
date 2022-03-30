@@ -275,9 +275,32 @@ export class Router<Ctx> {
   async dispatch(path: string, ctx: Ctx): Promise<boolean>
   async dispatch(method: Method, path: string, ctx: Ctx): Promise<boolean>
   async dispatch(pathOrMethod: string | Method, ctxOrPath: Ctx | string, maybeCtx?: Ctx): Promise<boolean> {
-    let method: Method = maybeCtx ? <Method>pathOrMethod : "on";
-    let path: string = maybeCtx ? <string>ctxOrPath : pathOrMethod;
-    let ctx: Ctx = maybeCtx ? maybeCtx : <Ctx>ctxOrPath;
+    let method: Method | null = null;
+    let path: string | null = null;
+    // TODO: Ctx can technically be `string` or `null`, but this code assumes
+    // that it's neither of those things. The type needs to be updated to
+    // be objects only.
+    let ctx: Ctx = <Ctx><unknown>null;
+
+    if (maybeCtx) {
+      method = <Method>pathOrMethod;
+      if (typeof ctxOrPath !== 'string') {
+        throw new Error('path must be a string');
+      }
+      path = ctxOrPath;
+      ctx = maybeCtx;
+    } else {
+      method = "on";
+      path = pathOrMethod;
+      if (typeof maybeCtx === 'string') {
+        throw new Error('context may not be a string!');
+      }
+      ctx = <Ctx>ctxOrPath;
+    }
+
+    if (method === null || path === null || ctx === null) {
+      throw new Error('assert: method, path and ctx should be defined');
+    }
 
     //
     // Prepend a single space onto the path so that the traversal
@@ -404,7 +427,7 @@ export class Router<Ctx> {
     let current;
     let exact;
     let match;
-    let next: RoutingList<Ctx>;
+    let next: RoutingList<Ctx> | null = null;
 
     function filterRoutes(routes: RoutingList<Ctx>) {
       if (!filter) {
@@ -544,13 +567,13 @@ export class Router<Ctx> {
         //
         // TODO: this.traverse *may* return null - can we justify why we
         // don't need to check this more explicitly?
-        next = <RoutingList<Ctx>>this.traverse(method, path, (routes as any)[r], current);
+        next = this.traverse(method, path, (routes as any)[r], current);
 
         //
         // `next.matched` will be true if the depth-first search of the routing
         // table from this position was successful.
         //
-        if (next.matched) {
+        if (next && next.matched) {
           //
           // Build the in-place tree structure representing the function
           // in the correct order.

@@ -8,30 +8,30 @@ function testRoute(path: string) {
   return async () => {
     const router = new Router<Ctx>();
     router.on(path, async () => {});
-    return (path: string) => router.dispatch('on', path);
+    return (path: string) => router.dispatch(path, {});
   };
 };
 
 test('router/regifyString', async (assert) => {
 
-  assert.skip('When using " home(.*)"', async (assert) => {
-    const topic = discuss(testRoute(' home(.*)'));
+  assert.test('When using "home(.*)"', async (assert) => {
+    const topic = discuss(testRoute('home(.*)'));
 
     assert.test('Should match " homepage"', async (assert) => {
       await topic.swear(async (dispatch) => {
-        assert.ok(await dispatch(' homepage'));
+        assert.ok(await dispatch('homepage'));
       });
     });
 
     assert.test('Should match " home page"', async (assert) => {
       await topic.swear(async (dispatch) => {
-        assert.ok(await dispatch(' home page'));
+        assert.ok(await dispatch('home page'));
       });
     });
 
     assert.test('Should not match " foo-bar"', async (assert) => {
       await topic.swear(async (dispatch) => {
-        assert.notOk(await dispatch(' foo-bar'));
+        assert.notOk(await dispatch('foo-bar'));
       });
     });
   });

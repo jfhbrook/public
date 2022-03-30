@@ -16,26 +16,26 @@ function testRoute(path) {
     return () => __awaiter(this, void 0, void 0, function* () {
         const router = new router_1.Router();
         router.on(path, () => __awaiter(this, void 0, void 0, function* () { }));
-        return (path) => router.dispatch('on', path);
+        return (path) => router.dispatch(path, {});
     });
 }
 ;
 (0, tap_1.test)('router/regifyString', (assert) => __awaiter(void 0, void 0, void 0, function* () {
-    assert.skip('When using " home(.*)"', (assert) => __awaiter(void 0, void 0, void 0, function* () {
-        const topic = (0, swears_1.discuss)(testRoute(' home(.*)'));
+    assert.test('When using "home(.*)"', (assert) => __awaiter(void 0, void 0, void 0, function* () {
+        const topic = (0, swears_1.discuss)(testRoute('home(.*)'));
         assert.test('Should match " homepage"', (assert) => __awaiter(void 0, void 0, void 0, function* () {
             yield topic.swear((dispatch) => __awaiter(void 0, void 0, void 0, function* () {
-                assert.ok(yield dispatch(' homepage'));
+                assert.ok(yield dispatch('homepage'));
             }));
         }));
         assert.test('Should match " home page"', (assert) => __awaiter(void 0, void 0, void 0, function* () {
             yield topic.swear((dispatch) => __awaiter(void 0, void 0, void 0, function* () {
-                assert.ok(yield dispatch(' home page'));
+                assert.ok(yield dispatch('home page'));
             }));
         }));
         assert.test('Should not match " foo-bar"', (assert) => __awaiter(void 0, void 0, void 0, function* () {
             yield topic.swear((dispatch) => __awaiter(void 0, void 0, void 0, function* () {
-                assert.notOk(yield dispatch(' foo-bar'));
+                assert.notOk(yield dispatch('foo-bar'));
             }));
         }));
     }));
