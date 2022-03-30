@@ -12,225 +12,17 @@
  *
  */
 
-interface RouteProps<ThisType> {
-  captures?: null;
-  source?: string;
-  after?: Handler<ThisType>
+import { Resource, Path, Fn, FnList, Handler, RoutingTable, Matcher, RoutingOptions, RoutingConfig, Filter } from './types';
+
+import { QUERY_SEPARATOR, paramifyString, regifyString, terminator } from 'util';
+
+// TODO: trying to pin down some internal interfaces
+export type FnNode<Ctx> = FnList<Ctx> | Fn<Ctx>;
+
+interface RunListProps<Ctx> {
 }
 
-interface PathProps {
-  captures?: null;
-  source?: string;
-}
-
-type Path = (string | string[]) & PathProps;
-
-
-/**
- * Route handler callback.
- *
- * The handler is called with all matched tokens as arguments and the result
- * is awaited. If a handler returns `false`, the router will skip all remaining
- * handlers.
- */
-export type Fn<ThisType> = ((this: ThisType, ...args: any[]) => Promise<boolean>) & RouteProps<ThisType>;
-
-export type FnList<ThisType> = Array<Fn<ThisType>> & RouteProps<ThisType>;
-
-export type FnNode<ThisType> = FnList<ThisType> | Fn<ThisType>;
-
-export type RunList<ThisType> = Array<Handler<ThisType>> & RouteProps<ThisType>;
-
-export type Handler<ThisType> = FnList<ThisType> | Fn<ThisType>;
-
-
-export interface RoutingTable<ThisType> {
-    [route: string]: Handler<ThisType>;
-}
-
-export interface Resource<ThisType> {
-  [handlerName: string]: Fn<ThisType>
-}
-
-interface MatcherProps {
-  source?: string
-}
-
-type Matcher = (string & MatcherProps) | (RegExp & MatcherProps);
-
-/**
- * Router options object
- */
-export interface RoutingOptions<ThisType> {
-    /**
-     * Controls route recursion.
-     * Default is `false` client-side, and `"backward"` server-side.
-     */
-    recurse?: "forward" | "backward" | false | undefined;
-    /**
-     * If set to `false`, then trailing slashes (or other delimiters) are
-     * allowed in routes. Default is `true`.
-     */
-    strict?: boolean | undefined;
-    /**
-     * Character separator between route fragments. Default is `/`.
-     */
-    delimiter?: string | undefined;
-    /**
-     * Function to call if no route is found on a call to `router.dispatch()`.
-     */
-    notfound?: Handler<ThisType> | undefined;
-    /**
-     * A function (or list of functions) to call on every call to
-     * `router.dispatch()` when a route is found.
-     */
-    on?: Handler<ThisType> | undefined;
-    /**
-     *  A function (or list of functions) to call before every call to
-     * `router.dispatch()` when a route is found.
-     */
-    before?: Handler<ThisType> | undefined;
-
-    /**
-     * A function (or list of functions) to call after every call to
-     * `router.dispatch()` when a route is found.
-     */
-    after?: Handler<ThisType> | undefined;
-
-    resource?: Resource<ThisType> | undefined;
-}
-
-// TODO: typescript is gonna be REAL mad that the cli router doesn't conform
-// to Router's interface lmao
-
-const QUERY_SEPARATOR = /\?.*/;
-
-//
-// Helper function for expanding "named" matches
-// (e.g. `:dog`, etc.) against the given set
-// of params:
-//
-//    {
-//      ':dog': function (str) {
-//        return str.replace(/:dog/, 'TARGET');
-//      }
-//      ...
-//    }
-//
-function paramifyString(str: string | undefined, params: any, mod?: string): string | undefined {
-  mod = str;
-  for (var param in params) {
-    if (params.hasOwnProperty(param)) {
-      mod = params[param](str);
-      if (mod !== str) { break; }
-    }
-  }
-
-  return mod === str
-    ? '([._a-zA-Z0-9-%()]+)'
-    : mod;
-}
-
-//
-// Helper function for expanding wildcards (*) and
-// "named" matches (:whatever)
-//
-function regifyString(str: string, params: any): string {
-  let matches;
-  let last = 0;
-  let out = '';
-
-  while (matches = str.substring(last).match(/[^\w\d\- %@&]*\*[^\w\d\- %@&]*/)) {
-    if (matches.index == null) {
-      throw new Error('assert: matches.index should be defined');
-    }
-    last = matches.index + matches[0].length;
-    matches[0] = matches[0].replace(/^\*/, '([_\.\(\)!\\ %@&a-zA-Z0-9-]+)');
-    out += str.substring(0, matches.index) + matches[0];
-  }
-
-  str = out += str.substring(last);
-
-  let captures = str.match(/:([^\/]+)/ig);
-  let capture;
-  let length;
-
-  if (captures) {
-    length = captures.length;
-    for (var i = 0; i < length; i++) {
-      capture = captures[i];
-      if ( capture.slice(0, 2) === "::" ) {
-        // This parameter was escaped and should be left in the url as a literal
-        // Remove the escaping : from the beginning
-        str = capture.slice( 1 );
-      } else {
-        const paramified = paramifyString(capture, params);
-        if (!paramified) {
-          throw new Error('assert: string should paramify');
-        }
-        str = str.replace(capture, paramified);
-      }
-    }
-  }
-
-  return str;
-}
-
-//
-// ### Fix unterminated RegExp groups in routes.
-//
-function terminator(routes: string[], delimiter: string, start?: string | number, stop?: string | number): string[] {
-  let last = 0;
-  let left = 0;
-  let right = 0;
-  const _start: string = (start || '(').toString();
-  const _stop: string = (stop || ')').toString();
-
-  for (let i = 0; i < routes.length; i++) {
-    var chunk = routes[i];
-
-    if ((chunk.indexOf(_start, last) > chunk.indexOf(_stop, last)) ||
-        (~chunk.indexOf(_start, last) && !~chunk.indexOf(_stop, last)) ||
-        (!~chunk.indexOf(_start, last) && ~chunk.indexOf(_stop, last))) {
-
-      left = chunk.indexOf(_start, last);
-      right = chunk.indexOf(_stop, last);
-
-      if ((~left && !~right) || (!~left && ~right)) {
-        var tmp = routes.slice(0, (i || 1) + 1).join(delimiter);
-        routes = [tmp].concat(routes.slice((i || 1) + 1));
-      }
-
-      last = (right > left ? right : left) + 1;
-      i = 0;
-    }
-    else {
-      last = 0;
-    }
-  }
-
-  return routes;
-}
-
-/**
- * The return type of Router._getConfig, which gets mixed in with the instance
- */
-export interface RoutingConfig<ThisType> {
-    recurse: "forward" | "backward" | false;
-    strict: boolean;
-    delimiter: string;
-    notfound: Handler<ThisType> | null;
-    resource: Resource<ThisType>;
-    every: Every<ThisType>;
-}
-
-interface Every<ThisType> {
-  before?: Handler<ThisType>;
-  after?: Handler<ThisType>;
-  on?: Handler<ThisType>;
-}
-
-type Filter<ThisType> = (fn: Fn<ThisType>) => boolean;
+export type RunList<Ctx> = Array<Handler<Ctx>> & RunListProps<Ctx>;
 
 //
 // ### class Router (routes)
@@ -238,24 +30,24 @@ type Filter<ThisType> = (fn: Fn<ThisType>) => boolean;
 // The Router object class responsible for building and dispatching from a
 // given routing table.
 //
-export class Router<ThisType> {
+export class Router<Ctx> {
   params: Record<string, any>;
   routes: Record<string, any>;
   methods: string[];
   scope: any[];
   private _methods: Record<string, boolean>;
   private _invoked: boolean;
-  private last: Handler<ThisType>;
+  private last: Handler<Ctx>;
 
   recurse: "forward" | "backward" | false;
   delimiter: string;
   strict: boolean;
-  notfound: Handler<ThisType> | null;
-  resource: Resource<ThisType>;
-  every: Every<ThisType>;
+  notfound: Handler<Ctx> | null;
+  resource: Resource<Ctx>;
+  every: Every<Ctx>;
 
 
-  constructor (routes: RoutingTable<ThisType> = {}) {
+  constructor (routes: RoutingTable<Ctx> = {}) {
     this.params   = {};
     this.routes   = {};
     this.methods  = ['on', 'after', 'before'];
@@ -288,7 +80,7 @@ export class Router<ThisType> {
     this.mount(routes);
   }
 
-  private _getConfig(options: RoutingOptions<ThisType> = {}): RoutingConfig<ThisType> {
+  private _getConfig(options: RoutingOptions<Ctx> = {}): RoutingConfig<Ctx> {
     const recurse: 'forward' | 'backward' | false   = typeof options.recurse === 'undefined' ? this.recurse || false : options.recurse;
     const delimiter: string  = options.delimiter || '\\s';
     const strict: boolean    = typeof options.strict === 'undefined' ? true : options.strict;
@@ -298,7 +90,7 @@ export class Router<ThisType> {
     //
     // TODO: Global once
     //
-    const every: Every<ThisType> = {
+    const every: Every<Ctx> = {
       after: options.after,
       before: options.before,
       on: options.on
@@ -325,7 +117,7 @@ export class Router<ThisType> {
   // #### @options {Object} **Optional** Options to configure this instance with
   // Configures this instance with the specified `options`.
   //
-  configure(options?: RoutingOptions<ThisType>) {
+  configure(options?: RoutingOptions<Ctx>) {
     const {
       recurse,
       delimiter,
@@ -376,9 +168,9 @@ export class Router<ThisType> {
   // Adds a new `route` to this instance for the specified `method`
   // and `path`.
   //
-  on(path: string, route: Handler<ThisType>): void
-  on(method: string, path: Path, route: Handler<ThisType>): void
-  on(_method: string, _path: Path | Handler<ThisType>, _route?: Handler<ThisType>): void {
+  on(path: string, route: Handler<Ctx>): void
+  on(method: string, path: Path, route: Handler<Ctx>): void
+  on(_method: string, _path: Path | Handler<Ctx>, _route?: Handler<Ctx>): void {
     const self = this;
 
     //
@@ -390,7 +182,7 @@ export class Router<ThisType> {
 
     let method: string = _method;
     let path: Path = <Path>_path;
-    let route: Handler<ThisType> = <Handler<ThisType>>_route;
+    let route: Handler<Ctx> = <Handler<Ctx>>_route;
 
     if (!route && typeof path === 'function') {
       //
@@ -442,7 +234,7 @@ export class Router<ThisType> {
   // #### @routesFn {function} Function to evaluate in the new scope
   // Evalutes the `routesFn` in the given path scope.
   //
-  path(_path: Matcher, routesFn: Fn<ThisType>) {
+  path(_path: Matcher, routesFn: Fn<Ctx>) {
     let length = this.scope.length;
 
     // TODO: What is _path.source??
@@ -472,7 +264,7 @@ export class Router<ThisType> {
   // `method` and `path` in the core routing table then
   // invokes them based on settings in this instance.
   //
-  async dispatch(method: string, path: string, tty: ThisType) {
+  async dispatch(method: string, path: string, tty: Ctx) {
     //
     // Prepend a single space onto the path so that the traversal
     // algorithm will recognize it. This is because we always assume
@@ -894,7 +686,7 @@ export class Router<ThisType> {
   //
   //    { 'foo': 'bar': function foobar() {} } }
   //
-  mount(routes: RoutingTable<ThisType>, path: Path = []) {
+  mount(routes: RoutingTable<Ctx>, path: Path = []) {
     if (!routes || typeof routes !== "object" || Array.isArray(routes)) {
       return;
     }
