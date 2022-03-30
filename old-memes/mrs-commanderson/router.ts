@@ -1,50 +1,173 @@
 /*
  * router.ts: Base functionality for the router.
  *
- * This code combines router.js from https://github.com/flatiron/director
- * with the types from https://github.com/DefinitelyTyped/DefinitelyTyped
- * and updated to use TypeScript.
- *
  * (C) 2022 Josh Holbrook.
- * (C) 2021 the DefinitelyTyped Contributors.
+ * (C) 2021 pastelmind <https://github.com/pastelmind>.
  * (C) 2011, Charlie Robbins, Paolo Fragomeni, & the Contributors.
  * MIT LICENSE - See NOTICE file for details.
  *
  */
 
-import {
-  Filter,
-  Fn,
-  FnList,
-  Handler,
-  Matcher,
-  Method,
-  Path,
-  Resource,
-  RoutingConfig,
-  RoutingContext,
-  RoutingObject,
-  RoutingOptions,
-  RoutingTable,
-} from './types';
+/*
+ * Types for the interfaces expoorted from this module. Many thanks to
+ * DefinitelyTyped for inspiration!
+ */
+
+/**
+ * A router context.
+ *
+ * Route handlers are passed a router context as the first argument, and
+ * the context is passed in during calls to Router#dispatch. In practice this
+ * context will be an object, but we only enforce that it's distinguishable
+ * from paths and null values.
+ *
+ */
+export type RoutingContext<Ctx> = Ctx extends null | string ? never : Ctx;
+
+/**
+ * A router method.
+ *
+ * The router implementation supports arbitrary methods, which may even be
+ * added during runtime! But the types only support the defaults of "on",
+ * "after" and "before".
+ */
+export type Method = "on" | "after" | "before";
+
+/**
+ * A path.
+ *
+ * When specifying a route with Router#on, the path may be either a string
+ * or an array of path parts.
+ */
+export type Path = (string | string[]);
+
+/**
+ * A matcher.
+ *
+ * Paths and params may be matched against a string or a RegExp.
+ */
+export type Matcher = string | RegExp;
+
+/**
+ * A filter.
+ *
+ * While traversing a router with Router#traverse, you may optionally pass
+ * in a function filter.
+ */
+export type Filter<Ctx> = (fn: RoutingNode<Ctx>) => boolean;
+
+/**
+ * A route-handling function.
+ *
+ * A route handling function takes a routing context as its first argument.
+ * The remaining arguments are path params.
+ */
+export interface Fn<Ctx> {
+  (ctx: RoutingContext<Ctx>, ...params: string[]): Promise<void>;
+}
+
+/**
+ * A list of route-handling functions. Used internally.
+ *
+ */
+type FnList<Ctx> = Array<Fn<Ctx>>;
+
+/**
+ * A route handler.
+ *
+ * A route handler may either be a function or a list of functions.
+ */
+export type Handler<Ctx> = FnList<Ctx> | Fn<Ctx>;
+
+/**
+ * A routing resource.
+ *
+ * Resources have Methods as keys and Handlers as values. The three supported
+ * methods are "on", "before" and "after".
+ */
+export interface Resource<Ctx> {
+  on?: Handler<Ctx>;
+  before?: Handler<Ctx>;
+  after?: Handler<Ctx>;
+}
+
+/**
+ * A routing table.
+ *
+ * A routing table, as passed to the Router constructor, has string routes for
+ * keys. Values may be any routing object.
+ */
+export interface RoutingTable<Ctx> {
+    [route: string]: RoutingObject<Ctx>;
+}
+
+/**
+ * A routing table object.
+ *
+ * Values in routing tables may either be nested RoutingTables, Resources or
+ * Handlers.
+ */
+export type RoutingObject<Ctx> = RoutingTable<Ctx> | Resource<Ctx> | Handler<Ctx>;
+
+/**
+ * A router options object.
+ *
+ * Options, as passed into Router#configure.
+ */
+export interface RoutingOptions<Ctx> {
+    /**
+     * Controls route recursion.
+     * Default is `false` client-side, and `"backward"` server-side.
+     */
+    recurse?: "forward" | "backward" | false | undefined;
+    /**
+     * If set to `false`, then trailing slashes (or other delimiters) are
+     * allowed in routes. Default is `true`.
+     */
+    strict?: boolean | undefined;
+    /**
+     * Character separator between route fragments. Default is `/`.
+     */
+    delimiter?: string | undefined;
+    /**
+     * Function to call if no route is found on a call to `router.dispatch()`.
+     */
+    notfound?: Fn<Ctx> | undefined;
+    /**
+     * A function (or list of functions) to call on every call to
+     * `router.dispatch()` when a route is found.
+     */
+    on?: Handler<Ctx> | undefined;
+    /**
+     *  A function (or list of functions) to call before every call to
+     * `router.dispatch()` when a route is found.
+     */
+    before?: Handler<Ctx> | undefined;
+
+    /**
+     * A function (or list of functions) to call after every call to
+     * `router.dispatch()` when a route is found.
+     */
+    after?: Handler<Ctx> | undefined;
+
+    resource?: Resource<Ctx> | undefined;
+}
+
+
+/**
+ * The return type of Router._getConfig, which gets mixed in with the instance
+ */
+interface RoutingConfig<Ctx> {
+    recurse: "forward" | "backward" | false;
+    strict: boolean;
+    delimiter: string;
+    notfound: Fn<Ctx> | null;
+    resource: Resource<Ctx>;
+    every: Resource<Ctx>;
+}
+
 
 import { QUERY_SEPARATOR, regifyString, terminator } from './util';
-
-export {
-  Filter,
-  Fn,
-  FnList,
-  Handler,
-  Matcher,
-  Method,
-  Path,
-  Resource,
-  RoutingConfig,
-  RoutingContext,
-  RoutingObject,
-  RoutingOptions,
-  RoutingTable
-};
 
 interface RoutingNodeProps<Ctx> {
   matched?: boolean;
@@ -462,7 +585,7 @@ export class Router<Ctx> {
             //
             // in addition, the Array.isArray check tells us that fns must
             // be a Fn, not a FnList.
-            if (!(filter as Filter<Ctx>)(<Fn<Ctx>>fns[i])) {
+            if (!(filter as Filter<Ctx>)(fns[i])) {
               fns.splice(i, 1);
             }
           }

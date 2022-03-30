@@ -12,8 +12,6 @@
  *
  */
 
-import { Resource, Path, Fn, FnList, Handler, RoutingTable, Matcher, RoutingOptions, RoutingConfig, Filter } from './types';
-
 export const QUERY_SEPARATOR = /\?.*/;
 
 //
