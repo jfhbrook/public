@@ -11,34 +11,43 @@ import { test } from 'tap';
 import { discuss } from '@jfhbrook/swears';
 import { Router } from '../router';
 
-test('director/core/dispatch', async (assert) => {
-  assert.test("An instance of director.Router", async (assert) => {
+type Ctx = {};
+
+type Matched = {
+  ' ': string[];
+  'foo': string[];
+  'f*': string[];
+};
+
+test('router/dispatch', async (assert) => {
+  assert.test("An instance of Router", async (assert) => {
     const routerTopic = discuss(async () => {
-      const matched = {
-        '/': [],
+      const matched: Matched = {
+        ' ': [],
         'foo': [],
         'f*': []
       }
 
-      const router = new Router<typeof this>({
-        '/': {
-          before: async () => { matched['/'].push('before /') },
-          on: async () => { matched['/'].push('on /') },
-          after: async () => { matched['/'].push('after /') }
+      // TODO: these spaces are a wart, how do I fix them?
+      const router = new Router<Ctx>({
+        ' ': {
+          before: async () => { matched[' '].push('before /') },
+          on: async () => { matched[' '].push('on /') },
+          after: async () => { matched[' '].push('after /') }
         },
-        '/foo': {
+        ' foo': {
           before: async () => { matched.foo.push('before foo') },
           on: async () => { matched.foo.push('on foo') },
           after: async () => { matched.foo.push('after foo') },
-          '/bar': {
+          ' bar': {
             before: async () => { matched.foo.push('before foo bar') },
             on: async () => { matched.foo.push('foo bar') },
             after: async () => { matched.foo.push('after foo bar') },
-            '/buzz': async () { matched.foo.push('foo bar buzz') }
+            ' buzz': async () => { matched.foo.push('foo bar buzz') }
           }
         },
-        '/f*': {
-          '/barbie': async () => { matched['f*'].push('f* barbie') }
+        ' f*': {
+          ' barbie': async () => { matched['f*'].push('f* barbie') }
         }
       });
 
@@ -51,22 +60,6 @@ test('director/core/dispatch', async (assert) => {
         router
       };
     });
-
-
-    /*
-      matched = {};
-      matched['users'] = [];
-      matched['apps'] = []
-
-      router.on('users create', function () {
-        that.matched['users'].push('on users create');
-      });
-
-      router.on(/apps (\w+\s\w+)/, function () {
-        assert.equal(arguments.length, 1);
-        that.matched['apps'].push('on apps (\\w+\\s\\w+)');
-      });
-     */
 
     assert.test("should have the correct routing table", async (assert) => {
       await routerTopic.swear(async ({ router }) => {
@@ -83,15 +76,15 @@ test('director/core/dispatch', async (assert) => {
           assert.ok(await router.dispatch('on', '/'));
           assert.ok(await router.dispatch('on', '/'));
 
-          assert.ok(matched['/'][0], 'before /');
-          assert.equal(matched['/'][1], 'on /');
-          assert.equal(matched['/'][2], 'after /');
+          assert.ok(matched[' '][0], 'before /');
+          assert.equal(matched[' '][1], 'on /');
+          assert.equal(matched[' '][2], 'after /');
         });
       });
 
-      assert.test("/foo/bar/buzz", async (assert) => {
+      assert.test(" foo bar buzz", async (assert) => {
         await routerTopic.swear(async ({ matched, router }) => {
-          assert.ok(await router.dispatch('on', '/foo/bar/buzz'));
+          assert.ok(await router.dispatch('on', ' foo bar buzz'));
 
           assert.equal(matched.foo[0], 'foo bar buzz');
           assert.equal(matched.foo[1], 'before foo bar');
@@ -101,28 +94,28 @@ test('director/core/dispatch', async (assert) => {
         });
       });
 
-      assert.test("/foo/barbie", async (assert) => {
+      assert.test(" foo barbie", async (assert) => {
         await routerTopic.swear(async ({ matched, router }) => {
-          assert.ok(await router.dispatch('on', '/foo/barbie'));
+          assert.ok(await router.dispatch('on', ' foo barbie'));
           assert.equal(matched['f*'][0], 'f* barbie');
         });
       });
 
-      assert.test("/foo/barbie/", async (assert) => {
+      assert.test(" foo barbie ", async (assert) => {
         await routerTopic.swear(async ({ router }) => {
-          assert.notOk(await router.dispatch('on', '/foo/barbie/'));
+          assert.notOk(await router.dispatch('on', ' foo barbie '));
         });
       });
 
-      assert.test("/foo/BAD", async (assert) => {
+      assert.test(" foo BAD", async (assert) => {
         await routerTopic.swear(async ({ router }) => {
-          assert.notOk(await router.dispatch('on', '/foo/BAD'));
+          assert.notOk(await router.dispatch('on', ' foo BAD'));
         });
       });
 
-      assert.test("/bar/bar", async (assert) => {
+      assert.test(" bar bar", async (assert) => {
         await routerTopic.swear(async ({ router }) => {
-          assert.notOk(await router.dispatch('on', '/bar/bar'));
+          assert.notOk(await router.dispatch('on', ' bar bar'));
         });
       });
       
@@ -142,16 +135,16 @@ test('director/core/dispatch', async (assert) => {
           });
         });
         
-        assert.test("/foo/barbie/", async (assert) => {
+        assert.test(" foo barbie ", async (assert) => {
           await nonStrictTopic.swear(async ({ matched, router }) => {
-            assert.ok(await router.dispatch('on', '/foo/barbie/'));
+            assert.ok(await router.dispatch('on', ' foo barbie '));
             assert.equal(matched['f*'][0], 'f* barbie');
           });
         });
 
-        assert.test("/foo/bar/buzz", async (assert) => {
+        assert.test(" foo bar buzz", async (assert) => {
           await nonStrictTopic.swear(async ({ matched, router }) => {
-            assert.ok(await router.dispatch('on', '/foo/bar/buzz'));
+            assert.ok(await router.dispatch('on', ' foo bar buzz'));
 
             assert.equal(matched.foo[0], 'foo bar buzz');
             assert.equal(matched.foo[1], 'before foo bar');
@@ -162,32 +155,5 @@ test('director/core/dispatch', async (assert) => {
         });
       });
     });
-
-    /*
-    assert.skip("should have the correct routing table (old cli tests)", async (assert) => {
-      assert.ok(router.routes.users);
-      assert.ok(router.routes.users.create);
-    });
-
-    assert.skip("the dispatch() method (old cli tests)", async (assert) => {
-      assert.test("users create", async (assert) => {
-        assert.ok(await router.dispatch('on', 'users create'));
-        assert.equal(matched.users[0], 'on users create');
-      });
-
-      assert.test("apps foo bar", async (assert) => {
-        assert.ok(await router.dispatch('on', 'apps foo bar'));
-        assert.equal(matched['apps'][0], 'on apps (\\w+\\s\\w+)');
-      });
-
-      assert.test("not here", async (assert) => {
-        assert.notOk(await router.dispatch('on', 'not here'));
-      });
-
-      assert.test("still not here", async (assert) => {
-        assert.notOk(await router.dispatch('on', 'still not here'));
-      });
-    });
-    */
   });
 });

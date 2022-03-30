@@ -2,16 +2,17 @@ import { test } from 'tap';
 import { discuss } from '@jfhbrook/swears';
 import { Router } from '../router';
 
-function testRoute(path: string) {
-  const router = new Router();
-  router.on(route, async () => {});
+type Ctx = {};
 
-  return (path: string) {
-    return router.dispatch('on', path);
+function testRoute(path: string) {
+  return async () => {
+    const router = new Router<Ctx>();
+    router.on(path, async () => {});
+    return (path: string) => router.dispatch('on', path);
   };
 };
 
-test('director/core/regifyString', async (assert) => {
+test('router/regifyString', async (assert) => {
 
   assert.test('When using "/home(.*)"', async (assert) => {
     const topic = discuss(testRoute('/home(.*)'));
@@ -63,11 +64,12 @@ test('director/core/regifyString', async (assert) => {
     assert.test('Should match "/home"', async (assert) => {
       await topic.swear(async (dispatch) => {
         assert.ok(await dispatch('/home'));
+      });
     });
 
     assert.test('Should match "/homepage0", "/homepage1", etc.', async (assert) => {
       await topic.swear(async (dispatch) => {
-        for (i = 0; i < 10; i++) {
+        for (let i = 0; i < 10; i++) {
           assert.ok(await dispatch('/homepage' + i));
         }
       });
@@ -76,6 +78,7 @@ test('director/core/regifyString', async (assert) => {
     assert.test('Should not match "/home_page"', async (assert) => {
       await topic.swear(async (dispatch) => {
         assert.notOk(await dispatch('/home_page'));
+      });
     });
 
     assert.test('Should not match "/home/page"', async (assert) => {
@@ -130,7 +133,7 @@ test('director/core/regifyString', async (assert) => {
 
     assert.test('Should not match "/folder/abc" (the catchall regexp)"', async (assert) => {
       await topic.swear(async (dispatch) => {
-        assert.notOk(result('/folder/abc'));
+        assert.notOk(await dispatch('/folder/abc'));
       });
     });
   });

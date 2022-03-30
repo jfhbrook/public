@@ -13,22 +13,14 @@
  */
 
 // path-likes - strings and splitted strings, potentially with attached properties
-interface PathProps {
-}
-
-export type Path = (string | string[]) & PathProps;
-
+export type Path = (string | string[]);
 
 // a straightforward route handling function, potentially with attached properties
 export interface Fn<Ctx> {
   (ctx: Ctx, ...params: string[]): Promise<any>;
 }
 
-// an array of route-handling functions, potentially with attached properties
-interface FnListProps<Ctx> {
-}
-
-export type FnList<Ctx> = Array<Fn<Ctx>> & FnListProps<Ctx>;
+export type FnList<Ctx> = Array<Fn<Ctx>>;
 
 // a handler is either a function list or a function
 export type Handler<Ctx> = FnList<Ctx> | Fn<Ctx>;
@@ -49,19 +41,8 @@ export interface RoutingTable<Ctx> {
 
 export type RoutingObject<Ctx> = RoutingTable<Ctx> | Resource<Ctx> | Handler<Ctx>;
 
-export type RoutingLeaf<Ctx> = Fn<Ctx>;
+export type Matcher = string | RegExp;
 
-export type RoutingNode<Ctx> = Array<RoutingNode<Ctx>> | RoutingLeaf<Ctx>
-
-export type RoutingStem<Ctx> = Array<RoutingNode<Ctx>>
-
-// a type to capture "string or RegExp", though attempting to better handle
-// the codebase detecting RegExps by checking the "source" property :)
-interface MatcherProps {
-  source?: string
-}
-
-export type Matcher = (string & MatcherProps) | (RegExp & MatcherProps);
 /**
  * Router options object
  */
@@ -104,12 +85,7 @@ export interface RoutingOptions<Ctx> {
     resource?: Resource<Ctx> | undefined;
 }
 
-// An internal object containing before/after/on functions
-export interface Every<ThisType> {
-  before?: Handler<ThisType> | undefined;
-  after?: Handler<ThisType> | undefined;
-  on?: Handler<ThisType> | undefined;
-}
+export type Method = "on" | "after" | "before";
 
 /**
  * The return type of Router._getConfig, which gets mixed in with the instance
@@ -120,7 +96,7 @@ export interface RoutingConfig<Ctx> {
     delimiter: string;
     notfound: Fn<Ctx> | null;
     resource: Resource<Ctx>;
-    every: Every<Ctx>;
+    every: Resource<Ctx>;
 }
 
 // a filter argument for route-finding

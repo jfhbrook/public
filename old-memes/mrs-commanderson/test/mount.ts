@@ -5,90 +5,105 @@
  * MIT LICENSE
  *
  */
-import { test } from 'tap';
+import * as tap from 'tap';
+const { test } = tap;
 import { discuss } from '@jfhbrook/swears';
-import { Router, Fn } from '..';
+import { Router, Handler, RoutingObject } from '../router';
 
-// TODO: what is the gd type of assert ;_;
-function routeAssertion(assert: string): ((fn: Fn, p: string[], r: any) => void) {
-  function assertRoute(fn: Fn, path: string[], route): void => {
+type Test = (typeof tap.Test)["prototype"]
+
+type Ctx = {};
+
+type RouteAssertion = [Handler<Ctx>, string[], RoutingObject<Ctx>];
+
+// jfc typescript
+function assertRoutes(assert: Test, assertions: RouteAssertion[]): void {
+  function assertRoute(fn: Handler<Ctx>, path: string[], route: RoutingObject<Ctx>): void {
     if (path.length === 1) {
-      assert.equal(route[path.shift()], fn);
+      assert.equal((route as any)[<string>path.shift()], fn);
       return;
     }
 
-    route = route[path.shift()];
+    route = (route as any)[<string>path.shift()];
     assert.ok(route);
     assertRoute(fn, path, route);
   };
 
-  return assertRoute;
+  for (let assertion of assertions) {
+    assertRoute.apply(null, assertion);
+  }
+
 }
 
-test('director/core/mount', async (assert) => {
+
+async function foobar () { }
+async function foostar () { }
+async function foobazzbuzz () { }
+async function foodog () { }
+async function root () {}
+const fnArray = [foobar, foostar];
+async function dogs () { };
+async function usaCityZip () { }
+async function countryCityZip () { }
+
+
+test('router/mount', async (assert) => {
   assert.test("An instance of Router", async (assert) => {
     assert.test("with no preconfigured params", async (assert) => {
       const topic = discuss(async () => {
-        return new Router();
+        return new Router<Ctx>();
       });
 
       assert.test("the mount() method", async (assert) => {
         assert.test("should sanitize the routes correctly", async (assert) => {
           await topic.swear(async (router) => {
-            function foobar () { }
-            function foostar () { }
-            function foobazzbuzz () { }
-            function foodog () { }
-            function root () {}
-            var fnArray = [foobar, foostar];
 
             router.mount({
-              '/': {
+              ' ': {
                 before: root,
                 on: root,
                 after: root,
-                '/nesting': {
+                ' nesting': {
                   on: foobar,
-                  '/deep': foostar
+                  ' deep': foostar
                 }
               },
-              '/foo': {
-                '/bar': foobar,
-                '/*': foostar,
-                '/jitsu/then': {
+              ' foo': {
+                ' bar': foobar,
+                ' *': foostar,
+                ' jitsu then': {
                   before: foobar
                 }
               },
-              '/foo/bazz': {
-                '/buzz': foobazzbuzz
+              ' foo bazz': {
+                ' buzz': foobazzbuzz
               },
-              '/foo/jitsu': {
-                '/then': fnArray
+              ' foo jitsu': {
+                ' then': fnArray
               },
-              '/foo/jitsu/then/now': foostar,
-              '/foo/:dog': foodog
+              ' foo jitsu then now': foostar,
+              ' foo :dog': foodog
             });
 
-            const assertRoute = routeAssertion(assert);
-
-            assertRoute(root,        ['on'],                                      router.routes);
-            assertRoute(root,        ['after'],                                   router.routes);
-            assertRoute(root,        ['before'],                                  router.routes);
-            assertRoute(foobar,      ['nesting', 'on'],                           router.routes);
-            assertRoute(foostar,     ['nesting', 'deep', 'on'],                   router.routes);
-            assertRoute(foobar,      [ 'foo', 'bar', 'on'],                       router.routes);
-            assertRoute(foostar,     ['foo', '([_.()!\\ %@&a-zA-Z0-9-]+)', 'on'], router.routes);
-            assertRoute(fnArray,     ['foo', 'jitsu', 'then', 'on'],              router.routes);
-            assertRoute(foobar,      ['foo', 'jitsu', 'then', 'before'],          router.routes);
-            assertRoute(foobazzbuzz, ['foo', 'bazz', 'buzz', 'on'],               router.routes);
-            assertRoute(foostar,     ['foo', 'jitsu', 'then', 'now', 'on'],       router.routes);
-            assertRoute(foodog,      ['foo', '([._a-zA-Z0-9-%()]+)', 'on'],     router.routes);
-          },
+            assertRoutes(assert, [
+              [root,        ['on'],                                      router.routes],
+              [root,        ['after'],                                   router.routes],
+              [root,        ['before'],                                  router.routes],
+              [foobar,      ['nesting', 'on'],                           router.routes],
+              [foostar,     ['nesting', 'deep', 'on'],                   router.routes],
+              [foobar,      [ 'foo', 'bar', 'on'],                       router.routes],
+              [foostar,     ['foo', '([_.()!\\ %@&a-zA-Z0-9-]+)', 'on'], router.routes],
+              [fnArray,     ['foo', 'jitsu', 'then', 'on'],              router.routes],
+              [foobar,      ['foo', 'jitsu', 'then', 'before'],          router.routes],
+              [foobazzbuzz, ['foo', 'bazz', 'buzz', 'on'],               router.routes],
+              [foostar,     ['foo', 'jitsu', 'then', 'now', 'on'],       router.routes],
+              [foodog,      ['foo', '([._a-zA-Z0-9-%()]+)', 'on'],     router.routes]
+            ]);
+          });
         });
 
         assert.test("should accept string path", async (assert) => {
           await topic.swear(async (router) => {
-            function dogs () { }
 
             router.mount({
               '/dogs': {
@@ -97,9 +112,9 @@ test('director/core/mount', async (assert) => {
             },
             '/api');
 
-            const assertRoute = routeAssertion(assert);
-
-            assertRoute(dogs, ['api', 'dogs', 'on'], router.routes);
+            assertRoutes(assert, [
+              [ dogs, ['api', 'dogs', 'on'], router.routes ]
+            ]);
           });
         });
       });
@@ -107,7 +122,7 @@ test('director/core/mount', async (assert) => {
 
     assert.test("with preconfigured params", async (assert) => {
       const topic = discuss(async () => {
-        const router = new Router();
+        const router = new Router<Ctx>();
         router.param('city', '([\\w\\-]+)');
         router.param(':country', /([A-Z][A-Za-z]+)/);
         router.param(':zip', /([\d]{5})/);
@@ -116,54 +131,23 @@ test('director/core/mount', async (assert) => {
 
       assert.test("should sanitize the routes correctly", async (assert) => {
         await topic.swear(async (router) => {
-          function usaCityZip () { }
-          function countryCityZip () { }
 
           router.mount({
-            '/usa/:city/:zip': usaCityZip,
-            '/world': {
-              '/:country': {
-                '/:city/:zip': countryCityZip
+            ' usa :city :zip': usaCityZip,
+            ' world': {
+              ' :country': {
+                ' :city :zip': countryCityZip
               }
             }
           });
 
-          const assertRoute = routeAssertion(assert);
-
-          assertRoute(usaCityZip, ['usa', '([\\w\\-]+)', '([\\d]{5})', 'on'], router.routes);
-          assertRoute(countryCityZip, ['world', '([A-Z][A-Za-z]+)', '([\\w\\-]+)', '([\\d]{5})', 'on'], router.routes);
+          assertRoutes(assert, [
+            [ usaCityZip, ['usa', '([\\w\\-]+)', '([\\d]{5})', 'on'], router.routes ],
+            [ countryCityZip, ['world', '([A-Z][A-Za-z]+)', '([\\w\\-]+)', '([\\d]{5})', 'on'], router.routes ]
+          ]);
         });
       });
     });
   });
 });
-/*
- * mount-test.js: Tests for the core mount method.
- *
- * (C) 2011, Charlie Robbins, Paolo Fragomeni, & the Contributors.
- * MIT LICENSE
- *
- */
 
-var assert = require('assert'),
-    vows = require('vows'),
-    director = require('../../../lib/director');
-
-vows.describe('director/cli/path').addBatch({
-  "An instance of director.cli.Router with routes": {
-    topic: new director.cli.Router({
-      'apps': function () {
-        console.log('apps');
-      },
-      ' users': function () {
-        console.log('users');
-      }
-    }),
-    "should create the correct nested routing table": function (router) {
-      assert.isObject(router.routes.apps);
-      assert.isFunction(router.routes.apps.on);
-      assert.isObject(router.routes.users);
-      assert.isFunction(router.routes.users.on);
-    }
-  }
-}).export(module);
