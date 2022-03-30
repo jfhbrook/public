@@ -3,8 +3,15 @@
 import dotenv from "dotenv";
 import { createLogger, Logger } from "kenny-loggins";
 import minimist, { Opts, ParsedArgs } from "minimist";
-import { Router, PathFn } from './router';
-import { RoutingOptions, RoutingTable, Handler, Path, Matcher } from './router/types';
+import {
+  Handler,
+  Path,
+  PathFn,
+  Matcher,
+  Router,
+  RoutingOptions,
+  RoutingTable,
+} from './router';
 
 export interface AppContext {
   opts: ParsedArgs;
