@@ -23,12 +23,12 @@ function route() {
     return __awaiter(this, void 0, void 0, function* () { });
 }
 (0, tap_1.test)('router/insert', (assert) => __awaiter(void 0, void 0, void 0, function* () {
-    assert.test("An instance of director.Router", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+    assert.test("An instance of Router", (assert) => __awaiter(void 0, void 0, void 0, function* () {
         const topic = (0, swears_1.discuss)(() => __awaiter(void 0, void 0, void 0, function* () {
             const router = new router_1.Router();
             return router;
         }));
-        assert.test("the insert() method", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+        assert.skip("the insert() method", (assert) => __awaiter(void 0, void 0, void 0, function* () {
             assert.test("'on', ['foo', 'bar']", (assert) => __awaiter(void 0, void 0, void 0, function* () {
                 yield topic.swear((router) => __awaiter(void 0, void 0, void 0, function* () {
                     router.insert('on', ['foo', 'bar'], route);

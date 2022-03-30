@@ -61,7 +61,7 @@ test('router/dispatch', async (assert) => {
       };
     });
 
-    assert.test("should have the correct routing table", async (assert) => {
+    assert.skip("should have the correct routing table", async (assert) => {
       await routerTopic.swear(async ({ router }) => {
         assert.ok(router.routes.foo);
         assert.ok(router.routes.foo.bar);
@@ -70,7 +70,7 @@ test('router/dispatch', async (assert) => {
       });
     });
 
-    assert.test("the dispatch() method", async (assert) => {
+    assert.skip("the dispatch() method", async (assert) => {
       assert.test("/", async (assert) => {
         await routerTopic.swear(async ({ matched, router }) => {
           assert.ok(await router.dispatch('on', '/'));

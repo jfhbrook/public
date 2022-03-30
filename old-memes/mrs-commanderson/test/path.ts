@@ -19,7 +19,7 @@ type Matched = {
 };
 
 test('router/path', async (assert) => {
-  assert.test("An instance of director.Router", async (assert) => {
+  assert.test("An instance of Router", async (assert) => {
     const routerTopic = discuss(async () => {
       const matched: Matched = {
         foo: [],
@@ -47,7 +47,7 @@ test('router/path', async (assert) => {
       return { matched, router };
     });
 
-    assert.test("the path() method", async (assert) => {
+    assert.skip("the path() method", async (assert) => {
       assert.test("should create the correct nested routing table", async (assert) => {
         await pathTopic.swear(async ({ router }) => {
           assert.ok(router.routes.foo.on);

@@ -15,13 +15,13 @@ type Ctx = {};
 async function route() {}
 
 test('router/insert', async (assert) => {
-  assert.test("An instance of director.Router", async (assert) => {
+  assert.test("An instance of Router", async (assert) => {
     const topic = discuss(async () => {
       const router = new Router<Ctx>();
       return router
     });
 
-    assert.test("the insert() method", async (assert) => {
+    assert.skip("the insert() method", async (assert) => {
       assert.test("'on', ['foo', 'bar']", async (assert) => {
         await topic.swear(async (router) => {
           router.insert('on', ['foo', 'bar'], route);

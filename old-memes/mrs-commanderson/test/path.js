@@ -21,7 +21,7 @@ const tap_1 = require("tap");
 const swears_1 = require("@jfhbrook/swears");
 const router_1 = require("../router");
 (0, tap_1.test)('router/path', (assert) => __awaiter(void 0, void 0, void 0, function* () {
-    assert.test("An instance of director.Router", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+    assert.test("An instance of Router", (assert) => __awaiter(void 0, void 0, void 0, function* () {
         const routerTopic = (0, swears_1.discuss)(() => __awaiter(void 0, void 0, void 0, function* () {
             const matched = {
                 foo: [],
@@ -44,7 +44,7 @@ const router_1 = require("../router");
             });
             return { matched, router };
         }));
-        assert.test("the path() method", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+        assert.skip("the path() method", (assert) => __awaiter(void 0, void 0, void 0, function* () {
             assert.test("should create the correct nested routing table", (assert) => __awaiter(void 0, void 0, void 0, function* () {
                 yield pathTopic.swear(({ router }) => __awaiter(void 0, void 0, void 0, function* () {
                     assert.ok(router.routes.foo.on);
