@@ -20,19 +20,20 @@ interface PathProps {
 
 export type Path = (string | string[]) & PathProps;
 
+
 // a straightforward route handling function, potentially with attached properties
 export interface Fn<Ctx> {
   (ctx: Ctx, ...params: string[]): Promise<any>;
   captures?: null;
   source?: string;
-  after?: Handler<Ctx>
+  after?: Fn<Ctx>
 }
 
 // an array of route-handling functions, potentially with attached properties
 interface FnListProps<Ctx> {
   captures?: null;
   source?: string;
-  after?: Handler<Ctx>;
+  after?: Fn<Ctx>;
 }
 
 export type FnList<Ctx> = Array<Fn<Ctx>> & FnListProps<Ctx>;
@@ -80,7 +81,7 @@ export interface RoutingOptions<Ctx> {
     /**
      * Function to call if no route is found on a call to `router.dispatch()`.
      */
-    notfound?: Handler<Ctx> | undefined;
+    notfound?: Fn<Ctx> | undefined;
     /**
      * A function (or list of functions) to call on every call to
      * `router.dispatch()` when a route is found.
@@ -101,6 +102,13 @@ export interface RoutingOptions<Ctx> {
     resource?: Resource<Ctx> | undefined;
 }
 
+// An internal object containing before/after/on functions
+export interface Every<ThisType> {
+  before?: Handler<ThisType> | undefined;
+  after?: Handler<ThisType> | undefined;
+  on?: Handler<ThisType> | undefined;
+}
+
 /**
  * The return type of Router._getConfig, which gets mixed in with the instance
  */
@@ -108,7 +116,7 @@ export interface RoutingConfig<Ctx> {
     recurse: "forward" | "backward" | false;
     strict: boolean;
     delimiter: string;
-    notfound: Handler<Ctx> | null;
+    notfound: Fn<Ctx> | null;
     resource: Resource<Ctx>;
     every: Every<Ctx>;
 }

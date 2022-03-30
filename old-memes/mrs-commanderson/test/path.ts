@@ -11,15 +11,22 @@ import { test } from "tap";
 import { discuss } from "@jfhbrook/swears";
 import { Router } from '../router';
 
-test('director/core/path', async (assert) => {
+type Ctx = {};
+
+type Matched = {
+  foo: string[];
+  newyork: string[];
+};
+
+test('router/path', async (assert) => {
   assert.test("An instance of director.Router", async (assert) => {
     const routerTopic = discuss(async () => {
-      const matched = {
+      const matched: Matched = {
         foo: [],
         newyork: []
       };
 
-      const router = new Router<any>({
+      const router = new Router<Ctx>({
         '/foo': async () => { matched['foo'].push('foo'); }
       });
 
@@ -30,8 +37,9 @@ test('director/core/path', async (assert) => {
     });
 
     const pathTopic = routerTopic.discuss(async ({ matched, router }) => {
-      router.path('/regions', async () => {
-        router.on('/:state', async (country: any) => {
+      router.path('regions', async function() {
+        // Testing that "this" is Router
+        this.command(':state', async (ctx: Ctx, country: string) => {
           matched['newyork'].push('new york');
         });
       });
@@ -41,7 +49,7 @@ test('director/core/path', async (assert) => {
 
     assert.test("the path() method", async (assert) => {
       assert.test("should create the correct nested routing table", async (assert) => {
-        await pathTopic.swear(async ({ matched, router }) => {
+        await pathTopic.swear(async ({ router }) => {
           assert.ok(router.routes.foo.on);
           assert.ok(router.routes.regions);
           assert.ok(router.routes.regions['([._a-zA-Z0-9-%()]+)'].on);
