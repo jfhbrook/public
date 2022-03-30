@@ -22,6 +22,7 @@ import {
   Path,
   Resource,
   RoutingConfig,
+  RoutingContext,
   RoutingObject,
   RoutingOptions,
   RoutingTable,
@@ -39,25 +40,26 @@ export {
   Path,
   Resource,
   RoutingConfig,
+  RoutingContext,
   RoutingObject,
   RoutingOptions,
   RoutingTable
 };
 
-interface RoutingNodeProps<Ctx extends object> {
+interface RoutingNodeProps<Ctx> {
   matched?: boolean;
   source?: string;
   captures?: string[];
   after?: Handler<Ctx>;
 }
 
-export type RoutingLeaf<Ctx extends object> = Fn<Ctx>;
+export type RoutingLeaf<Ctx> = Fn<Ctx>;
 
-export type RoutingList<Ctx extends object> = Array<RoutingNode<Ctx>> & RoutingNodeProps<Ctx>;
+export type RoutingList<Ctx> = Array<RoutingNode<Ctx>> & RoutingNodeProps<Ctx>;
 
-export type RoutingNode<Ctx extends object> = RoutingList<Ctx> | RoutingLeaf<Ctx>
+export type RoutingNode<Ctx> = RoutingList<Ctx> | RoutingLeaf<Ctx>
 
-export type PathFn<Ctx extends object> = (this: Router<Ctx>) => void;
+export type PathFn<Ctx> = (this: Router<Ctx>) => void;
 
 type Params = Record<string, (str: string) => string>;
 
@@ -67,7 +69,7 @@ type Params = Record<string, (str: string) => string>;
 // The Router object class responsible for building and dispatching from a
 // given routing table.
 //
-export class Router<Ctx extends object> {
+export class Router<Ctx> {
   params: Params;
   routes: Record<string, any>;
   methods: Method[];
@@ -272,12 +274,12 @@ export class Router<Ctx extends object> {
   // `method` and `path` in the core routing table then
   // invokes them based on settings in this instance.
   //
-  async dispatch(path: string, ctx: Ctx): Promise<boolean>
-  async dispatch(method: Method, path: string, ctx: Ctx): Promise<boolean>
-  async dispatch(pathOrMethod: string | Method, ctxOrPath: Ctx | string, maybeCtx?: Ctx): Promise<boolean> {
+  async dispatch(path: string, ctx: RoutingContext<Ctx>): Promise<boolean>
+  async dispatch(method: Method, path: string, ctx: RoutingContext<Ctx>): Promise<boolean>
+  async dispatch(pathOrMethod: string | Method, ctxOrPath: RoutingContext<Ctx> | string, maybeCtx?: RoutingContext<Ctx>): Promise<boolean> {
     let method: Method | null = null;
     let path: string | null = null;
-    let ctx: Ctx | null = null;
+    let ctx: RoutingContext<Ctx> | null = null;
 
     if (maybeCtx) {
       method = <Method>pathOrMethod;
@@ -292,10 +294,10 @@ export class Router<Ctx extends object> {
       if (typeof ctxOrPath === 'string') {
         throw new Error(`unexpected context: ${maybeCtx}`);
       }
-      ctx = ctxOrPath;
+      ctx = <RoutingContext<Ctx>>ctxOrPath;
     }
 
-    if (method === null || path === null || !ctx) {
+    if (method === null || path === null || ctx === null) {
       throw new Error(`unexpected arguments: ${pathOrMethod}, ${ctxOrPath}, ${maybeCtx}`);
     }
 
@@ -326,9 +328,9 @@ export class Router<Ctx extends object> {
 
     const updateAndInvoke = async () => {
       this.last = (fns as RoutingList<Ctx>).after;
-      // TODO: Typescript things the context may be set to null - the types
-      // should rule that out but hey
-      await this.invoke(this.runlist(fns as RoutingList<Ctx>), <Ctx>ctx);
+      // TODO: Typescript things the context may be set to null - but the types
+      // should rule that out?
+      await this.invoke(this.runlist(fns as RoutingList<Ctx>), <RoutingContext<Ctx>>ctx);
     }
 
     //
@@ -391,7 +393,7 @@ export class Router<Ctx extends object> {
   // Invokes the `fns` and awaits the results. Each function must **not**
   // return (or respond) with false, or evaluation will short circuit.
   //
-  async invoke(fns: RoutingNode<Ctx>, ctx: Ctx) {
+  async invoke(fns: RoutingNode<Ctx>, ctx: RoutingContext<Ctx>) {
     const self = this;
     async function apply (fn: RoutingNode<Ctx>) {
       if (Array.isArray(fn)) {

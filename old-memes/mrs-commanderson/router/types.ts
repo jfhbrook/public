@@ -15,19 +15,21 @@
 // path-likes - strings and splitted strings, potentially with attached properties
 export type Path = (string | string[]);
 
+export type RoutingContext<Ctx> = Ctx extends null | string ? never : Ctx;
+
 // a straightforward route handling function, potentially with attached properties
-export interface Fn<Ctx extends object> {
-  (ctx: Ctx, ...params: string[]): Promise<any>;
+export interface Fn<Ctx> {
+  (ctx: RoutingContext<Ctx>, ...params: string[]): Promise<any>;
 }
 
-export type FnList<Ctx extends object> = Array<Fn<Ctx>>;
+export type FnList<Ctx> = Array<Fn<Ctx>>;
 
 // a handler is either a function list or a function
-export type Handler<Ctx extends object> = FnList<Ctx> | Fn<Ctx>;
+export type Handler<Ctx> = FnList<Ctx> | Fn<Ctx>;
 
 // it's possible through the API to add other method types, but in my project
 // I'm just using the 3 so I type them here
-export interface Resource<Ctx extends object> {
+export interface Resource<Ctx> {
   on?: Handler<Ctx>;
   before?: Handler<Ctx>;
   after?: Handler<Ctx>;
@@ -35,18 +37,18 @@ export interface Resource<Ctx extends object> {
 
 // a routing table - this is what may be passed into the constructor, but
 // it's also a node type
-export interface RoutingTable<Ctx extends object> {
+export interface RoutingTable<Ctx> {
     [route: string]: RoutingObject<Ctx>;
 }
 
-export type RoutingObject<Ctx extends object> = RoutingTable<Ctx> | Resource<Ctx> | Handler<Ctx>;
+export type RoutingObject<Ctx> = RoutingTable<Ctx> | Resource<Ctx> | Handler<Ctx>;
 
 export type Matcher = string | RegExp;
 
 /**
  * Router options object
  */
-export interface RoutingOptions<Ctx extends object> {
+export interface RoutingOptions<Ctx> {
     /**
      * Controls route recursion.
      * Default is `false` client-side, and `"backward"` server-side.
@@ -90,7 +92,7 @@ export type Method = "on" | "after" | "before";
 /**
  * The return type of Router._getConfig, which gets mixed in with the instance
  */
-export interface RoutingConfig<Ctx extends object> {
+export interface RoutingConfig<Ctx> {
     recurse: "forward" | "backward" | false;
     strict: boolean;
     delimiter: string;
@@ -100,4 +102,4 @@ export interface RoutingConfig<Ctx extends object> {
 }
 
 // a filter argument for route-finding
-export type Filter<Ctx extends object> = (fn: Fn<Ctx>) => boolean;
+export type Filter<Ctx> = (fn: Fn<Ctx>) => boolean;

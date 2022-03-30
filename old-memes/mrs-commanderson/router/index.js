@@ -184,7 +184,7 @@ class Router {
                 }
                 ctx = ctxOrPath;
             }
-            if (method === null || path === null || !ctx) {
+            if (method === null || path === null || ctx === null) {
                 throw new Error(`unexpected arguments: ${pathOrMethod}, ${ctxOrPath}, ${maybeCtx}`);
             }
             //
@@ -209,8 +209,8 @@ class Router {
             }
             const updateAndInvoke = () => __awaiter(this, void 0, void 0, function* () {
                 this.last = fns.after;
-                // TODO: Typescript things the context may be set to null - the types
-                // should rule that out but hey
+                // TODO: Typescript things the context may be set to null - but the types
+                // should rule that out?
                 yield this.invoke(this.runlist(fns), ctx);
             });
             //
