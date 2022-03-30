@@ -37,9 +37,9 @@ test('router/path', async (assert) => {
     });
 
     const pathTopic = routerTopic.discuss(async ({ matched, router }) => {
-      router.path('regions', async function() {
+      router.path('regions', function() {
         // Testing that "this" is Router
-        this.command(':state', async (ctx: Ctx, country: string) => {
+        this.on('command', ':state', async (ctx: Ctx, country: string) => {
           matched['newyork'].push('new york');
         });
       });

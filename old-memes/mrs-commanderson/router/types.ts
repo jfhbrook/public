@@ -14,8 +14,6 @@
 
 // path-likes - strings and splitted strings, potentially with attached properties
 interface PathProps {
-  captures?: null;
-  source?: string;
 }
 
 export type Path = (string | string[]) & PathProps;
@@ -24,16 +22,10 @@ export type Path = (string | string[]) & PathProps;
 // a straightforward route handling function, potentially with attached properties
 export interface Fn<Ctx> {
   (ctx: Ctx, ...params: string[]): Promise<any>;
-  captures?: null;
-  source?: string;
-  after?: Fn<Ctx>
 }
 
 // an array of route-handling functions, potentially with attached properties
 interface FnListProps<Ctx> {
-  captures?: null;
-  source?: string;
-  after?: Fn<Ctx>;
 }
 
 export type FnList<Ctx> = Array<Fn<Ctx>> & FnListProps<Ctx>;
@@ -41,10 +33,27 @@ export type FnList<Ctx> = Array<Fn<Ctx>> & FnListProps<Ctx>;
 // a handler is either a function list or a function
 export type Handler<Ctx> = FnList<Ctx> | Fn<Ctx>;
 
-// a routing table, as what may get passed into the constructor
-export interface RoutingTable<Ctx> {
-    [route: string]: Handler<Ctx> | RoutingTable<Ctx>;
+// it's possible through the API to add other method types, but in my project
+// I'm just using the 3 so I type them here
+export interface Resource<Ctx> {
+  on?: Handler<Ctx>;
+  before?: Handler<Ctx>;
+  after?: Handler<Ctx>;
 }
+
+// a routing table - this is what may be passed into the constructor, but
+// it's also a node type
+export interface RoutingTable<Ctx> {
+    [route: string]: RoutingObject<Ctx>;
+}
+
+export type RoutingObject<Ctx> = RoutingTable<Ctx> | Resource<Ctx> | Handler<Ctx>;
+
+export type RoutingLeaf<Ctx> = Fn<Ctx>;
+
+export type RoutingNode<Ctx> = Array<RoutingNode<Ctx>> | RoutingLeaf<Ctx>
+
+export type RoutingStem<Ctx> = Array<RoutingNode<Ctx>>
 
 // a type to capture "string or RegExp", though attempting to better handle
 // the codebase detecting RegExps by checking the "source" property :)
@@ -53,13 +62,6 @@ interface MatcherProps {
 }
 
 export type Matcher = (string & MatcherProps) | (RegExp & MatcherProps);
-
-// TODO: remove this functionality - this is just here to make RoutingOptions
-// happy
-export interface Resource<Ctx> {
-  [handlerName: string]: Fn<Ctx>
-}
-
 /**
  * Router options object
  */

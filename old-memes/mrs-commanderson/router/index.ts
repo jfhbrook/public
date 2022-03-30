@@ -12,22 +12,41 @@
  *
  */
 
-import { Every, Resource, Path, Fn, FnList, Handler, RoutingTable, Matcher, RoutingOptions, RoutingConfig, Filter } from './types';
+import {
+  Every,
+  Filter,
+  Fn,
+  FnList,
+  Handler,
+  Matcher,
+  Path,
+  Resource,
+  RoutingConfig,
+  RoutingObject,
+  RoutingStem,
+  RoutingOptions,
+  RoutingTable,
+} from './types';
 
-import { QUERY_SEPARATOR, paramifyString, regifyString, terminator } from './util';
+import { QUERY_SEPARATOR, regifyString, terminator } from './util';
 
-export type PathFn<Ctx> = (this: Router<Ctx>) => Promise<void>;
+export {
+  Filter,
+  Fn,
+  FnList,
+  Handler,
+  Matcher,
+  Path,
+  Resource,
+  RoutingConfig,
+  RoutingOptions,
+  RoutingTable
+};
 
-// TODO: trying to pin down some internal interfaces
-export type FnNode<Ctx> = FnList<Ctx> | Fn<Ctx>;
+// This type depends on the router, so it has to be here!
+export type PathFn<Ctx> = (this: Router<Ctx>) => void;
 
-interface RunListProps<Ctx> {
-}
-
-export type RunList<Ctx> = Array<Handler<Ctx>> & RunListProps<Ctx>;
-
-// TODO: what is this for?
-type Params = Record<string, any>;
+type Params = Record<string, (str: string) => string>;
 
 //
 // ### class Router (routes)
@@ -38,9 +57,9 @@ type Params = Record<string, any>;
 export class Router<Ctx> {
   params: Params;
   routes: Record<string, any>;
-  methods: string[];
+  methods: ['on', 'after', 'before'];
   scope: any[];
-  private _methods: Record<string, boolean>;
+  private _methods: Set<string>;
   private _invoked: boolean;
   private last: Handler<Ctx>;
 
@@ -56,8 +75,7 @@ export class Router<Ctx> {
     this.routes   = {};
     this.methods  = ['on', 'after', 'before'];
     this.scope    = [];
-    // methods which have already been added
-    this._methods = {};
+    this._methods = new Set();
     this._invoked = false;
     this.last = [];
 
@@ -113,7 +131,7 @@ export class Router<Ctx> {
   // TODO: Get rid of this
   private _initMethods(): void {
     for (let i = 0; i < this.methods.length; i++) {
-      this._methods[this.methods[i]] = true;
+      this._methods.add(this.methods[i]);
     }
   }
 
@@ -168,17 +186,19 @@ export class Router<Ctx> {
   }
 
   //
-  // ### method command (path, route)
+  // ### method on (method, path, route)
+  // #### @method {string} **Optional** Method to use
   // #### @path {Array|string} Path to set this route on.
   // #### @route {Array|function} Handler for the specified method and path.
   // Adds a new `route` to this instance for the specified `path`.
   //
-  command(path: Path, route: Handler<Ctx>): void {
-    this.on('command', path, route);
-  }
+  public on(path: Path, route: Handler<Ctx>): void
+  public on(method: string, path: Path, route: Handler<Ctx>): void
+  public on(pathOrMethod: string | Path, routeOrPath: Handler<Ctx> | Path, maybeRoute?: Handler<Ctx>): void {
+    const method: string = maybeRoute ? <string>pathOrMethod : "on";
+    const path: Path = maybeRoute ? <Path>routeOrPath : pathOrMethod;
+    const route: Handler<Ctx> = maybeRoute ? maybeRoute : <Handler<Ctx>>routeOrPath;
 
-  // TODO: Do I want this to be private?
-  private on(method: string, path: Path, route: Handler<Ctx>): void {
     const self = this;
 
     if (Array.isArray(path)) {
@@ -243,7 +263,7 @@ export class Router<Ctx> {
   async dispatch(path: string, ctx: Ctx): Promise<boolean>
   async dispatch(method: string, path: string, ctx: Ctx): Promise<boolean>
   async dispatch(pathOrMethod: string, ctxOrPath: Ctx | string, maybeCtx?: Ctx): Promise<boolean> {
-    let method: string = maybeCtx ? pathOrMethod : "command";
+    let method: string = maybeCtx ? pathOrMethod : "on";
     let path: string = maybeCtx ? <string>ctxOrPath : pathOrMethod;
     let ctx: Ctx = maybeCtx ? maybeCtx : <Ctx>ctxOrPath;
 
@@ -319,8 +339,8 @@ export class Router<Ctx> {
       ? [this.every.before].concat(fns.flat())
       : fns.flat();
 
-    if (this.every && this.every.command) {
-      runlist.push(this.every.command);
+    if (this.every && this.every.on) {
+      runlist.push(this.every.on);
     }
 
     // TODO: The type required here is an Array which also has these fields -
@@ -367,47 +387,46 @@ export class Router<Ctx> {
   // specified `path` within `this.routes` looking for `method`
   // returning any `fns` that are found.
   //
-  // TODO: routes isn't a RoutingTable, but instead a list of either Fns or more of
-  // itself. FnList won't work - we need a FnTree type!!
-  // TODO: this has a *lot* of any in it, any way we can cut that down without
-  // major refactors? by improving the types?
-  traverse(method: string, path: string, routes: RoutingTable<Ctx>, regexp: Matcher, filter?: (fn: any) => boolean): RoutingTable<Ctx> {
+  traverse(method: 'on' | 'before' | 'after', path: string, routes: RoutingObject<Ctx>, regexp: Matcher, filter?: Filter<Ctx>): RoutingStem<Ctx> | null {
     let fns: any[] = [];
     let current;
     let exact;
     let match;
-    let next;
+    let next: RoutingStem<Ctx>;
 
-    function filterRoutes(routes: RoutingTable<Ctx>) {
+    function filterRoutes(routes: RoutingStem<Ctx>) {
       if (!filter) {
         return routes;
       }
 
-      // NOTE: typing this appropriately would be a lot more work than it's
-      // worth. source is certainly an array, but it's deeply nested arrays.
-      // This isn't *actually* generalizable for any T, *but* this should at
-      // least let the types assert that the output type is the same as the
-      // input type, assuming you were careful.
-      function deepCopy<T>(source: T): T {
-        var result: any = [];
-        for (var i = 0; i < (source as any).length; i++) {
-          result[i] = Array.isArray((source as any)[i]) ? deepCopy((source as any)[i]) : (source as any)[i];
+      function deepCopy(source: RoutingStem<Ctx>): RoutingStem<Ctx> {
+        var result: RoutingStem<Ctx> = [];
+        for (var i = 0; i < source.length; i++) {
+          result[i] = Array.isArray(source[i]) ? deepCopy(<RoutingStem<Ctx>>source[i]) : source[i];
         }
-        return <T>result;
+        return result;
       }
 
       // TODO: This is actually a handler (a Fn | FnList) OR
       // a nested version of this thing.
-      function applyFilter(fns: FnList<Ctx>) {
+      function applyFilter(fns: RoutingStem<Ctx>) {
         for (let i = fns.length - 1; i >= 0; i--) {
           if (Array.isArray(fns[i])) {
-            applyFilter(fns[i]);
+            // NOTE: typescript erroneously doesn't recognize Array.isArray
+            // as a guard
+            applyFilter(<RoutingStem<Ctx>>fns[i]);
             if (fns[i].length === 0) {
               fns.splice(i, 1);
             }
           }
           else {
-            if (!(filter)(fns[i])) {
+            // NOTE: A few lines up, outside this closure, we exited early
+            // when filter is undefined. We know it doesn't get defined
+            // elsewhere, so this is safe.
+            //
+            // in addition, the Array.isArray check tells us that fns must
+            // be a Fn, not a FnList.
+            if (!(filter as Filter<Ctx>)(<Fn<Ctx>>fns[i])) {
               fns.splice(i, 1);
             }
           }
@@ -429,8 +448,10 @@ export class Router<Ctx> {
     // If we are dispatching from the root
     // then only check if the method exists.
     //
-    if (path === this.delimiter && routes.command) {
-      next = [[routes.before, routes.command].filter(Boolean)];
+    if (path === this.delimiter && routes.on) {
+      const _routes = <Resource<Ctx>>routes;
+      // NOTE: The filter step removes any undefined values so this is good to go
+      next = [<Fn<Ctx>[]><unknown>[_routes.before, _routes.on].filter(Boolean)];
       next.after = [routes.after].filter(Boolean);
       next.matched = true;
       next.captures = [];
@@ -449,8 +470,11 @@ export class Router<Ctx> {
       // are actual methods (e.g. `on`, `before`, etc), but
       // which are not actual nested route (i.e. JSON literals).
       //
-      if (!this._methods[r] ||
-        this._methods[r] && typeof routes[r] === 'object' && !Array.isArray(routes[r])) {
+      // NOTE: This particular check is ensuring that the "r" is a /route/,
+      // not a method - in other words, if this check passes then "routes"
+      // is a RoutingTable, not a Resource.
+      if (!this._methods.has(r) ||
+        this._methods.has(r) && typeof (routes as any)[r] === 'object' && !Array.isArray((routes as any)[r])) {
         //
         // Attempt to make an exact match for the current route
         // which is built from the `regexp` that has been built
@@ -475,20 +499,25 @@ export class Router<Ctx> {
           continue;
         }
 
-        if (match[0] && match[0] == path && (routes[r] as any)[method]) {
+        // NOTE: If these types are as we suggest, then that expression will
+        // return true :)
+        if (match[0] && match[0] == path && ((routes as RoutingTable<Ctx>)[r] as Resource<Ctx>)[method]) {
+          // See? I proved it.
+          const _routes = <{ [route: string]: Resource<Ctx> }>routes;
+
           //
           // ### Base case 2:
           // If we had a `match` and the capture is the path itself,
           // then we have completed our recursion.
           //
-          next = [[routes[r].before, (routes[r] as any)[method]].filter(Boolean)];
-          next.after = [routes[r].after].filter(Boolean);
+          next = [[_routes[r].before, (_routes[r] as any)[method]].filter(Boolean)];
+          next.after = [_routes[r].after].filter(Boolean);
           next.matched = true;
           next.captures = match.slice(1);
 
           if (this.recurse && routes === this.routes) {
-            next.push([routes.before, routes.on].filter(Boolean));
-            next.after = next.after.concat([routes.after].filter(Boolean));
+            next.push(<RoutingStem<Ctx>>[_routes.before, _routes.on].filter(Boolean));
+            next.after = next.after.concat([_routes.after].filter(Boolean));
           }
 
           return filterRoutes(next);
@@ -500,7 +529,7 @@ export class Router<Ctx> {
         // attempt to continue matching against the next portion of the
         // routing table.
         //
-        next = this.traverse(method, path, <any>routes[r], current);
+        next = this.traverse(method, path, (routes as any)[r], current);
 
         //
         // `next.matched` will be true if the depth-first search of the routing
@@ -516,12 +545,13 @@ export class Router<Ctx> {
           }
 
           if (this.recurse) {
-            fns.push([routes[r].before, routes[r][method]].filter(Boolean));
-            next.after = next.after.concat([routes[r].after].filter(Boolean));
+            const _routes = <{ [r: string]: Resource<Ctx> }>routes;
+            fns.push([_routes[r].before, _routes[r][method]].filter(Boolean));
+            next.after = next.after.concat([_routes[r].after].filter(Boolean));
 
             if (routes === this.routes) {
-              fns.push([routes['before'], routes['on']].filter(Boolean));
-              next.after = next.after.concat([routes['after']].filter(Boolean));
+              fns.push([_routes['before'], _routes['on']].filter(Boolean));
+              next.after = next.after.concat([_routes['after']].filter(Boolean));
             }
           }
 
@@ -539,7 +569,7 @@ export class Router<Ctx> {
       }
     }
 
-    return false;
+    return null;
   }
 
   //
@@ -575,7 +605,7 @@ export class Router<Ctx> {
       // child
       //
       parent[<string>part] = parent[<string>part] || {};
-      return this.insert(method, path, route, parent[<string>part]);
+      return this.insert(method, path, route, <Handler<Ctx>>parent[<string>part]);
     }
 
     //
@@ -698,7 +728,7 @@ export class Router<Ctx> {
       let rename = route,
           parts = route.split(this.delimiter),
           routeType = typeof routes[route],
-          isRoute = parts[0] === "" || !this._methods[parts[0]],
+          isRoute = parts[0] === "" || !(this._methods.has(parts[0])),
           event = isRoute ? "on" : rename;
 
       if (isRoute) {
@@ -708,18 +738,16 @@ export class Router<Ctx> {
 
       if (isRoute && routeType === 'object' && !Array.isArray(routes[route])) {
         local = local.concat(parts);
-        this.mount(routes[route], local);
+        this.mount(<Handler<Ctx>>routes[route], local);
         return;
       }
 
       if (isRoute) {
-        local = local.concat(rename.split(self.delimiter));
-        local = terminator(local, self.delimiter);
+        local = local.concat(rename.split(this.delimiter));
+        local = terminator(local, this.delimiter);
       }
 
-      // NOTE: This *should* be safe to do if the above switches are doing
-      // what they're supposed to! D:
-      this.insert(event, local, <any>routes[<string>route]);
+      this.insert(event, local, <Handler<Ctx>>routes[<string>route]);
     }
 
     for (let route of Object.keys(routes)) {
