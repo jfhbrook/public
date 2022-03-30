@@ -44,20 +44,20 @@ export {
   RoutingTable
 };
 
-interface RoutingNodeProps<Ctx> {
+interface RoutingNodeProps<Ctx extends object> {
   matched?: boolean;
   source?: string;
   captures?: string[];
   after?: Handler<Ctx>;
 }
 
-export type RoutingLeaf<Ctx> = Fn<Ctx>;
+export type RoutingLeaf<Ctx extends object> = Fn<Ctx>;
 
-export type RoutingList<Ctx> = Array<RoutingNode<Ctx>> & RoutingNodeProps<Ctx>;
+export type RoutingList<Ctx extends object> = Array<RoutingNode<Ctx>> & RoutingNodeProps<Ctx>;
 
-export type RoutingNode<Ctx> = RoutingList<Ctx> | RoutingLeaf<Ctx>
+export type RoutingNode<Ctx extends object> = RoutingList<Ctx> | RoutingLeaf<Ctx>
 
-export type PathFn<Ctx> = (this: Router<Ctx>) => void;
+export type PathFn<Ctx extends object> = (this: Router<Ctx>) => void;
 
 type Params = Record<string, (str: string) => string>;
 
@@ -67,7 +67,7 @@ type Params = Record<string, (str: string) => string>;
 // The Router object class responsible for building and dispatching from a
 // given routing table.
 //
-export class Router<Ctx> {
+export class Router<Ctx extends object> {
   params: Params;
   routes: Record<string, any>;
   methods: Method[];
@@ -277,29 +277,26 @@ export class Router<Ctx> {
   async dispatch(pathOrMethod: string | Method, ctxOrPath: Ctx | string, maybeCtx?: Ctx): Promise<boolean> {
     let method: Method | null = null;
     let path: string | null = null;
-    // TODO: Ctx can technically be `string` or `null`, but this code assumes
-    // that it's neither of those things. The type needs to be updated to
-    // be objects only.
-    let ctx: Ctx = <Ctx><unknown>null;
+    let ctx: Ctx | null = null;
 
     if (maybeCtx) {
       method = <Method>pathOrMethod;
       if (typeof ctxOrPath !== 'string') {
-        throw new Error('path must be a string');
+        throw new Error(`unexpected path: ${ctxOrPath}`);
       }
       path = ctxOrPath;
       ctx = maybeCtx;
     } else {
       method = "on";
       path = pathOrMethod;
-      if (typeof maybeCtx === 'string') {
-        throw new Error('context may not be a string!');
+      if (typeof ctxOrPath === 'string') {
+        throw new Error(`unexpected context: ${maybeCtx}`);
       }
-      ctx = <Ctx>ctxOrPath;
+      ctx = ctxOrPath;
     }
 
-    if (method === null || path === null || ctx === null) {
-      throw new Error('assert: method, path and ctx should be defined');
+    if (method === null || path === null || !ctx) {
+      throw new Error(`unexpected arguments: ${pathOrMethod}, ${ctxOrPath}, ${maybeCtx}`);
     }
 
     //
@@ -329,7 +326,9 @@ export class Router<Ctx> {
 
     const updateAndInvoke = async () => {
       this.last = (fns as RoutingList<Ctx>).after;
-      await this.invoke(this.runlist(fns as RoutingList<Ctx>), ctx);
+      // TODO: Typescript things the context may be set to null - the types
+      // should rule that out but hey
+      await this.invoke(this.runlist(fns as RoutingList<Ctx>), <Ctx>ctx);
     }
 
     //

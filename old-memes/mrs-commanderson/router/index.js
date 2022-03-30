@@ -167,14 +167,11 @@ class Router {
         return __awaiter(this, void 0, void 0, function* () {
             let method = null;
             let path = null;
-            // TODO: Ctx can technically be `string` or `null`, but this code assumes
-            // that it's neither of those things. The type needs to be updated to
-            // be objects only.
             let ctx = null;
             if (maybeCtx) {
                 method = pathOrMethod;
                 if (typeof ctxOrPath !== 'string') {
-                    throw new Error('path must be a string');
+                    throw new Error(`unexpected path: ${ctxOrPath}`);
                 }
                 path = ctxOrPath;
                 ctx = maybeCtx;
@@ -182,13 +179,13 @@ class Router {
             else {
                 method = "on";
                 path = pathOrMethod;
-                if (typeof maybeCtx === 'string') {
-                    throw new Error('context may not be a string!');
+                if (typeof ctxOrPath === 'string') {
+                    throw new Error(`unexpected context: ${maybeCtx}`);
                 }
                 ctx = ctxOrPath;
             }
-            if (method === null || path === null || ctx === null) {
-                throw new Error('assert: method, path and ctx should be defined');
+            if (method === null || path === null || !ctx) {
+                throw new Error(`unexpected arguments: ${pathOrMethod}, ${ctxOrPath}, ${maybeCtx}`);
             }
             //
             // Prepend a single space onto the path so that the traversal
@@ -212,6 +209,8 @@ class Router {
             }
             const updateAndInvoke = () => __awaiter(this, void 0, void 0, function* () {
                 this.last = fns.after;
+                // TODO: Typescript things the context may be set to null - the types
+                // should rule that out but hey
                 yield this.invoke(this.runlist(fns), ctx);
             });
             //
