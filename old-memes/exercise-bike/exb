@@ -72,10 +72,10 @@ async function main() {
     template = await fs.readFile(input, 'utf8');
   }
 
-  for ([name, value] of Object.entries(opts)) {
+  for (let [name, value] of Object.entries(opts)) {
     if (typeof value === 'string') {
       if (value[0] === '@') {
-        opts[name] = await fs.readFile(value.slice(1));
+        opts[name] = await fs.readFile(value.slice(1), 'utf8');
       } else if (value === ":stdin:") {
         opts[name] = stdin;
       }
