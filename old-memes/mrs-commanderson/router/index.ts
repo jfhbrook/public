@@ -110,6 +110,7 @@ export class Router<Ctx> {
     };
   }
 
+  // TODO: Get rid of this
   private _initMethods(): void {
     for (let i = 0; i < this.methods.length; i++) {
       this._methods[this.methods[i]] = true;
@@ -167,19 +168,22 @@ export class Router<Ctx> {
   }
 
   //
-  // ### method on (method, path, route)
-  // #### @method {string} **Optional** Method to use
+  // ### method command (path, route)
   // #### @path {Array|string} Path to set this route on.
   // #### @route {Array|function} Handler for the specified method and path.
-  // Adds a new `route` to this instance for the specified `method`
-  // and `path`.
+  // Adds a new `route` to this instance for the specified `path`.
   //
   command(path: Path, route: Handler<Ctx>): void {
+    this.on('command', path, route);
+  }
+
+  // TODO: Do I want this to be private?
+  private on(method: string, path: Path, route: Handler<Ctx>): void {
     const self = this;
 
     if (Array.isArray(path)) {
       return path.forEach(function(p) {
-        self.command(p, route);
+        self.on(method, p, route);
       });
     }
 
@@ -199,6 +203,7 @@ export class Router<Ctx> {
 
     this.insert(method, this.scope.concat(split), route);
   }
+
 
   //
   // ### method path (path, routesFn)
@@ -223,20 +228,25 @@ export class Router<Ctx> {
     split = terminator(split, this.delimiter);
     this.scope = this.scope.concat(path);
 
-    // TODO: lol!!
-    routesFn.call(this, this);
+    routesFn.call(this);
     this.scope.splice(length, split.length);
   }
 
   //
-  // ### method dispatch (method, path)
+  // ### method dispatch ([method], path, ctx)
   // #### @method {string} Method to dispatch
   // #### @path {string} Path to dispatch
   // Finds a set of functions on the traversal towards
   // `method` and `path` in the core routing table then
   // invokes them based on settings in this instance.
   //
-  async dispatch(method: string, path: string, tty: Ctx) {
+  async dispatch(path: string, ctx: Ctx): Promise<boolean>
+  async dispatch(method: string, path: string, ctx: Ctx): Promise<boolean>
+  async dispatch(pathOrMethod: string, ctxOrPath: Ctx | string, maybeCtx?: Ctx): Promise<boolean> {
+    let method: string = maybeCtx ? pathOrMethod : "command";
+    let path: string = maybeCtx ? <string>ctxOrPath : pathOrMethod;
+    let ctx: Ctx = maybeCtx ? maybeCtx : <Ctx>ctxOrPath;
+
     //
     // Prepend a single space onto the path so that the traversal
     // algorithm will recognize it. This is because we always assume
@@ -303,14 +313,14 @@ export class Router<Ctx> {
   // 2. Global on (if any)
   // 3. Matched functions from routing table (`['before', 'on'], ['before', 'on`], ...]`)
   //
-  runlist(fns: FnList<Ctx>): RunList<Ctx> {
+  runlist(fns: FnList<Ctx>): FnList<Ctx> {
     // So here, "every" is a Handler, so we'd have a List<Handler>, but fns is a list of fn's
-    const runlist: RunList<Ctx> = this.every && this.every.before
+    const runlist: FnList<Ctx> = this.every && this.every.before
       ? [this.every.before].concat(fns.flat())
       : fns.flat();
 
-    if (this.every && this.every.on) {
-      runlist.push(this.every.on);
+    if (this.every && this.every.command) {
+      runlist.push(this.every.command);
     }
 
     // TODO: The type required here is an Array which also has these fields -
@@ -357,7 +367,11 @@ export class Router<Ctx> {
   // specified `path` within `this.routes` looking for `method`
   // returning any `fns` that are found.
   //
-  traverse(method: string, path: string, routes: RoutingTable<Router>, regexp: Matcher, filter?: (fn: any) => boolean): FnList<Router> {
+  // TODO: routes isn't a RoutingTable, but instead a list of either Fns or more of
+  // itself. FnList won't work - we need a FnTree type!!
+  // TODO: this has a *lot* of any in it, any way we can cut that down without
+  // major refactors? by improving the types?
+  traverse(method: string, path: string, routes: RoutingTable<Ctx>, regexp: Matcher, filter?: (fn: any) => boolean): RoutingTable<Ctx> {
     let fns: any[] = [];
     let current;
     let exact;
@@ -369,20 +383,22 @@ export class Router<Ctx> {
         return routes;
       }
 
-      // - it's a list
-      // - the list may have arrays that may be deep-copied again, or
-      // - or it's a function and that's it
-      function deepCopy<T>(source: Array<T | Array<T>>): RoutingTable<Ctx> {
-        var result = [];
-        for (var i = 0; i < source.length; i++) {
-          result[i] = Array.isArray(source[i]) ? deepCopy(source[i]) : source[i];
+      // NOTE: typing this appropriately would be a lot more work than it's
+      // worth. source is certainly an array, but it's deeply nested arrays.
+      // This isn't *actually* generalizable for any T, *but* this should at
+      // least let the types assert that the output type is the same as the
+      // input type, assuming you were careful.
+      function deepCopy<T>(source: T): T {
+        var result: any = [];
+        for (var i = 0; i < (source as any).length; i++) {
+          result[i] = Array.isArray((source as any)[i]) ? deepCopy((source as any)[i]) : (source as any)[i];
         }
         return <T>result;
       }
 
       // TODO: This is actually a handler (a Fn | FnList) OR
       // a nested version of this thing.
-      function applyFilter(fns: Handler<Ctx>[]) {
+      function applyFilter(fns: FnList<Ctx>) {
         for (let i = fns.length - 1; i >= 0; i--) {
           if (Array.isArray(fns[i])) {
             applyFilter(fns[i]);
@@ -433,8 +449,8 @@ export class Router<Ctx> {
       // are actual methods (e.g. `on`, `before`, etc), but
       // which are not actual nested route (i.e. JSON literals).
       //
-      if (routes.hasOwnProperty(r) && (!this._methods[r] ||
-        this._methods[r] && typeof routes[r] === 'object' && !Array.isArray(routes[r]))) {
+      if (!this._methods[r] ||
+        this._methods[r] && typeof routes[r] === 'object' && !Array.isArray(routes[r])) {
         //
         // Attempt to make an exact match for the current route
         // which is built from the `regexp` that has been built
@@ -459,13 +475,13 @@ export class Router<Ctx> {
           continue;
         }
 
-        if (match[0] && match[0] == path && routes[r][method]) {
+        if (match[0] && match[0] == path && (routes[r] as any)[method]) {
           //
           // ### Base case 2:
           // If we had a `match` and the capture is the path itself,
           // then we have completed our recursion.
           //
-          next = [[routes[r].before, routes[r][method]].filter(Boolean)];
+          next = [[routes[r].before, (routes[r] as any)[method]].filter(Boolean)];
           next.after = [routes[r].after].filter(Boolean);
           next.matched = true;
           next.captures = match.slice(1);
@@ -484,7 +500,7 @@ export class Router<Ctx> {
         // attempt to continue matching against the next portion of the
         // routing table.
         //
-        next = this.traverse(method, path, routes[r], current);
+        next = this.traverse(method, path, <any>routes[r], current);
 
         //
         // `next.matched` will be true if the depth-first search of the routing
@@ -536,21 +552,18 @@ export class Router<Ctx> {
   // this instance at the specified `path` within the `context` provided.
   // If no context is provided then `this.routes` will be used.
   //
-  insert(method: string, path: string[], route: Handler<Router>, parent?: Handler<Router>[]) {
-    let methodType;
-    let parentType;
-    let isArray;
-    let nested;
-    let part;
+  insert(method: string, path: string[], route: Handler<Ctx>, parent_?: Handler<Ctx> | RoutingTable<Ctx>): void {
+    let methodType: string;
 
     path = path.filter(function (p) {
       return p && p.length > 0;
     });
 
-    parent = parent || this.routes;
-    part = path.shift();
-    if (/\:|\*/.test(part) && !/\\d|\\w/.test(part)) {
-      part = regifyString(part, this.params);
+    const parent: RoutingTable<Ctx> = parent_ || this.routes;
+    let part = path.shift();
+    // Note: javascript will take undefined in these methods just fine -_-;
+    if (/\:|\*/.test(<any>part) && !/\\d|\\w/.test(<any>part)) {
+      part = regifyString(<any>part, this.params);
     }
 
     if (path.length > 0) {
@@ -562,7 +575,7 @@ export class Router<Ctx> {
       // child
       //
       parent[<string>part] = parent[<string>part] || {};
-      return this.insert(path, route, parent[<string>part]);
+      return this.insert(method, path, route, parent[<string>part]);
     }
 
     //
@@ -574,12 +587,14 @@ export class Router<Ctx> {
     if (!part && !path.length && parent === this.routes) {
       methodType = typeof parent[method];
 
+      // TODO: These casts are making a *lot* of bold assumptions - let's
+      // see if they pan out
       switch (methodType) {
         case 'function':
-          parent[method] = [parent[method], route];
+          parent[method] = [<Fn<Ctx>>parent[method], <Fn<Ctx>>route];
           return;
         case 'object':
-          parent[method].push(route);
+          (parent[method] as FnList<Ctx>).push(<Fn<Ctx>>route);
           return;
         case 'undefined':
           parent[method] = route;
@@ -594,28 +609,36 @@ export class Router<Ctx> {
     // insert the `route` based on the `method` after getting the
     // `parent` of the last `part`.
     //
-    parentType = typeof parent[part];
-    isArray = Array.isArray(parent[part]);
+    let parentType = typeof parent[<string>part];
+    let isArray = Array.isArray(parent[<string>part]);
 
-    if (parent[part] && !isArray && parentType == 'object') {
-      methodType = typeof parent[part][method];
+    if (parent[<string>part] && !isArray && parentType == 'object') {
+      // NOTE: If we found the path part, then we definitely have a
+      // RoutingTable! If we grab the property, it's either a fn or
+      // another RoutingTable. If it's a routing a table it may
+      // have the method defined on it, and if it's a function then it'll
+      // be undefined either way.
+      methodType = typeof (parent as any)[<string>part][method];
 
       switch (methodType) {
         case 'function':
-          parent[part][method] = [parent[part][method], route];
+          // replace the raw function with a FnList
+          (parent as any)[<string>part][method] = [(parent as any)[<string>part][method], route];
           return;
         case 'object':
-          parent[part][method].push(route);
+          // it's an array, push the inserted route onto it
+          (parent as any)[<string>part][method].push(route);
           return;
         case 'undefined':
-          parent[part][method] = route;
+          // well, define it lol
+          (parent as any)[<string>part][method] = route;
           return;
       }
     }
     else if (parentType == 'undefined') {
-      nested = {};
+      const nested: RoutingTable<Ctx> = {};
       nested[method] = route;
-      parent[part] = nested;
+      parent[<string>part] = nested;
       return;
     }
 
@@ -629,19 +652,19 @@ export class Router<Ctx> {
   // Extends this instance with simple helper methods to `this.on`
   // for each of the specified `methods`
   //
-  extend(methods: string[]) {
-    var self = this,
-        len = methods.length,
-        i;
+  private extend(methods: string[]) {
+    // TODO: Remove this method?
+    const self = this;
+    let len = methods.length;
+    let i = 0;
 
     function extend(method: string) {
       self._methods[method] = true;
-      self[method] = function (...args) {
+      (self as any)[method] = function (ctx, ...args) {
         let extra = args.length === 1
           ? [method, '']
           : [method];
-
-        // TODO: jesus christ
+        
         self.on.apply(self, extra.concat(Array.from(args)));
       };
     }
@@ -672,7 +695,7 @@ export class Router<Ctx> {
     const _path: string[] = path instanceof Array ? path : path.split(this.delimiter);
 
     const insertOrMount = (route: string, local: string[]) => {
-      var rename = route,
+      let rename = route,
           parts = route.split(this.delimiter),
           routeType = typeof routes[route],
           isRoute = parts[0] === "" || !this._methods[parts[0]],
@@ -694,7 +717,9 @@ export class Router<Ctx> {
         local = terminator(local, self.delimiter);
       }
 
-      this.insert(event, local, routes[route]);
+      // NOTE: This *should* be safe to do if the above switches are doing
+      // what they're supposed to! D:
+      this.insert(event, local, <any>routes[<string>route]);
     }
 
     for (let route of Object.keys(routes)) {
