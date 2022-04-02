@@ -15,35 +15,18 @@ licensed" - ~count_crossings~ and ~nomograms~ have no licensing information at
 all and ~super-four-bar-explorer~ has "Everything here's on the wtfpl" in the
 comments - but if someone really needs it I'm happy to add licensing
 information. Let me know.
-** data
-This folder contains various free datasets - currently this contains the IAS
-student survey results for the University of Alaska Fairbanks from 2005 to 2009,
-in difficult-to-parse .pdf form. Sorry y'all.
 ** db_hooks
 This is the toolset I made for myself to manage database stuff on my personal
 machines. It is licensed under an Apache v2.0 license with additional
 restrictions. See the included NOTICE file for details.
-** de-discord
-This repo is a gitops repo for a Data Engineering Discord that I moderate. The
-Python code has an Apache 2.0 v2.0 license, but the emojis are "poorly
-licensed". See the included NOTICE file for details.
-This is stuff I'm working on for my Linux desktop. It is available under a MPL
-v2.0 license with additional restrictions. See the included NOTICE files for
-details.
+** fortune-mod
+This is a collection of (small, but hopefully will grow) fortune files. I
+intend to put them up on COPR but haven't done it yet.
 ** github-profile
 This submodule contains my GitHub README profile. It is unlicensed but
 source-available.
 ** gpl
 This submodule contains my GPL-compatible free software projects.
-** hacks
-Herein lie my open source hack projects!
-*** alacritty-theme-tester
-This is a series of kludgy scripts I wrote for testing out themes with
-Alacritty, the terminal I use in Linux. It is licensed under a MIT license.
-*** ihydra
-This is a sabbatical project I worked on in Spring 2020 that contains a Jupyter
-kernel for [[https://hydra-editor.glitch.me/][the Hydra visual synthesizer]]. It uses the same license as the
-IJavascript kernel - that is, under a BSD 3-clause license.
 ** korben-twitter
 This is the twitter bot which powers [[https://twitter.com/korbenisabird][@korbenisabird]].
 It's written in rust, and licensed under an Apache 2.0 license.
@@ -83,27 +66,6 @@ coroutines and concurrent programming. It is licensed under an MIT license.
 ** resume
 This is my resume! This repository contains PDFs for my standard one-page resume
 and a longer CV. It's written in LaTeX.
-** trophies
-This folder contains projects that I don't maintain anymore but that I'm proud
-of and want to showcase.
-*** ecstatic
-Ecstatic is a static fileserving middleware for Node.js that I maintained from
-2011 to 2019, with over 900 stars on GitHub. I shut down the project in May 2019
-[[https://github.com/jfhbrook/node-ecstatic/issues/259][in a big huff]]. It is licensed under an MIT license.
-*** hoarders
-Hoarders was a joke module I made as commentary around "grab bag utility
-modules" like underscore in the Node.js ecosystem around 2013. It was intended
-to make close friends laugh, but ended up getting the attention of most module
-maintainers on npm, making a number of them [[https://github.com/jfhbrook/hoarders/issues/2][pretty angry]]. Eventually, it was
-discovered that starring the package would freeze the npm registry, and Isaac
-deleted it from npm.
-
-Hoarders is licensed under the Tumbolia Public License.
-*** nodeboats_2015
-At JSConf 2015, I teamed up with some friends to make a nodeboat with a sail on
-it. The SS. Duplicate Callback, if memory serves, did about as well in the
-competition as you could trying to control a boat over hotel wifi. Sadly, I
-don't have pictures.
 ** twisted_ipython
 This is a module that makes autoawait work in IPython using Twisted. It is
 licened under a BSD 3-clause license with additional restrictions. See

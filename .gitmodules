@@ -8,13 +8,13 @@
 	path = old-memes/pickleback
 	url = git@github.com:jfhbrook/pickleback.git
 [submodule "hacks/ihydra/jp-kernel"]
-	path = hacks/ihydra/jp-kernel
+	path = attic/ihydra/jp-kernel
 	url = git@github.com:jfhbrook/jp-kernel.git
 [submodule "hacks/ihydra/nel"]
-	path = hacks/ihydra/nel
+	path = attic/ihydra/nel
 	url = git@github.com:jfhbrook/nel.git
 [submodule "hacks/ihydra/ihydra"]
-	path = hacks/ihydra/ihydra
+	path = attic/ihydra/ihydra
 	url = git@github.com:jfhbrook/ihydra.git
 [submodule "gpl"]
 	path = gpl
@@ -23,7 +23,7 @@
 	path = resume
 	url = git@github.com:jfhbrook/resume.git
 [submodule "trophies/ecstatic"]
-	path = trophies/ecstatic
+	path = attic/ecstatic
 	url = git@github.com:jfhbrook/node-ecstatic.git
 [submodule "pyee"]
 	path = pyee
@@ -31,9 +31,6 @@
 [submodule "github-profile"]
 	path = github-profile
 	url = git@github.com:jfhbrook/jfhbrook.git
-[submodule "de-discord"]
-	path = de-discord
-	url = git@github.com:jfhbrook/de-discord.git
 [submodule "old-memes/hoarders"]
 	path = old-memes/hoarders
 	url = git@github.com:jfhbrook/hoarders.git
