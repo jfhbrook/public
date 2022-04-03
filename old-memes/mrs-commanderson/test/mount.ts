@@ -48,7 +48,25 @@ async function countryCityZip () { }
 
 
 test('router/mount', async (assert) => {
-  assert.test("An instance of Router", async (assert) => {
+  assert.test('(the cli version)', async (assert) => {
+    const topic = discuss(async () => {
+      return new Router<Ctx>({
+        apps: async () => { },
+        ' users': async () => { }
+      });
+    });
+
+    assert.test('should create the correct routing table', async (assert) => {
+      await topic.swear(async (router) => {
+        assert.ok(router.routes.apps);
+        assert.ok(router.routes.users);
+        assert.type(router.routes.apps.on, Function);
+        assert.type(router.routes.users.on, Function);
+      });
+    });
+  });
+
+  assert.skip("(the core version)", async (assert) => {
     assert.test("with no preconfigured params", async (assert) => {
       const topic = discuss(async () => {
         return new Router<Ctx>();

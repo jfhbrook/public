@@ -21,7 +21,29 @@ const tap_1 = require("tap");
 const swears_1 = require("@jfhbrook/swears");
 const router_1 = require("../router");
 (0, tap_1.test)('router/path', (assert) => __awaiter(void 0, void 0, void 0, function* () {
-    assert.test("An instance of Router", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+    assert.test("(the cli version)", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+        const topic = (0, swears_1.discuss)(() => __awaiter(void 0, void 0, void 0, function* () {
+            const router = new router_1.Router();
+            router.path(/apps/, function () {
+                router.path(/foo/, function () {
+                    router.on(/bar/, () => __awaiter(this, void 0, void 0, function* () { }));
+                });
+                router.on(/list/, () => __awaiter(this, void 0, void 0, function* () { }));
+            });
+            router.on(/users/, () => __awaiter(void 0, void 0, void 0, function* () { }));
+            return router;
+        }));
+        assert.test("should create the correct nested routing table", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+            yield topic.swear((router) => __awaiter(void 0, void 0, void 0, function* () {
+                assert.ok(router.routes.apps);
+                assert.type(router.routes.apps.list.on, Function);
+                assert.ok(router.routes.apps.foo);
+                assert.type(router.routes.apps.foo.bar.on, Function);
+                assert.type(router.routes.users.on, Function);
+            }));
+        }));
+    }));
+    assert.skip("(the core version)", (assert) => __awaiter(void 0, void 0, void 0, function* () {
         const routerTopic = (0, swears_1.discuss)(() => __awaiter(void 0, void 0, void 0, function* () {
             const matched = {
                 foo: [],

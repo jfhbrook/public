@@ -55,7 +55,23 @@ function countryCityZip() {
     return __awaiter(this, void 0, void 0, function* () { });
 }
 (0, tap_1.test)('router/mount', (assert) => __awaiter(void 0, void 0, void 0, function* () {
-    assert.test("An instance of Router", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+    assert.test('(the cli version)', (assert) => __awaiter(void 0, void 0, void 0, function* () {
+        const topic = (0, swears_1.discuss)(() => __awaiter(void 0, void 0, void 0, function* () {
+            return new router_1.Router({
+                apps: () => __awaiter(void 0, void 0, void 0, function* () { }),
+                ' users': () => __awaiter(void 0, void 0, void 0, function* () { })
+            });
+        }));
+        assert.test('should create the correct routing table', (assert) => __awaiter(void 0, void 0, void 0, function* () {
+            yield topic.swear((router) => __awaiter(void 0, void 0, void 0, function* () {
+                assert.ok(router.routes.apps);
+                assert.ok(router.routes.users);
+                assert.type(router.routes.apps.on, Function);
+                assert.type(router.routes.users.on, Function);
+            }));
+        }));
+    }));
+    assert.skip("(the core version)", (assert) => __awaiter(void 0, void 0, void 0, function* () {
         assert.test("with no preconfigured params", (assert) => __awaiter(void 0, void 0, void 0, function* () {
             const topic = (0, swears_1.discuss)(() => __awaiter(void 0, void 0, void 0, function* () {
                 return new router_1.Router();

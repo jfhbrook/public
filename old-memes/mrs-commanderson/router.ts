@@ -39,7 +39,7 @@ export type Method = "on" | "after" | "before";
  * When specifying a route with Router#on, the path may be either a string
  * or an array of path parts.
  */
-export type Path = (string | string[]);
+export type Path = string | string[];
 
 /**
  * A matcher.
@@ -330,11 +330,11 @@ export class Router<Ctx> {
   // #### @route {Array|function} Handler for the specified method and path.
   // Adds a new `route` to this instance for the specified `path`.
   //
-  public on(path: Path, route: Handler<Ctx>): void
-  public on(method: Method, path: Path, route: Handler<Ctx>): void
-  public on(pathOrMethod: Method | Path, routeOrPath: Handler<Ctx> | Path, maybeRoute?: Handler<Ctx>): void {
+  public on(path: Path | Matcher, route: Handler<Ctx>): void
+  public on(method: Method, path: Path | Matcher, route: Handler<Ctx>): void
+  public on(pathOrMethod: Method | Path | Matcher, routeOrPath: Handler<Ctx> | Path | Matcher, maybeRoute?: Handler<Ctx>): void {
     const method: Method = maybeRoute ? <Method>pathOrMethod : "on";
-    let path: Path = maybeRoute ? <Path>routeOrPath : pathOrMethod;
+    let path: Path | Matcher = maybeRoute ? <Path>routeOrPath : pathOrMethod;
     const route: Handler<Ctx> = maybeRoute ? maybeRoute : <Handler<Ctx>>routeOrPath;
 
     const self = this;
@@ -345,8 +345,8 @@ export class Router<Ctx> {
       });
     }
 
-    if (<any>path instanceof RegExp) {
-      path = (<RegExp><unknown>path).source.replace(/\\\//ig, '/');
+    if (path instanceof RegExp) {
+      path = path.source.replace(/\\\//ig, '/');
     }
 
     //

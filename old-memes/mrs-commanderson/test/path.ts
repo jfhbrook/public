@@ -19,7 +19,35 @@ type Matched = {
 };
 
 test('router/path', async (assert) => {
-  assert.test("An instance of Router", async (assert) => {
+  assert.test("(the cli version)", async (assert) => {
+    const topic = discuss(async () => {
+      const router = new Router<Ctx>();
+
+      router.path(/apps/, function () {
+        router.path(/foo/, function () {
+          router.on(/bar/, async () => {});
+        });
+
+        router.on(/list/, async () => {});
+      });
+
+      router.on(/users/, async () => {});
+
+      return router;
+    });
+
+    assert.test("should create the correct nested routing table", async (assert) => {
+      await topic.swear(async (router) => {
+        assert.ok(router.routes.apps);
+        assert.type(router.routes.apps.list.on, Function);
+        assert.ok(router.routes.apps.foo);
+        assert.type(router.routes.apps.foo.bar.on, Function);
+        assert.type(router.routes.users.on, Function);
+      });
+    });
+  });
+
+  assert.skip("(the core version)", async (assert) => {
     const routerTopic = discuss(async () => {
       const matched: Matched = {
         foo: [],
