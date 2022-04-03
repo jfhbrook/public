@@ -1,5 +1,5 @@
 {
-  "name": "mrs-commanderson",
+  "name": "@jfhbrook/mrs-commanderson",
   "version": "1.0.0",
   "description": "command line app framework",
   "main": "index.js",

@@ -159,30 +159,23 @@ class Router {
         routesFn.call(this);
         this.scope.splice(length, split.length);
     }
+    // the type signature of dispatch is incredibly hairy and we have to do
+    // a lot of checks to keep it safe, so we push them into a private method
+    // here
+    _parseDispatchArguments(pathOrMethod, ctxOrPath, maybeCtx) {
+        if ((pathOrMethod === 'on' || pathOrMethod === 'before' || pathOrMethod === 'after')
+            && typeof ctxOrPath === 'string'
+            && typeof maybeCtx !== 'undefined') {
+            return [pathOrMethod, ctxOrPath, maybeCtx];
+        }
+        if (typeof maybeCtx === 'undefined' && typeof ctxOrPath !== 'string') {
+            return ['on', pathOrMethod, ctxOrPath];
+        }
+        throw new Error(`unexpected dispatch arguments: ${pathOrMethod}, ${ctxOrPath}, ${maybeCtx}`);
+    }
     dispatch(pathOrMethod, ctxOrPath, maybeCtx) {
         return __awaiter(this, void 0, void 0, function* () {
-            let method = null;
-            let path = null;
-            let ctx = null;
-            if (maybeCtx) {
-                method = pathOrMethod;
-                if (typeof ctxOrPath !== 'string') {
-                    throw new Error(`unexpected path: ${ctxOrPath}`);
-                }
-                path = ctxOrPath;
-                ctx = maybeCtx;
-            }
-            else {
-                method = "on";
-                path = pathOrMethod;
-                if (typeof ctxOrPath === 'string') {
-                    throw new Error(`unexpected context: ${maybeCtx}`);
-                }
-                ctx = ctxOrPath;
-            }
-            if (method === null || path === null || ctx === null) {
-                throw new Error(`unexpected arguments: ${pathOrMethod}, ${ctxOrPath}, ${maybeCtx}`);
-            }
+            let [method, path, ctx] = this._parseDispatchArguments(pathOrMethod, ctxOrPath, maybeCtx);
             //
             // Prepend a single space onto the path so that the traversal
             // algorithm will recognize it. This is because we always assume
@@ -195,7 +188,6 @@ class Router {
             if (!fns || fns.length === 0) {
                 this.last = [];
                 if (typeof this.notfound === 'function') {
-                    // TODO: Do we really want "tty" to be the this type?
                     yield this.invoke([this.notfound], ctx);
                 }
                 return false;

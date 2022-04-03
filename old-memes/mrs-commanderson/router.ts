@@ -14,17 +14,6 @@
  */
 
 /**
- * A router context.
- *
- * Route handlers are passed a router context as the first argument, and
- * the context is passed in during calls to Router#dispatch. In practice this
- * context will be an object, but we only enforce that it's distinguishable
- * from paths and null values.
- *
- */
-export type RoutingContext<Ctx> = Ctx extends null | string ? never : Ctx;
-
-/**
  * A router method.
  *
  * The router implementation supports arbitrary methods, which may even be
@@ -63,7 +52,7 @@ export type Filter<Ctx> = (fn: RoutingNode<Ctx>) => boolean;
  * The remaining arguments are path params.
  */
 export interface Fn<Ctx> {
-  (ctx: RoutingContext<Ctx>, ...params: string[]): Promise<void>;
+  (ctx: Ctx, ...params: string[]): Promise<void>;
 }
 
 /**
@@ -132,7 +121,7 @@ export interface RoutingOptions<Ctx> {
     /**
      * Function to call if no route is found on a call to `router.dispatch()`.
      */
-    notfound?: Fn<Ctx> | undefined;
+    notfound?: Handler<Ctx> | undefined;
     /**
      * A function (or list of functions) to call on every call to
      * `router.dispatch()` when a route is found.
@@ -161,7 +150,7 @@ interface RoutingConfig<Ctx> {
     recurse: "forward" | "backward" | false;
     strict: boolean;
     delimiter: string;
-    notfound: Fn<Ctx> | null;
+    notfound: Handler<Ctx> | null;
     resource: Resource<Ctx>;
     every: Resource<Ctx>;
 }
@@ -389,6 +378,29 @@ export class Router<Ctx> {
     this.scope.splice(length, split.length);
   }
 
+  // the type signature of dispatch is incredibly hairy and we have to do
+  // a lot of checks to keep it safe, so we push them into a private method
+  // here
+  private _parseDispatchArguments(
+    pathOrMethod: string | Method,
+    ctxOrPath: Ctx | string,
+    maybeCtx?: Ctx
+  ): [m: Method, p: string, ctx: Ctx] {
+    if (
+      (pathOrMethod === 'on' || pathOrMethod === 'before' || pathOrMethod === 'after')
+        && typeof ctxOrPath === 'string'
+        && typeof maybeCtx !== 'undefined'
+    ) {
+      return [pathOrMethod, ctxOrPath, maybeCtx];
+    }
+
+    if (typeof maybeCtx === 'undefined' && typeof ctxOrPath !== 'string') {
+      return ['on', pathOrMethod, ctxOrPath];
+    }
+
+    throw new Error(`unexpected dispatch arguments: ${pathOrMethod}, ${ctxOrPath}, ${maybeCtx}`);
+  }
+
   //
   // ### method dispatch ([method], path, ctx)
   // #### @method {string} Method to dispatch
@@ -397,32 +409,10 @@ export class Router<Ctx> {
   // `method` and `path` in the core routing table then
   // invokes them based on settings in this instance.
   //
-  async dispatch(path: string, ctx: RoutingContext<Ctx>): Promise<boolean>
-  async dispatch(method: Method, path: string, ctx: RoutingContext<Ctx>): Promise<boolean>
-  async dispatch(pathOrMethod: string | Method, ctxOrPath: RoutingContext<Ctx> | string, maybeCtx?: RoutingContext<Ctx>): Promise<boolean> {
-    let method: Method | null = null;
-    let path: string | null = null;
-    let ctx: RoutingContext<Ctx> | null = null;
-
-    if (maybeCtx) {
-      method = <Method>pathOrMethod;
-      if (typeof ctxOrPath !== 'string') {
-        throw new Error(`unexpected path: ${ctxOrPath}`);
-      }
-      path = ctxOrPath;
-      ctx = maybeCtx;
-    } else {
-      method = "on";
-      path = pathOrMethod;
-      if (typeof ctxOrPath === 'string') {
-        throw new Error(`unexpected context: ${maybeCtx}`);
-      }
-      ctx = <RoutingContext<Ctx>>ctxOrPath;
-    }
-
-    if (method === null || path === null || ctx === null) {
-      throw new Error(`unexpected arguments: ${pathOrMethod}, ${ctxOrPath}, ${maybeCtx}`);
-    }
+  async dispatch(path: string, ctx: Ctx): Promise<boolean>
+  async dispatch(method: Method, path: string, ctx: Ctx): Promise<boolean>
+  async dispatch(pathOrMethod: string | Method, ctxOrPath: Ctx | string, maybeCtx?: Ctx): Promise<boolean> {
+    let [ method, path, ctx ] = this._parseDispatchArguments(pathOrMethod, ctxOrPath, maybeCtx);
 
     //
     // Prepend a single space onto the path so that the traversal
@@ -438,7 +428,6 @@ export class Router<Ctx> {
     if (!fns || fns.length === 0) {
       this.last = [];
       if (typeof this.notfound === 'function') {
-        // TODO: Do we really want "tty" to be the this type?
         await this.invoke([this.notfound], ctx);
       }
 
@@ -453,7 +442,7 @@ export class Router<Ctx> {
       this.last = (fns as RoutingList<Ctx>).after;
       // TODO: Typescript things the context may be set to null - but the types
       // should rule that out?
-      await this.invoke(this.runlist(fns as RoutingList<Ctx>), <RoutingContext<Ctx>>ctx);
+      await this.invoke(this.runlist(fns as RoutingList<Ctx>), <Ctx>ctx);
     }
 
     //
@@ -516,7 +505,7 @@ export class Router<Ctx> {
   // Invokes the `fns` and awaits the results. Each function must **not**
   // return (or respond) with false, or evaluation will short circuit.
   //
-  async invoke(fns: RoutingNode<Ctx>, ctx: RoutingContext<Ctx>) {
+  async invoke(fns: RoutingNode<Ctx>, ctx: Ctx) {
     const self = this;
     async function apply (fn: RoutingNode<Ctx>) {
       if (Array.isArray(fn)) {
