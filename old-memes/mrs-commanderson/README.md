@@ -73,9 +73,6 @@ however, one thing minimist isn't very good at - or rather, doesn't try to
 solve at all - is subcommands. what minimist does instead is collect all
 positional arguments and assign them to `_: string[]` in the return value.
 
-you can get pretty far with case statements, but what I really want is
-a little extra support for subcommand routing. 
-
 what minimist is missing is command line routing. a good example of what this
 might look like is [click](https://click.palletsprojects.com/en/8.1.x/) - click
 uses a decorators pattern to connect command handlers to routes. click is a
