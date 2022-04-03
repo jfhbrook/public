@@ -88,7 +88,7 @@ class App {
                     yield fn(opts);
                 }
             }
-            this.router.dispatch(path, opts);
+            return this.router.dispatch(path, opts);
         });
     }
 }

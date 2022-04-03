@@ -123,7 +123,7 @@ export class App<Ctx> {
     this.router.path(path, routesFn);
   }
 
-  async run(argv: typeof process.argv): Promise<void> {
+  async run(argv: typeof process.argv): Promise<boolean> {
     const opts: ParsedArgs = minimist(argv, this.opts);
     const path = opts._.join(" ");
 
@@ -135,7 +135,7 @@ export class App<Ctx> {
       }
     }
 
-    this.router.dispatch(path, <Ctx & ParsedArgs>opts);
+    return this.router.dispatch(path, <Ctx & ParsedArgs>opts);
   }
 }
 
