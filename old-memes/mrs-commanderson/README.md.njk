@@ -19,14 +19,7 @@ npm install @jfhbrook/mrs-commanderson
 the simplest example looks like this:
 
 ```javascript
-#!/usr/bin/env node
-
-const { app } = require('../');
-
-app(process.argv.slice(2), async (opts) => {
-  console.log(`hello ${opts.message}`);
-});
-
+{{simpleExample}}
 ```
 
 this will construct a default minimist `ParsedArgs` object and call the main
@@ -35,21 +28,7 @@ function with it as a coroutine.
 a more interesting example implements subcommands:
 
 ```javascript
-#!/usr/bin/env node
-
-const { App } = require('../');
-
-const app = new App();
-
-app.command("init", async (ctx) => {
-  console.log('init:', ctx);
-});
-app.command("install :pkg", async (ctx, pkg) => {
-  console.log('install:', pkg, ctx);
-});
-
-app.run(process.argv.slice(2));
-
+{{routesExample}}
 ```
 
 this example is pretending to be some kind of installer, and supports the

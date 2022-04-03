@@ -4,9 +4,10 @@
   "description": "command line app framework",
   "main": "index.js",
   "scripts": {
-    "prepublish": "tsc",
+    "docs": "exb ./README.md.njk ./README.md --simpleExample @examples/simple.js --routesExample @examples/routes.js",
+    "prepublish": "npm run docs && tsc",
     "pretest": "tsc",
-    "test": "tap ./test/*.js"
+    "test": "tap ./test/*.js ./examples/*.js"
   },
   "repository": {
     "type": "git",
@@ -29,18 +30,14 @@
   },
   "homepage": "https://github.com/jfhbrook/public#readme",
   "devDependencies": {
-    "@types/director": "^1.2.1",
-    "@types/dotenv": "^8.2.0",
+    "@types/node": "^16.9.1",
+    "@jfhbrook/swears": "^1.0.1",
     "@types/tap": "^15.0.6",
     "tap": "^16.0.1",
+    "exercise-bike": "^2.0.0",
     "typescript": "^4.6.3"
   },
   "dependencies": {
-    "@jfhbrook/swears": "^1.0.1",
-    "@types/node": "^16.9.1",
-    "director": "^1.2.8",
-    "dotenv": "^16.0.0",
-    "kenny-loggins": "^1.1.1",
     "minimist": "^1.2.6"
   },
   "tap": {
