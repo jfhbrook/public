@@ -1,0 +1,5 @@
+build:
+  ls ./fortunes/ | xargs -I '$path' strfile './fortunes/$path'  
+
+clean:
+  rm ./fortunes/*.dat
