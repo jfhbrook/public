@@ -1,0 +1,35 @@
+{
+  "name": "@jfhbrook/cronkite",
+  "version": "1.0.0",
+  "description": "a baby task scheduler",
+  "main": "index.js",
+  "bin": {
+    "cronkite": "./main.js"
+  },
+  "scripts": {
+    "test": "tests-of-the-sierra-madre"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jfhbrook/public.git"
+  },
+  "keywords": [
+    "cron",
+    "schedule"
+  ],
+  "author": "Josh Holbrook",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/jfhbrook/public/issues"
+  },
+  "homepage": "https://github.com/jfhbrook/public#readme",
+  "dependencies": {
+    "@entropic/bole": "^4.0.1",
+    "bistre": "^1.0.1",
+    "minimist": "^1.2.6",
+    "node-cron": "^3.0.0"
+  },
+  "devDependencies": {
+    "tests-of-the-sierra-madre": "^1.0.0"
+  }
+}

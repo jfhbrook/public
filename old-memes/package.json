@@ -3,6 +3,7 @@
   "workspaces": [
     "bbgurl",
     "clf-parser",
+    "cronkite",
     "exercise-bike",
     "hoarders",
     "pickleback",
