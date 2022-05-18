@@ -1,0 +1,77 @@
+--- honeycomb.ts.njk	2022-05-18 19:18:50.779727125 -0400
++++ honeycomb.ts.njk	2022-05-18 19:24:01.695000422 -0400
+@@ -1,25 +1,8 @@
+ 'use strict'
+ 
+ /*{#
+-Hey, friend! Before you go to town, there's something you should
+-know:
+-
+-!!! This file is included *before* the prelude !!!
+-
+-You should read the comments in the prelude before continuing. But
+-once you're back, here are some ways that this file is both similar
+-to and different from that one:
+-
+-1) Dependencies specific to honeycomb have to be imported and exported
+-   as in the prelude, for the same reasons.
+-2) Dependencies required for honeycomb but used generally should be at the
+-   TOP of this file and in the self-test block at the TOP of prelude.ts
+-2) Dependencies should be imported as *, to minimize the impact on the
+-   boltzmann namespace and make all the OpenTelemetry library exports
+-   accessible. Exceptions may be made for modules with only one meaningful
+-  import
+-
+-Good luck!
++Welcome! This library is adopted from the templates/boltzmann/core/honeycomb.ts
++file in the boltzmann project but with the serial numbers filed off.
+ #}*/
+ 
+ // Dependencies used outside of honeycomb
+@@ -148,7 +131,7 @@
+     const line: any = {
+       time: (new Date()).toISOString(),
+       level,
+-      name: 'boltzmann:honeycomb',
++      name: 'telemetrence:honeycomb',
+       message,
+       args
+     }
+@@ -466,7 +449,7 @@
+   }
+ 
+   get tracer (): otel.Tracer {
+-    return otel.trace.getTracer('boltzmann', '{{ version }}')
++    return otel.trace.getTracer('telemetrence', '{{ version }}')
+   }
+ 
+   // We (usually) load options from the environment. Unlike with Options,
+@@ -542,7 +525,7 @@
+       try {
+         return env.OTEL_SERVICE_NAME || env.SERVICE_NAME || require('./package.json').name.split('/').pop()
+       } catch (err) {
+-        return 'boltzmann'
++        return 'telemetrence'
+       }
+     })()
+ 
+@@ -656,7 +639,7 @@
+   }
+ 
+   public get serviceName (): string {
+-    return this.options.serviceName || 'boltzmann'
++    return this.options.serviceName || 'telemetrence'
+   }
+ 
+   public get logger (): typeof bole | null {
+@@ -920,8 +903,8 @@
+     t.test('options.serviceName', async (assert: Test) => {
+       assert.equal(
+         Honeycomb.parseEnv({}).serviceName,
+-        'boltzmann',
+-        'should fall back to "boltzmann" when no env vars (nor package.json)'
++        'telemetrence',
++        'should fall back to "telemetrence" when no env vars (nor package.json)'
+       )
+       assert.equal(
+         Honeycomb.parseEnv({ SERVICE_NAME: 'test-app' }).serviceName,

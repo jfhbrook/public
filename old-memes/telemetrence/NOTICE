@@ -1,0 +1,8 @@
+Copyright 2022 Josh Holbrook
+
+This work is based on my implementation of OpenTelemetry support in boltzmann,
+the Entropic project's JavaScript framework:
+
+    https://github.com/entropic-dev/boltzmann
+
+Boltzmann is copyright the Entropic project.

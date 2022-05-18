@@ -1,0 +1,36 @@
+{
+  "name": "@jfhbrook/telemetrence",
+  "version": "1.0.0",
+  "description": "opentelemetry library based on boltzmann's honeycomb implementation",
+  "main": "index.js",
+  "scripts": {
+    "test": "tap ./index.js",
+    "download": "bbgurl https://raw.githubusercontent.com/entropic-dev/boltzmann/latest/templates/boltzmann/core/honeycomb.ts -o honeycomb.ts.njk",
+    "patch": "patch honeycomb.ts.njk < patches/rebrand.patch",
+    "generate-test-ts": "exb --honeycomb --redis --postgres --selftest > test.ts",
+    "generate-index-ts": "exb --honeycomb --redis --postgres > index.ts",
+    "generate-ts": "npm run generate-test-ts && npm run generate-index-ts",
+    "update": "npm run download && npm run patch && npm run generate-ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jfhbrook/public.git"
+  },
+  "keywords": [
+    "opentelemetry",
+    "telemetry",
+    "tracing"
+  ],
+  "author": "Josh Holbrook",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/jfhbrook/public/issues"
+  },
+  "homepage": "https://github.com/jfhbrook/public#readme",
+  "devDependencies": {
+    "bbgurl": "^2.0.6",
+    "exercise-bike": "^2.0.1",
+    "tap": "^16.2.0",
+    "typescript": "^4.6.4"
+  }
+}
