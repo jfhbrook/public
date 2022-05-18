@@ -31,6 +31,7 @@ more additions over the coming months.
 * [bbgurl](./bbgurl) - a cli http client using udici
 * [exercise-bike](./exercise-bike) - a command line interface for nunjucks
 * [licenseify](./licenseify) - generate/maintain license info for new projects
+* [primitivist](./primitivist) - a bash command line options parser based on minimist
 * [@jfhbrook/cronkite](./cronkite) - a cli for scheduled jobs with [node-cron](https://npm.im/node-cron)
 * [@jfhbrook/npm-link](./npm-link) - a targeted and direct alternative to npm link
 * [@jfhbrook/viu](./viu) - a distribution and wrapper for [viu](https://crates.io/crates/viu)

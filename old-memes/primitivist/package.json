@@ -1,0 +1,30 @@
+{
+  "name": "primitivist",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "primitivist": "primitivist"
+  },
+  "scripts": {
+    "test": "bash ./test.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jfhbrook/public.git"
+  },
+  "keywords": [
+    "minimist",
+    "bash"
+  ],
+  "author": "Josh Holbrook",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jfhbrook/public/issues"
+  },
+  "homepage": "https://github.com/jfhbrook/public#readme",
+  "dependencies": {
+    "minimist": "^1.2.6",
+    "shell-quote": "^1.7.3"
+  }
+}
