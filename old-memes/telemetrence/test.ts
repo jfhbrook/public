@@ -113,6 +113,8 @@ class HoneycombDiagLogger implements otel.DiagLogger {
   private _log(level: 'error' | 'warn' | 'info' | 'debug', message: string, args: unknown[]): void {
     let isSelfTest = false
     void ``
+    isSelfTest = true
+    void ``
     if (isSelfTest) {
       return
     }
@@ -678,6 +680,85 @@ export {
   OtelFactoryOverrides,
 }
 
+void ``
+
+class OtelMockSpanProcessor extends otelTraceBase.SimpleSpanProcessor {
+  public _exporterCreatedSpans: otelTraceBase.ReadableSpan[] = []
+
+  constructor(_exporter: otelTraceBase.SpanExporter) {
+    super(_exporter)
+    this._exporterCreatedSpans = []
+  }
+
+  onEnd(span: otelTraceBase.ReadableSpan): void {
+    // note that this collects spans as they *close*, meaning a parent span
+    // will be *behind* its children
+    this._exporterCreatedSpans.push(span)
+  }
+}
+
+function getOtelMockSpans(spanProcessor: otelTraceBase.SpanProcessor | null): otelTraceBase.ReadableSpan[] {
+  const processor: any = spanProcessor
+
+  if (!processor) {
+    throw new Error(
+      'Span processor is not defined - did you initialize honeycomb?'
+    )
+  }
+
+  if (!processor._exporterCreatedSpans) {
+    throw new Error(
+      'Span processor is not an OtelMockSpanProcessor'
+    )
+  }
+
+  return <otelTraceBase.ReadableSpan[]>(processor._exporterCreatedSpans)
+}
+
+function resetOtelMockSpans(spanProcessor: otelTraceBase.SpanProcessor | null): void {
+  const processor: any = spanProcessor
+
+  if (!processor) {
+    throw new Error(
+      'Span processor is not defined - did you initialize honeycomb?'
+    )
+  }
+
+  if (!processor._exporterCreatedSpans) {
+    throw new Error(
+      'Span processor is not an OtelMockSpanProcessor'
+    )
+  }
+
+  processor._exporterCreatedSpans = []
+}
+
+function createMockHoneycomb(): Honeycomb {
+  process.env.OTEL_LOG_LEVEL = 'error'
+  return new Honeycomb(
+    {
+      serviceName: 'test-app',
+      disable: false,
+      otel: true,
+      writeKey: 'SOME_WRITEKEY',
+      dataset: 'SOME_DATASET',
+      sampleRate: 1
+    },
+    {
+      spanProcessor(spanExporter) {
+        return new OtelMockSpanProcessor(spanExporter)
+      }
+    }
+  )
+}
+
+export {
+  createMockHoneycomb,
+  getOtelMockSpans,
+  OtelMockSpanProcessor,
+  resetOtelMockSpans
+}
+
 void ``;
 
 if (!process.env.HONEYCOMB_DATASET && process.env.HONEYCOMBIO_DATASET) {
@@ -699,10 +780,249 @@ if (!process.env.HONEYCOMB_TEAM && process.env.HONEYCOMBIO_TEAM) {
 let honeycomb: Honeycomb = Honeycomb.fromEnv(process.env);
 
 void ``;
+honeycomb = createMockHoneycomb()
+void ``;
 
 honeycomb.init()
 
 export { honeycomb }
+
+void ``;
+
+import tap from 'tap'
+type Test = (typeof tap.Test)["prototype"]
+
+/* c8 ignore next */
+if (require.main === module) {
+  const { test } = tap
+
+  test('Honeycomb.parseEnv', async (t: Test) => {
+    t.test('options.disable', async (assert: Test) => {
+      assert.equal(
+        Honeycomb.parseEnv({}).disable,
+        true,
+        'should be disabled when no env vars'
+      )
+      assert.equal(
+        Honeycomb.parseEnv({HONEYCOMB_WRITEKEY: ''}).disable,
+        true,
+        'should be disabled when env vars are blank'
+      )
+      assert.equal(
+        Honeycomb.parseEnv({HONEYCOMB_WRITEKEY: 'some write key'}).disable,
+        false,
+        'should be enabled when write key is defined'
+      )
+      assert.equal(
+        Honeycomb.parseEnv({OTEL_ENABLED: '1'}).disable,
+        false,
+        'should be enabled if any otel env var is set'
+      )
+    })
+
+    t.test('options.otel', async (assert: Test) => {
+      assert.equal(
+        Honeycomb.parseEnv({}).otel,
+        false,
+        'should not use otel when no env vars'
+      )
+      assert.equal(
+        Honeycomb.parseEnv(
+          {
+            HONEYCOMB_WRITEKEY: '',
+            HONEYCOMB_API_HOST: 'https://refinery.tech'
+          }
+        ).otel,
+        false,
+        'should not use otel when only beeline variables are set'
+      )
+      assert.equal(
+        Honeycomb.parseEnv(
+          {
+            HONEYCOMB_WRITEKEY: 'some write key',
+            OTEL_EXPORTER_OTLP_ENDPOINT: 'https://refinery.website'
+          }
+        ).otel,
+        true,
+        'should use otel when OTEL_EXPORTER_OTLP_ENDPOINT is defined'
+      )
+      assert.equal(
+        Honeycomb.parseEnv(
+          {
+            OTEL_ENABLED: '1'
+          }
+        ).otel,
+        true,
+        'should use otel when any OTEL_* variable is defined, even if HONEYCOMB_WRITEKEY is missing'
+      )
+      assert.equal(
+        Honeycomb.parseEnv(
+          {
+            OTEL_ENABLED: ''
+          }
+        ).otel,
+        false,
+        'should NOT use otel when all OTEL_* variables are defined as empty strings'
+      )
+    })
+
+    t.test('options.sampleRate', async (assert: Test) => {
+      assert.equal(
+        Honeycomb.parseEnv({}).sampleRate,
+        1,
+        'should be 1 by default'
+      )
+      assert.equal(
+        Honeycomb.parseEnv(
+          { HONEYCOMB_SAMPLE_RATE: '1' }
+        ).sampleRate,
+        1,
+        'should be 1 if defined as 1'
+      )
+      assert.equal(
+        Honeycomb.parseEnv(
+          {
+            HONEYCOMB_SAMPLE_RATE: '0.5'
+          }
+        ).sampleRate,
+        0.5,
+        'should be 0.5 if defined as 0.5'
+      )
+      assert.equal(
+        Honeycomb.parseEnv(
+          { HONEYCOMB_SAMPLE_RATE: 'pony' }
+        ).sampleRate,
+        1,
+        'should be 1 if not parseable'
+      )
+    })
+
+    t.test('options.serviceName', async (assert: Test) => {
+      assert.equal(
+        Honeycomb.parseEnv({}).serviceName,
+        'telemetrence',
+        'should fall back to "telemetrence" when no env vars (nor package.json)'
+      )
+      assert.equal(
+        Honeycomb.parseEnv({ SERVICE_NAME: 'test-app' }).serviceName,
+        'test-app',
+        'should use SERVICE_NAME when defined'
+      )
+      assert.equal(
+        Honeycomb.parseEnv({ OTEL_SERVICE_NAME: 'test-app' }).serviceName,
+        'test-app',
+        'should use OTEL_SERVICE_NAME when defined'
+      )
+      assert.equal(
+        Honeycomb.parseEnv({
+          SERVICE_NAME: 'test-app',
+          OTEL_SERVICE_NAME: 'otel-test-app'
+        }).serviceName,
+        'otel-test-app',
+        'OTEL_SERVICE_NAME should take precedence over SERVICE_NAME'
+      )
+      assert.equal(
+        Honeycomb.parseEnv({
+          SERVICE_NAME: 'test-app',
+          OTEL_SERVICE_NAME: ''
+        }).serviceName,
+        'test-app',
+        "OTEL_SERVICE_NAME should be ignored when it's a blank string"
+      )
+    })
+  })
+  test('factories', async (t: Test) => {
+    t.test('headers', async (assert: Test) => {
+      const headers = defaultOtelFactories.headers(
+        'some write key',
+        'some dataset'
+      )
+
+      assert.same(
+        headers,
+        {
+          'x-honeycomb-team': 'some write key',
+          'x-honeycomb-dataset': 'some dataset'
+        },
+        'should have the expected headers'
+      )
+    })
+
+    t.test('resource', async (assert: Test) => {
+      assert.doesNotThrow(() => defaultOtelFactories.resource('test-service'))
+    })
+
+    test('tracerProvider', async (assert: Test) => {
+      const resource = defaultOtelFactories.resource('test-service')
+      assert.doesNotThrow(
+        () => defaultOtelFactories.tracerProvider(resource),
+        'should create a tracer provider'
+      )
+    })
+
+    test('spanExporter', async (assert: Test) => {
+      const headers = defaultOtelFactories.headers(
+        'some write key',
+        'some dataset'
+      )
+
+      process.env.OTEL_LOG_LEVEL = 'error'
+
+      for (let protocol of ['grpc', 'http/protobuf', 'http/json']) {
+        assert.doesNotThrow(() => {
+          defaultOtelFactories.spanExporter(protocol, headers)
+        })
+      }
+    })
+
+    test('spanProcessor', async (assert: Test) => {
+      assert.doesNotThrow(() => {
+        const exporter = defaultOtelFactories.spanExporter(
+          'http/protobuf',
+          defaultOtelFactories.headers(
+            'some write key',
+            'some dataset'
+          )
+        )
+
+        defaultOtelFactories.spanProcessor(exporter)
+      }, 'should create a span processor')
+    })
+
+    test('instrumentations', async (assert: Test) => {
+      // expected instrumentations: dns, node core, postgres, redis
+      assert.equal(
+        defaultOtelFactories.instrumentations().length,
+        4,
+        'should create 4 instrumentations (dns, http, postgres, redis)'
+      )
+    })
+
+    test('sdk', async (assert: Test) => {
+      // run the init function
+      assert.doesNotThrow(() => {
+        const resource = defaultOtelFactories.resource('test-service')
+        const instrumentations = defaultOtelFactories.instrumentations()
+
+        defaultOtelFactories.sdk(
+          resource, 
+          instrumentations,
+        )
+      }, 'should create an sdk')
+    })
+  })
+
+  test('init and start', async (assert: Test) => {
+    const honeycomb = createMockHoneycomb()
+
+    honeycomb.init()
+
+    assert.doesNotThrow(async () => {
+      await honeycomb.start()
+      await honeycomb.stop()
+    })
+  })
+}
 
 void ``
 void ``

@@ -4,13 +4,16 @@
   "description": "opentelemetry library based on boltzmann's honeycomb implementation",
   "main": "index.js",
   "scripts": {
-    "test": "tap ./index.js",
     "download": "bbgurl https://raw.githubusercontent.com/entropic-dev/boltzmann/latest/templates/boltzmann/core/honeycomb.ts -o honeycomb.ts.njk",
     "patch": "patch honeycomb.ts.njk < patches/rebrand.patch",
-    "generate-test-ts": "exb --honeycomb --redis --postgres --selftest > test.ts",
-    "generate-index-ts": "exb --honeycomb --redis --postgres > index.ts",
-    "generate-ts": "npm run generate-test-ts && npm run generate-index-ts",
-    "update": "npm run download && npm run patch && npm run generate-ts"
+    "generate-index-ts": "exb honeycomb.ts.njk --honeycomb --redis --postgres > honeycomb.ts",
+    "generate-test-ts": "exb honeycomb.ts.njk --honeycomb --redis --postgres --selftest > test.ts",
+    "generate-ts": "npm run generate-index-ts && npm run generate-test-ts",
+    "build": "npm run generate-ts && tsc",
+    "lint": "eslint .",
+    "test": "npm run build && tap ./test.js",
+    "posttest": "npm run lint",
+    "update": "npm run download && npm run patch && npm test"
   },
   "repository": {
     "type": "git",
@@ -27,9 +30,19 @@
     "url": "https://github.com/jfhbrook/public/issues"
   },
   "homepage": "https://github.com/jfhbrook/public#readme",
+  "dependencies": {
+    "@entropic/bole": "^4.0.1",
+    "are-we-dev": "^1.0.0"
+  },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.11.0",
+    "@typescript-eslint/parser": "^4.11.0",
     "bbgurl": "^2.0.6",
+    "eslint": "^7.1.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.3",
     "exercise-bike": "^2.0.1",
+    "prettier": "^2.0.5",
     "tap": "^16.2.0",
     "typescript": "^4.6.4"
   }
