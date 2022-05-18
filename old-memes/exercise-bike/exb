@@ -2,7 +2,6 @@
 
 const fs = require('fs/promises');
 
-const Handlebars = require('handlebars');
 const concat = require('concat-stream');
 const minimist = require('minimist');
 const nunjucks = require('nunjucks');

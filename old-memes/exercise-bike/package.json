@@ -1,6 +1,6 @@
 {
   "name": "exercise-bike",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "a command line interface for nunjucks",
   "bin": {
     "exercise-bike": "exb",
