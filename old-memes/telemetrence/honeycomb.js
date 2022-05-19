@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.honeycomb = exports.HoneycombError = exports.Honeycomb = exports.defaultOtelFactories = exports.OtelPgInstrumentation = exports.OtelRedisInstrumentation = exports.OtelHttpInstrumentation = exports.OtelDnsInstrumentation = exports.OtelInstrumentation = exports.otelSemanticConventions = exports.NodeTracerProvider = exports.otelTraceBase = exports.OtelSDK = exports.otelResources = exports.otelCore = exports.otel = exports.beeline = exports.isDev = exports.bole = void 0;
+exports.honeycomb = exports.HoneycombError = exports.Honeycomb = exports.defaultOtelFactories = exports.OtelPgInstrumentation = exports.OtelRedisInstrumentation = exports.OtelHttpInstrumentation = exports.OtelDnsInstrumentation = exports.otelSemanticConventions = exports.NodeTracerProvider = exports.otelTraceBase = exports.OtelSDK = exports.otelResources = exports.otelCore = exports.otel = exports.beeline = exports.isDev = exports.bole = void 0;
 /**/
 // Dependencies used outside of honeycomb
 const bole_1 = __importDefault(require("@entropic/bole"));
@@ -65,23 +65,6 @@ const sdk_trace_node_1 = require("@opentelemetry/sdk-trace-node");
 Object.defineProperty(exports, "NodeTracerProvider", { enumerable: true, get: function () { return sdk_trace_node_1.NodeTracerProvider; } });
 const otelSemanticConventions = __importStar(require("@opentelemetry/semantic-conventions"));
 exports.otelSemanticConventions = otelSemanticConventions;
-// We include node core instrumentation, as well as redis
-// and postgres instrumentation if those respective features
-// are enabled.
-//
-// Some instrumentation that is NOT included, because boltzmann
-// doesn't support the technology:
-//
-// * @opentelemetry/instrumentation-grpc
-// * @opentelemetry/instrumentation-graphql
-//
-// Some packages which, to our knowledge, don't have available
-// instrumentations:
-//
-// * undici
-//
-const instrumentation_1 = require("@opentelemetry/instrumentation");
-Object.defineProperty(exports, "OtelInstrumentation", { enumerable: true, get: function () { return instrumentation_1.Instrumentation; } });
 const instrumentation_dns_1 = require("@opentelemetry/instrumentation-dns");
 Object.defineProperty(exports, "OtelDnsInstrumentation", { enumerable: true, get: function () { return instrumentation_dns_1.DnsInstrumentation; } });
 const instrumentation_http_1 = require("@opentelemetry/instrumentation-http");
