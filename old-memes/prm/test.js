@@ -1,3 +1,6 @@
+const { readFile } = require('fs/promises');
+const path = require('path');
+
 const { skip, test } = require('tap');
 
 const { createEnv, parseFile, getActions, getFeatures, parseArgs } = require('./prm');
@@ -34,14 +37,17 @@ test('getActions', async (assert) => {
   });
 });
 
-skip('parseFile', async (assert) => {
-  assert.fail('TODO: write a parseFile test or two');
+test('parseFile', async (assert) => {
+  const file = await readFile(path.join(path.dirname(__filename), 'prm.sh'), 'utf8');
+  assert.ok(parseFile(file), 'example parses without crashing');
 });
 
-skip('parseArgs', async (assert) => {
-  assert.fail('TODO: write tests for --only flags');
+test('parseArgs', async (assert) => {
+  const opts = await parseArgs(['apply', '--copr-only']);
+  assert.ok(opts, 'apply --copr-only parses without crashing');
 });
 
 skip('createEnv', async (assert) => {
-  assert.fail('TODO: write a createEnv test');
+  // TODO: once parseArgs tests has some fixtures, pass them to createEnv and
+  // ensure the right result
 });
