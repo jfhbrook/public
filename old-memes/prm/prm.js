@@ -9,16 +9,8 @@ const colors = require('ansi-colors');
 const { createLogger } = require('kenny-loggins');
 const minimist = require('minimist');
 
-const {
-  falconPunch,
-  flagrantError,
-  greatSuccess,
-  setLogger,
-  setShrug
-} = require('../cli');
-
 // A few paths can be defined immediately, and here they are!
-const appRoot = path.dirname(path.dirname(__filename));
+const appRoot = path.dirname(__filename);
 const actionsRoot = path.join(appRoot, 'actions');
 const coreRoot = path.join(appRoot, 'core');
 const PATH = `${actionsRoot}:${coreRoot}:${process.env.PATH}`;
@@ -35,14 +27,109 @@ const logger = createLogger({
   }
 });
 
-setLogger(logger);
-falconPunch();
+let shrug = false;
+let shellMode = false;
 
-main().done();
+function greatSuccess() {
+  if (!shellMode) {
+    logger.info(colors.green('ok'));
+  }
+  process.exit(0);
+}
+
+function flagrantError(err) {
+  // errors have a highlight designed for a BSOD, not appropriate for a
+  // warning
+  if (!shrug) {
+    const { green, grey, red, yellow, white } = inspect.colors;
+    inspect.styles = {
+      bigint: yellow,
+      boolean: yellow,
+      date: yellow,
+      module: yellow,
+      name: yellow,
+      null: red,
+      number: yellow,
+      regexp: red,
+      special: red,
+      string: green,
+      symbol: red,
+      undefined: grey
+    };
+  }
+
+  // the stack is meaningless in shell mode
+  let message = shellMode ? colors.white(String(err)) : inspect(err, { colors: true });
+
+  // find the width of the message string
+  let width = message.split('\n').reduce((n, l) => Math.max(l.length, n), 0) + 8;
+
+  // split and add padding
+  message = message.split('\n').map(l => {
+    return '    ' + l + (' '.repeat(width - l.length - 4));
+  });
+
+  // be less shouty on a shrug
+  let header = shrug ? 'houston, we got a problem!! ' : 'FLAGRANT ERROR';
+  header = (
+    ' '.repeat(Math.floor((width - header.length) / 2))
+    + header
+    + ' '.repeat(Math.ceil((width - header.length) / 2))
+  );
+
+  // stack 'em to the heavens!
+  message = [
+    ' '.repeat(width),
+    header,
+    '-'.repeat(width),
+    ' '.repeat(width)
+  ].concat(message).concat([
+    ' '.repeat(width),
+    '-'.repeat(width)
+  ]);
+
+  // in shrug
+  if (shrug) {
+    message.forEach(l => {
+      logger.warn(colors.yellow(l));
+    });
+  } else {
+    message.forEach(l => {
+      logger.error(colors.bgBlue(l));
+    });
+  }
+
+  // let the parent process log exit
+  if (!shellMode && shrug) {
+    logger.warn('ok ' + colors.yellow('~despite errors~'));
+    process.exit(0);
+  }
+
+  if (!shellMode) {
+    logger.error(colors.red('not') + ' ok');
+    process.exit(1);
+  }
+}
+
+function falconPunch() {
+  // Hook the entire world to muh error handling lol
+  process.on('uncaughtException', flagrantError);
+  process.on('unhandledRejection', flagrantError);
+
+  // gotta do everything myself!!
+  Promise.prototype.done = function () {
+    this.then(greatSuccess, flagrantError);
+  }
+}
+
+if (require.main === module) {
+  falconPunch();
+  main().done();
+}
 
 async function main() {
   // load options
-  const opts = await parseArgs();
+  const opts = await parseArgs(process.argv.slice(2));
 
   // configure logging and exit handling
   if (opts.verbose) {
@@ -54,7 +141,7 @@ async function main() {
   }
 
   if (opts.shrug) {
-    setShrug(true);
+    shrug = true;
   }
 
   logger.debug(colors.yellow(' _ __  _ __ _ __ ___  '));
@@ -198,6 +285,7 @@ async function main() {
 // FEATURE_${feature.toUpperCase()}. For example, if copr is enabled, then
 // FEATURE_COPR=1.
 //
+exports.createEnv = createEnv;
 async function createEnv(opts) {
   const features = await getFeatures();
   const featureFlags = Object.fromEntries(
@@ -232,6 +320,7 @@ async function createEnv(opts) {
   return { ...process.env, ...env, PATH };
 }
 
+exports.parseFile = parseFile;
 function parseFile(file) {
   // collect actions happening outside recipes
   let outside = [];
@@ -457,6 +546,7 @@ function parseFile(file) {
 }
 
 class ParseError extends Error {}
+exports.ParseError = ParseError;
 
 // ## ACTIONS
 //
@@ -467,6 +557,7 @@ class ParseError extends Error {}
 // in the context of actions, features operate as a namespace. verbs should
 // loosely follow the ones used by powershell. the noun from powershell
 // commands should manifest itself as the first argument to the action.
+exports.getActions = getActions;
 async function getActions(validate) {
   const names = await readdir(actionsRoot);
   const actions = {};
@@ -497,6 +588,7 @@ function uniq(xs) {
 }
 
 let _features = null;
+exports.getFeatures = getFeatures;
 async function getFeatures() {
   if (!_features) {
     const actions = await getActions();
@@ -541,11 +633,12 @@ async function getFeatures() {
 // when there is one argument, we detect whether or not it is a file. if it
 // is a file, then there is no supplied recipe. otherwise, the first argument
 // is the route and the file is defaulted to ./prm.sh.
-async function parseArgs() {
+exports.parseArgs = parseArgs
+async function parseArgs(argv) {
   const actions = await getActions();
   const features = await getFeatures();
 
-  const opts = minimist(process.argv.slice(2), {
+  const opts = minimist(argv, {
     // features and flags are boolean flags
     boolean: features.concat(flags),
     default: {
