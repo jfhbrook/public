@@ -1,0 +1,6 @@
+(seq-some (lambda (frame)
+            (let ((kind (framep frame)))
+              (or (eq kind 'x )
+                  (eq kind 'w32)
+                  (eq kind 'ns))))
+          (frame-list))

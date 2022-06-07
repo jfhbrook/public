@@ -1,0 +1,138 @@
+#+TITLE: mph
+
+* about
+mph is a rust cli tool for interacting with emacs in daemon mode. it takes care
+of starting emacs in a cross-platform manner, with some conveniences over
+=emacsclient=.
+
+=mph= is a work in progress - it's pretty bare and disorganized now, but will
+grow organically towards doing other things over time.
+* install
+you can install mph with cargo:
+
+#+begin_src bash
+cargo install mph
+#+end_src
+* commands
+#+begin_src bash
+$ mph --help
+mph 0.1.0
+a rusty swiss army knife for emacs
+
+USAGE:
+    mph [FILE] [SUBCOMMAND]
+
+ARGS:
+    <FILE>
+
+
+OPTIONS:
+    -h, --help
+            Print help information
+
+    -V, --version
+            Print version information
+
+SUBCOMMANDS:
+    client
+
+    help
+            Print this message or the help of the given subcommand(s)
+    restart
+
+    start
+
+    status
+
+    stop
+#+end_src
+** start, stop and restart
+*** linux
+in linux, these commands call systemctl, under the assumption that
+=emacs.service= is configured as a user unit. it should run the daemon as a
+matter of course.
+*** macos
+in macos, these commands will use =osascript= and =open= to launch =Emacs.app=,
+as installed by the homebrew tap. your emacs config will need to start the
+daemon!
+*** windows
+in windows, these commands use windows powershell to launch =runemacs.exe= as installed
+by winget. your emacs config will need to start the daemon!
+** opening a file
+if you try to open a file with =mph=, it will:
+
+1. use =emacsclient= to check if the daemon is running, and call the start hook
+   if necessary
+2. run an emacs lisp snippet to check if a desktop frame is already open
+3. only create a new frame if one doesn't already exist
+
+* development
+this project has a [[https://github.com/casey/just][a justfile]] that contains basic recipes
+which wrap both emacs and cargo related build steps.
+** elisp
+this project uses [[https://orgmode.org/worg/org-contrib/babel/][org-babel]] for an interactive emacs lisp development
+environment. these snippets are then tangled for import by rust.
+
+this task attempts to call [[https://github.com/doomemacs/doomemacs][doom emacs]]'s =org-tangle= script to automatically
+tangle [[./elisp.org]]. it's dependent on emacs running, so the task is configured
+to make a best effort and exit with a warning on a failure.
+
+to manually tangle the file, open it in emacs and mash =C-v C-t=.
+** build, test and check
+these commands wrap their cargo equivalents, but attempt to tangle the lisp code
+first.
+
+note that the tests don't effectively cover the command line's current
+functionality - you may run them, but to be sure the application works you need
+to try it interactively.
+* license
+mph uses the [[https://www.mozilla.org/en-US/MPL/2.0/][mozilla public license 2.0]]. for more information, read [[./LICENSE.]]
+note that it is *not* a part of emacs and is a third party tool.
+* appendix 1: lisp interpreter
+mph's most interesting functionality depends on executing emacs lisp snippets
+with =emacsclient= and interpreting the results. current calls only need to
+check for a truthy value. however, I would like to parse more sophisticated
+results from emacs.
+
+the text returned by emacsclient is intended to be parseable as lisp. it's not
+necessarily intended to be run - many objects aren't serializable - but it may
+certainly be parsed and interacted with as a structured result.
+
+to that end, I burned through [[https://bodil.lol/parser-combinators/][the bodil tutorial on parser combinators]],
+translated that new knowledge to [[https://github.com/Geal/nom][nom]], and started writing a proper parser.
+
+this code lives in [[./src/elisp.rs]] and it's part done. there are tests for the
+parser, with about half of them succeeding.
+
+until I implement string, symbol and cons cell parsing it won't be particularly
+useful and is inert. however, if I finish the parser, I plan to use it for
+handling results from =emacsclient= for other emacs lisp calls in the future.
+* appendix 2: remote server
+I've been toying with the idea for a very long time of running emacs on a remote
+server, using ssh to access it, and using scheduled jobs and file watching to,
+among other things, generate and publish org content, such as a wiki.
+
+#+begin_src
+     |-[docker container]--------------------------------|
+    _|______           __________________                |
+  ->| sshd |---------->| emacsclient -t |                |
+    |______|<-,        |________________|                |
+     |         '-------,       | (unix socket)           |
+     |       (child     |      |                         |
+    _|_______ processes |  ____v___________              |
+  <-| caddy |<------------| emacs --daemon |<-,          |
+    |_______|             |________________|  |          |
+     |   ^ (child process)>     |             |          |
+     |   |             _________v________     | <(edits) |
+     |   | <(serves)  | emacs --batch \ |     |          |
+     |   |            | publish.el      |     |          |
+     |   |            |_________________|     |          |
+     |   | (publishes)> |         ^ <(loads)  |          |
+     |  _|______________v____  ___|___________v__        |
+     |__| published volume  |__| content volume  |_______|
+        |___________________|  |_________________|
+
+#+end_src
+
+this project is a bit out of scope for mph itself and it's at least three yak
+shaves away, but if it *does* happen it's likely to use mph as a dependency.

@@ -1,0 +1,18 @@
+set dotenv-load := true
+
+tangle-directions := "open elisp.org in emacs and run C-c C-v to generate elisp snippets!"
+
+elisp:
+  if command -v org-tangle &> /dev/null; then org-tangle ./elisp.org || echo "warning, org-tangle failed - {{ tangle-directions }}"; else echo "warning, org-tangle not found - {{ tangle-directions }}"; fi
+
+build: elisp
+  cargo build
+
+test: elisp
+  cargo test
+
+check: elisp
+  cargo check
+
+run *ARGS: elisp
+  cargo run -- {{ ARGS }}

@@ -1,0 +1,41 @@
+#+title: elisp programs
+
+* has graphical frame
+returns ~t~ when there's an open graphical frame, ~nil~ otherwise.
+#+begin_src elisp :tangle elisp/has_graphical_frame.el
+(seq-some (lambda (frame)
+            (let ((kind (framep frame)))
+              (or (eq kind 'x )
+                  (eq kind 'w32)
+                  (eq kind 'ns))))
+          (frame-list))
+#+end_src
+
+#+RESULTS:
+: t
+* has terminal frame
+note that this is less useful, as daemon mode on linux will - by appearances -
+always have a terminal frame open.
+#+begin_src elisp :tangle elisp/has_terminal_frame.el
+(seq-some (lambda (frame)
+            (let ((kind (framep frame)))
+              (or (eq kind 't )
+                  (eq kind 'pc))))
+          (frame-list))
+#+end_src
+
+#+RESULTS:
+
+* test cases
+** nil
+#+begin_src elisp
+#+end_src
+
+#+RESULTS:
+
+** TODO cons
+** TODO quote/unquote
+** TODO vector
+** TODO hash table
+** TODO unreadable values
+** TODO backtick escape thing
