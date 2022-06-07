@@ -3,9 +3,9 @@
 * about
 mph is a rust cli tool for interacting with emacs in daemon mode. it takes care
 of starting emacs in a cross-platform manner, with some conveniences over
-=emacsclient=.
+~emacsclient~.
 
-=mph= is a work in progress - it's pretty bare and disorganized now, but will
+~mph~ is a work in progress - it's pretty bare and disorganized now, but will
 grow organically towards doing other things over time.
 * install
 you can install mph with cargo:
@@ -49,19 +49,19 @@ SUBCOMMANDS:
 ** start, stop and restart
 *** linux
 in linux, these commands call systemctl, under the assumption that
-=emacs.service= is configured as a user unit. it should run the daemon as a
+~emacs.service~ is configured as a user unit. it should run the daemon as a
 matter of course.
 *** macos
-in macos, these commands will use =osascript= and =open= to launch =Emacs.app=,
+in macos, these commands will use ~osascript~ and ~open~ to launch ~Emacs.app~,
 as installed by the homebrew tap. your emacs config will need to start the
 daemon!
 *** windows
-in windows, these commands use windows powershell to launch =runemacs.exe= as installed
+in windows, these commands use windows powershell to launch ~runemacs.exe~ as installed
 by winget. your emacs config will need to start the daemon!
 ** opening a file
-if you try to open a file with =mph=, it will:
+if you try to open a file with ~mph~, it will:
 
-1. use =emacsclient= to check if the daemon is running, and call the start hook
+1. use ~emacsclient~ to check if the daemon is running, and call the start hook
    if necessary
 2. run an emacs lisp snippet to check if a desktop frame is already open
 3. only create a new frame if one doesn't already exist
@@ -77,10 +77,14 @@ this task attempts to call [[https://github.com/doomemacs/doomemacs][doom emacs]
 tangle [[./elisp.org]]. it's dependent on emacs running, so the task is configured
 to make a best effort and exit with a warning on a failure.
 
-to manually tangle the file, open it in emacs and mash =C-v C-t=.
-** build, test and check
+to manually tangle the file, open it in emacs and mash ~C-v C-t~.
+** README
+this project's README is written in org, but [[https://crates.io][crates.io]] only supports markdown.
+the ~just readme~ command will generate a markdown README using [[https://pandoc.org/][pandoc]]. because
+this is less finnicky, it does *not* gracefully fail like elisp tangling does.
+** build, test, check, run and publish
 these commands wrap their cargo equivalents, but attempt to tangle the lisp code
-first.
+and generate the markdown README first.
 
 note that the tests don't effectively cover the command line's current
 functionality - you may run them, but to be sure the application works you need
@@ -90,7 +94,7 @@ mph uses the [[https://www.mozilla.org/en-US/MPL/2.0/][mozilla public license 2.
 note that it is *not* a part of emacs and is a third party tool.
 * appendix 1: lisp interpreter
 mph's most interesting functionality depends on executing emacs lisp snippets
-with =emacsclient= and interpreting the results. current calls only need to
+with ~emacsclient~ and interpreting the results. current calls only need to
 check for a truthy value. however, I would like to parse more sophisticated
 results from emacs.
 
@@ -106,7 +110,7 @@ parser, with about half of them succeeding.
 
 until I implement string, symbol and cons cell parsing it won't be particularly
 useful and is inert. however, if I finish the parser, I plan to use it for
-handling results from =emacsclient= for other emacs lisp calls in the future.
+handling results from ~emacsclient~ for other emacs lisp calls in the future.
 * appendix 2: remote server
 I've been toying with the idea for a very long time of running emacs on a remote
 server, using ssh to access it, and using scheduled jobs and file watching to,

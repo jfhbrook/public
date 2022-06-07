@@ -5,14 +5,20 @@ tangle-directions := "open elisp.org in emacs and run C-c C-v to generate elisp 
 elisp:
   if command -v org-tangle &> /dev/null; then org-tangle ./elisp.org || echo "warning, org-tangle failed - {{ tangle-directions }}"; else echo "warning, org-tangle not found - {{ tangle-directions }}"; fi
 
-build: elisp
+readme:
+  pandoc -f org -t markdown README.org -o README.md
+
+build: elisp readme
   cargo build
 
-test: elisp
+test: elisp readme
   cargo test
 
-check: elisp
+check: elisp readme
   cargo check
 
-run *ARGS: elisp
+run *ARGS: elisp readme
   cargo run -- {{ ARGS }}
+
+publish: elisp readme
+  cargo publish --allow-dirty
