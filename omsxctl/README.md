@@ -20,15 +20,17 @@ fire up `omsxctl` and enjoy:
 
 ```
 $ omsxctl
-2022-07-01T18:04:53.288463Z  INFO omsxctl: openmsx is ready.
-openmsx> set power off
+
+for available commands, visit: https://openmsx.org/manual/commands.html
+
+openMSX> set power off
 ok: false
-openmsx> set power on
+openMSX> set power on
 ok: true
-openmsx> set power bananas
+openMSX> set power bananas
 nok: can't set "power": expected boolean value but got "bananas"
 
-openmsx>
+openMSX>
 
 $
 ```
@@ -39,7 +41,7 @@ emulator.
 ## development
 
 things are pretty informal. the program doesn't have a lot of surface area to
-unit test - heck, the entire thing is in a single line right now. but otherwise
+unit test - heck, the entire thing is in a single file right now. but otherwise
 `cargo run` and friends work.
 
 I don't see a *ton* of feature work on this project going forward. the biggest

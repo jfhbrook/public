@@ -47,7 +47,7 @@ impl<'a> Client<'a> {
         loop {
             match reader.next() {
                 Ok(XmlEvent::StartElement { name, .. }) if name.local_name == "openmsx-output" => {
-                    event!(Level::DEBUG, "openmsx is ready.");
+                    event!(Level::DEBUG, "openMSX is ready.");
                     return Ok(Client { reader, writer });
                 }
                 Ok(event) => {
@@ -187,7 +187,7 @@ fn main() -> Result<(), Error> {
         println!();
 
         loop {
-            let readline = rl.readline("openmsx> ");
+            let readline = rl.readline("openMSX> ");
             match readline {
                 Ok(line) => {
                     rl.add_history_entry(line.as_str());
