@@ -41,7 +41,11 @@ lisp parser. ;) It uses the MPL v2.0 license.
 old memes is an old-school Node.js anti-framework built around the good parts
 of [[https://github.com/flatiron][flatiron]], a selection of classic [[https://github.com/substack][substack]] libraries and the few worthwhile
 things I personally wrote between roughly 2009 and 2016 - with a targeted
-dash of modern conveniences. It's a big project, so see [[./README.md][its README]] for more details.
+dash of modern conveniences. It's a big project, so see [[./README.md][its README]] for more
+details.
+** omsxctl
+~omsxctl~ is a small rust CLI for controlling [[https://openmsx.org/][openMSX]] over its socket interface.
+It can be useful if you're doing retro [[https://en.wikipedia.org/wiki/MSX][MSX]] game development.
 ** openscad
 These are files I've written for OpenSCAD. So far, these are available under a
 MPL v2.0 license with additional restrictions. See the included NOTICE file for
