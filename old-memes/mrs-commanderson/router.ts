@@ -201,7 +201,7 @@ export class Router<Ctx> {
   constructor (routes: RoutingTable<Ctx> = {}) {
     this.params   = {};
     this.routes   = {};
-    this.methods  = ['on', 'after', 'before'];
+    this.methods  = ['on', 'after', 'before', 'help'];
     this.scope    = [];
     this._methods = new Set();
     this._invoked = false;
