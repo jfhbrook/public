@@ -20,7 +20,7 @@
  * added during runtime! But the types only support the defaults of "on",
  * "after" and "before".
  */
-export type Method = "on" | "after" | "before";
+export type Method = "on" | "after" | "before" | "help";
 
 /**
  * A path.
@@ -78,6 +78,7 @@ export interface Resource<Ctx> {
   on?: Handler<Ctx>;
   before?: Handler<Ctx>;
   after?: Handler<Ctx>;
+  help?: Handler<Ctx>;
 }
 
 /**
