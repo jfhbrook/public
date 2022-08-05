@@ -1,0 +1,12 @@
+[Unit]
+Description=sie7e labs filesync professional edition
+Documentation=https://github.com/jfhbrook/public/tree/main/s7sync
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/s7sync
+
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

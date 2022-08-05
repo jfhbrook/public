@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=sie7e labs filesync professional edition
+GenericName=File Synchronizer
+Exec="/usr/bin/s7sync" ui
+Terminal=false
+Categories=Network
+Type=Application

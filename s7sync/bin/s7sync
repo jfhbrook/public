@@ -1,0 +1,682 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# logging stuff - debug logging is triggered by DEBUG=1 in the environment
+
+export DEBUG="${DEBUG:-}"
+export ACCEPT_EULA="${ACCEPT_EULA:-}"
+
+function log-debug {
+  if [ -n "${DEBUG}" ]; then
+    echo -e "($$) \e[1;35mdebug\e[0m:" "$@"
+  fi
+}
+
+function log-info {
+  echo -e "($$) \e[36minfo\e[0m:" "$@"
+}
+
+function log-warn {
+  echo -e "($$) \e[1;33mwarn\e[0m:" "$@"
+}
+
+function log-error {
+  echo -e "($$) \e[31merror\e[0m:" "$@"
+}
+
+function log-output {
+  sed "s/^/($$) /"
+}
+
+# detect platform. if the environment variable is already set then roll with
+# it, otherwise use uname (for now, there are other options) to make a best
+# guess at linux vs macos vs windows.
+
+export PLATFORM="${PLATFORM:-}"
+
+if [ -z "${PLATFORM}" ]; then
+  log-debug "detecting platform..."
+  if command -v uname &> /dev/null; then
+    case "$(uname -s)" in
+      Linux*)
+        log-debug "platform is LINUX"
+        PLATFORM=linux
+        ;;
+      Darwin*)
+        log-debug "platform is MACOS"
+        PLATFORM=macos
+        ;;
+      CYGWIN*)
+        log-debug "platform is PROBABLY WINDOWS"
+        PLATFORM=windows
+        ;;
+      # This should cover git bash
+      MINGW*)
+        log-debug "platform is PROBABLY WINDOWS"
+        PLATFORM=windows
+        ;;
+      *)
+        log-warn "platform is A MYSTERY (ie idk what  '$(uname -s)' is)"
+        PLATFORM=unknown
+        ;;
+    esac
+  else
+    # git bash should ship with uname, but stranger things have happened!
+    log-warn "could not detect OS: no uname found"
+    PLATFORM=unknown
+  fi
+fi
+
+
+# default configuration settings to use when none are available
+
+# NOTE: the root command pulls repository paths directly from the config but
+# the underlying watch command expects a REPOSITORY_PATH to be defined
+DEFAULT_REPOSITORY_PATH="$(pwd)"
+
+# TODO: Support units - 1s, 10m, 1h etc
+DEFAULT_MIN_POLL_WAIT=1  # 1 second
+DEFAULT_MIN_COMMIT_WAIT=15  # 15 seconds
+DEFAULT_MIN_PULL_WAIT=600  # 10 minutes
+DEFAULT_MAX_PULL_WAIT=7200  # 2 hours
+DEFAULT_MIN_PUSH_WAIT=600  # 10 minutes
+DEFAULT_IDLE_TIMEOUT=600  # 30 minutes
+DEFAULT_SESSION_TIMEOUT=1800  # 30 minutes
+DEFAULT_COMMIT_MESSAGE="automatic commit by s7sync"
+
+if [ "${PLATFORM}" == windows ]; then
+  # TODO: figure out what the windows config path should be - possibly with
+  # %USERPROFILE% ?
+  log-error "don't know where windows config goes (yet)"
+  exit 1
+else
+  DEFAULT_CONFIG_HOME="${HOME}/.config/s7sync"
+fi
+
+
+function log-help {
+  echo "USAGE: s7sync <SUBCOMMAND>
+
+    synchronize git repositories automatically.
+
+SUBCOMMANDS:
+
+    init    create or overwrite global s7sync.json with the default configuration
+
+FLAGS:
+
+    --idle-timeout SEC     the amount of idle time to wait for before disabling
+                           pushes and pulls. defaults to ${DEFAULT_IDLE_TIMEOUT} seconds ($((DEFAULT_IDLE_TIMEOUT / 60)) minutes).
+
+    --min-poll-wait SEC    the minimum amount of seconds between syncing.
+                           defaults to ${DEFAULT_MIN_POLL_WAIT} second.
+
+    --min-commit-wait SEC  the minimum amount of seconds between commits.
+                           defaults to ${DEFAULT_MIN_COMMIT_WAIT} seconds.
+
+    --min-pull-wait SEC    the minimum amount of seconds between pulls.
+                           defaults to ${DEFAULT_MIN_PULL_WAIT} seconds ($((DEFAULT_MIN_PULL_WAIT / 60)) minutes).
+
+    --max-pull-wait SEC    the maximum amount of seconds between pulls.
+                           defaults to ${DEFAULT_MAX_PULL_WAIT} seconds ($((DEFAULT_MAX_PULL_WAIT / 3600)) hours).
+
+    --min-push-wait SEC    the minimum amount of seconds between pushes.
+                           defaults to ${DEFAULT_MIN_PUSH_WAIT} seconds ($((DEFAULT_MIN_PUSH_WAIT / 60)) minutes).
+
+    --session-timeout SEC  the expected lifetime of a login session, during
+                           which pushes and pulls are unlimited. defaults to
+                           ${DEFAULT_SESSION_TIMEOUT} seconds ($((DEFAULT_SESSION_TIMEOUT / 60)) minutes).
+
+    --message MESSAGE      the message to use when committing changes. defaults
+                           to '${DEFAULT_COMMIT_MESSAGE}'.
+
+ENVIRONMENT VARIABLES:
+
+    DEBUG          if set, log at the debug level
+
+    CONFIG_HOME    the configuration directory which contains a s7sync.json.
+                   defaults to ${DEFAULT_CONFIG_HOME}.
+"
+}
+
+# initialize config vars, respecting any values already set in env vars
+
+CONFIG_HOME="${CONFIG_HOME:-}"
+REPOSITORY_PATH="${REPOSITORY_PATH:-}"
+REMOTE=""
+BRANCH=""
+MIN_POLL_WAIT="${MIN_POLL_WAIT:-}"
+MIN_COMMIT_WAIT="${MIN_COMMIT_WAIT:-}"
+MIN_PULL_WAIT="${MIN_PULL_WAIT:-}"
+MAX_PULL_WAIT="${MAX_PULL_WAIT:-}"
+MIN_PUSH_WAIT="${MIN_PUSH_WAIT:-}"
+IDLE_TIMEOUT="${IDLE_TIMEOUT:-}"
+SESSION_TIMEOUT="${SESSION_TIMEOUT:-}"
+COMMIT_MESSAGE="${COMMIT_MESSAGE:-}"
+
+# parse cli args - overwrite the config vars if corresponding flags are set and
+# collect an optional positional command.
+
+COMMAND=""
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --help)
+      log-help
+      exit
+      ;;
+    --path)
+      REPOSITORY_PATH="$2"
+      shift
+      shift
+      ;;
+    --remote)
+      REMOTE="$2"
+      shift
+      shift
+      ;;
+    --branch)
+      BRANCH="$2"
+      shift
+      shift
+      ;;
+    --min-poll-wait)
+      MIN_POLL_WAIT="$2"
+      shift
+      shift
+      ;;
+    --min-commit-wait)
+      MIN_COMMIT_WAIT="$2"
+      shift
+      shift
+      ;;
+    --min-pull-wait)
+      MIN_PULL_WAIT="$2"
+      shift
+      shift
+      ;;
+    --max-pull-wait)
+      MAX_PULL_WAIT="$2"
+      shift
+      shift
+      ;;
+    --min-push-wait)
+      MIN_PUSH_WAIT="$2"
+      shift
+      shift
+      ;;
+    --idle-timeout)
+      IDLE_TIMEOUT="$2"
+      shift
+      shift
+      ;;
+    --session-timeout)
+      SESSION_TIMEOUT="$2"
+      shift
+      shift
+      ;;
+    --message)
+      COMMIT_MESSAGE="$2"
+      shift
+      shift
+      ;;
+    --*)
+      echo "Unknown option: $1"
+      log-help
+      exit 1
+      ;;
+    *)
+      if [ -z "${COMMAND}" ]; then
+        COMMAND="$1"
+        shift
+      else
+        echo "Unknown parameter: $1"
+        log-help
+        exit 1
+      fi
+      ;;
+  esac
+done
+
+# check dependencies - if required, error/exit
+
+function check-dependencies {
+  if command -v jq &> /dev/null; then
+    log-debug "jq is INSTALLED"
+  else
+    log-error "jq is NOT INSTALLED"
+    if [ "${PLATFORM}" == 'linux' ]; then
+      log-error "to install jq, run:"
+      if command -v apt-get &> /dev/null; then
+        log-error "    apt-get install jq"
+      elif command -v dnf &> /dev/null; then
+        log-error "    dnf install jq"
+      fi
+    elif [ "${PLATFORM}" == 'macos' ]; then
+      log-error "to install jq, run:"
+      log-error "    brew install jq"
+    else
+      log-error "(you'll need to install jq on your own)"
+    fi
+    exit 1
+  fi
+}
+
+# config + config file functions
+
+if [ -n "${DEFAULT_REPOSITORY_PATH}" ]; then
+  # shellcheck disable=SC2016
+  DEFAULT_CONFIG_FILE='{
+    "repositories": [
+      {
+        "path": "'"${DEFAULT_REPOSITORY_PATH}"'"
+      }
+    ]
+  }'
+else
+  # shellcheck disable=SC2016
+  DEFAULT_CONFIG_FILE='{
+    "repositories": []
+  }'
+fi
+
+function init-config-file {
+  local config_home="${CONFIG_HOME:-${DEFAULT_CONFIG_HOME}}"
+  mkdir -p "${config_home}"
+
+  if [ -f "${config_home}/s7sync.json" ]; then
+    log-warn "overwriting the default configuration to ${config_home}/s7sync.json :"
+  else
+    log-info "writing the default configuration to ${config_home}/s7sync.json :"
+  fi
+
+  log-info ''
+  local old_ifs="${IFS}"
+  IFS=
+  echo "${DEFAULT_CONFIG_FILE}" | while read -r line; do
+    log-info "${line}"
+  done
+  IFS="${old_ifs}"
+  log-info ''
+
+  echo ''
+  read -p "go for it? " -n 1 -r
+  echo ''
+  if [[ "${REPLY}" =~ ^[Yy]$ ]]; then
+    echo "${DEFAULT_CONFIG_FILE}" > "${config_home}/s7sync.json"
+  else
+    log-error "not writing ${config_home} unless confirmed!"
+  fi
+}
+
+function load-config-file {
+  local config_home="${CONFIG_HOME:-${DEFAULT_CONFIG_HOME}}"
+  local min_poll_wait
+  local min_commit_wait
+  local min_pull_wait
+  local max_pull_wait
+  local min_push_wait
+  local idle_timeout
+  local session_timeout
+  local commit_message
+
+  log-debug "loading ${config_home}"
+
+  min_poll_wait="$(jq -r '.["min-poll-wait"]' < "${config_home}/s7sync.json")"
+  min_commit_wait="$(jq -r '.["min-commit-wait"]' < "${config_home}/s7sync.json")"
+  min_pull_wait="$(jq -r '.["min-pull-wait"]' < "${config_home}/s7sync.json")"
+  max_pull_wait="$(jq -r '.["max-pull-wait"]' < "${config_home}/s7sync.json")"
+  min_push_wait="$(jq -r '.["min-push-wait"]' < "${config_home}/s7sync.json")"
+  idle_timeout="$(jq -r '.["idle-timeout"]' < "${config_home}/s7sync.json")"
+  session_timeout="$(jq -r '.["session-timeout"]' < "${config_home}/s7sync.json")"
+  commit_message="$(jq -r '.["commit-message"]' < "${config_home}/s7sync.json")"
+
+  if [ "${min_poll_wait}" != null ]; then
+    MIN_POLL_WAIT="${min_poll_wait}"
+  fi
+
+  if [ "${min_commit_wait}" != null ]; then
+    MIN_COMMIT_WAIT="${min_commit_wait}"
+  fi
+
+  if [ "${min_pull_wait}" != null ]; then
+    MIN_PULL_WAIT="${min_pull_wait}"
+  fi
+
+  if [ "${max_pull_wait}" != null ]; then
+    MAX_PULL_WAIT="${max_pull_wait}"
+  fi
+
+  if [ "${min_push_wait}" != null ]; then
+    MIN_PUSH_WAIT="${min_push_wait}"
+  fi
+
+  if [ "${idle_timeout}" != null ]; then
+    IDLE_TIMEOUT="${idle_timeout}"
+  fi
+
+  if [ "${session_timeout}" != null ]; then
+    SESSION_TIMEOUT="${session_timeout}"
+  fi
+
+  if [ "${commit_message}" != null ]; then
+    COMMIT_MESSAGE="${commit_message}"
+  fi
+
+  log-debug "s7sync.json loaded"
+}
+
+# NOTE: this MUST be called after any file config reads!
+# TODO: this is mad stateful but I also don't want to manually plumb the
+# defaults at the call site. can I come to terms with that?
+function finalize-config {
+  CONFIG_HOME="${CONFIG_HOME:-${DEFAULT_CONFIG_HOME}}"
+  REPOSITORY_PATH="${REPOSITORY_PATH:-${DEFAULT_REPOSITORY_PATH}}"
+  MIN_POLL_WAIT="${MIN_POLL_WAIT:-${DEFAULT_MIN_POLL_WAIT}}"
+  MIN_COMMIT_WAIT="${MIN_COMMIT_WAIT:-${DEFAULT_MIN_COMMIT_WAIT}}"
+  MIN_PULL_WAIT="${MIN_PULL_WAIT:-${DEFAULT_MIN_PULL_WAIT}}"
+  MAX_PULL_WAIT="${MAX_PULL_WAIT:-${DEFAULT_MAX_PULL_WAIT}}"
+  MIN_PUSH_WAIT="${MIN_PUSH_WAIT:-${DEFAULT_MIN_PUSH_WAIT}}"
+  IDLE_TIMEOUT="${IDLE_TIMEOUT:-${DEFAULT_IDLE_TIMEOUT}}"
+  SESSION_TIMEOUT="${SESSION_TIMEOUT:-${DEFAULT_SESSION_TIMEOUT}}"
+  COMMIT_MESSAGE="${COMMIT_MESSAGE:-${DEFAULT_COMMIT_MESSAGE}}"
+}
+
+# NOTE: call this BEFORE any subprocesses, otherwise you will load the config
+# twice!!
+function export-config {
+  export PLATFORM
+  export CONFIG_HOME
+  export REPOSITORY_PATH
+  export MIN_POLL_WAIT
+  export MIN_COMMIT_WAIT
+  export MIN_PULL_WAIT
+  export MAX_PULL_WAIT
+  export MIN_PUSH_WAIT
+  export IDLE_TIMEOUT
+  export SESSION_TIMEOUT
+  export COMMIT_MESSAGE
+}
+
+# in macos, we can use ioreg to get the OS's idle time. things are more
+# complicated in other OS's and need tools that - afaik - don't exist yet.
+
+function get-idle-time {
+  case "${PLATFORM}" in
+    linux)
+      # TODO: the answer isn't so straightforward in linux. wayland has the
+      # KDE idle protocol, so we could write a tool that calls that API for
+      # us. alternately, swayidle will call actions when it goes idle, and we
+      # may prefer to solve the problem from that angle.
+      echo -1
+      ;;
+    macos)
+      # see: http://hints.macworld.com/article.php?story=20040330161158532
+      echo $(($(ioreg -c IOHIDSystem | sed -e '/HIDIdleTime/ !{ d' -e 't' -e '}' -e 's/.* = //g' -e 'q') / 1000000000))
+      ;;
+    windows)
+      # TODO: write a rust cli wrapping the win32 api bindings + use it here
+      # see: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getlastinputinfo
+      echo -1
+      ;;
+    *)
+      echo -1
+      ;;
+  esac
+}
+
+# The meat and potatoes - this beefy boi procedure watches an individual
+# repository!
+
+function watch-repository {
+  finalize-config
+
+  local timestamp=0
+  local session_created_at=0
+  local last_commit_at=0
+  local last_pull_at=0
+  local last_push_at=0
+  local commit_wait=0
+  local pull_wait=0
+  local push_wait=0
+  local session_age=86400  # 1 day
+  local completed_at=0
+  local is_idle=''
+  local took=0
+  local added_files=''
+  # TODO: get git to say whether or not there are unpushed commits
+  local unpushed_commits=''
+  # always pull on first start
+  local remote_stale=1
+
+  log-debug "MIN_POLL_WAIT='${MIN_POLL_WAIT}'"
+  log-debug "MIN_COMMIT_WAIT='${MIN_COMMIT_WAIT}'"
+  log-debug "MIN_PULL_WAIT='${MIN_PULL_WAIT}'"
+  log-debug "MAX_PULL_WAIT='${MAX_PULL_WAIT}'"
+  log-debug "MIN_PUSH_WAIT='${MIN_PUSH_WAIT}'"
+  log-debug "IDLE_TIMEOUT='${IDLE_TIMEOUT}'"
+  log-debug "SESSION_TIMEOUT='${SESSION_TIMEOUT}'"
+  log-debug "REPOSITORY_PATH='${REPOSITORY_PATH}'"
+  log-debug "COMMIT_MESSAGE='${COMMIT_MESSAGE}'"
+
+  cd "${REPOSITORY_PATH}"
+
+  if [ ! -d .git ]; then
+    log-error "TODO: implement auto-init"
+    exit 1
+  fi
+
+  if [ -z "${BRANCH}" ]; then
+    BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+  fi
+
+  if [ -z "${REMOTE}" ]; then
+    REMOTE="$(git branch --list latest --format '%(upstream)' | cut -d / -f 3)"
+  fi
+  REMOTE="${REMOTE:-origin}"
+
+  log-debug "branch: ${BRANCH}"
+  log-debug "remote: ${REMOTE}"
+
+  git checkout "${BRANCH}" 2>&1 | log-output
+
+  while true; do
+    timestamp="$(date +%s)"
+    commit_wait="$((timestamp - last_commit_at))"
+    pull_wait="$((timestamp - last_pull_at))"
+    push_wait="$((timestamp - last_push_at))"
+    session_age="$((timestamp - session_created_at))"
+    idle_time="$(get-idle-time)"
+
+    if [ "${idle_time}" -gt "${IDLE_TIMEOUT}" ]; then
+      log-debug "user has been inactive for ${idle_time} seconds and is idle"
+      is_idle=1
+    elif [ "${idle_time}" -gt 0 ]; then
+      log-debug "user was active as of ${idle_time} seconds ago"
+      is_idle=''
+    fi
+
+    # modified files
+    git ls-files -m | while read -r file; do
+      if [ -f "${file}" ]; then
+        log-debug "adding ${file}"
+        git add "${file}" 2>&1 | log-output
+      else
+        log-debug "removing ${file}"
+        git rm "${file}" 2>&1 | log-output
+      fi
+    done
+
+    # untracked files
+    git ls-files --others --exclude-standard | while read -r file; do
+      # TODO: include/exclude paths logic
+      log-debug "adding ${file}"
+      git add "${file}" 2>&1 | log-output
+    done
+
+    # files added but not committed
+    added_files="$(git diff --cached --name-only --diff-filter=M)"
+    if [ -n "${added_files}" ] && [ "${commit_wait}" -gt "${MIN_COMMIT_WAIT}" ]; then
+      # TODO: dynamic messages?
+      git commit -m "${COMMIT_MESSAGE}" 2>&1 | log-output
+      added_files=''
+      unpushed_commits=1
+      last_commit_at="${timestamp}"
+      log-info "$(pwd) committed at: $(date)"
+    elif [ "${commit_wait}" -gt "${MIN_COMMIT_WAIT}" ]; then
+      log-debug "$(pwd) will commit as soon as there are staged files"
+    else
+      log-debug "$(pwd) will be committed in $((MIN_COMMIT_WAIT - commit_wait)) seconds"
+    fi
+
+    # remote is considered stale if there are unpushed commits *and* we've waited
+    # the minimum amount of time
+    if [ -n "${unpushed_commits}" ]; then
+      # if the session is (probably) unlocked then always consider the remote stale, but
+      # otherwise make sure we've waited a sensible amount of time
+      if [ "${pull_wait}" -gt "${MIN_PULL_WAIT}" ] || [ "${session_age}" -lt "${SESSION_TIMEOUT}" ]; then
+        remote_stale=1
+      else
+        log-debug "fetch and rebase ${REMOTE}/${BRANCH} in $((MIN_PULL_WAIT - pull_wait)) seconds"
+      fi
+    elif [ "${pull_wait}" -gt "${MIN_PULL_WAIT}" ]; then
+      log-debug "fetch ${REMOTE}/${BRANCH} as soon as there are unpushed commits"
+    fi
+
+    if [ -z "${is_idle}" ]; then
+       
+      # it's *also* considered stale if we haven't pulled since the max wait
+      if [ "${pull_wait}" -gt "${MAX_PULL_WAIT}" ]; then
+        remote_stale=1
+      else
+        log-debug "fetch and fast-forward ${REMOTE}/${BRANCH} in $((MAX_PULL_WAIT - pull_wait)) seconds"
+      fi
+
+      if [ -n "${remote_stale}" ]; then
+        log-info "pulling $(pwd)"
+        git pull --rebase 2>&1 | log-output
+        last_pull_at="${timestamp}"
+        remote_stale=''
+
+        # if the session had expired, assume we made a new one
+        if [ "${session_age}" -gt "${SESSION_TIMEOUT}" ]; then
+          session_created_at="${timestamp}"
+        fi
+        log-info "$(pwd) pulled at: $(date)"
+      fi
+
+      if [ -n "${unpushed_commits}" ]; then
+        # if we've waited before pushing *or* the session is (probably) unlocked, push
+        if [ "${push_wait}" -gt "${MIN_PUSH_WAIT}" ] || [ "${session_age}" -lt "${SESSION_TIMEOUT}" ]; then
+          log-info "pushing $(pwd)"
+          git push 2>&1 | log-output
+          unpushed_commits=''
+          last_push_at="${timestamp}"
+
+          # if the session had expired, assume we made a new one
+          if [ "${session_age}" -gt "${SESSION_TIMEOUT}" ]; then
+            session_created_at="${timestamp}"
+          fi
+        else
+          log-debug "push new commits in $((MIN_PUSH_WAIT - timestamp + last_push_at)) seconds"
+        fi
+      fi
+    else
+      log-debug "user is idle"
+    fi
+
+    completed_at="$(date +%s)"
+    took="$((completed_at - timestamp))"
+
+    if [ "${took}" -lt "${MIN_POLL_WAIT}" ]; then
+      wait=$((MIN_POLL_WAIT - took))
+      sleep "${wait}"
+    fi
+  done
+}
+
+# in our pain procedure, we load our config file, pull the list of repositories
+# we want to watch, and kick off a watching subprocess in the background.
+
+function on-exit {
+  for pid in "${PIDS[@]}"; do
+    kill -15 "${pid}"
+  done
+}
+
+function init-repository {
+  local repo_path="$1"
+  local repo_remote="$2"
+
+  if [ ! -d "${repo_path}" ]; then
+    if [ -z "${repo_remote}" ]; then
+      # TODO: lazily create the repo + generate the remote using gh
+      log-warn "could not find ${repo_path} and don't have a remote to clone from"
+    else
+      log-info "cloning ${repo_path} from ${repo_remote}"
+      git clone "${repo_remote}" "${repo_path}"
+    fi
+  else
+    log-debug "${repo_path} found"
+  fi
+}
+
+function invoke-main {
+  PIDS=()
+
+  local config_home="${CONFIG_HOME:-${DEFAULT_CONFIG_HOME}}"
+  local repo_path
+  local repo_remote
+
+  if [ -z "${ACCEPT_EULA}" ]; then
+    log-info "sie7e filesync community edition"
+  else
+    log-info "sie7e labs filesync professional edition"
+  fi
+  log-info "Copyright Josh Holbrook 2022"
+
+  check-dependencies
+  load-config-file
+  finalize-config
+  export-config
+
+  trap "on-exit" EXIT
+
+  log-info "loading repositories"
+  while read -r repo; do
+    repo_remote="$(echo "${repo}" | jq -r .remote)"
+    eval "repo_path="'"'"$(echo "${repo}" | jq -r .path)"'"'
+
+    init-repository "${repo_path}" "${repo_remote}"
+
+    log-info "watching ${repo_path}"
+    REPOSITORY_PATH="${repo_path}" bash "${BASH_SOURCE[0]}" _watch-repository &
+    PIDS+=($!)
+  done <<< "$(jq -c .repositories[] < "${config_home}/s7sync.json")"
+
+  for pid in "${PIDS[@]}"; do
+    wait "${pid}"
+  done
+
+  log-info "ok"
+}
+
+log-debug "COMMAND='${COMMAND}'"
+
+case "${COMMAND}" in
+  _watch-repository)
+    # secret command to run a lone repository watcher
+    # TODO: productionize this with expo backoff
+    # TODO: notify when process crashes - may need a new tool
+    while true; do
+      watch-repository || sleep 10
+    done
+    ;;
+  init)
+    init-config-file
+    ;;
+  *)
+    invoke-main
+    ;;
+esac
