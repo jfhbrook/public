@@ -17,8 +17,7 @@ pub(crate) struct Client {
 #[cfg(target_os = "windows")]
 const EMACSCLIENT: &str = "C:\\Program Files\\Emacs\\x86_64\\bin\\emacsclient.exe";
 
-// TODO: this data type is nigh unworkable - can I include unicode instead?
-const HAS_GRAPHICAL_FRAME: &[u8; 191] = include_bytes!("../elisp/has_graphical_frame.el");
+const HAS_GRAPHICAL_FRAME: &str = include_str!("../elisp/has_graphical_frame.el");
 
 impl Client {
     #[cfg(target_os = "linux")]
@@ -86,7 +85,7 @@ impl Client {
     }
 
     pub fn has_graphical_frame(&self) -> Result<bool, Error> {
-        let result = self.eval(std::str::from_utf8(HAS_GRAPHICAL_FRAME)?)?;
+        let result = self.eval(HAS_GRAPHICAL_FRAME)?;
         Ok(result == "t")
     }
 }
