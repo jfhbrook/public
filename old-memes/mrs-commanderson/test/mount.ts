@@ -52,7 +52,7 @@ test('router/mount', async (assert) => {
     const topic = discuss(async () => {
       return new Router<Ctx>({
         apps: async () => { },
-        ' users': async () => { }
+        users: async () => { }
       });
     });
 

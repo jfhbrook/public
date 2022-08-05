@@ -59,7 +59,7 @@ function countryCityZip() {
         const topic = (0, swears_1.discuss)(() => __awaiter(void 0, void 0, void 0, function* () {
             return new router_1.Router({
                 apps: () => __awaiter(void 0, void 0, void 0, function* () { }),
-                ' users': () => __awaiter(void 0, void 0, void 0, function* () { })
+                users: () => __awaiter(void 0, void 0, void 0, function* () { })
             });
         }));
         assert.test('should create the correct routing table', (assert) => __awaiter(void 0, void 0, void 0, function* () {

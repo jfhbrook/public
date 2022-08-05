@@ -115,6 +115,12 @@ class Router {
         };
         return this;
     }
+    // ### method isMethod (maybeMethod)
+    // ### @maybeMethod {string} A string which may potentially be a method
+    // Checks if the argument is a registered method on the router.
+    isMethod(maybeMethod) {
+        return this._methods.has(maybeMethod);
+    }
     on(pathOrMethod, routeOrPath, maybeRoute) {
         const method = maybeRoute ? pathOrMethod : "on";
         let path = maybeRoute ? routeOrPath : pathOrMethod;
@@ -580,32 +586,30 @@ class Router {
     //
     // yields
     //
-    //    { 'foo': 'bar': function foobar() {} } }
+    //    { 'foo': { 'bar': function foobar() {} } }
     //
     mount(routes, path = []) {
         if (!routes || typeof routes !== "object" || Array.isArray(routes)) {
             return;
         }
         const _path = path instanceof Array ? path : path.split(this.delimiter);
-        const insertOrMount = (route, local) => {
-            let rename = route, parts = route.split(this.delimiter), routeType = typeof routes[route], isRoute = parts[0] === "" || !(this._methods.has(parts[0])), event = isRoute ? "on" : rename;
-            if (isRoute) {
-                rename = rename.slice((rename.match(new RegExp('^' + this.delimiter)) || [''])[0].length);
-                parts.shift();
-            }
-            if (isRoute && routeType === 'object' && !Array.isArray(routes[route])) {
-                local = local.concat(parts);
-                this.mount(routes[route], local);
+        function isTable(maybeTable) {
+            return typeof maybeTable === 'object' && !Array.isArray(maybeTable);
+        }
+        const insertOrMount = (route) => {
+            let parts = route.split(this.delimiter), event = this.isMethod(route) ? route : "on", pathToInsert = _path.concat(parts);
+            if (isTable(routes[route])) {
+                this.mount(routes[route], pathToInsert);
                 return;
             }
-            if (isRoute) {
-                local = local.concat(rename.split(this.delimiter));
-                local = (0, util_1.terminator)(local, this.delimiter);
+            if (!this.isMethod(route)) {
+                pathToInsert = (0, util_1.terminator)(pathToInsert, this.delimiter);
             }
-            this.insert(event, local, routes[route]);
+            // it's a handler, so insert it
+            this.insert(event, pathToInsert, routes[route]);
         };
         for (let route of Object.keys(routes)) {
-            insertOrMount(route, _path.slice(0));
+            insertOrMount(route);
         }
     }
 }
