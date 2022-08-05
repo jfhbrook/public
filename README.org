@@ -9,12 +9,6 @@ repository]].
 ** anisotropy
 This submodule contains my masters thesis. It is licensed under the Community
 Research and Academic Programming License v0 Beta 0.
-** college
-These are various projects I worked on in college. Each project is "poorly
-licensed" - ~count_crossings~ and ~nomograms~ have no licensing information at
-all and ~super-four-bar-explorer~ has "Everything here's on the wtfpl" in the
-comments - but if someone really needs it I'm happy to add licensing
-information. Let me know.
 ** db_hooks
 This is the toolset I made for myself to manage database stuff on my personal
 machines. It is licensed under an Apache v2.0 license with additional

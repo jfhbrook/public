@@ -1,5 +1,5 @@
 [submodule "college/lolcode"]
-	path = college/lolcode
+	path = attic/college/lolcode
 	url = git@github.com:jfhbrook/lolcode.git
 [submodule "anisotropy"]
 	path = anisotropy
