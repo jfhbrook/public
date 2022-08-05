@@ -27,9 +27,6 @@ This submodule contains my GitHub README profile. It is unlicensed but
 source-available.
 ** gpl
 This submodule contains my GPL-compatible free software projects.
-** korben-twitter
-This is the twitter bot which powers [[https://twitter.com/korbenisabird][@korbenisabird]].
-It's written in rust, and licensed under an Apache 2.0 license.
 ** korbenware
 A collection of scripts I use to glue my Linux desktop and general CLI experience
 together. Available under a MPL v2.0 license.
