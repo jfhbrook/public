@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/jfhbrook/public#readme",
   "devDependencies": {
+    "@types/minimist": "^1.1.2",
     "@types/node": "^16.9.1",
     "@jfhbrook/swears": "^1.0.1",
     "@types/tap": "^15.0.6",
