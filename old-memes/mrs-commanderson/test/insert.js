@@ -49,10 +49,17 @@ function route() {
                     assert.equal(router.routes.foo.bar.on.length, 3);
                 }));
             }));
-            assert.test("'get', ['fizz', 'buzz']", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+            assert.test("'on', ['foo']", (assert) => __awaiter(void 0, void 0, void 0, function* () {
                 yield topic.swear((router) => __awaiter(void 0, void 0, void 0, function* () {
-                    router.insert('get', ['fizz', 'buzz'], route);
-                    assert.equal(router.routes.fizz.buzz.get, route);
+                    router.insert('on', ['foo'], route);
+                    assert.type(router.routes.foo.bar.on, Array);
+                    assert.equal(router.routes.foo.on, route);
+                }));
+            }));
+            assert.test("'help', ['foo', 'bar']", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+                yield topic.swear((router) => __awaiter(void 0, void 0, void 0, function* () {
+                    router.insert('help', ['foo', 'bar'], route);
+                    assert.equal(router.routes.foo.bar.help, route);
                 }));
             }));
         }));

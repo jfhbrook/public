@@ -45,10 +45,18 @@ test('router/insert', async (assert) => {
         });
       });
 
-      assert.test("'get', ['fizz', 'buzz']", async (assert) => {
+      assert.test("'on', ['foo']", async (assert) => {
         await topic.swear(async (router) => {
-          router.insert('get', ['fizz', 'buzz'], route);
-          assert.equal(router.routes.fizz.buzz.get, route);
+          router.insert('on', ['foo'], route);
+          assert.type(router.routes.foo.bar.on, Array);
+          assert.equal(router.routes.foo.on, route);
+        });
+      });
+
+      assert.test("'help', ['foo', 'bar']", async (assert) => {
+        await topic.swear(async (router) => {
+          router.insert('help', ['foo', 'bar'], route);
+          assert.equal(router.routes.foo.bar.help, route);
         });
       });
     });
