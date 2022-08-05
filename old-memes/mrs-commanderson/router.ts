@@ -456,7 +456,7 @@ export class Router<Ctx> {
     // 5. Matched functions from routing table (`['before', 'on'], ['before', 'on`], ...]`)
     //
     // TODO: Can we actually trust at this point that `this.last` is defined?
-    const after= <Handler<Ctx>>(this.every && this.every.after
+    const after = <Handler<Ctx>>(this.every && this.every.after
       ? [this.every.after].concat(<Handler<Ctx>>this.last)
       : [this.last]);
 
