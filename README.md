@@ -25,15 +25,6 @@ license.
 This is a collection of (small, but hopefully will grow) fortune files. I
 intend to put them up on COPR but haven't done it yet.
 
-### github-profile
-
-This submodule contains my GitHub README profile. It is unlicensed but
-source-available.
-
-### gpl
-
-This submodule contains my GPL-compatible free software projects.
-
 ### korbenware
 A collection of scripts I use to glue my Linux desktop and general CLI experience
 together. Available under a MPL v2.0 license.
@@ -64,28 +55,8 @@ MPL v2.0 license.
 
 ### politics
 
-These are projects I've done for political organizations.
-
-#### ak-demo-favicon
-
-This is an icon I made for the Alaska Young Democrats in 2013, intended to be
-used by progressive and democratic-aligned people and organizations in Alaska
-and inspired by the JavaScript logo. It's licensed under a Creative Commons CC0
-1.0 Universal License.
-
-#### nys-data-dump-howto.org
-
-Are you a leftist organization in New York State and interested in working with
-their open electoral data? This document details how to get your hands on
-campaign disclosure reports and voter files and successfully load them into a
-database for further exploration and processing. It is licensed under an
-Anti-Capitalist Software License.
-
-### PSeudo
-
-This is a PowerShell module for privilege escalation in Windows 10, using named
-pipes and a bunch of dirty tricks. It is based on code I found and saved from
-the internet. It is licensed under an MIT Expat license.
+These are projects I've done for political organizations. For more information,
+see [its README](./politics/README.md).
 
 ### pyee
 

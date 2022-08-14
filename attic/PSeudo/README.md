@@ -3,6 +3,12 @@
 A PowerShell module that executes commands with Administrator privileges
 in Windows 10 with output showing inside the host session, "like sudo".
 
+## DEPRECATION NOTICE
+
+PSeudo is DEPRECATED in favor of [gsudo](https://github.com/gerardog/gsudo). It
+should still work, but gsudo is a lot more robust and is what I'm using in
+practice!
+
 ## Installing PSeudo
 
 This module is available on the
