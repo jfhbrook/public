@@ -8,4 +8,3 @@ pub(crate) fn init_logger() -> Result<(), log::SetLoggerError> {
         ColorChoice::Auto,
     )
 }
-

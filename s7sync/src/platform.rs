@@ -2,7 +2,7 @@
 pub(crate) enum Platform {
     Windows,
     MacOs,
-    Linux
+    Linux,
 }
 
 #[cfg(target_os = "windows")]

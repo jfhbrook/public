@@ -1,37 +1,32 @@
 use anyhow::{anyhow, Error, Result};
 use clap::{Parser, Subcommand};
-use log::{debug, info, warn, error};
+use log::{debug, error, info, warn};
 
 mod commands;
 mod config;
 mod logger;
 mod platform;
 
-use crate::config::{load_config, save_config};
+use crate::commands::internal::{internal_command, InternalCommand};
+use crate::config::Config;
 use crate::logger::init_logger;
-use crate::commands::internal::{InternalCommand, internal_command};
 
 #[derive(Debug, Parser)]
-#[clap(
-    author,
-    version,
-    about,
-    long_about = "Sie7e FileSync"
-)]
+#[clap(author, version, about, long_about = "Sie7e FileSync")]
 struct Cli {
     #[clap(subcommand)]
-    command: Option<Command>
+    command: Option<Command>,
 }
 
 #[derive(Debug, Subcommand)]
 enum Command {
     Add {
         #[clap(value_parser)]
-        repository: String
+        repository: String,
     },
     Remove {
         #[clap(value_parser)]
-        repository: String
+        repository: String,
     },
     Ui,
     Start {
@@ -39,47 +34,47 @@ enum Command {
         selector: Option<String>,
 
         #[clap(short, long)]
-        all: bool
+        all: bool,
     },
     Stop {
         #[clap(value_parser)]
         selector: Option<String>,
 
         #[clap(short, long)]
-        all: bool
+        all: bool,
     },
     Restart {
         #[clap(value_parser)]
         selector: Option<String>,
 
         #[clap(short, long)]
-        all: bool
+        all: bool,
     },
     Status {
         #[clap(value_parser)]
         selector: Option<String>,
 
         #[clap(short, long)]
-        all: bool
+        all: bool,
     },
     Autostart {
         #[clap(subcommand)]
-        command: AutostartCommand
+        command: AutostartCommand,
     },
     Daemon {
         #[clap(subcommand)]
-        command: DaemonCommand
+        command: DaemonCommand,
     },
     Internal {
         #[clap(subcommand)]
-        command: InternalCommand
-    }
+        command: InternalCommand,
+    },
 }
 
 #[derive(Debug, Subcommand)]
 enum AutostartCommand {
     Enable,
-    Disable
+    Disable,
 }
 
 #[derive(Debug, Subcommand)]
@@ -89,7 +84,7 @@ enum DaemonCommand {
     Stop,
     Start,
     Restart,
-    Status
+    Status,
 }
 
 fn main() -> Result<(), Error> {
@@ -98,14 +93,14 @@ fn main() -> Result<(), Error> {
     match cli.command {
         None => {
             init_logger()?;
-            info!("default behavior!");
-        },
+            info!("{:?}", Config::load()?);
+        }
         Some(Command::Ui) => {
             unimplemented!("TODO: launch the UI!");
-        },
+        }
         Some(Command::Internal { command }) => {
-            internal_command(command);
-        },
+            internal_command(command)?;
+        }
         default => {
             unimplemented!("{:?}", default);
         }

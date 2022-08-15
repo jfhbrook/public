@@ -1,9 +1,9 @@
 use anyhow::{Error, Result};
 use clap::{ArgEnum, Subcommand};
-use log::{debug, info, warn, error};
+use log::{debug, error, info, warn};
 
-use crate::platform::get_platform;
 use crate::logger::init_logger;
+use crate::platform::get_platform;
 
 #[derive(Debug, Subcommand)]
 pub(crate) enum InternalCommand {
@@ -14,17 +14,21 @@ pub(crate) enum InternalCommand {
         #[clap(short, long)]
         pid: Option<String>,
 
-        #[clap(value_parser, multiple_values=true)]
-        message: Vec<String>
+        #[clap(value_parser, multiple_values = true)]
+        message: Vec<String>,
     },
-    Platform
+    Platform,
 }
 
 pub(crate) fn internal_command(command: InternalCommand) -> Result<(), Error> {
     match command {
-        InternalCommand::Log { level, pid, message } => {
+        InternalCommand::Log {
+            level,
+            pid,
+            message,
+        } => {
             log_command(level, pid, message)?;
-        },
+        }
         InternalCommand::Platform => {
             println!("{:?}", get_platform());
         }
@@ -39,10 +43,14 @@ pub(crate) enum LogLevel {
     Info,
     Warn,
     Error,
-    Output
+    Output,
 }
 
-pub(crate) fn log_command(level: Option<LogLevel>, pid: Option<String>, message: Vec<String>) -> Result<(), Error> {
+pub(crate) fn log_command(
+    level: Option<LogLevel>,
+    pid: Option<String>,
+    message: Vec<String>,
+) -> Result<(), Error> {
     init_logger()?;
 
     let msg = message.join(" ");
@@ -50,37 +58,37 @@ pub(crate) fn log_command(level: Option<LogLevel>, pid: Option<String>, message:
     match level {
         Some(LogLevel::Debug) => {
             if let Some(p) = pid {
-                debug!("({pid}) {message}", pid=p, message=msg);
+                debug!("({pid}) {message}", pid = p, message = msg);
             } else {
-                debug!("{message}", message=msg);
+                debug!("{message}", message = msg);
             }
-        },
+        }
         Some(LogLevel::Info) | None => {
             if let Some(p) = pid {
-                info!("({pid}) {message}", pid=p, message=msg);
+                info!("({pid}) {message}", pid = p, message = msg);
             } else {
-                info!("{message}", message=msg);
+                info!("{message}", message = msg);
             }
-        },
+        }
         Some(LogLevel::Warn) => {
             if let Some(p) = pid {
-                warn!("({pid}) {message}", pid=p, message=msg);
+                warn!("({pid}) {message}", pid = p, message = msg);
             } else {
-                warn!("{message}", message=msg);
+                warn!("{message}", message = msg);
             }
-        },
+        }
         Some(LogLevel::Error) => {
             if let Some(p) = pid {
-                error!("({pid}) {message}", pid=p, message=msg);
+                error!("({pid}) {message}", pid = p, message = msg);
             } else {
-                error!("{message}", message=msg);
+                error!("{message}", message = msg);
             }
-        },
+        }
         Some(LogLevel::Output) => {
             if let Some(p) = pid {
-                println!("({pid}) {message}", pid=p, message=msg);
+                println!("({pid}) {message}", pid = p, message = msg);
             } else {
-                println!("{message}", message=msg);
+                println!("{message}", message = msg);
             }
         }
     };
