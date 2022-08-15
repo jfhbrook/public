@@ -1,0 +1,19 @@
+[package]
+name = "s7sync"
+description = "Sie7e FileSync"
+license = "MPL-2.0"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.58"
+camino = "1.1.1"
+clap = { version = "3.2.8", features = ["derive"] }
+colored = "2.0.0"
+log = "^0.4.6"
+serde = { version = "1.0.136", features = ["derive"] }
+simplelog = "^0.10.0"
+toml = "*"
+which = "4.2.5"
