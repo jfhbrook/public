@@ -1,34 +1,47 @@
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result};
 use clap::{Parser, Subcommand};
-use log::{debug, error, info, warn};
 
 mod commands;
 mod config;
 mod logger;
 mod platform;
 
+use crate::commands::config::{config_command, ConfigCommand};
+use crate::commands::repositories::{add_command, remove_command, show_command};
 use crate::commands::internal::{internal_command, InternalCommand};
-use crate::config::Config;
-use crate::logger::init_logger;
 
 #[derive(Debug, Parser)]
 #[clap(author, version, about, long_about = "Sie7e FileSync")]
 struct Cli {
     #[clap(subcommand)]
-    command: Option<Command>,
+    command: Command,
 }
 
 #[derive(Debug, Subcommand)]
 enum Command {
+    // TODO: test
+    Config {
+        #[clap(subcommand)]
+        command: ConfigCommand
+    },
+    // TODO: test
     Add {
         #[clap(value_parser)]
-        repository: String,
+        path: Option<String>,
+
+        #[clap(short, long)]
+        name: Option<String>,
+
+        #[clap(short, long)]
+        remote: Option<String>,
     },
     Remove {
         #[clap(value_parser)]
-        repository: String,
+        selector: Option<String>,
     },
-    Ui,
+    Show,
+    Server,
+    App,
     Start {
         #[clap(value_parser)]
         selector: Option<String>,
@@ -91,14 +104,25 @@ fn main() -> Result<(), Error> {
     let cli = Cli::parse();
 
     match cli.command {
-        None => {
-            init_logger()?;
-            info!("{:?}", Config::load()?);
+        Command::Config { command } => {
+            config_command(command)?;
         }
-        Some(Command::Ui) => {
+        Command::Add { path, name, remote } => {
+            add_command(path, name, remote)?;
+        }
+        Command::Remove { selector } => {
+            remove_command(selector)?;
+        }
+        Command::Show => {
+            show_command()?;
+        }
+        Command::Server => {
+            unimplemented!("server");
+        }
+        Command::App => {
             unimplemented!("TODO: launch the UI!");
         }
-        Some(Command::Internal { command }) => {
+        Command::Internal { command } => {
             internal_command(command)?;
         }
         default => {
