@@ -2,28 +2,31 @@ use anyhow::{Error, Result};
 use log::{debug, info};
 use tabled::{Table, Tabled};
 
-use crate::config::{Config, Repository, Repositories};
+use crate::config::{Config, Repositories, Repository};
 use crate::logger::init_logger;
 
 #[derive(Tabled)]
-struct RepositoryRow<'t> {
+struct RepositoryView<'t> {
+    index: usize,
     name: &'t str,
     path: &'t str,
-    remote: &'t str
+    remote: &'t str,
 }
 
-// TODO: implement the actual From trait and iter/collect in show_command
-impl<'c> RepositoryRow<'c> {
-    fn from(repository: &'c Repository) -> RepositoryRow<'c> {
-        let name: &'c str = repository.name.as_str();
-        let path: &'c str = repository.path.as_str();
-        let remote: &'c str = if let Some(remote) = &repository.remote {
-            remote.as_str()
-        } else {
-            "<not set>"
-        };
+fn map_view<'c>((index, repository): (usize, &'c Repository)) -> RepositoryView<'c> {
+    let name: &'c str = repository.name.as_str();
+    let path: &'c str = repository.path.as_str();
+    let remote: &'c str = if let Some(remote) = &repository.remote {
+        remote.as_str()
+    } else {
+        "<not set>"
+    };
 
-        RepositoryRow::<'c> { name, path, remote }
+    RepositoryView::<'c> {
+        index,
+        name,
+        path,
+        remote,
     }
 }
 
@@ -32,7 +35,7 @@ impl<'c> RepositoryRow<'c> {
 pub(crate) fn show_command() -> Result<(), Error> {
     let config = Config::load()?;
 
-    let repositories = config.repositories.iter().map(RepositoryRow::from);
+    let repositories = config.repositories.iter().enumerate().map(map_view);
 
     println!("{}", Table::new(repositories).to_string());
 
@@ -57,7 +60,7 @@ pub(crate) fn add_command(
 
     debug!("Inserting repository: {:?}", repo);
 
-    repos.insert(repo);
+    repos.insert(repo)?;
 
     debug!("Updated configuration:\n\n{config:#?}", config = config);
 
@@ -86,3 +89,5 @@ pub(crate) fn remove_command(selector: Option<String>) -> Result<(), Error> {
 
     Ok(())
 }
+
+// TODO: Update, find one or >1, etc

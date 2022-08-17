@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Error, Result};
+use clap::Subcommand;
 use log::{debug, info};
 use tabled::{Table, Tabled};
-use clap::Subcommand;
 
 use crate::config::Config;
 use crate::logger::init_logger;
@@ -11,32 +11,24 @@ pub(crate) enum ConfigCommand {
     Show,
     Get {
         #[clap(value_parser)]
-        name: String
+        name: String,
     },
     Set {
         #[clap(value_parser)]
         name: String,
 
         #[clap(value_parser)]
-        value: String
-    }
+        value: String,
+    },
 }
-
 
 pub(crate) fn config_command(command: ConfigCommand) -> Result<(), Error> {
     match command {
-        ConfigCommand::Show => {
-            show_command()
-        }
-        ConfigCommand::Get { name } => {
-            get_command(name)
-        }
-        ConfigCommand::Set { name, value } => {
-            set_command(name, value)
-        }
+        ConfigCommand::Show => show_command(),
+        ConfigCommand::Get { name } => get_command(name),
+        ConfigCommand::Set { name, value } => set_command(name, value),
     }
 }
-
 
 #[derive(Tabled)]
 struct SettingRow<'t> {
@@ -133,11 +125,7 @@ fn set_command(name: String, value: String) -> Result<(), Error> {
 
     debug!("Current configuration:\n\n{config:#?}", config = config);
 
-    info!(
-        "Setting {name:?} = {value:?}",
-        name = name,
-        value = value
-    );
+    info!("Setting {name:?} = {value:?}", name = name, value = value);
 
     if name == "min_poll_wait" {
         config.min_poll_wait = value.parse()?;

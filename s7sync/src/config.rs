@@ -11,7 +11,7 @@ use std::process::Command;
 // config directory and file stuff
 
 fn project_dirs() -> Result<ProjectDirs, Error> {
-    ProjectDirs::from("com", "sie7elabs", "s7sync").ok_or(anyhow!("could not find home directory"))
+    ProjectDirs::from("com", "sie7elabs", "s7sync").ok_or(anyhow!("Could not find home directory"))
 }
 
 fn file_path(dir: &Path) -> Result<PathBuf, Error> {
@@ -29,7 +29,7 @@ fn file_path(dir: &Path) -> Result<PathBuf, Error> {
 // TODO: move these into a git submodule
 
 // Checks if a path is a git repository
-// TODO: generic path-like
+// TODO: generic path-like and camino
 fn is_git_repository(path: &PathBuf) -> Result<bool, Error> {
     let mut path = path.clone();
 
@@ -41,7 +41,7 @@ fn is_git_repository(path: &PathBuf) -> Result<bool, Error> {
 }
 
 // a cheeky shell call to get the remote
-// TODO: generic path-like
+// TODO: generic path-like and camino
 fn git_remote(path: &PathBuf) -> Result<Option<String>, Error> {
     // TODO: In windows, search in well-known locations if not in path
     let output = Command::new("git")
@@ -194,6 +194,7 @@ impl<'c> Repositories<'c> {
         let name = if let Some(name) = name {
             name.clone()
         } else {
+            // TODO: camino! lol!
             path.file_name()
                 .ok_or(anyhow!("Can not get repository name from directory"))?
                 .to_str()
@@ -207,6 +208,7 @@ impl<'c> Repositories<'c> {
         } else {
             git_remote(&path)?
         };
+        // TODO: camino lol
         let path = path
             .into_os_string()
             .into_string()
@@ -232,6 +234,7 @@ impl<'c> Repositories<'c> {
         Ok((self.config.repositories.len() - 1, repository))
     }
 
+    // TODO: expose these in the CLI
     pub(crate) fn get(&self, index: usize) -> Option<Repository> {
         self.config.repositories.get(index).map(|r| r.clone())
     }

@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate lazy_static;
+
 use anyhow::{Error, Result};
 use clap::{Parser, Subcommand};
 
@@ -5,11 +8,12 @@ mod commands;
 mod config;
 mod logger;
 mod platform;
+mod server;
 
 use crate::commands::config::{config_command, ConfigCommand};
-use crate::commands::repositories::{add_command, remove_command, show_command};
 use crate::commands::internal::{internal_command, InternalCommand};
-
+use crate::commands::repositories::{add_command, remove_command, show_command};
+use crate::commands::server::server_command;
 #[derive(Debug, Parser)]
 #[clap(author, version, about, long_about = "Sie7e FileSync")]
 struct Cli {
@@ -22,7 +26,7 @@ enum Command {
     // TODO: test
     Config {
         #[clap(subcommand)]
-        command: ConfigCommand
+        command: ConfigCommand,
     },
     // TODO: test
     Add {
@@ -117,10 +121,10 @@ fn main() -> Result<(), Error> {
             show_command()?;
         }
         Command::Server => {
-            unimplemented!("server");
+            server_command()?;
         }
         Command::App => {
-            unimplemented!("TODO: launch the UI!");
+            unimplemented!("app_command");
         }
         Command::Internal { command } => {
             internal_command(command)?;
