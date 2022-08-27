@@ -71,7 +71,7 @@ function countryCityZip() {
             }));
         }));
     }));
-    assert.skip("(the core version)", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+    assert.test("(the core version)", (assert) => __awaiter(void 0, void 0, void 0, function* () {
         assert.test("with no preconfigured params", (assert) => __awaiter(void 0, void 0, void 0, function* () {
             const topic = (0, swears_1.discuss)(() => __awaiter(void 0, void 0, void 0, function* () {
                 return new router_1.Router();
@@ -80,30 +80,30 @@ function countryCityZip() {
                 assert.skip("should sanitize the routes correctly", (assert) => __awaiter(void 0, void 0, void 0, function* () {
                     yield topic.swear((router) => __awaiter(void 0, void 0, void 0, function* () {
                         router.mount({
-                            ' ': {
+                            'main': {
                                 before: root,
                                 on: root,
                                 after: root,
-                                ' nesting': {
+                                'nesting': {
                                     on: foobar,
                                     ' deep': foostar
                                 }
                             },
-                            ' foo': {
-                                ' bar': foobar,
-                                ' *': foostar,
-                                ' jitsu then': {
+                            'foo': {
+                                'bar': foobar,
+                                '*': foostar,
+                                'jitsu then': {
                                     before: foobar
                                 }
                             },
-                            ' foo bazz': {
-                                ' buzz': foobazzbuzz
+                            'foo bazz': {
+                                'buzz': foobazzbuzz
                             },
-                            ' foo jitsu': {
-                                ' then': fnArray
+                            'foo jitsu': {
+                                'then': fnArray
                             },
-                            ' foo jitsu then now': foostar,
-                            ' foo :dog': foodog
+                            'foo jitsu then now': foostar,
+                            'foo :dog': foodog
                         });
                         assertRoutes(assert, [
                             [root, ['on'], router.routes],
@@ -124,10 +124,10 @@ function countryCityZip() {
                 assert.skip("should accept string path", (assert) => __awaiter(void 0, void 0, void 0, function* () {
                     yield topic.swear((router) => __awaiter(void 0, void 0, void 0, function* () {
                         router.mount({
-                            ' dogs': {
+                            'dogs': {
                                 on: dogs
                             }
-                        }, ' api');
+                        }, 'api');
                         assertRoutes(assert, [
                             [dogs, ['api', 'dogs', 'on'], router.routes]
                         ]);
@@ -135,7 +135,7 @@ function countryCityZip() {
                 }));
             }));
         }));
-        assert.test("with preconfigured params", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+        assert.skip("with preconfigured params", (assert) => __awaiter(void 0, void 0, void 0, function* () {
             const topic = (0, swears_1.discuss)(() => __awaiter(void 0, void 0, void 0, function* () {
                 const router = new router_1.Router();
                 router.param('city', '([\\w\\-]+)');
@@ -143,13 +143,13 @@ function countryCityZip() {
                 router.param(':zip', /([\d]{5})/);
                 return router;
             }));
-            assert.skip("should sanitize the routes correctly", (assert) => __awaiter(void 0, void 0, void 0, function* () {
+            assert.test("should sanitize the routes correctly", (assert) => __awaiter(void 0, void 0, void 0, function* () {
                 yield topic.swear((router) => __awaiter(void 0, void 0, void 0, function* () {
                     router.mount({
-                        ' usa :city :zip': usaCityZip,
-                        ' world': {
-                            ' :country': {
-                                ' :city :zip': countryCityZip
+                        'usa :city :zip': usaCityZip,
+                        'world': {
+                            ':country': {
+                                ':city :zip': countryCityZip
                             }
                         }
                     });
