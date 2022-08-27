@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Error, Result};
 use directories::ProjectDirs;
+use log::{debug, info};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::env;
