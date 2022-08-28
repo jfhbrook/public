@@ -6,7 +6,6 @@ use crate::monitor::{Command, Monitor};
 use crate::web::AppState;
 
 use crate::services::app::app_service;
-use crate::services::config::{config_service, setting_service};
 use crate::services::monitor::{monitor_service, process_service};
 
 pub(crate) async fn start(monitor: &Monitor) -> Result<(), Error> {
@@ -18,8 +17,6 @@ pub(crate) async fn start(monitor: &Monitor) -> Result<(), Error> {
         App::new()
             .app_data(state.clone())
             .service(app_service())
-            .service(config_service())
-            .service(setting_service())
             .service(monitor_service())
             .service(process_service())
     })
