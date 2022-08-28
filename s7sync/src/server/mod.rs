@@ -5,7 +5,7 @@ use tokio::sync::oneshot;
 
 mod method;
 
-use crate::config::Config;
+use crate::data::Config;
 use crate::monitor::{Command, Monitor, Response};
 
 #[derive(Debug, Clone)]

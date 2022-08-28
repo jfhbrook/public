@@ -1,11 +1,8 @@
-#[macro_use]
-extern crate lazy_static;
-
 use anyhow::{Error, Result};
 use clap::{Parser, Subcommand};
 
 mod commands;
-mod config;
+mod data;
 mod logger;
 mod monitor;
 mod platform;

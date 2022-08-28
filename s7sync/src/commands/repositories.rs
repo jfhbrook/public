@@ -2,7 +2,7 @@ use anyhow::{Error, Result};
 use log::{debug, info};
 use tabled::{Table, Tabled};
 
-use crate::config::{Config, Repositories, Repository};
+use crate::data::{Config, Repositories, Repository};
 use crate::logger::init_logger;
 
 #[derive(Tabled)]
