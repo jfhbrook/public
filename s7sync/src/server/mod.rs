@@ -21,7 +21,7 @@ pub(crate) struct UnexpectedResponse {
 }
 
 impl UnexpectedResponse {
-    fn new(expected: &str, actual: Response) -> UnexpectedResponse {
+    pub(crate) fn new(expected: &str, actual: Response) -> UnexpectedResponse {
         UnexpectedResponse {
             message: String::from("Unexpected response type"),
             expected: String::from(expected),
@@ -37,69 +37,24 @@ pub(crate) struct SuccessResponse<T> {
 }
 
 impl<T> SuccessResponse<T> {
-    fn new(data: T) -> SuccessResponse<T> {
+    pub(crate) fn new(data: T) -> SuccessResponse<T> {
         SuccessResponse { ok: true, data }
     }
 }
 
 #[derive(Debug, Clone, Serialize)]
-struct ErrorResponse {
+pub(crate) struct ErrorResponse {
     ok: bool,
     message: String,
 }
 
 impl ErrorResponse {
-    fn new(err: anyhow::Error) -> ErrorResponse {
+    pub(crate) fn new(err: anyhow::Error) -> ErrorResponse {
         ErrorResponse {
             ok: false,
             message: String::from(format!("Error: {:?}", err)),
         }
     }
-}
-
-pub(crate) fn root_service() -> Resource {
-    web::resource("/")
-        .route(
-            method::reload().to(|state: web::Data<AppState>| async move {
-                let (send_response, recv_response) = oneshot::channel();
-                match Config::load() {
-                    Ok(config) => {
-                        match state
-                            .monitor
-                            .request(
-                                Command::Reload {
-                                    config,
-                                    send_response,
-                                },
-                                recv_response,
-                            )
-                            .await
-                        {
-                            Ok(Response::Ok) => HttpResponse::Ok().json(SuccessResponse::new(())),
-                            Ok(res) => HttpResponse::InternalServerError()
-                                .json(UnexpectedResponse::new("Response::Ok", res)),
-                            Err(err) => {
-                                HttpResponse::InternalServerError().json(ErrorResponse::new(err))
-                            }
-                        }
-                    }
-                    Err(err) => HttpResponse::InternalServerError().json(ErrorResponse::new(err)),
-                }
-            }),
-        )
-        .route(method::exit().to(|state: web::Data<AppState>| async move {
-            let (send_response, recv_response) = oneshot::channel();
-            match state
-                .monitor
-                .request(Command::Exit { send_response }, recv_response)
-                .await
-            {
-                Ok(Response::Ok) => HttpResponse::Ok().json(SuccessResponse::new(())),
-                Ok(res) => HttpResponse::InternalServerError()
-                    .json(UnexpectedResponse::new("Response::Ok", res)),
-                Err(err) => HttpResponse::InternalServerError().json(ErrorResponse::new(err)),
-            }
-        }))
 }
 
 pub(crate) fn config_service() -> Resource {

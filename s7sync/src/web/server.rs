@@ -3,9 +3,9 @@ use anyhow::{Error, Result};
 
 use crate::logger::init_logger;
 use crate::monitor::{Command, Monitor};
-use crate::server::{
-    config_service, monitor_service, process_service, root_service, setting_service, AppState,
-};
+use crate::server::{config_service, monitor_service, process_service, setting_service, AppState};
+
+use crate::services::app::app_service;
 
 pub(crate) async fn start(monitor: &Monitor) -> Result<(), Error> {
     let monitor = monitor.clone();
@@ -15,7 +15,7 @@ pub(crate) async fn start(monitor: &Monitor) -> Result<(), Error> {
         };
         App::new()
             .app_data(state.clone())
-            .service(root_service())
+            .service(app_service())
             .service(config_service())
             .service(setting_service())
             .service(monitor_service())

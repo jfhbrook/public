@@ -7,6 +7,7 @@ mod logger;
 mod monitor;
 mod platform;
 mod server;
+mod services;
 mod web;
 
 use crate::commands::config::{config_command, ConfigCommand};
