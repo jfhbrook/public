@@ -5,17 +5,12 @@ use tokio::sync::oneshot;
 
 use crate::config::Config;
 use crate::monitor::{Command, Monitor, Response};
-use crate::web::{method, AppState};
 use crate::web::response::{ErrorResponse, SuccessResponse, UnexpectedResponse};
+use crate::web::{method, AppState};
 
 pub(crate) fn monitor_service() -> Resource {
     web::resource("/monitor").route(method::get().to(|state: web::Data<AppState>| async move {
-        let (send_response, recv_response) = oneshot::channel();
-        match state
-            .monitor
-            .request(Command::GetState { send_response }, recv_response)
-            .await
-        {
+        match state.monitor.request(Command::GetState).await {
             Ok(Response::State(data)) => HttpResponse::Ok().json(data),
             // TODO: Internal error type
             Ok(res) => HttpResponse::InternalServerError()

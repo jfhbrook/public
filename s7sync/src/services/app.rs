@@ -12,39 +12,21 @@ pub(crate) fn app_service() -> Resource {
     web::resource("/")
         .route(
             method::reload().to(|state: web::Data<AppState>| async move {
-                let (send_response, recv_response) = oneshot::channel();
                 match Config::load() {
-                    Ok(config) => {
-                        match state
-                            .monitor
-                            .request(
-                                Command::Reload {
-                                    config,
-                                    send_response,
-                                },
-                                recv_response,
-                            )
-                            .await
-                        {
-                            Ok(Response::Ok) => HttpResponse::Ok().json(SuccessResponse::new(())),
-                            Ok(res) => HttpResponse::InternalServerError()
-                                .json(UnexpectedResponse::new("Response::Ok", res)),
-                            Err(err) => {
-                                HttpResponse::InternalServerError().json(ErrorResponse::new(err))
-                            }
+                    Ok(config) => match state.monitor.request(Command::Reload { config }).await {
+                        Ok(Response::Ok) => HttpResponse::Ok().json(SuccessResponse::new(())),
+                        Ok(res) => HttpResponse::InternalServerError()
+                            .json(UnexpectedResponse::new("Response::Ok", res)),
+                        Err(err) => {
+                            HttpResponse::InternalServerError().json(ErrorResponse::new(err))
                         }
-                    }
+                    },
                     Err(err) => HttpResponse::InternalServerError().json(ErrorResponse::new(err)),
                 }
             }),
         )
         .route(method::exit().to(|state: web::Data<AppState>| async move {
-            let (send_response, recv_response) = oneshot::channel();
-            match state
-                .monitor
-                .request(Command::Exit { send_response }, recv_response)
-                .await
-            {
+            match state.monitor.request(Command::Exit).await {
                 Ok(Response::Ok) => HttpResponse::Ok().json(SuccessResponse::new(())),
                 Ok(res) => HttpResponse::InternalServerError()
                     .json(UnexpectedResponse::new("Response::Ok", res)),
