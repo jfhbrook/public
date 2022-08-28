@@ -93,7 +93,6 @@ fn show_command() -> Result<(), Error> {
 }
 
 // TODO: support "raw" and "json"
-// TODO: make this use a shared controller
 fn get_command(name: String) -> Result<(), Error> {
     // TODO: configure simplelog to go to stderr so I can log with abandon
     let config = Config::load()?;
@@ -130,7 +129,6 @@ fn set_command(name: String, value: String) -> Result<(), Error> {
 
     info!("Setting {name:?} = {value:?}", name = name, value = value);
 
-    // TODO: move to a shared controller
     if name == "min_poll_wait" {
         config.min_poll_wait = value.parse()?;
     } else if name == "min_commit_wait" {

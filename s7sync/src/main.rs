@@ -9,7 +9,6 @@ mod config;
 mod logger;
 mod monitor;
 mod platform;
-mod server;
 mod services;
 mod web;
 

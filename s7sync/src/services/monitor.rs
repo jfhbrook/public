@@ -6,8 +6,7 @@ use tokio::sync::oneshot;
 use crate::config::Config;
 use crate::monitor::{Command, Monitor, Response};
 use crate::web::{method, AppState};
-
-use crate::server::{ErrorResponse, SuccessResponse, UnexpectedResponse};
+use crate::web::response::{ErrorResponse, SuccessResponse, UnexpectedResponse};
 
 pub(crate) fn monitor_service() -> Resource {
     web::resource("/monitor").route(method::get().to(|state: web::Data<AppState>| async move {

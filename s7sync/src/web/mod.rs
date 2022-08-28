@@ -1,5 +1,6 @@
 pub(crate) mod method;
 pub(crate) mod server;
+pub(crate) mod response;
 
 use crate::monitor::{Monitor, Response};
 
