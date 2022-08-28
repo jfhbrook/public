@@ -31,33 +31,34 @@ pub(crate) enum Line {
     StdErr { id: usize, line: String },
 }
 
-type Responder<T> = oneshot::Sender<Result<T, Error>>;
+type ResponseSender = oneshot::Sender<Response>;
 
+#[derive(Debug)]
 pub(crate) enum Command {
     Exit {
-        send_response: Option<Responder<()>>,
+        send_response: ResponseSender,
     },
     Monitor {
-        send_response: Option<Responder<()>>,
+        send_response: ResponseSender,
     },
     Reload {
         config: Config,
-        send_response: Option<Responder<()>>,
+        send_response: ResponseSender,
     },
     Start {
         id: Option<usize>,
-        send_response: Option<Responder<()>>,
+        send_response: ResponseSender,
     },
     Stop {
         id: Option<usize>,
-        send_response: Option<Responder<()>>,
+        send_response: ResponseSender,
     },
     Restart {
         id: Option<usize>,
-        send_response: Option<Responder<()>>,
+        send_response: ResponseSender,
     },
     GetStatus {
-        send_response: Responder<()>,
+        send_response: ResponseSender,
     },
     OnLine {
         recv_remove: String,
@@ -69,41 +70,69 @@ pub(crate) enum Command {
     },
 }
 
+#[derive(Debug, Clone)]
+pub(crate) enum Response {
+    Ok,
+}
+
 async fn monitor() -> mpsc::Sender<Command> {
     let (send_command, mut recv_command) = mpsc::channel(32);
 
     tokio::spawn(async move {
         while let Some(command) = recv_command.recv().await {
+            info!("Received command: {:?}", command);
             match command {
                 Command::Exit { send_response } => {
-                    info!("Received Exit");
+                    let response = Response::Ok;
+                    if let Err(_) = send_response.send(response.clone()) {
+                        debug!("Failed to send response to Exit command");
+                    }
+                    break;
                 }
                 Command::Monitor { send_response } => {
-                    info!("Received Monitor");
+                    let response = Response::Ok;
+                    if let Err(_) = send_response.send(response.clone()) {
+                        debug!("Failed to send response to Monitor command");
+                    }
                 }
                 Command::Reload {
                     config,
                     send_response,
                 } => {
-                    info!("Received Reload");
+                    let response = Response::Ok;
+                    if let Err(_) = send_response.send(response.clone()) {
+                        debug!("Failed to send response to Reload command");
+                    }
                 }
                 Command::Start { id, send_response } => {
-                    info!("Received Start({:?})", id);
+                    let response = Response::Ok;
+                    if let Err(_) = send_response.send(response.clone()) {
+                        debug!("Failed to send response to Start({:?}) command", id);
+                    }
                 }
                 Command::Stop { id, send_response } => {
-                    info!("Received Stop({:?})", id);
+                    let response = Response::Ok;
+                    if let Err(_) = send_response.send(response.clone()) {
+                        debug!("Failed to send response to Stop({:?}) command", id);
+                    }
                 }
                 Command::Restart { id, send_response } => {
-                    info!("Received Restart({:?})", id);
+                    let response = Response::Ok;
+                    if let Err(_) = send_response.send(response.clone()) {
+                        debug!("Failed to send response to Restart({:?}) command", id);
+                    }
                 }
                 Command::GetStatus { send_response } => {
-                    info!("Received GetStatus");
+                    let response = Response::Ok;
+                    if let Err(_) = send_response.send(response.clone()) {
+                        debug!("Failed to send response to GetStatus command");
+                    }
                 }
                 Command::OnLine {
                     recv_remove,
                     send_line,
                 } => {
-                    info!("Received OnLine");
+                    info!("OnLine");
                 }
                 Command::OnStatusChange {
                     recv_remove,
@@ -118,3 +147,26 @@ async fn monitor() -> mpsc::Sender<Command> {
     send_command
 }
 
+pub(crate) struct Client {
+    send_command: mpsc::Sender<Command>,
+}
+
+impl Client {
+    fn new(send_command: &mpsc::Sender<Command>) -> Client {
+        Client {
+            send_command: send_command.clone(),
+        }
+    }
+
+    async fn request(
+        &self,
+        command: Command,
+        recv_response: oneshot::Receiver<Response>,
+    ) -> Result<Response, Error> {
+        self.send_command.send(command).await?;
+
+        let response = recv_response.await?;
+
+        Ok(response)
+    }
+}
