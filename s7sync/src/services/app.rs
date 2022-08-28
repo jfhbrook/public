@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use tokio::sync::oneshot;
 
-use crate::data::Config;
+use crate::config::Config;
 use crate::monitor::{Command, Monitor, Response};
 use crate::server::{ErrorResponse, SuccessResponse, UnexpectedResponse};
 use crate::web::{method, AppState};

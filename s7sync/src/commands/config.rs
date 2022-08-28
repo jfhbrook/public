@@ -3,7 +3,7 @@ use clap::Subcommand;
 use log::{debug, info};
 use tabled::{Table, Tabled};
 
-use crate::data::Config;
+use crate::config::Config;
 use crate::logger::init_logger;
 
 #[derive(Debug, Subcommand)]

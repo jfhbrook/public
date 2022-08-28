@@ -4,7 +4,7 @@ use serde::Serialize;
 use tokio::sync::{broadcast, mpsc, oneshot, watch};
 use tokio::task;
 
-use crate::data::Config;
+use crate::config::Config;
 
 #[derive(Debug, Clone, Serialize)]
 pub(crate) struct State {}
