@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate lazy_static;
-
 use anyhow::{Error, Result};
 use clap::{Parser, Subcommand};
 

@@ -1,14 +1,12 @@
-use actix_web::{rt, web, App, HttpServer};
-use anyhow::{Error, Result};
+use actix_web::{App, HttpServer};
 
-use crate::logger::init_logger;
-use crate::monitor::{Command, Monitor};
+use crate::monitor::Monitor;
 use crate::web::AppState;
 
 use crate::services::app::app_service;
 use crate::services::monitor::{monitor_service, process_service};
 
-pub(crate) async fn start(monitor: &Monitor) -> Result<(), Error> {
+pub(crate) async fn start(monitor: &Monitor) -> Result<(), std::io::Error> {
     let monitor = monitor.clone();
     HttpServer::new(move || {
         let state = AppState {
@@ -20,6 +18,7 @@ pub(crate) async fn start(monitor: &Monitor) -> Result<(), Error> {
             .service(monitor_service())
             .service(process_service())
     })
+    // returns an IOError
     .bind(("127.0.0.1", 8080))?
     .run()
     .await?;

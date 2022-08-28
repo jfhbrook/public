@@ -1,9 +1,8 @@
 use directories::ProjectDirs;
-use log::{debug, info};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::env;
-use std::fs::{self, create_dir_all, metadata, File, OpenOptions};
+use std::fs::{self, create_dir_all, metadata, OpenOptions};
 use std::io::{ErrorKind::NotFound, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;

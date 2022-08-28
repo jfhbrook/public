@@ -1,12 +1,27 @@
-use anyhow::{Error, Result};
 use log::{debug, info, warn};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use thiserror::Error;
 use tokio::sync::{broadcast, mpsc, oneshot, watch};
-use tokio::task;
 
 use crate::config::Config;
+use crate::web::response::WebError;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Error, Debug)]
+pub(crate) enum MonitorError {
+    #[error("{0:?}")]
+    SendCommandError(#[from] mpsc::error::SendError<(Command, Option<oneshot::Sender<Response>>)>),
+
+    #[error("{0:?}")]
+    RecvResponseError(#[from] oneshot::error::RecvError),
+}
+
+impl Into<WebError> for MonitorError {
+    fn into(self: Self) -> WebError {
+        WebError::FlagrantError(format!("{:?}", self))
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct State {}
 
 #[derive(Debug)]
@@ -55,7 +70,8 @@ pub(crate) enum Command {
     */
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(tag = "status")]
 pub(crate) enum Response {
     Ok,
     State(State),
@@ -135,7 +151,7 @@ impl Monitor {
         Monitor { send_command }
     }
 
-    pub(crate) async fn request(&self, command: Command) -> Result<Response, Error> {
+    pub(crate) async fn request(&self, command: Command) -> Result<Response, MonitorError> {
         let (tx, rx) = oneshot::channel();
         self.send_command.send((command, Some(tx))).await?;
 

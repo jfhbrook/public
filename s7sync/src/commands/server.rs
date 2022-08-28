@@ -1,8 +1,7 @@
-use actix_web::{rt, web, App, HttpServer};
 use anyhow::{Error, Result};
 
 use crate::logger::init_logger;
-use crate::monitor::{Command, Monitor};
+use crate::monitor::Monitor;
 use crate::web::server;
 
 #[tokio::main]
@@ -11,5 +10,6 @@ pub(crate) async fn server_command() -> Result<(), Error> {
 
     let monitor = Monitor::new().await;
 
-    server::start(&monitor).await
+    server::start(&monitor).await?;
+    Ok(())
 }
