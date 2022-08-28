@@ -1,4 +1,5 @@
 use actix_web::{web, HttpResponse, Resource, Responder};
+use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
 
 use tokio::sync::oneshot;
@@ -21,7 +22,9 @@ pub(crate) fn app_service() -> Resource {
                             HttpResponse::InternalServerError().json(ErrorResponse::new(err))
                         }
                     },
-                    Err(err) => HttpResponse::InternalServerError().json(ErrorResponse::new(err)),
+                    Err(err) => {
+                        HttpResponse::InternalServerError().json(ErrorResponse::new(anyhow!(err)))
+                    }
                 }
             }),
         )

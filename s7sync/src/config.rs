@@ -1,4 +1,3 @@
-use anyhow::{anyhow, Error, Result};
 use directories::ProjectDirs;
 use log::{debug, info};
 use serde::{Deserialize, Serialize};
@@ -9,17 +8,54 @@ use std::io::{ErrorKind::NotFound, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-// config directory and file stuff
+use thiserror::Error;
 
-fn project_dirs() -> Result<ProjectDirs, Error> {
-    ProjectDirs::from("com", "sie7elabs", "s7sync").ok_or(anyhow!("Could not find home directory"))
+#[derive(Error, Debug)]
+pub(crate) enum ConfigError {
+    #[error("Could not find home directory")]
+    HomeDirectoryError,
+
+    #[error("Could not build path to s7sync.json")]
+    ConfigPathError,
+
+    #[error("{0:?}")]
+    IOError(#[from] std::io::Error),
+
+    #[error("{0:?}")]
+    Utf8Error(#[from] std::str::Utf8Error),
+
+    #[error("{0:?}")]
+    JsonError(#[from] serde_json::Error),
+
+    #[error("{0:?} is not a git repository and no remote was specified")]
+    UnknownRemoteError(PathBuf),
+
+    #[error("Could not extract repository name from directory")]
+    RepositoryNameError(String),
+
+    #[error("Error converting OsString to String")]
+    OsStringError(std::ffi::OsString),
+
+    #[error("Repository {0:?} already registered at {:?}")]
+    UniqueRepositoryError(String, String),
+
+    #[error("Repository {0} not found")]
+    RepositoryNotFoundError(usize),
+
+    #[error("No repositories found for selector {0:?}")]
+    RepositorySearchError(String),
 }
 
-fn file_path(dir: &Path) -> Result<PathBuf, Error> {
+// config directory and file stuff
+
+fn project_dirs() -> Result<ProjectDirs, ConfigError> {
+    ProjectDirs::from("com", "sie7elabs", "s7sync").ok_or(ConfigError::HomeDirectoryError)
+}
+
+fn file_path(dir: &Path) -> Result<PathBuf, ConfigError> {
     // TODO: can I get rid of some of this conversion nonsense by using camino?
     Ok([
-        dir.to_str()
-            .ok_or(anyhow!("path apparently not unicode?"))?,
+        dir.to_str().ok_or(ConfigError::ConfigPathError)?,
         "s7sync.json",
     ]
     .iter()
@@ -31,7 +67,7 @@ fn file_path(dir: &Path) -> Result<PathBuf, Error> {
 
 // Checks if a path is a git repository
 // TODO: generic path-like and camino
-fn is_git_repository(path: &PathBuf) -> Result<bool, Error> {
+fn is_git_repository(path: &PathBuf) -> Result<bool, ConfigError> {
     let mut path = path.clone();
 
     path.push(".git");
@@ -43,7 +79,7 @@ fn is_git_repository(path: &PathBuf) -> Result<bool, Error> {
 
 // a cheeky shell call to get the remote
 // TODO: generic path-like and camino
-fn git_remote(path: &PathBuf) -> Result<Option<String>, Error> {
+fn git_remote(path: &PathBuf) -> Result<Option<String>, ConfigError> {
     // TODO: In windows, search in well-known locations if not in path
     let output = Command::new("git")
         .args(["config", "--get", "remote.origin.url"])
@@ -94,7 +130,7 @@ impl std::default::Default for Config {
 // Load and save the file. This is heavily inspired by confy: https://docs.rs/confy/0.4.0/src/confy/lib.rs.html
 
 impl Config {
-    pub(crate) fn load() -> Result<Config, Error> {
+    pub(crate) fn load() -> Result<Config, ConfigError> {
         let project = project_dirs()?;
         let dir = project.config_dir();
         let path = file_path(&dir)?;
@@ -109,11 +145,11 @@ impl Config {
                 cfg.save()?;
                 Ok(cfg)
             }
-            Err(e) => Err(anyhow!(e)),
+            Err(e) => Err(ConfigError::IOError(e)),
         }
     }
 
-    pub(crate) fn save(&self) -> Result<(), Error> {
+    pub(crate) fn save(&self) -> Result<(), ConfigError> {
         let project = project_dirs()?;
         let dir = project.config_dir();
         let path = file_path(&dir)?;
@@ -147,7 +183,7 @@ impl<'c> Repositories<'c> {
         Repositories { config }
     }
 
-    fn unique_name(&self, default: &String) -> Result<String, Error> {
+    fn unique_name(&self, default: &String) -> Result<String, ConfigError> {
         let mut names: HashSet<&String> = HashSet::new();
 
         for repo in &self.config.repositories {
@@ -174,7 +210,7 @@ impl<'c> Repositories<'c> {
         repository: &Option<String>,
         name: &Option<String>,
         remote: &Option<String>,
-    ) -> Result<Repository, Error> {
+    ) -> Result<Repository, ConfigError> {
         let mut path = if let Some(repo) = repository {
             PathBuf::from(repo)
         } else {
@@ -185,10 +221,7 @@ impl<'c> Repositories<'c> {
         // missing, so we need to validate the directory SOMEHOW.
         if let None = remote {
             if !is_git_repository(&mut path)? {
-                return Err(anyhow!(
-                    "{:?} is not a git repository and no remote was specified",
-                    path
-                ));
+                return Err(ConfigError::UnknownRemoteError(path));
             }
         }
 
@@ -197,9 +230,9 @@ impl<'c> Repositories<'c> {
         } else {
             // TODO: camino! lol!
             path.file_name()
-                .ok_or(anyhow!("Can not get repository name from directory"))?
+                .ok_or(ConfigError::RepositoryNameError(format!("{:?}", path)))?
                 .to_str()
-                .ok_or(anyhow!("Can not get repository name from directory"))?
+                .ok_or(ConfigError::RepositoryNameError(format!("{:?}", path)))?
                 .to_string()
         };
 
@@ -213,18 +246,20 @@ impl<'c> Repositories<'c> {
         let path = path
             .into_os_string()
             .into_string()
-            .map_err(|e| anyhow!("Can not decode path: {:?}", e))?;
+            .map_err(|e| ConfigError::OsStringError(e))?;
 
         Ok(Repository { name, remote, path })
     }
 
-    pub(crate) fn insert(&mut self, repository: Repository) -> Result<(usize, Repository), Error> {
+    pub(crate) fn insert(
+        &mut self,
+        repository: Repository,
+    ) -> Result<(usize, Repository), ConfigError> {
         for repo in &self.config.repositories {
             if repo.path == repository.path {
-                return Err(anyhow!(
-                    "repository {:?} already registered at {:?}",
-                    repo.name,
-                    repo.path
+                return Err(ConfigError::UniqueRepositoryError(
+                    repo.name.clone(),
+                    repo.path.clone(),
                 ));
             }
         }
@@ -244,28 +279,31 @@ impl<'c> Repositories<'c> {
         &mut self,
         index: usize,
         repository: Repository,
-    ) -> Result<(usize, Repository), Error> {
+    ) -> Result<(usize, Repository), ConfigError> {
         self.delete(index)?;
         self.config.repositories.insert(index, repository.clone());
         self.config.save()?;
         Ok((index, repository))
     }
 
-    pub(crate) fn delete(&mut self, index: usize) -> Result<(), Error> {
+    pub(crate) fn delete(&mut self, index: usize) -> Result<(), ConfigError> {
         self.config.repositories.remove(index);
         self.config.save()?;
         Ok(())
     }
 
-    pub(crate) fn find(&self, selector: &Option<String>) -> Result<(usize, Repository), Error> {
+    pub(crate) fn find(
+        &self,
+        selector: &Option<String>,
+    ) -> Result<(usize, Repository), ConfigError> {
         let index = self.find_index(selector)?;
         let repo = self
             .get(index)
-            .ok_or(anyhow!("Repository at index {} not found", index))?;
+            .ok_or(ConfigError::RepositoryNotFoundError(index))?;
         Ok((index, repo))
     }
 
-    pub(crate) fn find_index(&self, selector: &Option<String>) -> Result<usize, Error> {
+    pub(crate) fn find_index(&self, selector: &Option<String>) -> Result<usize, ConfigError> {
         // if no selector, default to the current directory
         let selector = if let Some(selector) = selector {
             selector.clone()
@@ -273,7 +311,7 @@ impl<'c> Repositories<'c> {
             env::current_dir()?
                 .into_os_string()
                 .into_string()
-                .map_err(|e| anyhow!("can not decode path: {:?}", e))?
+                .map_err(|e| ConfigError::OsStringError(e))?
         };
 
         let index: usize = selector.parse().or_else(|_| {
@@ -281,7 +319,7 @@ impl<'c> Repositories<'c> {
                 .repositories
                 .iter()
                 .position(|repo| repo.name == selector || repo.path == selector)
-                .ok_or(anyhow!("No repository matching selector: {:?}", selector))
+                .ok_or(ConfigError::RepositorySearchError(selector))
         })?;
 
         Ok(index)

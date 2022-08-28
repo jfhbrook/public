@@ -1064,6 +1064,7 @@ dependencies = [
  "serde_json",
  "simplelog",
  "tabled",
+ "thiserror",
  "tokio",
  "which",
 ]
