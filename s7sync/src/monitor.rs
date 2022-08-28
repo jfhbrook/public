@@ -155,6 +155,9 @@ impl Monitor {
         Monitor { send_command }
     }
 
+    // TODO: take send_response out of the Command and put it
+    // a tuple argument (Command, Option<oneshot::Sender<Response>>)
+    // then match on Some and log when missing
     pub(crate) async fn request(
         &self,
         command: Command,
