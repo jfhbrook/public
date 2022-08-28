@@ -7,11 +7,13 @@ mod logger;
 mod monitor;
 mod platform;
 mod server;
+mod web;
 
 use crate::commands::config::{config_command, ConfigCommand};
 use crate::commands::internal::{internal_command, InternalCommand};
 use crate::commands::repositories::{add_command, remove_command, show_command};
 use crate::commands::server::server_command;
+
 #[derive(Debug, Parser)]
 #[clap(author, version, about, long_about = "Sie7e FileSync")]
 struct Cli {
