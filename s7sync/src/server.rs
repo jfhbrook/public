@@ -1,11 +1,13 @@
 use serde::Serialize;
 
-use crate::monitor::{Monitor, Response};
+use crate::monitor::Response;
 
-#[derive(Debug, Clone)]
-pub(crate) struct AppState {
-    pub(crate) monitor: Monitor,
-}
+// NOTE: This module is the remnants of an earlier structure for this project
+// and contains response-mapping code. Everything else lives in the web
+// submodule.
+//
+// TODO: Create implicit mappings (the Into trait?) between struts/enums returned
+// by the controllers and these responses
 
 #[derive(Debug, Clone, Serialize)]
 pub(crate) struct UnexpectedResponse {
