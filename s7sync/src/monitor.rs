@@ -1,24 +1,25 @@
 use anyhow::{Error, Result};
 use log::{debug, info};
+use serde::Serialize;
 use tokio::sync::{broadcast, mpsc, oneshot, watch};
 use tokio::task;
 
 use crate::config::Config;
 
-#[derive(Debug)]
-pub(crate) struct Status {}
+#[derive(Debug, Clone, Serialize)]
+pub(crate) struct State {}
 
 #[derive(Debug)]
-pub(crate) enum StatusChange {
+pub(crate) enum StateChange {
     ReceivedExit,
     ReceivedMonitor,
     ReceivedReload { config: Config },
     ReceivedStart { id: usize },
     ReceivedStop { id: usize },
     ReceivedRestart { id: usize },
-    ReceivedGetStatus,
+    ReceivedGetState,
     ReceivedOnLine,
-    ReceivedOnStatusChange,
+    ReceivedOnStateChange,
     Ready,
     Started { id: usize },
     Stopped { id: usize },
@@ -57,22 +58,23 @@ pub(crate) enum Command {
         id: Option<usize>,
         send_response: ResponseSender,
     },
-    GetStatus {
+    GetState {
         send_response: ResponseSender,
     },
     OnLine {
         recv_remove: String,
         send_line: oneshot::Sender<Line>,
     },
-    OnStatusChange {
+    OnStateChange {
         recv_remove: String,
-        send_change: oneshot::Sender<StatusChange>,
+        send_change: oneshot::Sender<StateChange>,
     },
 }
 
 #[derive(Debug, Clone)]
 pub(crate) enum Response {
     Ok,
+    State(State),
 }
 
 #[derive(Debug, Clone)]
@@ -128,10 +130,10 @@ impl Monitor {
                             debug!("Failed to send response to Restart({:?}) command", id);
                         }
                     }
-                    Command::GetStatus { send_response } => {
+                    Command::GetState { send_response } => {
                         let response = Response::Ok;
                         if let Err(_) = send_response.send(response.clone()) {
-                            debug!("Failed to send response to GetStatus command");
+                            debug!("Failed to send response to GetState command");
                         }
                     }
                     Command::OnLine {
@@ -140,11 +142,11 @@ impl Monitor {
                     } => {
                         info!("OnLine");
                     }
-                    Command::OnStatusChange {
+                    Command::OnStateChange {
                         recv_remove,
                         send_change,
                     } => {
-                        info!("OnStatusChange");
+                        info!("OnStateChange");
                     }
                 }
             }

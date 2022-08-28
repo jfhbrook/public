@@ -15,3 +15,4 @@ method!(b"START", start);
 method!(b"STOP", stop);
 method!(b"RESTART", restart);
 method!(b"RELOAD", reload);
+method!(b"EXIT", exit);

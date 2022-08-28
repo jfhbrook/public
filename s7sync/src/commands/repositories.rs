@@ -35,6 +35,7 @@ fn map_view<'c>((index, repository): (usize, &'c Repository)) -> RepositoryView<
 pub(crate) fn show_command() -> Result<(), Error> {
     let config = Config::load()?;
 
+    // TODO: impl custom Debug trait for config.repositories
     let repositories = config.repositories.iter().enumerate().map(map_view);
 
     println!("{}", Table::new(repositories).to_string());
@@ -50,6 +51,7 @@ pub(crate) fn add_command(
 ) -> Result<(), Error> {
     init_logger()?;
 
+    // TODO: move to shared controller
     let mut config = Config::load()?;
 
     debug!("Current configuration:\n\n{config:#?}", config = config);
@@ -71,6 +73,7 @@ pub(crate) fn add_command(
 pub(crate) fn remove_command(selector: Option<String>) -> Result<(), Error> {
     init_logger()?;
 
+    // TODO: move to a shared controller
     let mut config = Config::load()?;
 
     debug!("Current configuration:\n\n{config:#?}", config = config);
