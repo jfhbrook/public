@@ -5,8 +5,8 @@ use tokio::sync::oneshot;
 
 use crate::data::Config;
 use crate::monitor::{Command, Monitor, Response};
-use crate::server::{AppState, ErrorResponse, SuccessResponse, UnexpectedResponse};
-use crate::web::method;
+use crate::server::{ErrorResponse, SuccessResponse, UnexpectedResponse};
+use crate::web::{method, AppState};
 
 pub(crate) fn app_service() -> Resource {
     web::resource("/")

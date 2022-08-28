@@ -3,9 +3,11 @@ use anyhow::{Error, Result};
 
 use crate::logger::init_logger;
 use crate::monitor::{Command, Monitor};
-use crate::server::{config_service, monitor_service, process_service, setting_service, AppState};
+use crate::web::AppState;
 
 use crate::services::app::app_service;
+use crate::services::config::{config_service, setting_service};
+use crate::services::monitor::{monitor_service, process_service};
 
 pub(crate) async fn start(monitor: &Monitor) -> Result<(), Error> {
     let monitor = monitor.clone();
