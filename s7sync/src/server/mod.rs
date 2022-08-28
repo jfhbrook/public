@@ -3,10 +3,9 @@ use serde::{Deserialize, Serialize};
 
 use tokio::sync::oneshot;
 
-mod method;
-
 use crate::data::Config;
 use crate::monitor::{Command, Monitor, Response};
+use crate::web::method;
 
 #[derive(Debug, Clone)]
 pub(crate) struct AppState {
