@@ -3,6 +3,13 @@ use serde::Deserialize;
 
 mod method;
 
+use crate::monitor::Monitor;
+
+#[derive(Debug, Clone)]
+pub(crate) struct AppState {
+    pub(crate) monitor: Monitor,
+}
+
 pub(crate) fn root_service() -> Resource {
     web::resource("/").route(method::reload().to(|| async { HttpResponse::Ok().body("reload") }))
 }
@@ -30,8 +37,10 @@ pub(crate) fn setting_service() -> Resource {
 }
 
 pub(crate) fn monitor_service() -> Resource {
-    web::resource("/monitor")
-        .route(method::get().to(|| async { HttpResponse::Ok().body("monitor status") }))
+    web::resource("/monitor").route(
+        method::get()
+            .to(|state: web::Data<AppState>| async { HttpResponse::Ok().body("monitor status") }),
+    )
 }
 
 #[derive(Debug, Deserialize)]
@@ -41,20 +50,24 @@ struct Process {
 
 pub(crate) fn process_service() -> Resource {
     web::resource("/monitor/{index}")
-        .route(method::get().to(|process: web::Path<Process>| async move {
-            HttpResponse::Ok().body(format!("status: {:?}", process))
-        }))
-        .route(
-            method::start().to(|process: web::Path<Process>| async move {
+        .route(method::get().to(
+            |state: web::Data<AppState>, process: web::Path<Process>| async move {
+                HttpResponse::Ok().body(format!("status: {:?}", process))
+            },
+        ))
+        .route(method::start().to(
+            |state: web::Data<AppState>, process: web::Path<Process>| async move {
                 HttpResponse::Ok().body(format!("start: {:?}", process))
-            }),
-        )
-        .route(method::stop().to(|process: web::Path<Process>| async move {
-            HttpResponse::Ok().body(format!("stop: {:?}", process))
-        }))
-        .route(
-            method::restart().to(|process: web::Path<Process>| async move {
+            },
+        ))
+        .route(method::stop().to(
+            |state: web::Data<AppState>, process: web::Path<Process>| async move {
+                HttpResponse::Ok().body(format!("stop: {:?}", process))
+            },
+        ))
+        .route(method::restart().to(
+            |state: web::Data<AppState>, process: web::Path<Process>| async move {
                 HttpResponse::Ok().body(format!("restart: {:?}", process))
-            }),
-        )
+            },
+        ))
 }
