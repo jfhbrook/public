@@ -97,25 +97,7 @@ fn get_command(name: String) -> Result<(), Error> {
     // TODO: configure simplelog to go to stderr so I can log with abandon
     let config = Config::load()?;
 
-    if name == "min_poll_wait" {
-        println!("{}", config.min_poll_wait);
-    } else if name == "min_commit_wait" {
-        println!("{}", config.min_commit_wait);
-    } else if name == "min_pull_wait" {
-        println!("{}", config.min_pull_wait);
-    } else if name == "max_pull_wait" {
-        println!("{}", config.max_pull_wait);
-    } else if name == "min_push_wait" {
-        println!("{}", config.min_push_wait);
-    } else if name == "idle_timeout" {
-        println!("{}", config.idle_timeout);
-    } else if name == "session_timeout" {
-        println!("{}", config.session_timeout);
-    } else if name == "commit_message" {
-        println!("{}", config.commit_message);
-    } else {
-        return Err(anyhow!("unknown setting: {:?}", name));
-    };
+    println!("{}", config.get_setting(name)?);
 
     Ok(())
 }
@@ -129,27 +111,7 @@ fn set_command(name: String, value: String) -> Result<(), Error> {
 
     info!("Setting {name:?} = {value:?}", name = name, value = value);
 
-    if name == "min_poll_wait" {
-        config.min_poll_wait = value.parse()?;
-    } else if name == "min_commit_wait" {
-        config.min_commit_wait = value.parse()?;
-    } else if name == "min_pull_wait" {
-        config.min_pull_wait = value.parse()?;
-    } else if name == "max_pull_wait" {
-        config.max_pull_wait = value.parse()?;
-    } else if name == "min_push_wait" {
-        config.min_push_wait = value.parse()?;
-    } else if name == "idle_timeout" {
-        config.idle_timeout = value.parse()?;
-    } else if name == "session_timeout" {
-        config.session_timeout = value.parse()?;
-    } else if name == "commit_message" {
-        config.commit_message = value;
-    } else {
-        return Err(anyhow!("unknown setting: {:?}", name));
-    };
-
-    config.save()?;
+    config.set_setting(name, value)?;
 
     debug!("Updated configuration:\n\n{config:#?}", config = config);
 

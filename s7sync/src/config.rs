@@ -35,14 +35,20 @@ pub(crate) enum ConfigError {
     #[error("Error converting OsString to String")]
     OsStringError(std::ffi::OsString),
 
-    #[error("Repository {0:?} already registered at {:?}")]
+    #[error("Repository {0} already registered at {1}")]
     UniqueRepositoryError(String, String),
 
     #[error("Repository {0} not found")]
     RepositoryNotFoundError(usize),
 
-    #[error("No repositories found for selector {0:?}")]
+    #[error("No repositories found for selector {0}")]
     RepositorySearchError(String),
+
+    #[error("Setting {0} not found")]
+    SettingNotFound(String),
+
+    #[error("Failed to parse value {0:?}")]
+    ParseIntError(#[from] std::num::ParseIntError),
 }
 
 // config directory and file stuff
@@ -160,6 +166,52 @@ impl Config {
             .open(&path)?;
 
         f.write_all(serde_json::to_string_pretty(self)?.as_bytes())?;
+        Ok(())
+    }
+
+    pub(crate) fn get_setting(&self, name: String) -> Result<String, ConfigError> {
+        if name == "min_poll_wait" {
+            Ok(format!("{}", self.min_poll_wait))
+        } else if name == "min_commit_wait" {
+            Ok(format!("{}", self.min_commit_wait))
+        } else if name == "min_pull_wait" {
+            Ok(format!("{}", self.min_pull_wait))
+        } else if name == "max_pull_wait" {
+            Ok(format!("{}", self.max_pull_wait))
+        } else if name == "min_push_wait" {
+            Ok(format!("{}", self.min_push_wait))
+        } else if name == "idle_timeout" {
+            Ok(format!("{}", self.idle_timeout))
+        } else if name == "session_timeout" {
+            Ok(format!("{}", self.session_timeout))
+        } else if name == "commit_message" {
+            Ok(format!("{}", self.commit_message))
+        } else {
+            Err(ConfigError::SettingNotFound(name))
+        }
+    }
+
+    pub(crate) fn set_setting(&mut self, name: String, value: String) -> Result<(), ConfigError> {
+        if name == "min_poll_wait" {
+            self.min_poll_wait = value.parse()?;
+        } else if name == "min_commit_wait" {
+            self.min_commit_wait = value.parse()?;
+        } else if name == "min_pull_wait" {
+            self.min_pull_wait = value.parse()?;
+        } else if name == "max_pull_wait" {
+            self.max_pull_wait = value.parse()?;
+        } else if name == "min_push_wait" {
+            self.min_push_wait = value.parse()?;
+        } else if name == "idle_timeout" {
+            self.idle_timeout = value.parse()?;
+        } else if name == "session_timeout" {
+            self.session_timeout = value.parse()?;
+        } else if name == "commit_message" {
+            self.commit_message = value;
+        } else {
+            return Err(ConfigError::SettingNotFound(name));
+        };
+
         Ok(())
     }
 }
