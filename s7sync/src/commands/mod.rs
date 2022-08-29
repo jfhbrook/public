@@ -9,7 +9,7 @@ use clap::{Parser, Subcommand};
 use crate::commands::config::{config_command, ConfigCommand};
 use crate::commands::internal::{internal_command, InternalCommand};
 use crate::commands::repositories::{add_command, remove_command, show_command};
-use crate::commands::server::server_command;
+use crate::commands::server::{server_command, ServerCommand};
 
 #[derive(Debug, Parser)]
 #[clap(author, version, about, long_about = "Sie7e FileSync")]
@@ -41,7 +41,10 @@ enum Command {
         selector: Option<String>,
     },
     Show,
-    Server,
+    Server {
+        #[clap(subcommand)]
+        command: ServerCommand,
+    },
     App,
     Start {
         #[clap(value_parser)]
@@ -83,6 +86,7 @@ enum Command {
         #[clap(subcommand)]
         command: InternalCommand,
     },
+    Exit,
 }
 
 #[derive(Debug, Subcommand)]
@@ -115,8 +119,8 @@ pub(crate) fn main_command(cli: Cli) -> Result<(), Error> {
         Command::Show => {
             show_command()?;
         }
-        Command::Server => {
-            server_command()?;
+        Command::Server { command } => {
+            server_command(command)?;
         }
         Command::App => {
             unimplemented!("app_command");
