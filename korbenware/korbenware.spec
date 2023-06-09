@@ -1,5 +1,5 @@
 Name: korbenware
-Version: 0.3.0
+Version: 0.3.1
 Release: 1%{?dist}
 License: MPL-2.0
 Summary: linux/unix desktop cli software
@@ -51,6 +51,10 @@ install -p -m 755 bin/kbscreenshot %{buildroot}%{_bindir}
 
 
 %changelog
+* Fri Jun 09 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.3.1-1
+- Use INI config file for kblock (josh.holbrook@gmail.com)
+- Fix errant characters in kbmenu logging (josh.holbrook@gmail.com)
+
 * Tue Dec 28 2021 Josh Holbrook <josh.holbrook@gmail.com> 0.3.0-1
 - Remove kbbright (use brightnessctl) (josh.holbrook@gmail.com)
 - Fix DOA bugs in kbnotify and kbscreenshot (josh.holbrook@gmail.com)
