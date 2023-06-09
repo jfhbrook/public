@@ -1,0 +1,78 @@
+#!/usr/bin/python3
+
+# Copyright 2023 Josh Holbrook
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+from argparse import ArgumentParser
+from configparser import ConfigParser
+import os
+import os.path
+import sys
+
+CONFIG_PATH = os.environ.get("KORBENWARE_CONFIG", os.path.expanduser("~/.config/korbenware/config.ini"))
+
+CONFIG = ConfigParser()
+CONFIG.read(CONFIG_PATH)
+
+DEFAULTS = {
+    "lock": {
+        "mode": "swaylock",  # or physlock
+        "message": "",
+        "fortune_bin": "fortune",
+        "fortune_args": "",
+        "physlock_bin": "physlock",
+        "physlock_args": "",
+        "swaylock_bin": "swaylock",
+        "swaylock_args": "",
+        "cowsay_width": "77",
+        # Cyberpunk Neon theme
+        "darkblue": "000b1e",
+        "blue": "091833",
+        "lightblue": "133e7c",
+        "lightalt": "0b2956",
+        "cyan": "0abdc6",
+        "pink": "ea00d9",
+        "purple": "711c91",
+        "purplealt": "321959",
+        "red": "ff0000",
+        "orange": "f57800",
+        "white": "d7d7d5",
+        "yellow": "ffff00",
+        "green": "00ff00"
+    }
+}
+
+def log_info(msg):
+    if os.environ.get("DEBUG"):
+        print(f"info: {msg}")
+
+
+parser = ArgumentParser()
+parser.add_argument("action", choices=["get", "set"])
+parser.add_argument("section", choices=CONFIG.sections())
+parser.add_argument("key")
+parser.add_argument("value", nargs="?", default=None)
+
+log_info("Korben's Cool Petsitter's Configuration Manager 🦜")
+log_info("programmed entirely from the grave")
+log_info("it worked if it ends with ok")
+
+args = parser.parse_args()
+
+if args.action == "get":
+    value = {**DEFAULTS[args.section], **CONFIG[args.section]}.get(args.key, "")
+    print(value)
+elif args.action == "set":
+    if args.value:
+        CONFIG[args.section][args.key] = args.value
+        with open(CONFIG_PATH, "w") as f:
+            CONFIG.write(f)
+else:
+    print(f"Unknown action {args.action}")
+    print("not ok")
+    sys.exit(1)
+
+log_info("ok")

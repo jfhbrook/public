@@ -1,0 +1,2 @@
+shell:
+  PATH="$(pwd)/bin:${PATH}" bash --login

@@ -12,7 +12,9 @@ if [ -f "${KBLOCK_CONFIG}" ]; then
   source "${KBLOCK_CONFIG}"
 fi
 
-if [ -z "${COWSAY_COWS_DIR:-}" ]; then
+COWSAY_COWS_DIR="${COWSAY_COWS_DIR:-$(kbconfig get lock cowsay_cows_dir)}"
+
+if [ -z "${COWSAY_COWS_DIR}" ]; then
   if [ -d "/usr/share/cows" ]; then  # arch
     COWSAY_COWS_DIR="/usr/share/cows"
   elif [ -d "/usr/share/cowsay" ]; then  # fedora
@@ -20,33 +22,36 @@ if [ -z "${COWSAY_COWS_DIR:-}" ]; then
   fi
 fi
 
-KBLOCK_MODE="${KBLOCK_MODE:-swaylock}"
-KBLOCK_MESSAGE="${KBLOCK_MESSAGE:-}"
+KBLOCK_MODE="$(kbconfig get lock mode)"
+KBLOCK_MESSAGE="$(kbconfig get lock message)"
 
-COWSAY_BIN="$(shuf -n 1 -e cowsay cowthink)"
-FORTUNE_BIN="${FORTUNE_BIN:-fortune}"
-FORTUNE_ARGS="${FORTUNE_ARGS:-}"
-PHYSLOCK_BIN="${PHYSLOCK_BIN:-physlock}"
-PHYSLOCK_ARGS="${PHYSLOCK_ARGS:-}"
-SWAYLOCK_BIN="${SWAYLOCK_BIN:-swaylock}"
-SWAYLOCK_ARGS="${SWAYLOCK_ARGS:-}"
+COWSAY_BIN="$(kbconfig get lock cowsay_bin)"
+if [ -z "${COWSAY_BIN}" ]; then
+  COWSAY_BIN="$(shuf -n 1 -e cowsay cowthink)"
+fi
+FORTUNE_BIN="$(kbconfig get lock fortune_bin)"
+FORTUNE_ARGS="$(kbconfig get lock fortune_args)"
+PHYSLOCK_BIN="$(kbconfig get lock physlock_bin)"
+PHYSLOCK_ARGS="$(kbconfig get lock physlock_args)"
+SWAYLOCK_BIN="$(kbconfig get lock swaylock_bin)"
+SWAYLOCK_ARGS="$(kbconfig get lock swaylock_args)"
 
-COWSAY_WIDTH="${COWSAY_WIDTH:-77}"
+COWSAY_WIDTH="$(kbconfig get lock cowsay_width)"
 
 # Cyberpunk Neon theme
-SWAYLOCK_DARKBLUE="${SWAYLOCK_DARKBLUE:-000b1e}"
-SWAYLOCK_BLUE="${SWAYLOCK_BLUE:-091833}"
-SWAYLOCK_LIGHTBLUE="${SWAYLOCK_LIGHTBLUE:-133e7c}"
-SWAYLOCK_LIGHTALT="${SWAYLOCK_LIGHTALT:-0b2956}"
-SWAYLOCK_CYAN="${SWAYLOCK_CYAN:-0abdc6}"
-SWAYLOCK_PINK="${SWAYLOCK_PINK:-ea00d9}"
-SWAYLOCK_PURPLE="${SWAYLOCK_PURPLE:-711c91}"
-SWAYLOCK_PURPLEALT="${SWAYLOCK_PURPLEALT:-321959}"
-SWAYLOCK_RED="${SWAYLOCK_RED:-ff0000}"
-SWAYLOCK_ORANGE="${SWAYLOCK_ORANGE:-f57800}"
-SWAYLOCK_WHITE="${SWAYLOCK_WHITE:-d7d7d5}"
-SWAYLOCK_YELLOW="${SWAYLOCK_YELLOW:-ffff00}"
-SWAYLOCK_GREEN="${SWAYLOCK_GREENL:-00ff00}"
+SWAYLOCK_DARKBLUE="$(kbconfig get lock darkblue)"
+SWAYLOCK_BLUE="$(kbconfig get lock blue)"
+SWAYLOCK_LIGHTBLUE="$(kbconfig get lock lightblue)"
+SWAYLOCK_LIGHTALT="$(kbconfig get lock lightalt)"
+SWAYLOCK_CYAN="$(kbconfig get lock cyan)"
+SWAYLOCK_PINK="$(kbconfig get lock pink)"
+SWAYLOCK_PURPLE="$(kbconfig get lock purple)"
+SWAYLOCK_PURPLEALT="$(kbconfig get lock purplealt)"
+SWAYLOCK_RED="$(kbconfig get lock red)"
+SWAYLOCK_ORANGE="$(kbconfig get lock orange)"
+SWAYLOCK_WHITE="$(kbconfig get lock white)"
+SWAYLOCK_YELLOW="$(kbconfig get lock yellow)"
+SWAYLOCK_GREEN="$(kbconfig get lock green)"
 
 
 case ${KBLOCK_MODE} in
