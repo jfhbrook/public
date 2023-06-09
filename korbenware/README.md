@@ -14,6 +14,14 @@ on my Fedora Thinkpad running Sway, and a handful of them on MacOS as well.
 You can copy the scripts in `./bin` wherever you like! Someday I'll make
 package manifests, but that day's not today.
 
+## kbconfig
+
+Manage korbenware configs in `~/.config/korbenware/config.ini`.
+
+### Dependencies
+
+* System python3
+
 ## kbbg
 
 Change the background in sway.
@@ -46,6 +54,7 @@ A screen locking script. Works with swaylock and *probably* works with
 * bash
 * Either swaylock or physlock
 * If using swaylock, cowsay and fortune-mod
+* `kbconfig`
 
 ## kbmenu
 
