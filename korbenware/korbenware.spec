@@ -1,5 +1,5 @@
 Name: korbenware
-Version: 0.4.0
+Version: 0.4.1
 Release: 1%{?dist}
 License: MPL-2.0
 Summary: linux/unix desktop cli software
@@ -51,6 +51,12 @@ install -p -m 755 bin/kbscreenshot %{buildroot}%{_bindir}
 
 
 %changelog
+* Fri Jun 09 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.4.1-1
+- Update korbenware spec (josh.holbrook@gmail.com)
+- Add docs for kbconfig (josh.holbrook@gmail.com)
+- Use INI config file for kblock (josh.holbrook@gmail.com)
+- Fix errant characters in kbmenu logging (josh.holbrook@gmail.com)
+
 * Fri Jun 09 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.4.0
 - Add kbconfig tool to read ini config
 - Use kbconfig in kblock
