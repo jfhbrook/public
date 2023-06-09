@@ -23,9 +23,9 @@ function log-error {
   echo "ERROR: $1" 1>&2
 }
 
-log-info "Grandmaw Korben's XDG Menu Explorer 🦜",
-log-info '"nice work, pixel birdie!"',
-log-info "programmed entirely while unemployed",
+log-info "Grandmaw Korben's XDG Menu Explorer 🦜"
+log-info '"nice work, pixel birdie!"'
+log-info "programmed entirely while unemployed"
 log-info "it worked if it ends with ok"
 
 __PRELUDE='
