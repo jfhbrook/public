@@ -1,5 +1,5 @@
 Name: korbenware
-Version: 0.3.0
+Version: 0.4.0
 Release: 1%{?dist}
 License: MPL-2.0
 Summary: linux/unix desktop cli software
@@ -24,6 +24,7 @@ tar -xzf %{SOURCE0}
 
 %install
 mkdir -p %{buildroot}%{_bindir}
+install -p -m 755 bin/kbconfig %{buildroot}%{_bindir}
 install -p -m 755 bin/kbbg %{buildroot}%{_bindir}
 install -p -m 755 bin/kbdesktop %{buildroot}%{_bindir}
 install -p -m 755 bin/kblock %{buildroot}%{_bindir}
@@ -38,6 +39,7 @@ install -p -m 755 bin/kbscreenshot %{buildroot}%{_bindir}
 
 
 %files
+%{_bindir}/kbconfig
 %{_bindir}/kbbg
 %{_bindir}/kbdesktop
 %{_bindir}/kblock
@@ -49,6 +51,9 @@ install -p -m 755 bin/kbscreenshot %{buildroot}%{_bindir}
 
 
 %changelog
+* Fri Jun 09 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.4.0
+- Add kbconfig tool to read ini config
+- Use kbconfig in kblock
 * Tue Dec 28 2021 Josh Holbrook <josh.holbrook@gmail.com> 0.3.0-1
 - Remove kbbright (use brightnessctl) (josh.holbrook@gmail.com)
 - Fix DOA bugs in kbnotify and kbscreenshot (josh.holbrook@gmail.com)
