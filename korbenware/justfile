@@ -1,2 +1,5 @@
 shell:
   PATH="$(pwd)/bin:${PATH}" bash --login
+
+tag:
+  tito tag
