@@ -24,6 +24,7 @@ tar -xzf %{SOURCE0}
 
 %install
 mkdir -p %{buildroot}%{_bindir}
+install -p -m 755 bin/kbconfig %{buildroot}%{_bindir}
 install -p -m 755 bin/kbbg %{buildroot}%{_bindir}
 install -p -m 755 bin/kbdesktop %{buildroot}%{_bindir}
 install -p -m 755 bin/kblock %{buildroot}%{_bindir}
@@ -38,6 +39,7 @@ install -p -m 755 bin/kbscreenshot %{buildroot}%{_bindir}
 
 
 %files
+%{_bindir}/kbconfig
 %{_bindir}/kbbg
 %{_bindir}/kbdesktop
 %{_bindir}/kblock
