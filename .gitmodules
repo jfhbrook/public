@@ -1,24 +1,9 @@
-[submodule "college/lolcode"]
-	path = attic/college/lolcode
-	url = git@github.com:jfhbrook/lolcode.git
 [submodule "pickleback"]
 	path = old-memes/pickleback
 	url = git@github.com:jfhbrook/pickleback.git
-[submodule "hacks/ihydra/jp-kernel"]
-	path = attic/ihydra/jp-kernel
-	url = git@github.com:jfhbrook/jp-kernel.git
-[submodule "hacks/ihydra/nel"]
-	path = attic/ihydra/nel
-	url = git@github.com:jfhbrook/nel.git
-[submodule "hacks/ihydra/ihydra"]
-	path = attic/ihydra/ihydra
-	url = git@github.com:jfhbrook/ihydra.git
 [submodule "resume"]
 	path = resume
 	url = git@github.com:jfhbrook/resume.git
-[submodule "trophies/ecstatic"]
-	path = attic/ecstatic
-	url = git@github.com:jfhbrook/node-ecstatic.git
 [submodule "pyee"]
 	path = pyee
 	url = git@github.com:jfhbrook/pyee.git
