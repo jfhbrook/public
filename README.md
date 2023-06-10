@@ -69,6 +69,8 @@ coroutines and concurrent programming. It is licensed under an MIT license.
 
 ### resume
 
+**<https://github.com/jfhbrook/resume>**
+
 This is my resume! This repository contains PDFs for my standard one-page resume
 and a longer CV. It's written in LaTeX.
 
