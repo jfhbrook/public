@@ -1,5 +1,5 @@
 Name: korbenware
-Version: 0.3.2
+Version: 0.4.0
 Release: 1%{?dist}
 License: MPL-2.0
 Summary: linux/unix desktop cli software
