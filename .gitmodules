@@ -1,15 +1,6 @@
-[submodule "pickleback"]
-	path = old-memes/pickleback
-	url = git@github.com:jfhbrook/pickleback.git
 [submodule "resume"]
 	path = resume
 	url = git@github.com:jfhbrook/resume.git
 [submodule "pyee"]
 	path = pyee
 	url = git@github.com:jfhbrook/pyee.git
-[submodule "old-memes/hoarders"]
-	path = old-memes/hoarders
-	url = git@github.com:jfhbrook/hoarders.git
-[submodule "old-memes/types-galore"]
-	path = old-memes/types-galore
-	url = git@github.com:jfhbrook/types-galore.git

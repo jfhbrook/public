@@ -1,5 +1,8 @@
 set dotenv-load := true
 
+oops:
+  echo "OOPS! The pickleback submodule got removed, so you'll need to make this work without it!" && exit 1
+
 list:
   @just --list
 
