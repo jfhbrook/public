@@ -62,6 +62,8 @@ see [its README](./politics/README.md).
 
 ### pyee
 
+**<https://github.com/jfhbrook/pyee>**
+
 This is a loose port of the Node.js EventEmitter with special support for
 coroutines and concurrent programming. It is licensed under an MIT license.
 
