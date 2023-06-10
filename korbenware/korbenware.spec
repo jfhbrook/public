@@ -1,5 +1,5 @@
 Name: korbenware
-Version: 0.4.2
+Version: 0.4.3
 Release: 1%{?dist}
 License: MPL-2.0
 Summary: linux/unix desktop cli software
@@ -51,6 +51,9 @@ install -p -m 755 bin/kbscreenshot %{buildroot}%{_bindir}
 
 
 %changelog
+* Fri Jun 09 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.4.3-1
+- just publish task (josh.holbrook@gmail.com)
+
 * Fri Jun 09 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.4.2-1
 - That version was wrong! (josh.holbrook@gmail.com)
 
