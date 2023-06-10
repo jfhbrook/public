@@ -10,7 +10,9 @@ For my GPL-compatible free software, check out [my GPL-compatible software repos
 
 ### anisotropy
 
-This submodule contains my masters thesis. It is licensed under the Community
+**<https://github.com/jfhbrook/anisotropy>**
+
+This project contains my masters thesis. It is licensed under the Community
 Research and Academic Programming License v0 Beta 0.
 
 ### db_hooks
