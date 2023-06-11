@@ -22,7 +22,7 @@ Josh Holbrook's collection of fortunes for fortune-mod
 
 
 %build
-ls ./fortunes/ | xargs -I '$file' strfile './fortunes/$path'
+ls ./fortunes/ | xargs -I '$path' strfile './fortunes/$path'  
 
 %install
 mkdir -p %{buildroot}%{CookieDir}
