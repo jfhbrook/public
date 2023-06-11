@@ -2,31 +2,24 @@
 apiVersion: coprctl/v1alpha1
 kind: project
 metadata:
-  name: "do-not-delete-me-2"
+  name: "jfhbrook/do-not-delete-me-2"
 spec:
   description: "a test COPR"
 ---
 apiVersion: coprctl/v1alpha1
 kind: package-pypi
 metadata:
-  name: "pyee"
+  name: "python3-pyee"
 spec:
-  copr: "do-not-delete-me-2"
-  pythonversions:
-    - "3.10"
-    - "3.9"
-  packageversion: "1.2.3"
+  copr: "jfhbrook/do-not-delete-me-2"
   specGenerator: "pyp2spec"
-  template: "spec"
-  webhookRebuild: "on"
-  maxBuilds: 10
 ---
 apiVersion: coprctl/v1alpha1
 kind: package-rubygems
 metadata:
-  name: "my-package-rubygems"
+  name: ""
 spec:
-  copr: "my-copr"
-  gem: "my-package"
+  copr: "jfhbrook/do-not-delete-me-2"
+  gem: "rubygem-t"
   webhookRebuild: "on"
   maxBuilds: 10

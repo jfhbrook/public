@@ -44,9 +44,7 @@ function load-project {
   name="$(yq "${DOC}"' | .metadata.name' "${FILE}")"
 
   log-debug "checking if project ${name} exists"
-  # TODO: is this the most efficient way to do this check?
-  # TODO: list peoples' repos that aren't mine lol!!
-  if copr-cli list jfhbrook | grep -vq "^Name: ${name}$"; then
+  if ! copr-cli get "${name}" &> /dev/null; then
     log-debug "project ${name} does not exist"
     action="create"
   fi
