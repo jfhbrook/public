@@ -4,7 +4,7 @@ test:
 
 # Tag the release with tito
 tag:
-  tito tag
+  tito tag --use-version 4.34.1
 
 _push_tag:
   git push origin --follow-tags

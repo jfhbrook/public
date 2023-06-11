@@ -1,5 +1,5 @@
 Name: yq
-Version: 4.34.2
+Version: 4.34.1
 Release: 1%{?dist}
 License: MIT
 Summary: a portable command-line YAML, JSON, XML, CSV, TOML and properties processor
@@ -38,12 +38,7 @@ install -p -m 755 yq_linux_amd64 %{buildroot}%{_bindir}/yq
 # %{_mandir}/man1/yq.1
 
 %changelog
-* Sat Jun 10 2023 Josh Holbrook <josh.holbrook@gmail.com> 4.34.2-1
+* Sat Jun 10 2023 Josh Holbrook <josh.holbrook@gmail.com> 4.34.1-1
 - new package built with tito
 
-* Sat Jun 10 2023 Josh Holbrook <josh.holbrook@gmail.com> 4.34.2-1
-- new package built with tito
-
-* Sat Jun 10 2023 Josh Holbrook <josh.holbrook@gmail.com> 4.34.3-1
-- Add %changelog section to yq spec (josh.holbrook@gmail.com)
 
