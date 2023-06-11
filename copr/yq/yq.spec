@@ -32,3 +32,5 @@ cp yq.1 %{_mandir}/man1/
 %files
 %{_bindir}/yq
 %{_mandir}/man1/yq.1
+
+%changelog
