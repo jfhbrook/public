@@ -1,5 +1,5 @@
 Name: yq
-Version: 4.34.2
+Version: 4.34.3
 Release: 1%{?dist}
 License: MIT
 Summary: a portable command-line YAML, JSON, XML, CSV, TOML and properties processor
@@ -34,3 +34,6 @@ cp yq.1 %{_mandir}/man1/
 %{_mandir}/man1/yq.1
 
 %changelog
+* Sat Jun 10 2023 Josh Holbrook <josh.holbrook@gmail.com> 4.34.3-1
+- Add %changelog section to yq spec (josh.holbrook@gmail.com)
+
