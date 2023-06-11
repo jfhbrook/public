@@ -1,5 +1,5 @@
 Name: fortune-jfhbrook
-Version: 0.0.2
+Version: 0.0.3
 Release: 1%{?dist}
 License: UNLICENSED
 Summary: Josh Holbrook's collection of fortunes for fortune-mod
@@ -43,6 +43,9 @@ cp -r ./fortunes/* %{buildroot}%{CookieDir}
 
 
 %changelog
+* Sat Jun 10 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.0.3-1
+- Nothing (oops) 
+
 * Sat Jun 10 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.0.2-1
 - Set up fortune-jfhbrook COPR build with tito
 
