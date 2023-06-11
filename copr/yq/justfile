@@ -1,10 +1,12 @@
+VERSION := "4.34.1"
+
 # Test building the main branch with tito
 test:
   tito build --rpm --test
 
 # Tag the release with tito
 tag:
-  tito tag --use-version 4.34.1
+  tito tag --use-version {{VERSION}}
 
 _push_tag:
   git push origin --follow-tags
