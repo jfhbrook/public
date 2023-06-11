@@ -1,5 +1,5 @@
 lint:
   shellcheck ./bin/coprctl
 
-run *ARGV:
-  ./bin/coprctl {{ARGV}}
+run:
+  ./bin/coprctl apply -f ./test.yml --dry-run server
