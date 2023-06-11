@@ -36,6 +36,8 @@ cp -r ./fortunes/* %{buildroot}%{CookieDir}
 %{CookieDir}/clock-app.dat
 %{CookieDir}/college-quotes
 %{CookieDir}/college-quotes.dat
+%{CookieDir}/poetry
+%{CookieDir}/poetry.dat
 %{CookieDir}/twitter
 %{CookieDir}/twitter.dat
 
