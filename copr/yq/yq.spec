@@ -1,5 +1,5 @@
 Name: yq
-Version: 4.34.1
+Version: 4.34.2
 Release: 1%{?dist}
 License: MIT
 Summary: a portable command-line YAML, JSON, XML, CSV, TOML and properties processor
