@@ -408,9 +408,23 @@ function load-package {
   load-property '.spec.max-builds' max-builds
 }
 
+HELP_API_RESOURCES='Print supported API resources.
+
+Examples:
+  # Print supported API resources
+  coprctl api-resources
+  
+Usage:
+  coprctl api-resources'
+
 function api-resources {
-  log-fatal "unimplemented: api-resources"
-  exit 1
+  echo "NAME
+project
+package-pypi
+package-scm
+package-distgit
+package-rubygems
+package-custom"
 }
 
 # giddyup
