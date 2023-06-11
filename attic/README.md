@@ -18,6 +18,13 @@ advanced functions.
 
 **<https://github.com/jfhbrook/lolcode>**
 
+### db_hooks
+
+This is the toolset I made for myself to manage database stuff on my personal
+machines. It's currently not in use as it hasn't kept up with my tooling, but
+will probably be dusted off in the future. It is licensed under an Apache v2.0
+license.
+
 ## ecstatic
 
 A static fileserver module for Node.js that I wrote in 2011. 

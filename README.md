@@ -15,13 +15,6 @@ For my GPL-compatible free software, check out [my GPL-compatible software repos
 This project contains my masters thesis. It is licensed under the Community
 Research and Academic Programming License v0 Beta 0.
 
-### db_hooks
-
-This is the toolset I made for myself to manage database stuff on my personal
-machines. It's currently not in use as it hasn't kept up with my tooling, but
-will probably be dusted off in the future. It is licensed under an Apache v2.0
-license.
-
 ### fortune-mod
 
 This is a collection of (small, but hopefully will grow) fortune files. I
