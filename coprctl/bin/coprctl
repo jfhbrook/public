@@ -40,8 +40,10 @@ Usage:
 Use "coprctl <command> --help" for more information about a given command.'
 
 function main {
+  NAMESPACE="jfhbrook/joshiverse"  # TODO: manage this in a config of contexts
   COMMAND=""
   TYPE=""
+  NAME=""
 
   DRY_RUN="none"
   FILENAME=""
@@ -54,13 +56,17 @@ function main {
         show_help=1
         shift
         ;;
+      -n|--namespace)
+        NAMESPACE="${1}"
+        shift
+        ;;
       --dry-run)
         if [[ "${2}" =~ ^(none|server|client)$ ]]; then
           DRY_RUN="${2}"
           shift
           shift
         else
-          log-error "--dry-run must be one of: none, server, client"
+          log-fatal "--dry-run must be one of: none, server, client"
           exit 1
         fi
         ;;
@@ -70,7 +76,7 @@ function main {
         shift
         ;;
       -*)
-        log-error "unknown option: ${1}"
+        log-fatal "unknown option: ${1}"
         exit 1
         ;;
       *)
@@ -80,8 +86,11 @@ function main {
         elif [ -z "${TYPE}" ]; then
           TYPE="${1}"
           shift
+        elif [ -z "${NAME}" ] && [[ "${COMMAND}" == 'get' ]]; then
+          NAME="${1}"
+          shift
         else
-          log-error "unknown argument: ${1}"
+          log-fatal "unknown argument: ${1}"
           exit 1
         fi
         ;;
@@ -119,7 +128,7 @@ function main {
         log-error "unknown command: ${COMMAND}"
       fi
       echo "${HELP_MAIN}"
-      exit 1
+      exit
       ;;
   esac
 }
@@ -140,8 +149,49 @@ Usage:
   coprctl get TYPE NAME [flags] [options]'
 
 function get {
-  log-error "not implemented: get"
-  exit 1
+  local base='{"apiVersion": "coprctl/v1alpha1"}'
+  local res
+  local type
+  local name
+
+  case "${TYPE}" in
+    project)
+      # NOTE: Projects don't return an easily parseable format and most of the
+      # properties are missing, womp womp
+      log-fatal "not implemented: project"
+      log-info '(try "copr-cli get '"'${NAME}'"')'
+      exit 1
+      ;;
+    chroot)
+      # TODO: This shows a yaml representation - great! - but I haven't
+      # implemented the apply half of this, and I'd expect the format to change
+      # significantly
+      res="$(copr-cli get-chroot "${NAMESPACE}/${NAME}" | yq .)"
+
+      res="${res}" name="${NAME}" yq '.kind = "chroot" | .meta.name = env(name) | .spec = env(res) | del(.spec.name)' -P <<< "${base}"
+      ;;
+    package-*)
+      res="$(copr-cli get-package "${NAMESPACE}" --name "${NAME}" | yq .)"
+
+      type="package-$(yq '.source_type' <<< "${res}")"
+      name="$(yq '.name' <<< "${res}")"
+
+      if [[ "${type}" != "${TYPE}" ]]; then
+        log-fatal "unexpected type: ${type} (expected: ${TYPE})"
+        exit 1
+      fi
+
+      res="${res}" kind="${type}" name="${name}" yq '.kind = env(kind) | .meta.name = env(name) | .spec = env(res) | del(.spec.name)' -P <<< "${base}"
+      ;;
+    permissions)
+      log-fatal "not implemented: permissions"
+      exit 1
+      ;;
+    *)
+      log-fatal "unknown type: ${TYPE}"
+      exit 1
+      ;;
+  esac
 }
 
 # Apply command
@@ -155,6 +205,8 @@ Examples:
   coprctl apply -f ./copr.json
   
 Options:
+    --namespace:
+  Set the namespace for the COPR, of the format (username|organization)/project.
     --dry-run='"'"'none'"'"':
 	Must be "none", "server", or "client". If client strategy, only print the object that would be sent, without sending it. If server strategy, submit server-side request without persisting the resource.
 
@@ -192,6 +244,73 @@ function apply {
   done
 }
 
+function load-document {
+  local kind
+  local apiVersion
+
+  kind="$(yq "${DOC}"' | .kind' "./${FILENAME}")"
+
+  log-debug "kind: ${kind}"
+  apiVersion="$(yq "${DOC}"' | .apiVersion' "./${FILENAME}")"
+
+  # because we're classy like that
+  if [[ "${apiVersion}" != 'coprctl/v1alpha1' ]]; then
+    log-fatal "Unknown apiVersion: ${apiVersion}"
+    log-info "Supported versions are: coprctl/v1aplha1"
+    exit 1
+  fi
+
+  case "${kind}" in
+    project)
+      load-project
+      ;;
+    chroot)
+      # TODO: Chroots have an odd mechanic around "comps", which involve .xml
+      # files. Implement this when I actually need it.
+      log-fatal "not implemented: chroot"
+      exit 1
+      ;;
+    package-pypi)
+      load-package pypi
+      load-array-property '.spec.pythonversions' pythonversions
+      load-property '.spec.packageversion' packageversion
+      load-property '.spec.spec-generator' spec-generator
+      load-property '.spec.template' template
+      ;;
+    package-scm)
+      load-package scm
+
+      log-fatal 'not implemented: package-scm'
+      exit 1
+      ;;
+    package-distgit)
+      load-package distgit
+
+      log-fatal 'not implemented: package-distgit'
+      exit 1
+      ;;
+    package-rubygems)
+      load-package rubygems
+      load-property '.spec.gem' gem
+      ;;
+    package-custom)
+      load-package custom
+
+      log-fatal 'not implemented: package-custom'
+      exit 1
+      ;;
+    permissions)
+      log-fatal "not implemented: permissions"
+      exit 1
+      ;;
+    *)
+      log-fatal "unknown kind: ${kind}"
+      exit 1
+      ;;
+  esac
+}
+
+
 function load-property {
   local selector="${1}"
   local name="${2}"
@@ -206,6 +325,17 @@ function load-property {
   if [[ "${value}" != 'null' ]]; then
     ARGV+=("--${name}" "${value}")
   fi
+}
+
+function load-array-property {
+  local selector="${1}"
+  local name="${2}"
+
+  ARGV+=("--${name}")
+
+  for value in $(yq "${DOC}"' | '"${selector}"' | .[]' "${FILENAME}"); do
+    ARGV+=("${value}")
+  done
 }
 
 function load-project {
@@ -254,6 +384,7 @@ function load-package {
   local name
   local action
 
+  # TODO: should this property be on metadata?
   copr="$(yq "${DOC}"' | .spec.copr' "${FILENAME}")"
   name="$(yq "${DOC}"' | .metadata.name' "${FILENAME}")"
 
@@ -261,7 +392,7 @@ function load-package {
 
 
   if [[ "${DRY_RUN}" == 'client' ]]; then
-    log-info 'dry-run:' copr-cli get "${name}"
+    log-info 'dry-run:' copr-cli get-package "${copr}" --name "${name}"
     action="add-package-${type}"
   else
     log-debug "checking if package ${copr} --name ${name} exists"
@@ -277,76 +408,8 @@ function load-package {
   load-property '.spec.max-builds' max-builds
 }
 
-function load-document {
-  local kind
-  local apiVersion
-
-  kind="$(yq "${DOC}"' | .kind' "./${FILENAME}")"
-
-  log-debug "kind: ${kind}"
-  apiVersion="$(yq "${DOC}"' | .apiVersion' "./${FILENAME}")"
-
-  # because we're classy like that
-  if [[ "${apiVersion}" != 'coprctl/v1alpha1' ]]; then
-    log-fatal "Unknown apiVersion: ${apiVersion}"
-    log-info "Supported versions are: coprctl/v1aplha1"
-    exit 1
-  fi
-
-  case "${kind}" in
-    project)
-      load-project
-      ;;
-    chroot)
-      log-fatal "not implemented: chroot"
-      exit 1
-      ;;
-    package-pypi)
-      load-package pypi
-      # TODO: believed to be an array of strings, but let's find out:
-      # - create a plain jane pypi project
-      # - do the get on the doc
-      # see what's up
-      # load-array-property argv '.spec.pythonversions' pythonversions
-      load-property '.spec.packageversion' packageversion
-      load-property '.spec.spec-generator' spec-generator
-      load-property '.spec.template' template
-      ;;
-    package-scm)
-      load-package scm
-
-      log-fatal 'not implemented: package-scm'
-      exit 1
-      ;;
-    package-distgit)
-      load-package distgit
-
-      log-fatal 'not implemented: package-distgit'
-      exit 1
-      ;;
-    package-rubygems)
-      load-package rubygems
-      load-property '.spec.gem' gem
-      ;;
-    package-custom)
-      load-package custom
-
-      log-fatal 'not implemented: package-custom'
-      exit 1
-      ;;
-    permissions)
-      log-fatal "not implemented: permissions"
-      exit 1
-      ;;
-    *)
-      log-fatal "unknown kind: ${kind}"
-      exit 1
-      ;;
-  esac
-}
-
 function api-resources {
-  log-error "unimplemented: api-resources"
+  log-fatal "unimplemented: api-resources"
   exit 1
 }
 

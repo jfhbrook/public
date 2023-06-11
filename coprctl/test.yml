@@ -13,6 +13,9 @@ metadata:
 spec:
   copr: "jfhbrook/do-not-delete-me-2"
   specGenerator: "pyp2spec"
+  pythonversions:
+    - "2"
+    - "3"
 ---
 apiVersion: coprctl/v1alpha1
 kind: package-rubygems
