@@ -1,0 +1,190 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+function log-debug {
+  if [ -n "${DEBUG:-}" ]; then
+    echo 'debug:' "$@"
+  fi
+}
+
+function log-info {
+  echo 'info:' "$@"
+}
+
+function log-warn {
+  echo 'warn:' "$@"
+}
+
+function log-error {
+  echo 'error:' "$@"
+}
+
+function log-fatal {
+  echo 'fatal:' "$@"
+}
+
+function load-property {
+  local selector="${1}"
+  local name="${2}"
+
+  local value
+
+  value="$(yq "${DOC}"' | '"${selector}" "${FILE}")"
+
+  if [ -n "${value}" ]; then
+    ARGV+=("--${name}" "${value}")
+  fi
+}
+
+function load-project {
+  local name
+  local action="modify"
+
+  name="$(yq "${DOC}"' | .metadata.name' "${FILE}")"
+
+  log-debug "checking if project ${name} exists"
+  # TODO: is this the most efficient way to do this check?
+  # TODO: list peoples' repos that aren't mine lol!!
+  if copr-cli list jfhbrook | grep -vq "^Name: ${name}$"; then
+    log-debug "project ${name} does not exist"
+    action="create"
+  fi
+
+  ARGV+=("${action}" "${name}")
+
+  load-property '.spec.chroot' chroot
+  load-property '.spec.description' description
+  load-property '.spec.instructions' instructions
+  load-property '.spec.disable_createrepo' disable_createrepo
+  load-property '.spec.enable-net' enable-net
+  load-property '.spec.unlisted-on-hp' unlisted-on-hp
+  load-property '.spec.auto-prune' auto-prune
+  load-property '.spec.isolation' isolation
+  load-property '.spec.bootstrap' bootstrap
+  load-property '.spec.delete-after-days' delete-after-days 
+  load-property '.spec.module-hotfixes' module-hotfixes
+  load-property '.spec.multilib' multilib
+  load-property '.spec.fedora-review' fedora-review
+  load-property '.spec.appstream' appstream
+  load-property '.spec.follow-fedora-branching' follow-fedora-branching
+  load-property '.spec.repo' repo
+  load-property '.spec.runtime-repo-dependency' runtime-repo-dependency
+  load-property '.spec.packit-forge-project-allowed' packit-forge-project-allowed
+}
+
+function load-package {
+  local type="${1}"
+
+  local copr
+  local name
+  local action
+
+  copr="$(yq "${DOC}"' | .spec.copr' "${FILE}")"
+  name="$(yq "${DOC}"' | .metadata.name' "${FILE}")"
+
+  action="edit-package-${type}"
+
+  # TODO: conditional might be backwards
+  log-debug "checking if package ${copr} --name ${name} exists"
+  if ! copr get-package "${copr}" --name "${name}" &> /dev/null; then
+    log-debug "package ${copr} --name ${name} does not exist"
+    action="add-package-${type}"
+  fi
+
+  ARGV+=("${action}" "${copr}" --name "${name}")
+
+  load-property '.spec.webhook-rebuild' webhook-rebuild
+  load-property '.spec.max-builds' max-builds
+}
+
+function load-document {
+  local kind
+  local apiVersion
+
+  kind="$(yq "${DOC}"' | .kind' "./${FILE}")"
+
+  log-debug "kind: ${kind}"
+  apiVersion="$(yq "${DOC}"' | .apiVersion' "./${FILE}")"
+
+  # because we're classy like that
+  if [[ "${apiVersion}" != 'coprctl/v1alpha1' ]]; then
+    log-fatal "Unknown apiVersion: ${apiVersion}"
+    log-info "Supported versions are: coprctl/v1aplha1"
+    exit 1
+  fi
+
+  case "${kind}" in
+    project)
+      load-project
+      ;;
+    chroot)
+      log-fatal "not implemented: chroot"
+      exit 1
+      ;;
+    package-pypi)
+      load-package pypi
+      # TODO: believed to be an array of strings, but let's find out:
+      # - create a plain jane pypi project
+      # - do the get on the doc
+      # see what's up
+      # load-array-property argv '.spec.pythonversions' pythonversions
+      load-property '.spec.packageversion' packageversion
+      load-property '.spec.spec-generator' spec-generator
+      load-property '.spec.template' template
+      ;;
+    package-scm)
+      load-package scm
+
+      log-fatal 'not implemented: package-scm'
+      exit 1
+      ;;
+    package-distgit)
+      load-package distgit
+
+      log-fatal 'not implemented: package-distgit'
+      exit 1
+      ;;
+    package-rubygems)
+      load-package rubygems
+      load-property '.spec.gem' gem
+      ;;
+    package-custom)
+      load-package custom
+
+      log-fatal 'not implemented: package-custom'
+      exit 1
+      ;;
+    permissions)
+      log-fatal "not implemented: permissions"
+      exit 1
+      ;;
+    *)
+      log-fatal "unknown kind: ${kind}"
+      exit 1
+      ;;
+  esac
+}
+
+function apply {
+  yq --no-doc 'document_index' "${FILE}" | while read -r i; do
+    # Accessed globally by load-document and its delegates. It's not very
+    # explicit and you *could* hurt yourself if you don't reset ARGV before
+    # a call, but this avoids DI Hell and this is the only call site.
+    DOC='select(document_index == '"${i}"')'
+    ARGV=()
+
+    log-debug 'doc:' "${DOC}"
+
+    load-document
+
+    echo copr-cli "${ARGV[@]}"
+  done
+}
+
+# TODO: implement arguments, "coprctl get" etc
+
+FILE='./test.yml'
+apply
+
+echo 'ok'

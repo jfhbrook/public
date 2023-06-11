@@ -1,0 +1,5 @@
+lint:
+  shellcheck ./bin/coprctl
+
+run *ARGV:
+  ./bin/coprctl {{ARGV}}
