@@ -1,3 +1,7 @@
+# Test building the main branch with tito
+test:
+  tito build --rpm --test
+
 # Tag the release with tito
 tag:
   tito tag
