@@ -1,5 +1,17 @@
+# Build fortune dat files
 build:
   ls ./fortunes/ | xargs -I '$path' strfile './fortunes/$path'  
 
+# Clean fortune dat files
 clean:
   rm ./fortunes/*.dat
+
+# Tag the release with tito
+tag:
+  tito tag
+
+_push_tag:
+  git push origin --follow-tags
+
+# Publish the release with tito
+publish: tag _push_tag
