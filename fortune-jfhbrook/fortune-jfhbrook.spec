@@ -1,8 +1,8 @@
-Name: fortune-mod-joshiverse
+Name: fortune-jfhbrook
 Version: 0.0.1
 Release: 1%{?dist}
-License: MPL-2.0
-Summary: a collection of fortunes for fortune-mod
+License: UNLICENSED
+Summary: Josh Holbrook's collection of fortunes for fortune-mod
 
 URL: https://github.com/jfhbrook/public/tree/main/fortune-mod
 Source0: %{name}-%{version}.tar.gz
@@ -12,8 +12,7 @@ BuildRequires: coreutils fortune-mod
 Requires: fortune-mod
 
 %description
-a collection of fortunes for fortune-mod.
-
+Josh Holbrook's collection of fortunes for fortune-mod
 
 %prep
 %autosetup
