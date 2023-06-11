@@ -1,5 +1,5 @@
 Name: fortune-jfhbrook
-Version: 0.0.3
+Version: 0.0.4
 Release: 1%{?dist}
 License: UNLICENSED
 Summary: Josh Holbrook's collection of fortunes for fortune-mod
@@ -43,6 +43,9 @@ cp -r ./fortunes/* %{buildroot}%{CookieDir}
 
 
 %changelog
+* Sat Jun 10 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.0.4-1
+- Fix silly bug in fortune-jfhbrook.spec (josh.holbrook@gmail.com)
+
 * Sat Jun 10 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.0.3-1
 - Nothing (oops) 
 
