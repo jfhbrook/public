@@ -35,10 +35,8 @@ PHYSLOCK_BIN="$(kbconfig get lock physlock_bin)"
 PHYSLOCK_ARGS="$(kbconfig get lock physlock_args)"
 SWAYLOCK_BIN="$(kbconfig get lock swaylock_bin)"
 SWAYLOCK_ARGS="$(kbconfig get lock swaylock_args)"
-
 COWSAY_WIDTH="$(kbconfig get lock cowsay_width)"
 
-# Cyberpunk Neon theme
 SWAYLOCK_DARKBLUE="$(kbconfig get lock darkblue)"
 SWAYLOCK_BLUE="$(kbconfig get lock blue)"
 SWAYLOCK_LIGHTBLUE="$(kbconfig get lock lightblue)"
@@ -52,6 +50,31 @@ SWAYLOCK_ORANGE="$(kbconfig get lock orange)"
 SWAYLOCK_WHITE="$(kbconfig get lock white)"
 SWAYLOCK_YELLOW="$(kbconfig get lock yellow)"
 SWAYLOCK_GREEN="$(kbconfig get lock green)"
+
+SWAYLOCK_COLOR="$(kbconfig get lock swaylock_color --if-none "${SWAYLOCK_DARKBLUE}")"
+SWAYLOCK_INSIDE_COLOR="$(kbconfig get lock swaylock_inside_color --if-none "${SWAYLOCK_DARKBLUE}")"
+SWAYLOCK_RING_COLOR="$(kbconfig get lock swaylock_ring_color --if-none "${SWAYLOCK_PURPLE}")"
+SWAYLOCK_LINE_COLOR="$(kbconfig get lock swaylock_line_color --if-none "${SWAYLOCK_PURPLEALT}")"
+SWAYLOCK_SEPARATOR_COLOR="$(kbconfig get lock swaylock_separator_color --if-none "${SWAYLOCK_PURPLEALT}")"
+SWAYLOCK_TEXT_COLOR="$(kbconfig get lock swaylock_text_color --if-none "${SWAYLOCK_WHITE}")"
+SWAYLOCK_KEY_HL_COLOR="$(kbconfig get lock swaylock_key_hl_color --if-none "${SWAYLOCK_PINK}")"
+SWAYLOCK_BS_HL_COLOR="$(kbconfig get lock swaylock_bs_hl_color --if-none "${SWAYLOCK_LIGHTBLUE}")"
+SWAYLOCK_LAYOUT_BG_COLOR="$(kbconfig get lock swaylock_layout_bg_color --if-none "${SWAYLOCK_DARKBLUE}")"
+SWAYLOCK_LAYOUT_BORDER_COLOR="$(kbconfig get lock swaylock_layout_border_color --if-none "${SWAYLOCK_BLUE}")"
+SWAYLOCK_LAYOUT_TEXT_COLOR="$(kbconfig get lock swaylock_layout_text_color --if-none "${SWAYLOCK_WHITE}")"
+SWAYLOCK_INSIDE_CLEAR_COLOR="$(kbconfig get lock swaylock_inside_clear_color --if-none "${SWAYLOCK_DARKBLUE}")"
+SWAYLOCK_RING_CLEAR_COLOR="$(kbconfig get lock swaylock_ring_clear_color --if-none "${SWAYLOCK_LIGHTBLUE}")"
+SWAYLOCK_LINE_CLEAR_COLOR="$(kbconfig get lock swaylock_line_clear_color --if-none "${SWAYLOCK_PURPLEALT}")"
+SWAYLOCK_TEXT_CLEAR_COLOR="$(kbconfig get lock swaylock_text_clear_color --if-none "${SWAYLOCK_WHITE}")"
+SWAYLOCK_INSIDE_VER_COLOR="$(kbconfig get lock swaylock_inside_ver_color --if-none "${SWAYLOCK_DARKBLUE}")"
+SWAYLOCK_RING_VER_COLOR="$(kbconfig get lock swaylock_ring_ver_color --if-none "${SWAYLOCK_LIGHTBLUE}")"
+SWAYLOCK_LINE_VER_COLOR="$(kbconfig get lock swaylock_line_ver_color --if-none "${SWAYLOCK_PURPLEALT}")"
+SWAYLOCK_TEXT_VER_COLOR="$(kbconfig get lock swaylock_text_ver_color --if-none "${SWAYLOCK_WHITE}")"
+SWAYLOCK_INSIDE_WRONG_COLOR="$(kbconfig get lock swaylock_inside_ver_color --if-none "${SWAYLOCK_DARKBLUE}")"
+SWAYLOCK_RING_WRONG_COLOR="$(kbconfig get lock swaylock_ring_wrong_color --if-none "${SWAYLOCK_ORANGE}")"
+SWAYLOCK_LINE_WRONG_COLOR="$(kbconfig get lock swaylock_line_wrong_color --if-none "${SWAYLOCK_RED}")"
+SWAYLOCK_TEXT_WRONG_COLOR="$(kbconfig get lock swaylock_text_wrong_color --if-none "${SWAYLOCK_WHITE}")"
+SWAYLOCK_TEXT_CAPS_LOCK_COLOR="$(kbconfig get lock swaylock_text_caps_lock_color --if-none "${SWAYLOCK_PINK}")"
 
 
 case ${KBLOCK_MODE} in
@@ -70,30 +93,30 @@ case ${KBLOCK_MODE} in
     ;;
   swaylock)
     exec swaylock -f ${SWAYLOCK_ARGS} \
-      --color "${SWAYLOCK_DARKBLUE}" \
-      --inside-color "${SWAYLOCK_DARKBLUE}" \
-      --ring-color "${SWAYLOCK_PURPLE}" \
-      --line-color "${SWAYLOCK_PURPLEALT}" \
-      --separator-color "${SWAYLOCK_PURPLEALT}" \
-      --text-color "${SWAYLOCK_WHITE}" \
-      --key-hl-color "${SWAYLOCK_PINK}" \
-      --bs-hl-color "${SWAYLOCK_LIGHTBLUE}" \
-      --layout-bg-color "${SWAYLOCK_DARKBLUE}" \
-      --layout-border-color "${SWAYLOCK_BLUE}" \
-      --layout-text-color "${SWAYLOCK_WHITE}" \
-      --inside-clear-color "${SWAYLOCK_DARKBLUE}" \
-      --ring-clear-color "${SWAYLOCK_LIGHTBLUE}" \
-      --line-clear-color "${SWAYLOCK_PURPLEALT}" \
-      --text-clear-color "${SWAYLOCK_WHITE}" \
-      --inside-ver-color "${SWAYLOCK_DARKBLUE}" \
-      --ring-ver-color "${SWAYLOCK_LIGHTBLUE}" \
-      --line-ver-color "${SWAYLOCK_PURPLEALT}" \
-      --text-ver-color "${SWAYLOCK_WHJITE}" \
-      --inside-wrong-color "${SWAYLOCK_DARKBLUE}" \
-      --ring-wrong-color "${SWAYLOCK_ORANGE}" \
-      --line-wrong-color "${SWAYLOCK_RED}" \
-      --text-wrong-color "${SWAYLOCK_WHITE}" \
-      --text-caps-lock-color "${SWAYLOCK_PINK}"
+      --color "${SWAYLOCK_COLOR}" \
+      --inside-color "${SWAYLOCK_INSIDE_COLOR}" \
+      --ring-color "${SWAYLOCK_RING_COLOR}" \
+      --line-color "${SWAYLOCK_LINE_COLOR}" \
+      --separator-color "${SWAYLOCK_SEPARATOR_COLOR}" \
+      --text-color "${SWAYLOCK_TEXT_COLOR}" \
+      --key-hl-color "${SWAYLOCK_KEY_HL_COLOR}" \
+      --bs-hl-color "${SWAYLOCK_BS_HL_COLOR}" \
+      --layout-bg-color "${SWAYLOCK_LAYOUT_BG_COLOR}" \
+      --layout-border-color "${SWAYLOCK_LAYOUT_BORDER_COLOR}" \
+      --layout-text-color "${SWAYLOCK_LAYOUT_TEXT_COLOR}" \
+      --inside-clear-color "${SWAYLOCK_INSIDE_CLEAR_COLOR}" \
+      --ring-clear-color "${SWAYLOCK_RING_CLEAR_COLOR}" \
+      --line-clear-color "${SWAYLOCK_LINE_CLEAR_COLOR}" \
+      --text-clear-color "${SWAYLOCK_TEXT_CLEAR_COLOR}" \
+      --inside-ver-color "${SWAYLOCK_INSIDE_VER_COLOR}" \
+      --ring-ver-color "${SWAYLOCK_RING_VER_COLOR}" \
+      --line-ver-color "${SWAYLOCK_LINE_VER_COLOR}" \
+      --text-ver-color "${SWAYLOCK_TEXT_VER_COLOR}" \
+      --inside-wrong-color "${SWAYLOCK_INSIDE_WRONG_COLOR}" \
+      --ring-wrong-color "${SWAYLOCK_RING_WRONG_COLOR}" \
+      --line-wrong-color "${SWAYLOCK_LINE_WRONG_COLOR}" \
+      --text-wrong-color "${SWAYLOCK_TEXT_WRONG_COLOR}" \
+      --text-caps-lock-color "${SWAYLOCK_TEXT_CAPS_LOCK_COLOR}"
     ;;
   *)
     echo "info: Unknown KBLOCK_MODE ${KBLOCK_MODE}"

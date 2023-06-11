@@ -1,10 +1,12 @@
+VERSION := "0.5.0"
+
 # Open a shell with bins in the PATH
 shell:
   PATH="$(pwd)/bin:${PATH}" bash --login
 
 # Tag the release with tito
 tag:
-  tito tag
+  tito tag --use-version '{{VERSION}}'
 
 _push_tag:
   git push origin --follow-tags
