@@ -32,7 +32,10 @@ function load-property {
 
   value="$(yq "${DOC}"' | '"${selector}" "${FILE}")"
 
-  if [ -n "${value}" ]; then
+  # TODO: Ideally I'd get yq to return a blank instead of the string "null".
+  # Unfortunately, alternatives and doc filtering combined can have strange
+  # results.
+  if [[ "${value}" != 'null' ]]; then
     ARGV+=("--${name}" "${value}")
   fi
 }

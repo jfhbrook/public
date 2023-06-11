@@ -17,9 +17,9 @@ spec:
 apiVersion: coprctl/v1alpha1
 kind: package-rubygems
 metadata:
-  name: ""
+  name: "rubygem-t"
 spec:
   copr: "jfhbrook/do-not-delete-me-2"
-  gem: "rubygem-t"
+  gem: "t"
   webhookRebuild: "on"
   maxBuilds: 10
