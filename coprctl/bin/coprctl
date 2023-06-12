@@ -337,8 +337,46 @@ function get {
           | .spec.gem = env(gem)' -P <<< "${base}"
       ;;
     package-custom)
-      log-fatal "Unsupported kind: package-custom"
-      exit 1
+      res="$(copr-cli get-package "${PROJECT}" --name "${NAME}" | yq .)"
+
+      type="package-$(yq '.source_type' <<< "${res}")"
+      name="$(yq '.name' <<< "${res}")"
+
+      if [[ "${type}" != "${TYPE}" ]]; then
+        log-fatal "unexpected type: ${type} (expected: ${TYPE})"
+        exit 1
+      fi
+
+      local script_builddeps
+      local script_chroot
+      local script_repos
+      local script_resultdir
+      local script
+
+      script_builddeps="$(yq '.source_dict.builddeps' <<< "${res}")"
+      script_chroot="$(yq '.source_dict.chroot' <<< "${res}")"
+      script_repos="$(yq -o json '.source_dict.repos' <<< "${res}")"
+      script_resultdir="$(yq -o json '.source_dict.resultdir' <<< "${res}")"
+      script="$(yq -o json '.source_dict.script' <<< "${res}")"
+
+      res="${res}" \
+      kind="${type}" \
+      name="${name}" \
+      script_builddeps="${script_builddeps}" \
+      script_chroot="${script_chroot}" \
+      script_repos="${script_repos}" \
+      script_resultdir="${script_resultdir}" \
+      script="${script}" yq '.kind = env(kind)
+          | .metadata.name = env(name)
+          | .spec = env(res)
+          | del(.spec.name)
+          | del(.spec.source_type)
+          | del(.spec.source_dict)
+          | .spec.script-builddeps = env(script_builddeps)
+          | .spec.script-chroot = env(script_chroot)
+          | .spec.script-repos = env(script_repos)
+          | .spec.script-resultdir = env(script_resultdir)
+          | .spec.script = env(script)' -P <<< "${base}"
       ;;
     permissions)
       log-fatal "not implemented: permissions"
@@ -456,8 +494,23 @@ function load-document {
     package-custom)
       load-package custom
 
-      log-fatal 'not implemented: package-custom'
-      exit 1
+      local file=''
+      local script
+
+      script="$(yq "${DOC}"' | .spec.script' "${FILENAME}")"
+
+      if [ ! -f "${script}" ]; then
+        file="$(mktemp)"
+        echo "${script}" > "${file}"
+        script="${file}"
+      fi
+
+      ARGV+=(--script "${script}")
+
+      load-property '.spec.script-chroot' script-chroot
+      load-property '.spec.script-builddeps' script-builddeps
+      load-property '.spec.script-resultdir' script-resultdir
+      load-property '.spec.script-repos' script-repos
       ;;
     permissions)
       log-fatal "not implemented: permissions"
