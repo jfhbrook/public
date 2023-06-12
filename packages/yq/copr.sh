@@ -17,7 +17,7 @@ mkdir -p "src/yq-${version}"
 # spec, we'll be OK.
 (cd "src/yq-${version}" && curl -L "https://github.com/mikefarah/yq/releases/download/v${version}/yq_linux_amd64.tar.gz" | tar -xz)
 
-# rpmbuild expects sources to be in tarballs here
+# rpmbuild expects sources to be in a tarball here
 (cd src && tar -czf "${sources}/yq-${version}-x86_64.tar.gz" .)
 
 # build the source rpm
@@ -25,4 +25,3 @@ rpmbuild --define "_topdir ${builddir}" -bs "${spec}"
 
 # put the source rpm where copr can find it + do the binary rpms
 cp "${srpms}/yq-${version}"*'.src.rpm' "${outdir}/"
-# cp "${sources}/yq-${version}-x86_64.tar.gz" "${outdir}/"
