@@ -1,0 +1,14 @@
+apiVersion: coprctl/v1alpha1
+kind: package-scm
+metadata:
+  name: coprctl
+spec:
+  auto_rebuild: true
+  ownername: jfhbrook
+  projectname: joshiverse
+  clone-url: https://github.com/jfhbrook/public
+  commit: null
+  subdir: coprctl
+  spec: coprctl.spec
+  type: git
+  method: tito

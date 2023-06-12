@@ -1,5 +1,21 @@
+# Lint with shellcheck
 lint:
   shellcheck ./bin/coprctl
 
-run:
-  ./bin/coprctl apply -f ./test.yml --dry-run server
+# Open a shell with bin in the PATH
+shell:
+  PATH="$(pwd)/bin:${PATH}" bash --login
+
+# Tag the release with tito
+tag:
+  tito tag --use-version '{{VERSION}}'
+
+_push_tag:
+  git push origin --follow-tags
+
+# Apply copr configuration
+apply:
+  ./bin/coprctl apply -f ./copr.yml
+
+# Publish the release with tito
+publish: tag _push_tag
