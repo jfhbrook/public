@@ -1,0 +1,14 @@
+apiVersion: coprctl/v1alpha1
+kind: package-scm
+metadata:
+  name: korbenware
+spec:
+  auto_rebuild: true
+  ownername: jfhbrook
+  projectname: joshiverse
+  clone-url: https://github.com/jfhbrook/public
+  commit: null
+  subdir: korbenware
+  spec: korbenware.spec
+  type: git
+  method: tito

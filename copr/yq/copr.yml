@@ -1,0 +1,17 @@
+apiVersion: coprctl/v1alpha1
+kind: package-scm
+metadata:
+  name: yq
+spec:
+  auto_rebuild: false
+  id: 2109964
+  latest_build: null
+  latest_succeeded_build: null
+  ownername: jfhbrook
+  projectname: joshiverse
+  clone-url: https://github.com/jfhbrook/public
+  commit: null
+  subdir: copr/yq
+  spec: yq.spec
+  type: git
+  method: tito

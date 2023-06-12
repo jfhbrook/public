@@ -14,9 +14,9 @@
 - [X] make get/apply match for package-pypi
 - [X] get/save package-scm (fortune-jfhbrook)
 - [X] make get/apply match for package-scm
-- [ ] log in w/ copr-cli
-- [ ] test/fix apply for python-pyee
-- [ ] test/fix apply for fortune-jfhbrook
+- [X] log in w/ copr-cli
+- [X] test/fix apply for python-pyee
+- [X] test/fix apply for fortune-jfhbrook
 - [ ] create a package-rubygems (t)
 - [ ] make get/apply match for package-rubygems
 - [ ] get/save/apply package-rubygems
