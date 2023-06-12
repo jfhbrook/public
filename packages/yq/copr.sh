@@ -8,4 +8,4 @@ mkdir -p "${sources}"
 
 curl -L "https://github.com/mikefarh/yq/releases/download/v${version}/yq_linux_amd64.tar.gz" -o "${sources}/yq_linux_amd64.tar.gz"
 
-cd "${outdir}" && rpmbuild -bs "${spec}"
+rpmbuild -bs "${spec}"
