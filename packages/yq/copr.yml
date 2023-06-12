@@ -12,3 +12,4 @@ spec:
   spec: yq.spec
   type: git
   method: make_srpm
+  enable_net: true
