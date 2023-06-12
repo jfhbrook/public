@@ -25,4 +25,4 @@ rpmbuild --define "_topdir ${builddir}" -bs "${spec}"
 
 # put the source rpm where copr can find it + do the binary rpms
 cp "${srpms}/yq-${version}"*'.src.rpm' "${outdir}/"
-cp "${sources}/yq-${version}-x86_64.tar.gz" "${outdir}/"
+# cp "${sources}/yq-${version}-x86_64.tar.gz" "${outdir}/"
