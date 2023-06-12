@@ -51,6 +51,12 @@ install -p -m 755 bin/kbscreenshot %{buildroot}%{_bindir}
 
 
 %changelog
+* Sun Jun 11 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.5.1-1
+- new package built with tito
+
+* Sun Jun 11 2023 Josh Holbrook <josh.holbrook@gmail.com>
+- new package built with tito
+
 * Sun Jun 11 2023 Josh Holbrook <josh.holbrook@gmail.com>
 - new package built with tito
 
