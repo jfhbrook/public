@@ -1,14 +1,14 @@
 apiVersion: coprctl/v1alpha1
 kind: package-scm
 metadata:
-  name: coprctl
+  name: yq
 spec:
   auto_rebuild: false
   ownername: jfhbrook
   projectname: joshiverse
   clone-url: https://github.com/jfhbrook/public
-  commit: main
-  subdir: coprctl
-  spec: coprctl.spec
+  commit: null
+  subdir: packages/yq
+  spec: yq.spec
   type: git
   method: make_srpm
