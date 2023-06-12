@@ -5,10 +5,8 @@ License: MIT
 Summary: a portable command-line YAML, JSON, XML, CSV, TOML and properties processor
 
 URL: https://github.com/mikefarah/yq
-Source0: %{name}-%{version}.tar.gz
+Source0: ./yq_linux_amd64.tar.gz
 BuildArch: x86_64
-
-BuildRequires: curl
 
 %description
 yq is a portable command-line YAML, JSON, XML, CSV, TOML and properties processor
@@ -20,8 +18,7 @@ yq is a portable command-line YAML, JSON, XML, CSV, TOML and properties processo
 
 
 %build
-curl -L https://github.com/mikefarah/yq/releases/download/v%{version}/yq_linux_amd64.tar.gz -o release.tar.gz
-tar -xzf release.tar.gz
+tar -xzf %{source0}
 
 
 %install
