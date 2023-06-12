@@ -1,6 +1,8 @@
 # Test building the main branch with tito
 test:
-  spec="$(pwd)/yq.spec" outdir="$(pwd)" make -f .copr/Makefile
+  mkdir -p ./builddir
+  builddir="$(pwd)/builddir" spec="$(pwd)/yq.spec" outdir="$(pwd)" make -f ../../.copr/Makefile
+  rm -rf ./builddir
 
 # Apply copr configuration
 apply:
