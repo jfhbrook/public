@@ -2,6 +2,9 @@
 test:
   mkdir -p ./builddir
   builddir="$(pwd)/builddir" spec="$(pwd)/yq.spec" outdir="$(pwd)" make -f ../../.copr/Makefile
+
+# Clean up the builddir
+clean:
   rm -rf ./builddir
 
 # Apply copr configuration

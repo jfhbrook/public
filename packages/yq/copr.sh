@@ -1,3 +1,11 @@
 #!/usr/bin/env bash
 
-rpmbuild --define "_rpmdir ${outdir}" -bs "${spec}"
+builddir="${builddir:-$(rpmbuild --eval '%{_topdir}')}/"
+sources="${builddir}SOURCES/"
+version="$(cat "${spec}"  | grep -E '^Version: ' | sed 's/^Version: //')"
+
+mkdir -p "${sources}"
+
+curl -L "https://github.com/mikefarh/yq/releases/download/v${version}/yq_linux_amd64.tar.gz" -o "${sources}/yq-${version}-x86_64.tar.gz"
+
+rpmbuild --define "_topdir ${builddir}" --define "_rpmdir ${outdir}" -bs "${spec}"
