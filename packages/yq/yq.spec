@@ -18,7 +18,6 @@ yq is a portable command-line YAML, JSON, XML, CSV, TOML and properties processo
 
 
 %build
-tar -xzf %{source0}
 
 
 %install
