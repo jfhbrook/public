@@ -18,7 +18,7 @@ yq is a portable command-line YAML, JSON, XML, CSV, TOML and properties processo
 %prep
 %autosetup
 curl -L https://github.com/mikefarah/yq/releases/download/v%{version}/yq_linux_amd64.tar.gz -o yq-%{version}-x86_64.tar.gz
-tar -xzf yq-%{version}-x86_64
+tar -xzf yq-%{version}-x86_64.tar.gz
 
 
 %build
