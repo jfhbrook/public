@@ -40,13 +40,36 @@ Usage:
 Use "coprctl <command> --help" for more information about a given command.'
 
 function main {
-  NAMESPACE="jfhbrook/joshiverse"  # TODO: manage this in a config of contexts
+  NAMESPACE=""
   COMMAND=""
   TYPE=""
   NAME=""
 
   DRY_RUN="none"
   FILENAME=""
+
+  local apiVersion
+  local kind
+
+  apiVersion="$(yq '.apiVersion' ~/.config/coprctl/config.yml)"
+  kind="$(yq '.kind' ~/.config/coprctl/config.yml)"
+
+  if [ -f ~/.config/coprctl/config.yml ]; then
+    if [[ "${apiVersion}" != 'coprctl/v1alpha1' ]]; then
+      log-fatal "Unknown apiVersion: ${apiVersion}"
+      log-info "Supported versions are: coprctl/v1aplha1"
+      exit 1
+    fi
+
+    if [[ "${kind}" != 'config' ]]; then
+      log-fatal "Unknown kind: ${kind}"
+      log-info "Kind must be: config"
+      exit 1
+    fi
+
+    NAMESPACE="$(yq '.spec.namespace' ~/.config/coprctl/config.yml)"
+    PROJECT="$(yq '.spec.project' ~/.config/coprctl/config.yml)"
+  fi
 
   local show_help=""
 
@@ -57,9 +80,16 @@ function main {
         shift
         ;;
       -n|--namespace)
-        NAMESPACE="${1}"
+        NAMESPACE="${2}"
+        shift
         shift
         ;;
+      -p|--project)
+        PROJECT="${2}"
+        shift
+        shift
+        ;;
+
       --dry-run)
         if [[ "${2}" =~ ^(none|server|client)$ ]]; then
           DRY_RUN="${2}"
@@ -76,7 +106,7 @@ function main {
         shift
         ;;
       -*)
-        log-fatal "unknown option: ${1}"
+        log-fatal "Unknown option: ${1}"
         exit 1
         ;;
       *)
@@ -90,15 +120,15 @@ function main {
           NAME="${1}"
           shift
         else
-          log-fatal "unknown argument: ${1}"
+          log-fatal "Unknown argument: ${1}"
           exit 1
         fi
         ;;
     esac
   done
 
-  log-debug "command: ${COMMAND:-NULL}"
-  log-debug "type: ${TYPE:-NULL}"
+  log-debug "Command: ${COMMAND:-NULL}"
+  log-debug "Type: ${TYPE:-NULL}"
 
   case "${COMMAND}" in
     get)
@@ -123,9 +153,14 @@ function main {
       fi
       api-resources
       ;;
+    config)
+      log-fatal "Config management is not supported."
+      log-info "(Try editing ~/.config/coprctl/config.yml in a text editor)"
+      exit 1
+      ;;
     *)
       if [ -n "${COMMAND}" ]; then
-        log-error "unknown command: ${COMMAND}"
+        log-error "Unknown command: ${COMMAND}"
       fi
       echo "${HELP_MAIN}"
       exit
@@ -154,6 +189,8 @@ function get {
   local type
   local name
 
+  local packagename
+
   case "${TYPE}" in
     project)
       # NOTE: Projects don't return an easily parseable format and most of the
@@ -166,12 +203,12 @@ function get {
       # TODO: This shows a yaml representation - great! - but I haven't
       # implemented the apply half of this, and I'd expect the format to change
       # significantly
-      res="$(copr-cli get-chroot "${NAMESPACE}/${NAME}" | yq .)"
+      res="$(copr-cli get-chroot "${NAMESPACE}/${PROJECT}/${NAME}" | yq .)"
 
-      res="${res}" name="${NAME}" yq '.kind = "chroot" | .meta.name = env(name) | .spec = env(res) | del(.spec.name)' -P <<< "${base}"
+      res="${res}" name="${NAME}" yq '.kind = "chroot" | .metadata.dname = env(name) | .spec = env(res) | del(.spec.name)' -P <<< "${base}"
       ;;
-    package-*)
-      res="$(copr-cli get-package "${NAMESPACE}" --name "${NAME}" | yq .)"
+    package-pypi)
+      res="$(copr-cli get-package "${PROJECT}" --name "${NAME}" | yq .)"
 
       type="package-$(yq '.source_type' <<< "${res}")"
       name="$(yq '.name' <<< "${res}")"
@@ -181,7 +218,97 @@ function get {
         exit 1
       fi
 
-      res="${res}" kind="${type}" name="${name}" yq '.kind = env(kind) | .meta.name = env(name) | .spec = env(res) | del(.spec.name)' -P <<< "${base}"
+      local packagename
+      local packageversion
+      local pythonversions
+      local spec_generator
+      local template
+
+      packagename="$(yq '.source_dict.pypi_package_name' <<< "${res}")"
+      packageversion="$(yq '.source_dict.pypi_package_version' <<< "${res}")"
+      pythonversions="$(yq '.source_dict.python_versions' <<< "${res}")"
+      spec_generator="$(yq '.source_dict.spec_generator' <<< "${res}")"
+      template="$(yq '.source_dict.spec_template' <<< "${res}")"
+
+      res="${res}" \
+      kind="${type}" \
+      name="${name}" \
+      packagename="${packagename}" \
+      packageversion="${packageversion}" \
+      pythonversions="${pythonversions}" \
+      spec_generator="${spec_generator}" \
+      template="${template}" yq '
+        .kind = env(kind)
+          | .metadata.name = env(name)
+          | .spec = env(res)
+          | del(.spec.name)
+          | del(.spec.source_type)
+          | del(.spec.source_dict)
+          | .spec.packagename = env(packagename)
+          | .spec.packageversion = env(packageversion)
+          | .spec.pythonversions = env(pythonversions)
+          | .spec.spec-generator = env(spec_generator)
+          | .spec.template = env(template)' -P <<< "${base}"
+      ;;
+    package-scm)
+      res="$(copr-cli get-package "${PROJECT}" --name "${NAME}" | yq .)"
+
+      type="package-$(yq '.source_type' <<< "${res}")"
+      name="$(yq '.name' <<< "${res}")"
+
+      if [[ "${type}" != "${TYPE}" ]]; then
+        log-fatal "unexpected type: ${type} (expected: ${TYPE})"
+        exit 1
+      fi
+
+      local clone_url
+      local commit
+      local subdir
+      local spec
+      local scm_type
+      local method
+
+      clone_url="$(yq '.source_dict.clone_url' <<< "${res}")"
+      commit="$(yq '.source_dict.commitish' <<< "${res}")"
+      subdir="$(yq '.source_dict.subdirectory' <<< "${res}")"
+      spec="$(yq '.source_dict.spec' <<< "${res}")"
+      scm_type="$(yq '.source_dict.type' <<< "${res}")"
+      method="$(yq '.source_dict.source_build_method' <<< "${res}")"
+
+      res="${res}" \
+      kind="${type}" \
+      name="${name}" \
+      clone_url="${clone_url}" \
+      commit="${commit}" \
+      subdir="${subdir}" \
+      spec="${spec}" \
+      scm_type="${scm_type}" \
+      method="${method}" yq '
+        .kind = env(kind)
+          | .metadata.name = env(name)
+          | .spec = env(res)
+          | del(.spec.name)
+          | del(.spec.source_type)
+          | del(.spec.source_dict)
+          | .spec.clone-url = env(clone_url)
+          | .spec.commit = env(commit)
+          | .spec.subdir = env(subdir)
+          | .spec.spec = env(spec)
+          | .spec.type = env(scm_type)
+          | .spec.method = env(method)' -P <<< "${base}"
+
+      ;;
+    package-distgit)
+      log-fatal "Unsupported kind: package-distgit"
+      exit 1
+      ;;
+    package-rubygems)
+      log-fatal "Unsupported kind: package-rubygems"
+      exit 1
+      ;;
+    package-custom)
+      log-fatal "Unsupported kind: package-custom"
+      exit 1
       ;;
     permissions)
       log-fatal "not implemented: permissions"
@@ -279,9 +406,12 @@ function load-document {
       ;;
     package-scm)
       load-package scm
-
-      log-fatal 'not implemented: package-scm'
-      exit 1
+      load-property '.spec.clone-url' clone-url
+      load-property '.spec.commit' commit
+      load-property '.spec.subdir' subdir
+      load-property '.spec.spec' spec
+      load-property '.spec.type' type
+      load-property '.spec.method' method
       ;;
     package-distgit)
       load-package distgit
@@ -342,7 +472,7 @@ function load-project {
   local name
   local action="modify"
 
-  name="$(yq "${DOC}"' | .metadata.name' "${FILENAME}")"
+  name="$(yq "${DOC}"' | .metadata.ata.name' "${FILENAME}")"
 
   if [[ "${DRY_RUN}" == 'client' ]]; then
     log-info 'dry-run:' copr-cli get "${name}"
@@ -384,12 +514,11 @@ function load-package {
   local name
   local action
 
-  # TODO: should this property be on metadata?
-  copr="$(yq "${DOC}"' | .spec.copr' "${FILENAME}")"
+  # TODO: should this property be on.metadata.ata?
+  copr="$(yq "${DOC}"' | .spec.projectname' "${FILENAME}")"
   name="$(yq "${DOC}"' | .metadata.name' "${FILENAME}")"
 
   action="edit-package-${type}"
-
 
   if [[ "${DRY_RUN}" == 'client' ]]; then
     log-info 'dry-run:' copr-cli get-package "${copr}" --name "${name}"
