@@ -11,4 +11,4 @@ curl -L "https://github.com/mikefarah/yq/releases/download/v${version}/yq_linux_
 
 rpmbuild --define "_topdir ${builddir}" -bs "${spec}"
 
-cp "${srpms}/yq-${version}-x86_64.tar.gz" "${outdir}/"
+cp "${srpms}/yq-${version}"*'.src.rpm' "${outdir}/"
