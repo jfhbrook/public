@@ -1,5 +1,5 @@
 Name: korbenware
-Version: 0.5.0
+Version: 0.5.1
 Release: 1%{?dist}
 License: MPL-2.0
 Summary: linux/unix desktop cli software
@@ -51,6 +51,9 @@ install -p -m 755 bin/kbscreenshot %{buildroot}%{_bindir}
 
 
 %changelog
+* Sun Jun 11 2023 Josh Holbrook <josh.holbrook@gmail.com>
+- new package built with tito
+
 * Sat Jun 10 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.5.0-1
 - add semantic ui color properties in kblock (initial support)
   (josh.holbrook@gmail.com)
