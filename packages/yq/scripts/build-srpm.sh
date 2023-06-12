@@ -16,10 +16,11 @@ mkdir -p "${builddir}/SOURCES"
 mkdir -p "${sources}"
 
 if [ -f ./scripts/download-sources.sh ]; then
-  (cd "${sources}" && name="${name}" \
+  sources="${sources}" \
+    name="${name}" \
     version="${version}" \
     buildarch="${buildarch}" \
-    bash ${scriptdir}/download-sources.sh)
+    bash ${scriptdir}/download-sources.sh
 fi
   
 (cd src && tar -czf "${builddir}/SOURCES/${name}-${version}-${buildarch}.tar.gz" .)

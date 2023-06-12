@@ -1,14 +1,14 @@
 # Test that we can successfully build the rpm
 test:
   mkdir -p ./builddir
-  builddir="$(pwd)/builddir" spec="$(pwd)/yq.spec" outdir="$(pwd)" make -f ../../.copr/Makefile
-  rpmbuild --rebuild yq-*.src.rpm
+  builddir="$(pwd)/builddir" spec="$(pwd)/$(ls *.spec)" outdir="$(pwd)" make -f ../../.copr/Makefile
+  rpmbuild --rebuild "$(ls *.spec | sed 's/\.spec//')-"*.src.rpm
 
 # Clean up files created from testing
 clean:
   rm -rf ./src
   rm -rf ./builddir
-  rm -f yq-*.src.rpm
+  rm -f "$(ls *.spec | sed 's/\.spec//')-"*.src.rpm
 
 # Apply copr configuration
 apply:
@@ -16,4 +16,4 @@ apply:
 
 publish:
   git push origin
-  copr build-package jfhbrook/joshiverse --name yq
+  copr build-package jfhbrook/joshiverse --name "$(ls *.spec | sed 's/\.spec//')"
