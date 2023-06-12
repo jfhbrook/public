@@ -1,5 +1,5 @@
 Name: korbenware
-Version: 0.1.0
+Version: 0.1.1
 Release: 1%{?dist}
 License: MIT
 Summary: infrastructure-as-code for COPR
@@ -36,3 +36,5 @@ install -p -m 755 bin/coprctl %{buildroot}%{_bindir}
 
 
 %changelog
+* Sun Jun 11 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.1.1-1
+- First version of coprctl (josh.holbrook@gmail.com)
