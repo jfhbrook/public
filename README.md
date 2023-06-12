@@ -15,12 +15,18 @@ For my GPL-compatible free software, check out [my GPL-compatible software repos
 This project contains my masters thesis. It is licensed under the Community
 Research and Academic Programming License v0 Beta 0.
 
+### coprctl
+
+A bash script, using `copr-cli` and `yq`, to implement an infrastructure-as-code
+pattern similar to `kubectl apply`. It is licensed MIT.
+
 ### fortune-jfhbrook
 
 This is a collection of (small, but hopefully will grow) fortune files. I
 intend to put them up on COPR but haven't done it yet.
 
 ### korbenware
+
 A collection of scripts I use to glue my Linux desktop and general CLI experience
 together. Available under a MPL v2.0 license.
 
