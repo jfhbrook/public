@@ -1,0 +1,3 @@
+# Apply copr configuration
+apply:
+  coprctl apply -f ./copr.yml

@@ -17,10 +17,10 @@
 - [X] log in w/ copr-cli
 - [X] test/fix apply for python-pyee
 - [X] test/fix apply for fortune-jfhbrook
-- [ ] create a package-rubygems (t)
-- [ ] make get/apply match for package-rubygems
-- [ ] get/save/apply package-rubygems
-- [ ] add delete command (support -f)
+- [X] create a package-rubygems (t)
+- [X] make get/apply match for package-rubygems
+- [X] get/save/apply package-rubygems
+- [X] add delete command (support -f)
 - [ ] write real README
 - [ ] make a tito-based COPR
 - [ ] install via COPR

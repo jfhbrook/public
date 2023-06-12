@@ -1,0 +1,7 @@
+apiVersion: coprctl/v1alpha1
+kind: package-rubygems
+metadata:
+  name: "rubygem-t"
+spec:
+  projectname: "joshiverse"
+  gem: "t"

@@ -89,7 +89,6 @@ function main {
         shift
         shift
         ;;
-
       --dry-run)
         if [[ "${2}" =~ ^(none|server|client)$ ]]; then
           DRY_RUN="${2}"
@@ -145,6 +144,14 @@ function main {
       fi
 
       apply
+      ;;
+    delete)
+      if [ -n "${show_help}" ]; then
+        echo "${HELP_DELETE}"
+        exit
+      fi
+
+      delete
       ;;
     api-resources)
       if [ -n "${show_help}" ]; then
@@ -303,8 +310,31 @@ function get {
       exit 1
       ;;
     package-rubygems)
-      log-fatal "Unsupported kind: package-rubygems"
-      exit 1
+      res="$(copr-cli get-package "${PROJECT}" --name "${NAME}" | yq .)"
+
+      type="package-$(yq '.source_type' <<< "${res}")"
+      name="$(yq '.name' <<< "${res}")"
+
+      if [[ "${type}" != "${TYPE}" ]]; then
+        log-fatal "unexpected type: ${type} (expected: ${TYPE})"
+        exit 1
+      fi
+
+      local gem
+
+      gem="$(yq '.source_dict.gem_name' <<< "${res}")"
+
+      res="${res}" \
+      kind="${type}" \
+      name="${name}" \
+      gem="${gem}" yq '
+        .kind = env(kind)
+          | .metadata.name = env(name)
+          | .spec = env(res)
+          | del(.spec.name)
+          | del(.spec.source_type)
+          | del(.spec.source_dict)
+          | .spec.gem = env(gem)' -P <<< "${base}"
       ;;
     package-custom)
       log-fatal "Unsupported kind: package-custom"
@@ -472,7 +502,7 @@ function load-project {
   local name
   local action="modify"
 
-  name="$(yq "${DOC}"' | .metadata.ata.name' "${FILENAME}")"
+  name="$(yq "${DOC}"' | .metadata.name' "${FILENAME}")"
 
   if [[ "${DRY_RUN}" == 'client' ]]; then
     log-info 'dry-run:' copr-cli get "${name}"
@@ -514,7 +544,7 @@ function load-package {
   local name
   local action
 
-  # TODO: should this property be on.metadata.ata?
+  # TODO: should this property be on .metadata?
   copr="$(yq "${DOC}"' | .spec.projectname' "${FILENAME}")"
   name="$(yq "${DOC}"' | .metadata.name' "${FILENAME}")"
 
@@ -536,6 +566,110 @@ function load-package {
   load-property '.spec.webhook-rebuild' webhook-rebuild
   load-property '.spec.max-builds' max-builds
 }
+
+HELP_DELETE='
+Delete resources by file names, stdin, resources and names, or by resources and label selector.
+
+ Only one type of argument may be specified: file names, resources and names, or resources and label selector.
+
+
+Examples:
+  # Delete resources using the types and names specified in copr.yml
+  kubectl delete -f ./copr.yml
+  
+  # Delete a resource based on the type and name in the YAML passed into stdin
+  cat copr.yml | kubectl delete -f -
+  
+  # Delete the scm package foo
+  kubectl delete package-scm foo
+
+Options:
+    --namespace:
+  Set the namespace for the COPR, of the format (username|organization)/project.
+    --dry-run='"'"'none'"'"':
+	Must be "none", "server", or "client". If client strategy, only print the object that would be sent, without sending it. If server strategy, submit server-side request without persisting the resource.
+
+    -f, --filename=[]:
+	The file that contains the configurations to apply.
+
+Usage:
+  coprctl delete ([-f FILENAME] | TYPE [NAME]) [options]'
+
+function delete {
+  # TODO: This won't clean up the tmpfile on exit. It's not a huge deal - the
+  # OS should clean it up on boots - but it's *improper*.
+  if [[ "${FILENAME}" == '-' ]]; then
+    FILENAME="$(mktemp)"
+    "${FILENAME}" < /dev/stdin
+  fi
+
+  if [ -z "${FILENAME}" ]; then
+    delete-resource "${TYPE}" "${NAME}"
+  else
+    yq --no-doc 'document_index' "${FILENAME}" | while read -r i; do
+      DOC='select(document_index == '"${i}"')'
+
+      local kind
+      local apiVersion
+      local name
+
+      kind="$(yq "${DOC}"' | .kind' "./${FILENAME}")"
+
+      log-debug "kind: ${kind}"
+      apiVersion="$(yq "${DOC}"' | .apiVersion' "./${FILENAME}")"
+
+      # because we're classy like that
+      if [[ "${apiVersion}" != 'coprctl/v1alpha1' ]]; then
+        log-fatal "Unknown apiVersion: ${apiVersion}"
+        log-info "Supported versions are: coprctl/v1aplha1"
+        exit 1
+      fi
+
+      name="$(yq "${DOC}"' | .metadata.name' "${FILENAME}")"
+
+      log-debug 'doc:' "${DOC}"
+
+      delete-resource "${kind}" "${name}"
+    done
+  fi
+}
+
+function delete-resource {
+  local type="${1}"
+  local name="${2}"
+
+  local argv=()
+
+  case "${type}" in
+    project)
+      argv+=(delete "${name}")
+      ;;
+    chroot)
+      # NOTE: No obvious delete function for chroots
+      log-fatal "not implemented: chroot"
+      exit 1
+      ;;
+    package-*)
+      argv+=(delete-package "${PROJECT}" --name "${name}")
+      ;;
+    permissions)
+      # NOTE: No obvious delete function for permissions
+      log-fatal "not implemented: permissions"
+      exit 1
+      ;;
+    *)
+      log-fatal "unknown kind: ${type}"
+      exit 1
+      ;;
+  esac
+
+  if [[ "${DRY_RUN}" != 'none' ]]; then
+    log-info 'dry-run:' copr-cli "${argv[@]}"
+  else
+    copr-cli "${argv[@]}"
+  fi
+}
+
 
 HELP_API_RESOURCES='Print supported API resources.
 
