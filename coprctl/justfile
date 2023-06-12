@@ -8,7 +8,7 @@ shell:
 
 # Tag the release with tito
 tag:
-  tito tag --use-version '{{VERSION}}'
+  tito tag
 
 _push_tag:
   git push origin --follow-tags
