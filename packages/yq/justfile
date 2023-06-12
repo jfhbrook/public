@@ -1,14 +1,14 @@
-# Test that we can successfully build the source rpm
+# Test that we can successfully build the rpm
 test:
   mkdir -p ./builddir
   builddir="$(pwd)/builddir" spec="$(pwd)/yq.spec" outdir="$(pwd)" make -f ../../.copr/Makefile
   rpmbuild --rebuild yq-*.src.rpm
-  echo "ok"
 
-# Clean up the builddir
+# Clean up files created from testing
 clean:
   rm -rf ./src
   rm -rf ./builddir
+  rm -f yq-*.src.rpm
 
 # Apply copr configuration
 apply:
