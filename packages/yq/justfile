@@ -5,3 +5,7 @@ test:
 # Apply copr configuration
 apply:
   coprctl apply -f ./copr.yml
+
+publish:
+  git push origin
+  copr build-package jfhbrook/joshiverse --name yq
