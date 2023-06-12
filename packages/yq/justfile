@@ -1,7 +1,9 @@
-# Test building the main branch with tito
+# Test that we can successfully build the source rpm
 test:
   mkdir -p ./builddir
   builddir="$(pwd)/builddir" spec="$(pwd)/yq.spec" outdir="$(pwd)" make -f ../../.copr/Makefile
+  rpmbuild --rebuild yq-*.src.rpm
+  echo "ok"
 
 # Clean up the builddir
 clean:
