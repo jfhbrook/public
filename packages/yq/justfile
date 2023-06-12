@@ -5,6 +5,7 @@ test:
 
 # Clean up the builddir
 clean:
+  rm -rf ./src
   rm -rf ./builddir
 
 # Apply copr configuration
