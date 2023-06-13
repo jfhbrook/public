@@ -1,10 +1,20 @@
-# Test that we can successfully build the rpm
-test:
-  mkdir -p ./builddir
-  builddir="$(pwd)/builddir" spec="$(pwd)/$(ls *.spec)" outdir="$(pwd)" make -f ../../.copr/Makefile
-  rpmbuild --rebuild "$(ls *.spec | sed 's/\.spec//')-"*.src.rpm
+SPEC := "yq.spec"
 
-# Clean up files created from testing
+lint:
+  shellcheck ./scripts/*.sh
+
+# Build the source rpm
+srpm:
+  spec="$(pwd)/{{SPEC}}" outdir="$(pwd)" make -f ../../.copr/Makefile
+
+# Verify the source rpm
+verify:
+  rpmbuild --rebuild "$(echo '{{SPEC}}' | sed 's/\.spec//')-"*.src.rpm
+
+# Build and verify
+test: srpm verify
+
+# Clean files created from building and verifying
 clean:
   rm -rf ./src
   rm -rf ./builddir
