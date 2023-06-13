@@ -7,7 +7,7 @@ spec:
   ownername: jfhbrook
   projectname: joshiverse
   clone-url: https://github.com/jfhbrook/public
-  commit: null
+  commit: rpm-downloader
   subdir: packages/yq
   spec: yq.spec
   type: git
