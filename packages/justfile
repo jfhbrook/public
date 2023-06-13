@@ -1,0 +1,2 @@
+apply:
+  coprctl apply -f registry.yml
