@@ -5,6 +5,7 @@ set -euxo pipefail
 # In most cases, we'll be generating a spec based on a .in file. But in the
 # case where we run multiple scripts like this, the spec might already be
 # "partially" generated.
+# shellcheck disable=SC2154
 if [ -f "${spec}" ]; then
   template="${spec}"
 else
@@ -35,10 +36,12 @@ function fetch {
 
   if [[ ${url} =~ (https?|ftp|file):// ]]; then
     basename="$(basename "${url}")"
+    # shellcheck disable=SC2154
     dirname="${downloaddir}/${index}/${name}-${version}"
     filename="${dirname}/${basename}"
 
     mkdir -p "${dirname}"
+    # shellcheck disable=SC2154
     mkdir -p "${sourcedir}"
 
     # For sources which are already tarballs, keep the extension the same. But
@@ -66,9 +69,7 @@ function fetch {
   fi
 }
 
-# we can use rpmspec -P to render the macros in yq.spec.in. Note that this
-# means you can't get the original line number - nice try!
-rpmspec -P yq.spec.in | awk 'match($0, /^( *Source([0-9]): *)(.*)/, groups) { print groups[1] "\t" groups[2] "\t" groups[3] }' | while read -r line; do
+rpmspec -P "${template}" | awk 'match($0, /^( *Source([0-9]): *)(.*)/, groups) { print groups[1] "\t" groups[2] "\t" groups[3] }' | while read -r line; do
   set +x
   label="$(echo "${line}" | cut -d$'\t' -f1)"
   index="$(echo "${line}" | cut -d$'\t' -f2)"

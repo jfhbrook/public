@@ -1,2 +1,2 @@
 lint:
-  shellcheck bin/*.sh
+  shellcheck bin/*

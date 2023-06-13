@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -euxo pipefail
+
+
+
+# In most cases, we'll be generating a spec based on a .in file. But in the
+# case where we run multiple scripts like this, the spec might already be
+# "partially" generated.
+# shellcheck disable=SC2154
+if [ -f "${spec}" ]; then
+  template="${spec}"
+else
+  template="${spec}.in"
+fi
+
+GITHUB_REPO="${1}"
+
+# Pull the latest version from github releases
+version="$(curl -H 'accept: application/vnd.github+json' -H "X-GitHub-Api-Version 2022-11-28" "https://api.github.com/repos/${GITHUB_REPO}/releases" | jq -r '.[0].tag_name' | sed 's/^v//')"
+
+awk -v "version=${version}" \
+  '!/^ *Version: *.*/ { print $0 }
+  match($0, /^( *Version: *)(.*)/, groups) { print groups[1] version }' < "${template}" > "${spec}.out"
+
+mv "${spec}.out" "${spec}"
