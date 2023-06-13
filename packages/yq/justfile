@@ -26,6 +26,6 @@ clean:
 apply:
   coprctl apply -f ./copr.yml
 
-publish:
+publish: apply
   git push origin
   copr build-package jfhbrook/joshiverse --name "$(sed 's/\.spec//' <<< '{{SPEC}}')"
