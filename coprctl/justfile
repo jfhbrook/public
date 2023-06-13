@@ -17,5 +17,6 @@ _push_tag:
 apply:
   ./bin/coprctl apply -f ./copr.yml
 
-# Publish the release with tito
+# Publish the release with tito + kick off build
 publish: tag _push_tag
+  copr build-package jfhbrook/joshiverse --name coprctl
