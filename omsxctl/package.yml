@@ -3,6 +3,7 @@ kind: package-custom
 metadata:
   name: rust-omsxctl
 spec:
+  projectname: joshiverse
   auto_rebuild: false
   script-builddeps: rust2rpm rust-anyhow-devel rust-clap+derive-devel rust-colored-devel rust-glob-devel rust-rustyline-devel rust-tracing-devel rust-tracing-subscriber-devel rust-xml-rs-devel
   script-chroot: fedora-latest-x86_64

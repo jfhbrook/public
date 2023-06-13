@@ -3,5 +3,5 @@ kind: package-rubygems
 metadata:
   name: "rubygem-t"
 spec:
-  projectname: "joshiverse"
+  projectname: "jfhbrook/joshiverse"
   gem: "t"

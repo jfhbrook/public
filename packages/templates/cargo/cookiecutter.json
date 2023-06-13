@@ -1,0 +1,8 @@
+{
+  "crate": "crate",
+  "version": "",
+  "builddeps": "",
+  "repos": "",
+  "chroot": "fedora-latest-x86_64",
+  "copr": "jfhbrook/joshiverse"
+}

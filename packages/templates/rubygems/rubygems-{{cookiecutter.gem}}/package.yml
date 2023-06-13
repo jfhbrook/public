@@ -1,0 +1,7 @@
+apiVersion: coprctl/v1alpha1
+kind: package-rubygems
+metadata:
+  name: "rubygem-{{cookiecutter.gem}}"
+spec:
+  projectname: "{{cookiecutter.copr}}"
+  gem: "{{cookiecutter.gem}}"

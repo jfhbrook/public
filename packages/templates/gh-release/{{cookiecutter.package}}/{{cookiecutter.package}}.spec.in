@@ -1,0 +1,35 @@
+Name: {{cookiecutter.package}}
+Version: VERSION
+Release: 1%{?dist}
+License: MIT
+Summary: {{cookiecutter.summary}}
+
+URL: https://github.com/{{cookiecutter.gh_repository}}
+Source0: https://github.com/{{cookiecutter.gh_repository}}/releases/download/v%{version}/{{cookiecutter.artifact}}
+BuildArch: x86_64
+
+%description
+{{cookiecutter.description}}
+
+%global debug_package %{nil}
+
+%prep
+%autosetup
+
+
+%build
+tar -xzf '{{cookiecutter.artifact}}'
+
+# TODO: You will need to edit this to copy/install your actual artifact files!
+%install
+mkdir -p %{buildroot}%{_bindir}
+install -p -m 755 '{{cookiecutter.package}}' '%{buildroot}%{_bindir}/{{cookiecutter.package}}'
+
+%check
+
+# TODO: You will need to edit this to list your actual artifact files!
+%files
+%{_bindir}/{{cookiecutter.package}}
+
+%changelog
+

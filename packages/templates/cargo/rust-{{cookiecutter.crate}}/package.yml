@@ -1,0 +1,17 @@
+apiVersion: coprctl/v1alpha1
+kind: package-custom
+metadata:
+  name: {{cookiecutter.crate}}
+spec:
+  projectname: "{{cookiecutter.copr}}"
+  auto_rebuild: false
+  script-builddeps: "rust2rpm{% if cookiecutter.builddeps %} {{builddeps}}{% endif %}"
+  script-chroot: "{{cookiecutter.chroot}}"
+  script-repos: "{{cookiecutter.repos}}"
+  script-resultdir: ""
+  script: |
+    #!/usr/bin/env bash
+
+    set -euxo pipefail
+
+    rust2rpm -s -t fedora '{{cookiecutter.crate}}'{% if cookiecutter.version %} '{{cookiecutter.version}}'{% endif %}

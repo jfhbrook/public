@@ -21,3 +21,11 @@ point for these builds, plus a bunch of supporting scripts, can be found here:
 
 Of particular interest will be the `download-sources` script, which downloads
 source files based on the `Source[0-9]` entries in a `.spec.in` file.
+
+## Templates
+
+The <./templates> directory contains some cookiecutter templates! Try running
+`just new TEMPLATE_NAME` to generate a new package.
+
+Note that there isn't a template for tito projects, since those are going to
+be pretty custom. Consider copy-pasting out of `korbenware` or `coprctl`.
