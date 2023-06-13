@@ -23,4 +23,14 @@ spec:
 
     version="$(npm view "${name}" version)"
 
-    npx npm2rpm -n "${name}" -v "${version}" -s "${strategy}" -o "$(pwd)"
+    npx npm2rpm -n "${name}" -v "${version}" -s "${strategy}"
+
+    # TODO: -o flag?
+    mv npm2rpm/* ./
+    rmdir npm2rpm
+
+    # npm2rpm tries to be clever and list a specific version of the npm
+    # package, unfortunately in f38 that package doesn't actually put npm
+    # on the PATH
+    cat "nodejs-${name}.spec" | sed 's/BuildRequires: %{?scl_prefix_nodejs}npm/BuildRequires: nodejs-npm/' > modified.spec
+    mv modified.spec "nodejs-${name}.spec"
