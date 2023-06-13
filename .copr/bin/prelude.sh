@@ -18,3 +18,7 @@ export PATH="${copr_home}/bin:${PATH}"
 mkdir -p "${topdir}"
 mkdir -p "${sourcedir}"
 mkdir -p "${downloaddir}"
+
+# Installs jq on the COPR build instance. This will fail locally, but you
+# should have this installed anyway.
+if ! which jq; then dnf install -y jq; fi
