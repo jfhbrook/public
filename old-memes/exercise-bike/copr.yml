@@ -1,0 +1,26 @@
+apiVersion: coprctl/v1alpha1
+kind: package-custom
+metadata:
+  name: nodejs-exercise-bike
+spec:
+  auto_rebuild: false
+  id: 2115974
+  latest_build: null
+  latest_succeeded_build: null
+  ownername: jfhbrook
+  projectname: joshiverse
+  script-builddeps: nodejs-npm
+  script-chroot: fedora-latest-x86_64
+  script-repos: ""
+  script-resultdir: ""
+  script: |
+    #!/usr/bin/env bash
+
+    set -euxo pipefail
+
+    name=exercise-bike
+    strategy=bundle
+
+    version="$(npm view "${name}" version)"
+
+    npx npm2rpm -n "${name}" -v "${version}" -s "${strategy}" -o "$(pwd)"

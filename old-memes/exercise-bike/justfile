@@ -1,0 +1,5 @@
+# Build COPR package
+copr:
+  coprctl apply -f ./copr.yml
+  copr build-package jfhbrook/joshiverse --name nodejs-exercise-bike
+
