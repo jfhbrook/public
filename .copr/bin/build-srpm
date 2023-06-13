@@ -2,4 +2,4 @@
 
 set -euxo pipefail
 
-rpmbuild --define "_topdir ${builddir}" --define "_srcrpmdir ${outdir}" -bs "${spec}"
+rpmbuild --define "_topdir ${topdir}" --define "_srcrpmdir ${outdir}" -bs "${spec}"

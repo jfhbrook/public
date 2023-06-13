@@ -2,20 +2,21 @@ SPEC := "yq.spec"
 
 # Build the source rpm
 srpm:
-  spec="$(pwd)/{{SPEC}}" outdir="$(pwd)" builddir="$(pwd)/build" downloaddir="$(pwd)/downloads" make -f ../../.copr/Makefile
+  spec="$(pwd)/{{SPEC}}" outdir="$(pwd)" topdir="$(pwd)/build" downloaddir="$(pwd)/downloads" make -f ../../.copr/Makefile srpm
 
 # Verify the source rpm
 verify:
-  spec="$(pwd)/{{SPEC}}" outdir="$(pwd)" builddir="$(pwd)/build" downloaddir="$(pwd)/downloads" make -f ../../.copr/Makefile
+  spec="$(pwd)/{{SPEC}}" outdir="$(pwd)" topdir="$(pwd)/build" downloaddir="$(pwd)/downloads" make -f ../../.copr/Makefile verify
 
 lint:
   shellcheck ./copr/srpm.sh
 
 # Build and verify
-test: srpm verify
+test: clean srpm verify
 
 # Clean files created from building and verifying
 clean:
+  rm -f '{{SPEC}}'
   rm -rf ./build
   rm -rf ./downloads
   rm -f *.src.rpm

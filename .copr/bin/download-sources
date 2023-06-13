@@ -35,7 +35,11 @@ function fetch {
 
   if [[ ${url} =~ (https?|ftp|file):// ]]; then
     basename="$(basename "${url}")"
-    filename="${downloaddir}/${index}/${name}-${version}/${basename}"
+    dirname="${downloaddir}/${index}/${name}-${version}"
+    filename="${dirname}/${basename}"
+
+    mkdir -p "${dirname}"
+    mkdir -p "${sourcedir}"
 
     # For sources which are already tarballs, keep the extension the same. But
     # for everything else, add the extension for the tarball it contains.
@@ -52,7 +56,7 @@ function fetch {
     fi
 
     # This is the format they want!
-    (cd "${downloaddir}/${index}" && tar -xzf "${tarfile}" .)
+    (cd "${downloaddir}/${index}" && tar -czf "${tarfile}" .)
 
     # The source has been replaced with our tarfile
     echo "${tarname}"
