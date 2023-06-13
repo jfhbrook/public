@@ -1,5 +1,5 @@
 Name: coprctl
-Version: 0.1.5
+Version: 0.1.6
 Release: 1%{?dist}
 License: MIT
 Summary: infrastructure-as-code for COPR
@@ -36,6 +36,9 @@ install -p -m 755 bin/coprctl %{buildroot}%{_bindir}
 
 
 %changelog
+* Tue Jun 13 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.1.6-1
+- 
+
 * Tue Jun 13 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.1.5-1
 - coprctl now supports projects (josh.holbrook@gmail.com)
 
