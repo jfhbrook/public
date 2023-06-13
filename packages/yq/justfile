@@ -1,24 +1,25 @@
 SPEC := "yq.spec"
 
-lint:
-  shellcheck ./scripts/*.sh
-
 # Build the source rpm
 srpm:
-  spec="$(pwd)/{{SPEC}}" outdir="$(pwd)" make -f ../../.copr/Makefile
+  spec="$(pwd)/{{SPEC}}" outdir="$(pwd)" builddir="$(pwd)/build" downloaddir="$(pwd)/downloads" make -f ../../.copr/Makefile
 
 # Verify the source rpm
 verify:
-  rpmbuild --rebuild "$(echo '{{SPEC}}' | sed 's/\.spec//')-"*.src.rpm
+  spec="$(pwd)/{{SPEC}}" outdir="$(pwd)" builddir="$(pwd)/build" downloaddir="$(pwd)/downloads" make -f ../../.copr/Makefile
+
+lint:
+  shellcheck ./copr/srpm.sh
 
 # Build and verify
 test: srpm verify
 
 # Clean files created from building and verifying
 clean:
-  rm -rf ./src
-  rm -rf ./builddir
-  rm -f "$(ls *.spec | sed 's/\.spec//')-"*.src.rpm
+  rm -rf ./build
+  rm -rf ./downloads
+  rm -f *.src.rpm
+  rm -f *.tar.gz
 
 # Apply copr configuration
 apply:
@@ -26,4 +27,4 @@ apply:
 
 publish:
   git push origin
-  copr build-package jfhbrook/joshiverse --name "$(ls *.spec | sed 's/\.spec//')"
+  copr build-package jfhbrook/joshiverse --name "$(sed 's/\.spec//' <<< '{{SPEC}}')"

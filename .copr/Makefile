@@ -1,5 +1,7 @@
 SHELL = /usr/bin/env bash
 
 srpm:
-	# working directory is ./packages/{{PACKAGE}}
-	bash ./scripts/build-srpm.sh
+	bash ./copr/srpm.sh
+
+verify:
+	rpmbuild --rebuild "${outdir}/$(basename "${spec}" | sed 's/\.spec//')-"*.src.rpm
