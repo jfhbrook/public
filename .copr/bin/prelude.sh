@@ -2,12 +2,8 @@
 
 copr_home="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
 
-if [ -n "${topdir}" ]; then
-  sourcedir="${sourcedir:-$(rpmbuild --define "_topdir ${topdir}" --eval '%{_sourcedir}')}"
-else
-  topdir="${topdir:-$(rpmbuild --eval '%{_topdir}')}"
-  sourcedir="${sourcedir:-$(rpmbuild --eval '%{_sourcedir}')}"
-fi
+topdir="${topdir:-topdir:-$(rpmbuild --eval '%{_topdir}')}"
+sourcedir="${sourcedir:-$(rpmbuild --eval '%{_sourcedir}')}"
 
 export topdir
 export sourcedir
