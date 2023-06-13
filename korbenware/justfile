@@ -12,8 +12,11 @@ _push_tag:
   git push origin --follow-tags
 
 # Apply copr configuration
-apply:
-  coprctl apply -f ./copr.yml
+apply-copr:
+  coprctl apply -f ./package.yml
+
+build-copr: apply-copr
+  copr build-package jfhbrook/joshiverse --name 'korbenware'
 
 # Publish the release with tito
 publish: tag _push_tag

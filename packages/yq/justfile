@@ -23,9 +23,9 @@ clean:
   rm -f *.tar.gz
 
 # Apply copr configuration
-apply:
-  coprctl apply -f ./copr.yml
+apply-copr:
+  coprctl apply -f ./package.yml
 
-publish: apply
+build-copr: apply-copr
   git push origin
   copr build-package jfhbrook/joshiverse --name "$(sed 's/\.spec//' <<< '{{SPEC}}')"

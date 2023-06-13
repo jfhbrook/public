@@ -14,8 +14,8 @@ _push_tag:
   git push origin --follow-tags
 
 # Apply copr configuration
-apply:
-  coprctl apply -f ./copr.yml
+apply-copr:
+  coprctl apply -f ./package.yml
 
 # Publish the release with tito
-publish: tag _push_tag
+build-copr: tag _push_tag

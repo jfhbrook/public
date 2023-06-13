@@ -13,10 +13,10 @@ tag:
 _push_tag:
   git push origin --follow-tags
 
-# Apply copr configuration
-apply:
-  ./bin/coprctl apply -f ./copr.yml
+# Apply COPR configuration
+apply-copr:
+  ./bin/coprctl apply -f ./package.yml
 
-# Publish the release with tito + kick off build
-publish: tag _push_tag
+# Tag and push a release with Tito and trigger a COPR build
+build-copr: tag apply-copr _push_tag
   copr build-package jfhbrook/joshiverse --name coprctl
