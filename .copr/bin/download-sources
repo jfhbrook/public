@@ -69,19 +69,23 @@ function fetch {
   fi
 }
 
-rpmspec -P "${template}" | awk 'match($0, /^( *Source([0-9]): *)(.*)/, groups) { print groups[1] "\t" groups[2] "\t" groups[3] }' | while read -r line; do
-  set +x
-  label="$(echo "${line}" | cut -d$'\t' -f1)"
-  index="$(echo "${line}" | cut -d$'\t' -f2)"
-  url="$(echo "${line}" | cut -d$'\t' -f3)"
-  set -x
+rpmspec --define "_topdir ${topdir}" \
+  --define "_srcrpmdir ${outdir}" \
+  -P "${template}" \
+  | awk 'match($0, /^( *Source([0-9]): *)(.*)/, groups) { print groups[1] "\t" groups[2] "\t" groups[3] }' \
+  | while read -r line; do
+    set +x
+    label="$(echo "${line}" | cut -d$'\t' -f1)"
+    index="$(echo "${line}" | cut -d$'\t' -f2)"
+    url="$(echo "${line}" | cut -d$'\t' -f3)"
+    set -x
 
-  # Fetch the source, save the result to SOURCES and get the new filename
-  src="$(fetch "${index}" "${url}")"
+    # Fetch the source, save the result to SOURCES and get the new filename
+    src="$(fetch "${index}" "${url}")"
 
-  # Add a match to the awk script that will do the edit on the spec file
-  echo '/^ *Source'"${index}"': *.*/ { print "'"${label}"'" "'"${src}"'"}' >> "${script}"
-done
+    # Add a match to the awk script that will do the edit on the spec file
+    echo '/^ *Source'"${index}"': *.*/ { print "'"${label}"'" "'"${src}"'"}' >> "${script}"
+  done
 
 # At this point, we should've downloaded all the sources, putting the results
 # in the SOURCES directory, and have our awk script ready to generate our new
