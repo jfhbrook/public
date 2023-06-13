@@ -2,7 +2,7 @@
 
 copr_home="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
 
-topdir="${topdir:-topdir:-$(rpmbuild --eval '%{_topdir}')}"
+topdir="${topdir:-$(rpmbuild --eval '%{_topdir}')}"
 sourcedir="${sourcedir:-$(rpmbuild --eval '%{_sourcedir}')}"
 
 export topdir
