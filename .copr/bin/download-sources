@@ -2,105 +2,17 @@
 
 set -euxo pipefail
 
-# Logging
-
-function log-debug {
-  if [ -n "${DEBUG:-}" ]; then
-    echo 'debug:' "$@"
-  fi
-}
-
-function log-info {
-  echo 'info:' "$@"
-}
-
-function log-warn {
-  echo 'warn:' "$@"
-}
-
-function log-error {
-  echo 'error:' "$@"
-}
-
-function log-fatal {
-  echo 'fatal:' "$@"
-}
-
-# Options and args parsing
-
-TEMPLATE=''
-STAGING_DIR=''
-
-HELP='downloader.sh
-
-    given a spec, download the sources which are URLs and generate a new spec with the downloaded filenames in place of the URLs.
-
-USAGE:
-    downloader.sh TEMPLATE [FLAGS] [OPTIONS]
-
-PARAMETERS:
-    TEMPLATE    The location of a template spec file. Required.
-
-FLAGS:
-    --help    Print this help and exit
-
-OPTIONS:
-    --staging-dir DIRECTORY   A directory to put downloads in - defaults to a temporary directory.
-    --out DIRECTORY           A directory to write outputs to - defaults to .'
-
-while [[ $# -gt 0 ]]; do
-  case ${1} in
-    --help)
-      echo "${HELP}"
-      exit 0
-      ;;
-    --staging-dir)
-      STAGING_DIR="${2}"
-      shift
-      shift
-      ;;
-    --out)
-      OUT="${2}"
-      shift
-      shift
-      ;;
-    -*)
-      log-fatal "Unknown option: ${1}"
-      exit 1
-      ;;
-    *)
-      if [ -z "${TEMPLATE}" ]; then
-        TEMPLATE="${1}"
-        shift
-      else
-        log-fatal "Unknown argument: ${1}"
-        exit 1
-      fi
-      ;;
-  esac
-done
-
-if [ -z "${TEMPLATE}" ]; then
-  log-fatal "TEMPLATE is required."
-  exit 1
+# In most cases, we'll be generating a spec based on a .in file. But in the
+# case where we run multiple scripts like this, the spec might already be
+# "partially" generated.
+if [ -f "${spec}" ]; then
+  template="${spec}"
+else
+  template="${spec}.in"
 fi
 
-if [ -z "${OUT:-}" ]; then
-  OUT="$(pwd)"
-fi
-
-if [ ! -d "${STAGING_DIR}" ]; then
-  STAGING_DIR="$(mktemp -d)"
-fi
-
-NAME="$(awk '/^ *Name: */ { print $2 }' "${TEMPLATE}")"
-VERSION="$(awk '/^ *Version: */ { print $2 }' "${TEMPLATE}")"
-
-DOWNLOADS_DIR="${STAGING_DIR}/${NAME}-${VERSION}"
-SPEC="${OUT}/$(basename "${TEMPLATE}" | sed 's/.in$//')"
-SOURCE="${OUT}/${NAME}-${VERSION}
-
-mkdir -p "${DOWNLOADS_DIR}"
+name="$(awk '/^ *Name: */ { print $2 }' "${template}")"
+version="$(awk '/^ *Version: */ { print $2 }' "${template}")"
 
 # Believe it or not, procedurally generating an awk script is the most
 # straightforward way of staging the edits we want to make. 
@@ -111,17 +23,41 @@ script="$(mktemp)"
 # shellcheck disable=SC2016
 echo '!/^ *Source[0-9]: *.*/ { print $0 }' > "${script}"
 
-# Download the thing if it's a URL and print the filename
-function download {
+# Download the thing if it's a URL, bundle and create the source tarball, and
+# print the filename
+function fetch {
+  local index="${1}"
+  local url="${2}"
   local basename
-  if [[ $url =~ (https?|ftp|file):// ]]; then
+  local filename
+  local tarname
+  local tarfile
+
+  if [[ ${url} =~ (https?|ftp|file):// ]]; then
     basename="$(basename "${url}")"
-    # TODO: --overwrite flag
-    if [ ! -f "${DOWNLOADS_DIR}/${basename}" ]; then
-      curl -L "${url}" -o "${DOWNLOADS_DIR}/${basename}" 1>&2
+    filename="${downloaddir}/${index}/${name}-${version}/${basename}"
+
+    # For sources which are already tarballs, keep the extension the same. But
+    # for everything else, add the extension for the tarball it contains.
+    if [[ ${basename} =~ \.tar\.gz$ ]]; then
+      tarname="${basename}"
+    else
+      tarname="${basename}.tar.gz"
     fi
-    echo "${basename}"
+    tarfile="${sourcedir}/${tarname}"
+
+    # Download the source
+    if [ ! -f "${filename}" ]; then
+      curl -L "${url}" -o "${filename}" 1>&2
+    fi
+
+    # This is the format they want!
+    (cd "${downloaddir}/${index}" && tar -xzf "${tarfile}" .)
+
+    # The source has been replaced with our tarfile
+    echo "${tarname}"
   else
+    # Bleed through non-downloadable sources, assuming they're already available
     echo "${url}"
   fi
 }
@@ -135,22 +71,24 @@ rpmspec -P yq.spec.in | awk 'match($0, /^( *Source([0-9]): *)(.*)/, groups) { pr
   url="$(echo "${line}" | cut -d$'\t' -f3)"
   set -x
 
-  src="$(download "${url}")"
+  # Fetch the source, save the result to SOURCES and get the new filename
+  src="$(fetch "${index}" "${url}")"
 
-  # We're SO CLOSE! We're trying to match on the same regexp but for the
-  # index, but we're not capturing the index right now - we're capturing the
-  # whole label!
+  # Add a match to the awk script that will do the edit on the spec file
   echo '/^ *Source'"${index}"': *.*/ { print "'"${label}"'" "'"${src}"'"}' >> "${script}"
 done
 
-log-info "--- running the following script in awk: ---"
+# At this point, we should've downloaded all the sources, putting the results
+# in the SOURCES directory, and have our awk script ready to generate our new
+# spec file. So let's generate that spec file??
+
+echo "--- running the following script in awk: ---"
 while read -r line; do
-  log-info "${line}"
+  echo "${line}"
 done <<< "${script}"
-log-info "--- end script ---"
+echo "--- end script ---"
 
-awk -f "${script}" < "${TEMPLATE}" > "${OUT}"
+awk -f "${script}" < "${template}" > "${spec}.out"
 
+mv "${spec}.out" "${spec}"
 rm "${script}"
-
-(cd "${STAGING_DIR}" && tar -czf "${
