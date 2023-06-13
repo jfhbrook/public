@@ -4,11 +4,6 @@ metadata:
   name: rust-omsxctl
 spec:
   auto_rebuild: false
-  id: 2115974
-  latest_build: null
-  latest_succeeded_build: null
-  ownername: jfhbrook
-  projectname: joshiverse
   script-builddeps: rust2rpm rust-anyhow-devel rust-clap+derive-devel rust-colored-devel rust-glob-devel rust-rustyline-devel rust-tracing-devel rust-tracing-subscriber-devel rust-xml-rs-devel
   script-chroot: fedora-latest-x86_64
   script-repos: ""
@@ -18,16 +13,4 @@ spec:
 
     set -euxo pipefail
 
-    name=omsxctl
-
-    rust2rpm -s -t fedora "${name}"
-
-    builddir="$(rpmbuild --eval '%{_topdir}')}"
-    version="$(cat rust-omsxctl.spec  | grep -E '^Version: *' | sed 's/^Version: *//')"
-
-    mkdir -p "${builddir}/SOURCES"
-    mv "omsxctl-${version}.crate" "${builddir}/SOURCES"
-
-    rpmbuild -bs "rust-${name}.spec"
-
-    cp /builddir/build/SRPMS/rust-${name}-${version}-1.src.rpm ./
+    rust2rpm -s -t fedora omsxctl

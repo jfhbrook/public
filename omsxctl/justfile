@@ -1,9 +1,5 @@
-# Apply copr configuration
-apply:
-  coprctl apply -f ./copr.yml
-
 # Apply and trigger the copr build
 copr:
-  @just apply
+  coprctl apply -f ./copr.yml
   copr build-package jfhbrook/joshiverse --name rust-omsxctl
 
