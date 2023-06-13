@@ -80,6 +80,14 @@ rampant connectivity issues we saw when we all tried to use our nodeboats
 by the pool at the same time. That said, if memory serves it was otherwise
 quite easy to move around once you knew how a sailboat worked!
 
+## prm
+
+`prm` was my first attempt at infrastructure-as-code for COPR. I'm currently
+using a script which uses a yaml-based kubernetes-inspired DSL in `coprctl`,
+but `prm` used a bespoke bash-based DSL, and was intended to cover more use
+cases than just COPR. It was fun to write, but hard to maintain, and in the
+end not quite what I wanted.
+
 ## PSeudo
 
 A powershell module for faking the UX of the `sudo` command (without the

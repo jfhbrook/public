@@ -46,7 +46,6 @@ more additions over the coming months.
 ### devops stuff
 
 * [clf-parser](./clf-parser) - parse clf formatted logs (public)
-* [@jfhbrook/prm](./prm) - package registry manager
 
 ### typescript stuff
 
