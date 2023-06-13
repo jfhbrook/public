@@ -17,6 +17,9 @@ _push_tag:
 apply-copr:
   ./bin/coprctl apply -f ./package.yml
 
-# Tag and push a release with Tito and trigger a COPR build
-build-copr: tag apply-copr _push_tag
+# Trigger a COPR build
+build-copr: apply-copr
   copr build-package jfhbrook/joshiverse --name coprctl
+
+# Tag and push a release with Tito and trigger a COPR build
+release: tag _push_tag build-copr
