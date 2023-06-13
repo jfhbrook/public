@@ -467,7 +467,7 @@ function load-document {
       ;;
     package-pypi)
       load-package pypi
-      load-array-property '.spec.pythonversions' pythonversions
+      load-multi-arg-property '.spec.pythonversions' pythonversions
       load-property '.spec.packageversion' packageversion
       load-property '.spec.spec-generator' spec-generator
       load-property '.spec.template' template
@@ -540,7 +540,7 @@ function load-property {
   fi
 }
 
-function load-array-property {
+function load-multi-arg-property {
   local selector="${1}"
   local name="${2}"
 
@@ -550,6 +550,16 @@ function load-array-property {
     ARGV+=("${value}")
   done
 }
+
+function load-multi-specify-property {
+  local selector="${1}"
+  local name="${2}"
+
+  for value in $(yq "${DOC}"' | '"${selector}"' | .[]' "${FILENAME}"); do
+    ARGV+=("--${name}" "${value}")
+  done
+}
+
 
 function load-project {
   local name
@@ -570,13 +580,13 @@ function load-project {
 
   ARGV+=("${action}" "${name}")
 
-  load-property '.spec.chroot' chroot
+  load-multi-specify-property '.spec.chroots' chroot
   load-property '.spec.description' description
   load-property '.spec.instructions' instructions
   load-property '.spec.disable_createrepo' disable_createrepo
   load-property '.spec.enable-net' enable-net
   load-property '.spec.unlisted-on-hp' unlisted-on-hp
-  load-property '.spec.auto-prune' auto-prune
+  # NOTE: auto-prune is admin-only
   load-property '.spec.isolation' isolation
   load-property '.spec.bootstrap' bootstrap
   load-property '.spec.delete-after-days' delete-after-days 
@@ -585,9 +595,9 @@ function load-project {
   load-property '.spec.fedora-review' fedora-review
   load-property '.spec.appstream' appstream
   load-property '.spec.follow-fedora-branching' follow-fedora-branching
-  load-property '.spec.repo' repo
-  load-property '.spec.runtime-repo-dependency' runtime-repo-dependency
-  load-property '.spec.packit-forge-project-allowed' packit-forge-project-allowed
+  load-multi-specify-property '.spec.repos' repo
+  load-multi-specify-property '.spec.runtime-repo-dependencies' runtime-repo-dependency
+  load-multi-specify-property '.spec.packit-forge-projects-allowed' packit-forge-project-allowed
 }
 
 function load-package {
