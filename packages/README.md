@@ -15,9 +15,8 @@ You can look at a full list of my COPR packages here:
 ## COPR `make srpm` builds
 
 Some of these projects - such as `yq` - use COPR's `make srpm` builds. The entry
-point for these builds, plus a bunch of supporting scripts, can be found here:
-
-**<../.copr>**
+point for these builds, plus a bunch of supporting scripts, can be found in
+[the .copr folder](../.copr).
 
 Of particular interest will be the `download-sources` script, which downloads
 source files based on the `Source[0-9]` entries in a `.spec.in` file.
