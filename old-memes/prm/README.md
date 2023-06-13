@@ -1,6 +1,14 @@
 # prm
 ## "but who will manage the package managers?"
 
+## NOTICE: prm is deprecated!
+
+`prm` has been replaced with [coprctl](https://github.com/jfhbrook/public/tree/main/coprctl),
+which leverages ideas developed in this project but uses yaml to manage a
+kubectl-like DSL instead.
+
+## hello
+
 `prm` is a semi-[declarative](https://en.wikipedia.org/wiki/Declarative_programming) [DSL](https://en.wikipedia.org/wiki/Domain-specific_language) on top of an unholy combination of
 javascript and bash, with a particular focus on managing package registries.
 it currently only works - to an extent, anyway -
