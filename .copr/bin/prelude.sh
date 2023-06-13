@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 
-set -euxo pipefail
-
 copr_home="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
 
 export topdir="${topdir:-$(rpmbuild --eval '%{_topdir}')}"
 export sourcedir="${sourcedir:-$(rpmbuild --define "_topdir ${topdir}" --eval '%{_sourcedir}')}"
+export sourcedir="${sourcedir:-$(rpmbuild --eval '%{_sourcedir}')}"
 export downloaddir="${downloaddir:-$(pwd)/downloads}"
 export PATH="${copr_home}/bin:${PATH}"
 
