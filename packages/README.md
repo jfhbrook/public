@@ -23,8 +23,8 @@ source files based on the `Source[0-9]` entries in a `.spec.in` file.
 
 ## Templates
 
-The <./templates> directory contains some cookiecutter templates! Try running
-`just new TEMPLATE_NAME` to generate a new package.
+The [templates directory](./templates) contains some cookiecutter templates!
+Try running `just new TEMPLATE_NAME` to generate a new package.
 
 Note that there isn't a template for tito projects, since those are going to
 be pretty custom. Consider copy-pasting out of `korbenware` or `coprctl`.
