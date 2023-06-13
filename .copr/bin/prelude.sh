@@ -2,9 +2,16 @@
 
 copr_home="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
 
-export topdir="${topdir:-$(rpmbuild --eval '%{_topdir}')}"
-export sourcedir="${sourcedir:-$(rpmbuild --define "_topdir ${topdir}" --eval '%{_sourcedir}')}"
-export sourcedir="${sourcedir:-$(rpmbuild --eval '%{_sourcedir}')}"
+if [ -n "${topdir}" ]; then
+  sourcedir="${sourcedir:-$(rpmbuild --define "_topdir ${topdir}" --eval '%{_sourcedir}')}"
+else
+  topdir="${topdir:-$(rpmbuild --eval '%{_topdir}')}"
+  sourcedir="${sourcedir:-$(rpmbuild --eval '%{_sourcedir}')}"
+fi
+
+export topdir
+export sourcedir
+
 export downloaddir="${downloaddir:-$(pwd)/downloads}"
 export PATH="${copr_home}/bin:${PATH}"
 
