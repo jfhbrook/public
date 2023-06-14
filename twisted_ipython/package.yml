@@ -1,0 +1,13 @@
+apiVersion: coprctl/v1alpha1
+kind: package-pypi
+metadata:
+  name: python3-twisted_ipython
+spec:
+  auto_rebuild: true
+  projectname: jfhbrook/joshiverse
+  packagename: twisted_ipython
+  packageversion: null
+  pythonversions:
+    - "3"
+  spec-generator: pyp2rpm
+  template: ""
