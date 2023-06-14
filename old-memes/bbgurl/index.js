@@ -140,7 +140,7 @@ class IOManager {
   constructor(opts) {
     this.output = opts.output;
 
-    this._print = () => {};
+    this._log = () => {};
 
     if (opts.verbose && !opts.logfile) {
       this._log = console.error;
