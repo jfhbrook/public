@@ -6,24 +6,24 @@ set -euo pipefail
 
 function log-debug {
   if [ -n "${DEBUG:-}" ]; then
-    echo 'debug:' "$@"
+    echo 'debug:' "$@" 1>&2
   fi
 }
 
 function log-info {
-  echo 'info:' "$@"
+  echo 'info:' "$@" 1>&2
 }
 
 function log-warn {
-  echo 'warn:' "$@"
+  echo 'warn:' "$@" 1>&2
 }
 
 function log-error {
-  echo 'error:' "$@"
+  echo 'error:' "$@" 1>&2
 }
 
 function log-fatal {
-  echo 'fatal:' "$@"
+  echo 'fatal:' "$@" 1>&2
 }
 
 HELP_MAIN='coprctl uses copr-cli and yq to manage COPR resources using yaml, like Kubernetes.
@@ -231,11 +231,13 @@ function get {
       local spec_generator
       local template
 
+      log-debug 'response:' "${res}"
+
       packagename="$(yq '.source_dict.pypi_package_name' <<< "${res}")"
-      packageversion="$(yq '.source_dict.pypi_package_version' <<< "${res}")"
+      packageversion="$(yq -o json '.source_dict.pypi_package_version' <<< "${res}")"
       pythonversions="$(yq '.source_dict.python_versions' <<< "${res}")"
-      spec_generator="$(yq '.source_dict.spec_generator' <<< "${res}")"
-      template="$(yq '.source_dict.spec_template' <<< "${res}")"
+      spec_generator="$(yq -o json '.source_dict.spec_generator' <<< "${res}")"
+      template="$(yq -o json '.source_dict.spec_template' <<< "${res}")"
 
       res="${res}" \
       kind="${type}" \
