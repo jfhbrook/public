@@ -12,3 +12,4 @@ spec:
   spec: mph.spec
   type: git
   method: tito
+  enable-net: true
