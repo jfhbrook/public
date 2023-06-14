@@ -10,9 +10,11 @@ const url = require('url');
 const colors = require('ansi-colors');
 const progress = require('stream-progressbar');
 
+const USAGE = 'USAGE: bbgurl URL [OPTIONS]';
+
 const HELP = `bbgurl: a cli http client using undici
 
-USAGE: bbgurl [URL]
+${USAGE}
 
 make an HTTP request using undici.request.
 
@@ -96,7 +98,7 @@ function parseArgs(argv) {
     }
   });
 
-  let _url = url.parse(opts._.join(' '));
+  let _url = opts._.length ? url.parse(opts._.join(' ')) : null;
 
   if (opts.user) {
     _url.auth = opts.user;
@@ -170,6 +172,12 @@ class IOManager {
     );
   }
 
+  usage() {
+    this.log(USAGE);
+    this.log('');
+    this.log('For more information, run "bbgurl --help".');
+  }
+
   help() {
     HELP.split('\n').forEach((line) => {
       this.log(line);
@@ -195,6 +203,11 @@ async function main() {
   if (appOpts.help) {
     io.help();
     return;
+  }
+
+  if (!url) {
+    io.usage();
+    process.exit(1);
   }
 
   const undici = await import('undici');
