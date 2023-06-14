@@ -26,5 +26,10 @@
   "devDependencies": {
      "tests-of-the-sierra-madre": "^1.0.0"
   },
-  "gitHead": "f84787fc1aa5ae9908c6283c0d20234c65e24985"
+  "files": [
+    "*.js",
+    "LICENSE",
+    "licenses/**",
+    "README.md"
+  ]
 }
