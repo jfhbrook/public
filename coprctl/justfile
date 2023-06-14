@@ -1,3 +1,5 @@
+VERSION := "0.2.0"
+
 # Lint with shellcheck
 lint:
   shellcheck ./bin/coprctl
@@ -8,7 +10,7 @@ shell:
 
 # Tag the release with tito
 tag:
-  tito tag
+  tito tag --use-version '{{VERSION}}'
 
 _push_tag:
   git push origin --follow-tags
