@@ -6,7 +6,7 @@ Summary: a cli tool for using emacs in daemon mode
 
 URL: https://github.com/jfhbrook/public/tree/main/mph
 Source0: %{name}-%{version}.tar.gz
-BuildArch: noarch
+BuildArch: x86_64
 
 BuildRequires: rust-packaging >= 21 emacs
 Requires: emacs
