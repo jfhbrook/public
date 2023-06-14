@@ -1,4 +1,4 @@
-#+TITLE: mphhhh
+#+TITLE: mph
 
 * about
 mph is a rust cli tool for interacting with emacs in daemon mode. it takes care
