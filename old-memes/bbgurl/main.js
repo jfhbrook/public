@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 
-const { main } = require('./');
+const { main } = require('./index');
 
 main();
