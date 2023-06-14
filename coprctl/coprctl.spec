@@ -1,5 +1,5 @@
 Name: coprctl
-Version: 0.2.1
+Version: 0.2.2
 Release: 1%{?dist}
 License: MIT
 Summary: infrastructure-as-code for COPR
@@ -36,6 +36,9 @@ install -p -m 755 bin/coprctl %{buildroot}%{_bindir}
 
 
 %changelog
+* Tue Jun 13 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.2.2-1
+- Forgot to pull packagename for pypi COPR builds (josh.holbrook@gmail.com)
+
 * Tue Jun 13 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.2.1-1
 - logging improvements (josh.holbrook@gmail.com)
 
