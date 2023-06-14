@@ -196,8 +196,6 @@ function get {
   local type
   local name
 
-  local packagename
-
   case "${TYPE}" in
     project)
       # NOTE: Projects don't return an easily parseable format and most of the
@@ -442,6 +440,7 @@ function apply {
     if [[ "${DRY_RUN}" != 'none' ]]; then
       log-info 'dry-run:' copr-cli "${ARGV[@]}"
     else
+      log-debug 'running:' copr-cli "${ARGV[@]}"
       copr-cli "${ARGV[@]}"
     fi
   done
@@ -476,6 +475,7 @@ function load-document {
     package-pypi)
       load-package pypi
       load-multi-arg-property '.spec.pythonversions' pythonversions
+      load-property '.spec.packagename' packagename
       load-property '.spec.packageversion' packageversion
       load-property '.spec.spec-generator' spec-generator
       load-property '.spec.template' template
