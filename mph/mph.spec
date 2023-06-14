@@ -1,5 +1,5 @@
 Name: mph
-Version: 0.1.3
+Version: 0.1.4
 Release: 1%{?dist}
 License: MPL-2.0
 Summary: a cli tool for using emacs in daemon mode
@@ -36,3 +36,6 @@ mkdir -p %{buildroot}%{_bindir}
 
 
 %changelog
+* Tue Jun 13 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.1.4-1
+- new package built with tito
+
