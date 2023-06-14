@@ -20,6 +20,8 @@ Requires: emacs
 
 %build
 tar -xzf %{SOURCE0}
+# NOTE: This pulls dependencies at runtime, which is Bad Form - but the
+# realistic alternative is packaging this with cargo and rust2rpm
 cargo build --release
 install -p -m 755 target/release/mph %{buildroot}%{_bindir}
 
