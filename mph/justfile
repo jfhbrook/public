@@ -34,7 +34,7 @@ run *ARGS: generate
 prepublish:
   if [ -n "$(git status --porcelain | awk '/ *[a-zA-Z\?]+ * mph\// { print $0 }')" ]; then echo "Refusing to move forward with a dirty tree!"; exit 1; fi
   @just generate
-  if [ -n "$(git status --porcelain | awk '/ *[a-zA-Z\?]+ * mph\// { print $0 }')" ]; then git add README.md elisp && git commit -m 'Regenerated elisp(?) and README'; fi
+  if [ -n "$(git status --porcelain | awk '/ *[a-zA-Z\?]+ * mph\// { print $0 }')" ]; then git add README.md elisp && git commit -m '[prerelease] Regenerated elisp(?) and README'; fi
 
 # Tag the release with tito
 tag:
