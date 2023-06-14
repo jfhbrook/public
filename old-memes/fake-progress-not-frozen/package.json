@@ -1,6 +1,6 @@
 {
   "name": "@jfhbrook/fake-progress-not-frozen",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "a shitpost-y fake progress bar",
   "main": "index.js",
   "bin": {
