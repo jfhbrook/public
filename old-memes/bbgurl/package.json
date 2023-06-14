@@ -2,7 +2,7 @@
   "author": "Josh Holbrook",
   "name": "bbgurl",
   "description": "a cli http client using undici",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "repository": {
     "url": "git+ssh://git@github.com/jfhbrook/public.git"
   },
@@ -10,7 +10,6 @@
     "ansi-colors": "^4.1.1",
     "minimist": "^1.2.6",
     "stream-progressbar": "^1.4.0",
-    "tests-of-the-sierra-madre": "^1.0.0",
     "undici": "^4.16.0"
   },
   "bin": {
@@ -24,7 +23,9 @@
   },
   "homepage": "https://github.com/jfhbrook/public#readme",
   "main": "index.js",
-  "devDependencies": {},
+  "devDependencies": {
+    "tests-of-the-sierra-madre": "^1.0.0"
+  },
   "keywords": [
     "http",
     "client",
