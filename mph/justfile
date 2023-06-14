@@ -2,23 +2,39 @@ set dotenv-load := true
 
 tangle-directions := "open elisp.org in emacs and run C-c C-v to generate elisp snippets!"
 
+
+# attempt to generate elisp.
 elisp:
   if command -v org-tangle &> /dev/null; then org-tangle ./elisp.org || echo "warning, org-tangle failed - {{ tangle-directions }}"; else echo "warning, org-tangle not found - {{ tangle-directions }}"; fi
 
+# generate README.md from README.org
 readme:
   pandoc -f org -t markdown README.org -o README.md
 
-build: elisp readme
-  cargo build
+# generate elisp and README
+generate: elisp readme
 
-test: elisp readme
+# build with cargo
+build *ARGS: generate
+  cargo build {{ARGS}}
+
+# run tests
+test: generate
   cargo test
 
-check: elisp readme
+# run type checks
+check: generate
   cargo check
 
-run *ARGS: elisp readme
+# run the app
+run *ARGS: generate
   cargo run -- {{ ARGS }}
+
+# do final generation before publishing
+prepublish:
+  if [ -n "$(git status --porcelain | awk '/ *[a-zA-Z\?]+ * mph\// { print $0 }')" ]; then echo "Refusing to move forward with a dirty tree!"; exit 1; fi
+  @just generate
+  if [ -n "$(git status --porcelain | awk '/ *[a-zA-Z\?]+ * mph\// { print $0 }')" ]; then git add README.md elisp && git commit -m 'Regenerated elisp(?) and README'; fi
 
 # Tag the release with tito
 tag:
@@ -31,10 +47,14 @@ _push_tag:
 apply-copr:
   coprctl apply -f ./package.yml
 
+# Kick off the COPR build
 build-copr: apply-copr
-  copr build-package jfhbrook/joshiverse --name 'korbenware'
+  copr build-package jfhbrook/joshiverse --name "$(yq .package.name Cargo.toml)"
 
-_publish-cargo:
-  cargo publish # note: --allow-dirty if you need it
+# Publish to cargo - allows a dirty tree outside the project
+publish:
+  if [ -n "$(git status --porcelain | awk '/ *[a-zA-Z\?]+ * mph\// { print $0 }')" ]; then echo "Refusing to move forward with a dirty tree!"; exit 1; fi
+  cargo publish --allow-dirty
 
-publish: _publish-cargo tag _push_tag apply-copr build-copr
+# Do a release
+release: prepublish publish tag _push_tag apply-copr build-copr
