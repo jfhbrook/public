@@ -20,5 +20,21 @@ check: elisp readme
 run *ARGS: elisp readme
   cargo run -- {{ ARGS }}
 
-publish: elisp readme
-  cargo publish --allow-dirty
+# Tag the release with tito
+tag:
+  tito tag --use-version "$(yq .package.version Cargo.toml)"
+
+_push_tag:
+  git push origin --follow-tags
+
+# Apply copr configuration
+apply-copr:
+  coprctl apply -f ./package.yml
+
+build-copr: apply-copr
+  copr build-package jfhbrook/joshiverse --name 'korbenware'
+
+_publish-cargo:
+  cargo publish # note: --allow-dirty if you need it
+
+publish: _publish-cargo tag _push_tag apply-copr build-copr
