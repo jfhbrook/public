@@ -1,5 +1,5 @@
 Name: mph
-Version: 0.1.7
+Version: 0.1.8
 Release: 1%{?dist}
 License: MPL-2.0
 Summary: a cli tool for using emacs in daemon mode
@@ -38,6 +38,9 @@ install -p -m 755 target/debug/mph %{buildroot}%{_bindir}/mph
 
 
 %changelog
+* Tue Jun 13 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.1.8-1
+- Apparently COPR wants debugging symbols?? (josh.holbrook@gmail.com)
+
 * Tue Jun 13 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.1.7-1
 - bump version again (josh.holbrook@gmail.com)
 - Random newline in mph spec? (josh.holbrook@gmail.com)
