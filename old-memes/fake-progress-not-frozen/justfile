@@ -1,0 +1,12 @@
+# Apply the COPR configuration
+apply-copr:
+  coprctl apply -f ./package.yml
+
+# Build the package on COPR
+build-copr:
+  copr build-package joshiverse --name nodejs-jfhbrook-fake-progress-not-frozen
+
+release:
+  npm publish
+  @just apply-copr
+  @just build-copr

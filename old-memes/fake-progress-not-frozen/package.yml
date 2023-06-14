@@ -1,0 +1,33 @@
+apiVersion: coprctl/v1alpha1
+kind: package-custom
+metadata:
+  name: nodejs-jfhbrook-fake-progress-not-frozen
+spec:
+  auto_rebuild: false
+  projectname: "joshiverse"
+  script-builddeps: "nodejs-npm"
+  script-chroot: fedora-latest-x86_64
+  script-repos: ""
+  script-resultdir: ""
+  script: |
+    #!/usr/bin/env bash
+
+    set -euxo pipefail
+
+    package='@jfhbrook/fake-progress-not-frozen'
+    rpm='nodejs-jfhbrook-fake-progress-not-frozen'
+    strategy='bundle'
+
+    version="$(npm view "${package}" version)"
+
+    npx npm2rpm -n "${package}" -v "${version}" -s "${strategy}"
+
+    # TODO: -o flag?
+    mv npm2rpm/* ./
+    rmdir npm2rpm
+
+    # npm2rpm tries to be clever and list a specific version of the npm
+    # package, unfortunately in f38 that package doesn't actually put npm
+    # on the PATH
+    cat "${rpm}.spec" | sed 's/BuildRequires: %{?scl_prefix_nodejs}npm/BuildRequires: nodejs-npm/' > modified.spec
+    mv modified.spec "${rpm}.spec"
