@@ -4,5 +4,5 @@ apply-copr:
 
 # Build the package on COPR
 build-copr:
-  copr build-package '{{cookiecutter.copr}}' --name '{{cookiecutter.package}}'
+  copr build-package '{{cookiecutter.copr}}' --name 'nodejs-{{cookiecutter.package}}'
 
