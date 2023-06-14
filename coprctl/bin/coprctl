@@ -217,6 +217,8 @@ function get {
     package-pypi)
       res="$(copr-cli get-package "${PROJECT}" --name "${NAME}" | yq .)"
 
+      log-debug 'response:' "${res}"
+
       type="package-$(yq '.source_type' <<< "${res}")"
       name="$(yq '.name' <<< "${res}")"
 
@@ -230,8 +232,6 @@ function get {
       local pythonversions
       local spec_generator
       local template
-
-      log-debug 'response:' "${res}"
 
       packagename="$(yq '.source_dict.pypi_package_name' <<< "${res}")"
       packageversion="$(yq -o json '.source_dict.pypi_package_version' <<< "${res}")"
@@ -261,6 +261,8 @@ function get {
       ;;
     package-scm)
       res="$(copr-cli get-package "${PROJECT}" --name "${NAME}" | yq .)"
+
+      log-debug 'response:' "${res}"
 
       type="package-$(yq '.source_type' <<< "${res}")"
       name="$(yq '.name' <<< "${res}")"
@@ -314,6 +316,8 @@ function get {
     package-rubygems)
       res="$(copr-cli get-package "${PROJECT}" --name "${NAME}" | yq .)"
 
+      log-debug 'response:' "${res}"
+
       type="package-$(yq '.source_type' <<< "${res}")"
       name="$(yq '.name' <<< "${res}")"
 
@@ -340,6 +344,8 @@ function get {
       ;;
     package-custom)
       res="$(copr-cli get-package "${PROJECT}" --name "${NAME}" | yq .)"
+
+      log-debug 'response:' "${res}"
 
       type="package-$(yq '.source_type' <<< "${res}")"
       name="$(yq '.name' <<< "${res}")"
