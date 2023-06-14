@@ -6,3 +6,7 @@ apply-copr:
 build-copr:
   copr build-package joshiverse --name nodejs-bbgurl
 
+release:
+  npm publish
+  @just apply-copr
+  @just build-copr
