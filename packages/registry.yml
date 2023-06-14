@@ -14,7 +14,7 @@ spec:
   # homepage: "https://github.com/jfhbrook/public"
   # contact: "josh.holbrook@gmail.com"
   disable_createrepo: "n"
-  enable-net: "off"
+  enable-net: "on"
   unlisted-on-hp: "off"
   isolation: "default"
   bootstrap: "default"

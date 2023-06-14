@@ -1,5 +1,5 @@
 # Apply the COPR registry configuration
-apply:
+apply-copr:
   coprctl apply -f registry.yml
 
 new TEMPLATE:
