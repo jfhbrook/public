@@ -1,7 +1,7 @@
 {
   "name": "primitivist",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.1",
+  "description": "an options parser for bash scripts based on minimist",
   "main": "index.js",
   "bin": {
     "primitivist": "primitivist"
