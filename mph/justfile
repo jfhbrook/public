@@ -48,7 +48,7 @@ apply-copr:
   coprctl apply -f ./package.yml
 
 # Kick off the COPR build
-build-copr: apply-copr
+build-copr:
   copr build-package jfhbrook/joshiverse --name "$(yq .package.name Cargo.toml)"
 
 # Publish to cargo - allows a dirty tree outside the project
