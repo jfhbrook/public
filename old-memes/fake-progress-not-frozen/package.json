@@ -3,6 +3,9 @@
   "version": "1.0.1",
   "description": "a shitpost-y fake progress bar",
   "main": "index.js",
+  "bin": {
+    "fake-progress-not-frozen": "main.js"
+  },
   "scripts": {
     "format": "prettier *.js --write",
     "test": "node test.js"
@@ -31,6 +34,7 @@
   },
   "dependencies": {
     "chalk": "^2.4.2",
+    "minimist": "^1.2.8",
     "moment": "^2.29.1",
     "multimeter": "^0.1.1"
   },
