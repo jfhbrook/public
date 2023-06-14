@@ -32,12 +32,18 @@ module.exports = function main(argv) {
       "string",
       "boolean"
     ],
+    boolean: [ "help" ],
     alias: {
       string: ["S"],
       boolean: ["B"]
     },
     stopEarly: true
   });
+
+  if (opts.help) {
+    console.log(`# USAGE: "$(primitivist [--boolean ARG] [--string ARG] -- "$@")"`);
+    process.exit(1);
+  }
 
   const args = {
     ...minimist(opts._, {

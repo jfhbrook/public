@@ -1,6 +1,6 @@
 {
   "name": "primitivist",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "an options parser for bash scripts based on minimist",
   "main": "index.js",
   "bin": {
