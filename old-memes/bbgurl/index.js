@@ -151,7 +151,7 @@ class IOManager {
       };
     }
 
-    if (opts.outputFile !== process.stdin) {
+    if (opts.output !== process.stdout) {
       this.output.on('close', () => {
         this.log('data written to %s', opts.outputFile);
       });
