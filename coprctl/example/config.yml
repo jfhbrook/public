@@ -1,0 +1,5 @@
+apiVersion: coprctl/v1alpha1
+kind: config
+spec:
+  namespace: jfhbrook
+  project: jfhbrook/joshiverse

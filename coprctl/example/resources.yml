@@ -1,0 +1,70 @@
+---
+apiVersion: coprctl/v1alpha1
+kind: project
+metadata:
+  name: joshiverse
+spec:
+  chroots:
+    - "fedora-37-x86_64"
+    - "fedora-38-x86_64"
+  # TODO: allow specifying initial-pkgs on create
+  # initial-pkgs: []
+  description: "Josh Holbrook's personal package registry"
+  instructions: "Nothing special - add the copr following the 'quick-enable' directions in the right rail, and start installing stuff!"
+  # TODO: homepage and contact are unsupported by the CLI
+  # homepage: "https://github.com/jfhbrook/public"
+  # contact: "josh.holbrook@gmail.com"
+  disable_createrepo: "n"
+  enable-net: "on"
+  unlisted-on-hp: "off"
+  isolation: "default"
+  bootstrap: "default"
+  delete-after-days: ""
+  module-hotfixes: "off"
+  multilib: "off"
+  fedora-review: "off"
+  appstream: "off"
+  follow-fedora-branching: "on"
+  repos: []
+  runtime-repo-dependencies: []
+  pakt-forge-projects-allowed: []
+---
+apiVersion: coprctl/v1alpha1
+kind: package-pypi
+metadata:
+  name: python3-twisted_ipython
+spec:
+  auto_rebuild: true
+  projectname: jfhbrook/joshiverse
+  packagename: twisted_ipython
+  packageversion: null
+  pythonversions:
+    - "3"
+  spec-generator: pyp2rpm
+  template: ""
+---
+apiVersion: coprctl/v1alpha1
+kind: package-rubygems
+metadata:
+  name: "rubygem-t"
+spec:
+  projectname: "jfhbrook/joshiverse"
+  gem: "t"
+---
+apiVersion: coprctl/v1alpha1
+kind: package-custom
+metadata:
+  name: rust-omsxctl
+spec:
+  projectname: joshiverse
+  auto_rebuild: false
+  script-builddeps: rust2rpm rust-anyhow-devel rust-clap+derive-devel rust-colored-devel rust-glob-devel rust-rustyline-devel rust-tracing-devel rust-tracing-subscriber-devel rust-xml-rs-devel
+  script-chroot: fedora-latest-x86_64
+  script-repos: ""
+  script-resultdir: ""
+  script: |
+    #!/usr/bin/env bash
+
+    set -euxo pipefail
+
+    rust2rpm -s -t fedora omsxctl
