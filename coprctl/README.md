@@ -9,6 +9,12 @@ and leveraging [yq](https://github.com/mikefarah/yq).
 It's a portable bash script, but also I'm working on getting it up in my
 personal COPR.
 
+## Config
+
+You'll need to create a config file at `~/.config/coprctl/config.yml`. Someday
+I'll add commands to `coprctl` to initialize and manage the config - but for
+today, my config is in [./example/config.yml](./example/config.yml).
+
 ## Usage
 
 The basics are:
@@ -47,7 +53,9 @@ spec:
   gem: "t"
 ```
 
-The commands have mostly-right documentation with the `--help` flag.
+The commands have mostly-right documentation with the `--help` flag. Another
+example of this format can be seen at
+[./example/resources.yml](./example/resources.yml).
 
 ## File Format
 
