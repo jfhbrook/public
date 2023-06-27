@@ -22,6 +22,7 @@ A simple GUI for Linux OneDrive Client, with multi-account support.
 %build
 ls -l
 
+%define __os_install_post %{nil}
 
 %install
 export DONT_STRIP=1
@@ -32,7 +33,6 @@ install -p -m 755 OneDriveGUI-%{version}-x86_64.AppImage %{buildroot}%{_bindir}/
 install -p -m 644 onedrive-gui-1.0.2/onedrive.desktop %{buildroot}%{_datadir}/onedrive.desktop
 
 %check
-
 
 %files
 %{_bindir}/onedrive-gui
