@@ -34,39 +34,38 @@ function fetch {
   local tarname
   local tarfile
 
-  if [[ ${url} =~ (https?|ftp|file):// ]]; then
-    basename="$(basename "${url}")"
-    # shellcheck disable=SC2154
-    dirname="${downloaddir}/${index}/${name}-${version}"
-    filename="${dirname}/${basename}"
+  basename="$(basename "${url}")"
+  # shellcheck disable=SC2154
+  dirname="${downloaddir}/${index}/${name}-${version}"
+  filename="${dirname}/${basename}"
 
-    mkdir -p "${dirname}"
-    # shellcheck disable=SC2154
-    mkdir -p "${sourcedir}"
+  mkdir -p "${dirname}"
+  # shellcheck disable=SC2154
+  mkdir -p "${sourcedir}"
 
-    # For sources which are already tarballs, keep the extension the same. But
-    # for everything else, add the extension for the tarball it contains.
-    if [[ ${basename} =~ \.tar\.gz$ ]]; then
-      tarname="${basename}"
-    else
-      tarname="${basename}.tar.gz"
-    fi
-    tarfile="${sourcedir}/${tarname}"
-
-    # Download the source
-    if [ ! -f "${filename}" ]; then
-      curl -L "${url}" -o "${filename}" 1>&2
-    fi
-
-    # This is the format they want!
-    (cd "${downloaddir}/${index}" && tar -czf "${tarfile}" .)
-
-    # The source has been replaced with our tarfile
-    echo "${tarname}"
+  # For sources which are already tarballs, keep the extension the same. But
+  # for everything else, add the extension for the tarball it contains.
+  if [[ ${basename} =~ \.tar\.gz$ ]]; then
+    tarname="${basename}"
   else
-    # Bleed through non-downloadable sources, assuming they're already available
-    echo "${url}"
+    tarname="${basename}.tar.gz"
   fi
+  tarfile="${sourcedir}/${tarname}"
+
+  if [ ! -f "${filename}" ]; then
+    if [[ ${url} =~ (https?|ftp|file):// ]]; then
+      # Download the source
+      curl -L "${url}" -o "${filename}" 1>&2
+    else
+      cp "${url}" "${filename}"
+    fi
+  fi
+
+  # This is the format they want!
+  (cd "${downloaddir}/${index}" && tar -czf "${tarfile}" .)
+
+  # The source has been replaced with our tarfile
+  echo "${tarname}"
 }
 
 rpmspec --define "_topdir ${topdir}" \
