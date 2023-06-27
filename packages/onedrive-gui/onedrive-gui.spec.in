@@ -3,7 +3,7 @@ Version: VERSION
 Release: 1%{?dist}
 License: GPL3
 Summary: A simple GUI for Linux OneDrive Client, with multi-account support
-Requires: onedrive
+Requires: onedrive fuse
 
 URL: https://github.com/bpozdena/OneDriveGUI
 Source0: https://github.com/bpozdena/OneDriveGUI/releases/download/v%{version}/OneDriveGUI-%{version}-x86_64.AppImage
@@ -24,6 +24,7 @@ ls -l
 
 
 %install
+export DONT_STRIP=1
 mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_datadir}
 ls -l
