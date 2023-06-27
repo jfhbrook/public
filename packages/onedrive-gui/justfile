@@ -12,15 +12,17 @@ lint:
   shellcheck ./copr/srpm.sh
 
 # Build and verify
-test: clean srpm verify
+test: clear srpm verify
 
-# Clean files created from building and verifying
-clean:
+clear:
   rm -f '{{SPEC}}'
-  rm -rf ./build
-  rm -rf ./downloads
   rm -f *.src.rpm
   rm -f *.tar.gz
+
+# Clean files created from building and verifying
+clean: clear
+  rm -rf ./build
+  rm -rf ./downloads
 
 # Apply copr configuration
 apply-copr:
