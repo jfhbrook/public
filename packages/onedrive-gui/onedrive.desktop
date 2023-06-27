@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=OneDrive
+Comment=Browse the Web
+Exec=onedrive-gui
+Terminal=false
+Type=Application
