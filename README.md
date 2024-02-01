@@ -70,11 +70,6 @@ coroutines and concurrent programming. It is licensed under an MIT license.
 This is my resume! This repository contains PDFs for my standard one-page resume
 and a longer CV. It's written in LaTeX.
 
-### s7sync
-
-Sie7e Labs FileSync is a work-in-progress file sync tool built on top of git.
-It intends to be cross-platform. Available under a MPL v2.0 license.
-
 ### twisted_ipython
 
 This is a module that makes autoawait work in IPython using Twisted. It is
