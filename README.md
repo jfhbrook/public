@@ -20,10 +20,6 @@ Research and Academic Programming License v0 Beta 0.
 A bash script, using `copr-cli` and `yq`, to implement an infrastructure-as-code
 pattern similar to `kubectl apply`. It is licensed MIT.
 
-### fortune-jfhbrook
-
-This is a collection of (small, but hopefully will grow) fortune files.
-
 ### korbenware
 
 A collection of scripts I use to glue my Linux desktop and general CLI experience
