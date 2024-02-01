@@ -22,19 +22,12 @@ pattern similar to `kubectl apply`. It is licensed MIT.
 
 ### fortune-jfhbrook
 
-This is a collection of (small, but hopefully will grow) fortune files. I
-intend to put them up on COPR but haven't done it yet.
+This is a collection of (small, but hopefully will grow) fortune files.
 
 ### korbenware
 
 A collection of scripts I use to glue my Linux desktop and general CLI experience
 together. Available under a MPL v2.0 license.
-
-### mph
-
-mph is a cli for managing Emacs in daemon mode, with functionality for service
-management and for opening files. The codebase also includes half of an emacs
-lisp parser. ;) It uses the MPL v2.0 license.
 
 ### old-memes
 

@@ -68,6 +68,12 @@ He was a good bird
 
 **<./korben-twitter/README.md>**
 
+### mph
+
+mph is a cli for managing Emacs in daemon mode, with functionality for service
+management and for opening files. The codebase also includes half of an emacs
+lisp parser. ;) It uses the MPL v2.0 license.
+
 ## nodeboats 2015
 
 At jsconf 2015, there was a competition called "nodeboats" to make and race a remote
