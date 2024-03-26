@@ -12,7 +12,7 @@ interface B extends A {
 test('a boring ol topic', async (assert) => {
   const topic = discuss<A>(async () => {
     return { a: true };
-  });
+  }, async () => {});
 
   assert.test('can execute swears', async (assert) => {
     await topic.swear(async (a: A) => {

@@ -41,7 +41,7 @@ class Topic {
     }
 }
 exports.Topic = Topic;
-function discuss(fn) {
-    return new Topic(fn);
+function discuss(fn, teardown) {
+    return new Topic(fn, teardown);
 }
 exports.discuss = discuss;

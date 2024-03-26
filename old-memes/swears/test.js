@@ -14,7 +14,7 @@ const _1 = require(".");
 (0, tap_1.test)('a boring ol topic', (assert) => __awaiter(void 0, void 0, void 0, function* () {
     const topic = (0, _1.discuss)(() => __awaiter(void 0, void 0, void 0, function* () {
         return { a: true };
-    }));
+    }), () => __awaiter(void 0, void 0, void 0, function* () { }));
     assert.test('can execute swears', (assert) => __awaiter(void 0, void 0, void 0, function* () {
         yield topic.swear((a) => __awaiter(void 0, void 0, void 0, function* () {
             assert.ok(a.a);

@@ -49,6 +49,6 @@ export class Topic<T> {
   }
 }
 
-export function discuss<T>(fn: Factory<T>) {
-  return new Topic<T>(fn);
+export function discuss<T>(fn: Factory<T>, teardown?: Teardown<T>) {
+  return new Topic<T>(fn, teardown);
 }
