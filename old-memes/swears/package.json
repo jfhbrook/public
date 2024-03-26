@@ -1,6 +1,6 @@
 {
   "name": "@jfhbrook/swears",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "a fixture generator inspired by vows",
   "main": "index.js",
   "scripts": {
