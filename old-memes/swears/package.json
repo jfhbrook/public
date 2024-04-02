@@ -1,13 +1,13 @@
 {
   "name": "@jfhbrook/swears",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "a fixture generator inspired by vows",
   "main": "index.js",
   "scripts": {
     "docs": "exb ./README.md.njk ./README.md --fileExample @examples/file.js --spicyExample @examples/spicy.ts",
     "test": "tap ./test.js ./examples/*.js",
     "pretest": "tsc",
-    "prepublish": "npm run docs && tsc"
+    "prepublishOnly": "npm run docs && tsc"
   },
   "repository": {
     "type": "git",
