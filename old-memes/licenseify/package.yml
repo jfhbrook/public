@@ -5,7 +5,7 @@ metadata:
 spec:
   auto_rebuild: false
   projectname: "joshiverse"
-  script-builddeps: "nodejs-npm"
+  script-builddeps: "nodejs-npm rpmspectool"
   script-chroot: fedora-latest-x86_64
   script-repos: ""
   script-resultdir: ""
@@ -25,8 +25,11 @@ spec:
     mv npm2rpm/* ./
     rmdir npm2rpm
 
-    # npm2rpm tries to be clever and list a specific version of the npm
-    # package, unfortunately in f38 that package doesn't actually put npm
-    # on the PATH
-    cat "nodejs-${package}.spec" | sed 's/BuildRequires: %{?scl_prefix_nodejs}npm/BuildRequires: nodejs-npm/' > modified.spec
+    # 1. Use system npm instead of bundled npm
+    # 2. License and doc paths are broken so don't include them
+    cat "nodejs-${package}.spec" \
+      | sed 's/BuildRequires: %{?scl_prefix_nodejs}npm/BuildRequires: nodejs-npm/' \
+      | sed 's/\%license .*//' \
+      | sed 's/\%doc .*//' \
+      > modified.spec
     mv modified.spec "nodejs-${package}.spec"
