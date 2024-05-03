@@ -18,12 +18,12 @@ spec:
 
     set -euxo pipefail
 
-    name=exercise-bike
+    package=exercise-bike
     strategy=bundle
 
-    version="$(npm view "${name}" version)"
+    version="$(npm view "${package}" version)"
 
-    npx npm2rpm -n "${name}" -v "${version}" -s "${strategy}"
+    npx npm2rpm -n "${package}" -v "${version}" -s "${strategy}"
 
     # TODO: -o flag?
     mv npm2rpm/* ./
@@ -36,4 +36,4 @@ spec:
       | sed 's/\%license .*//' \
       | sed 's/\%doc .*//' \
       > modified.spec
-    mv modified.spec "nodejs-${name}.spec"
+    mv modified.spec "nodejs-${package}.spec"

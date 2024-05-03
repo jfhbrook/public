@@ -32,3 +32,4 @@ spec:
       | sed 's/\%license .*//' \
       | sed 's/\%doc .*//' \
       > modified.spec
+    mv modified.spec "nodejs-${package}.spec"

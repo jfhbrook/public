@@ -28,7 +28,7 @@ spec:
 
     # 1. Use system npm instead of bundled npm
     # 2. License and doc paths are broken so don't include them
-    cat "nodejs-${package}.spec" \
+    cat "${rpm}.spec" \
       | sed 's/BuildRequires: %{?scl_prefix_nodejs}npm/BuildRequires: nodejs-npm/' \
       | sed 's/\%license .*//' \
       | sed 's/\%doc .*//' \
