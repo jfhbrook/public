@@ -81,9 +81,14 @@ if not (args.section and args.key):
     sys.exit(1)
 
 if args.action == "get":
+
     value = {
         **DEFAULTS[args.section],
-        **CONFIG[args.section]
+        **(
+            CONFIG[args.section]
+            if CONFIG.has_section(args.section)
+            else {}
+        )
     }.get(args.key, args.if_none)
     print(value)
 elif args.action == "set":
