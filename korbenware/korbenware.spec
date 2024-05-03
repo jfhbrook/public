@@ -1,5 +1,5 @@
 Name: korbenware
-Version: 0.6.2
+Version: 0.7.0
 Release: 1%{?dist}
 License: MPL-2.0
 Summary: linux/unix desktop cli software
@@ -43,6 +43,15 @@ install -p -m 755 bin/kbprev %{buildroot}%{_bindir}
 
 
 %changelog
+* Fri May 03 2024 Josh Holbrook <josh.holbrook@gmail.com> 0.7.0-1
+- Updated kbconfig defaults
+- Addition of kbconfig init (josh.holbrook@gmail.com)
+- kbbg reads background paths from kbconfig (josh.holbrook@gmail.com)
+- kbmenu reads python_path from kbconfig (josh.holbrook@gmail.com)
+- fzf preview in kbmenu and kbprev better handles spaces in filenames
+  (josh.holbrook@gmail.com)
+- logging slightly quieter (josh.holbrook@gmail.com)
+
 * Fri May 03 2024 Josh Holbrook <josh.holbrook@gmail.com> 0.6.2-1
 - Remove bins from files in korbenware spec (josh.holbrook@gmail.com)
 
