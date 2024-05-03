@@ -1,5 +1,5 @@
 Name: korbenware
-Version: 0.6.0
+Version: 0.6.1
 Release: 1%{?dist}
 License: MPL-2.0
 Summary: linux/unix desktop cli software
@@ -9,7 +9,7 @@ Source0: %{name}-%{version}.tar.gz
 BuildArch: noarch
 
 BuildRequires: coreutils
-Requires: bash coreutils fzf python3 python3-pyxdg sway
+Requires: bash coreutils fzf python3 python3-pyxdg sway viu
 
 %description
 
