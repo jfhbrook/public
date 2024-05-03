@@ -47,6 +47,10 @@ install -p -m 755 bin/kbprev %{buildroot}%{_bindir}
 
 
 %changelog
+* Fri May 03 2024 Josh Holbrook <josh.holbrook@gmail.com> 0.6.1-1
+- korbenware requires viu (josh.holbrook@gmail.com)
+- Remove scripts not needed by Fedora Sway Spin (josh.holbrook@gmail.com)
+
 * Sun Jun 11 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.5.1-1
 - new package built with tito
 
