@@ -37,13 +37,9 @@ install -p -m 755 bin/kbprev %{buildroot}%{_bindir}
 %files
 %{_bindir}/kbconfig
 %{_bindir}/kbbg
-%{_bindir}/kbdesktop
-%{_bindir}/kblock
 %{_bindir}/kbmenu
-%{_bindir}/kbnotify
 %{_bindir}/kbopen
 %{_bindir}/kbprev
-%{_bindir}/kbscreenshot
 
 
 %changelog

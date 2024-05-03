@@ -119,6 +119,16 @@ Preview files in the terminal, using viu, bat and pdftotext. Used by kbopen.
 * pdftotext for (bad) pdf preview
 * cat, if any of these are missing
 
+## Publishing
+
+### COPR
+
+Korbenware uses [tito](https://github.com/rpm-software-management/tito) for
+managing COPR releases. To tag, release and build:
+
+1. Open the `justfile` and update the `VERSION` variable
+2. Run `just publish`
+
 ## What Happened to the Python Korbenware?
 
 A few years ago, I attempted to write a bunch of Linux desktop environment

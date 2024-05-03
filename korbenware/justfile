@@ -1,4 +1,4 @@
-VERSION := "0.5.1"
+VERSION := "0.6.2"
 
 # Open a shell with bins in the PATH
 shell:
@@ -19,4 +19,4 @@ build-copr: apply-copr
   copr build-package jfhbrook/joshiverse --name 'korbenware'
 
 # Publish the release with tito
-publish: tag _push_tag
+publish: tag _push_tag build-copr
