@@ -15,8 +15,6 @@ switched to Sway Spin and am in the process of tidying them up.
 
 ### Fedora
 
-**TODO:** Create `viu` package in COPR
-
 You should be able to install Korbenware from COPR:
 
 ```bash
@@ -27,7 +25,11 @@ dnf install korbenware
 ### MacOS
 
 **TODO:** Package korbenware in Homebrew tap. kbconfig, kbopen and kbprev
-should already work in MacOS.
+should already work in MacOS. kbbg and kbmenu should work with some love:
+
+- [change background in macos](https://apple.stackexchange.com/questions/40644/how-do-i-change-desktop-background-with-a-terminal-command)
+- [detecting platform with python](https://stackoverflow.com/questions/1854/how-to-identify-which-os-python-is-running-on)
+- [list all applications](https://www.howtogeek.com/409377/how-to-list-all-applications-on-a-mac/)
 
 Once I create a Formula in my homebrew tap, you should be able to run:
 
@@ -59,10 +61,6 @@ Manage korbenware configs in `~/.config/korbenware/config.ini`.
 
 Change the background (in sway).
 
-### TODO
-
-- Investigate [MacOS support](https://apple.stackexchange.com/questions/40644/how-do-i-change-desktop-background-with-a-terminal-command)
-
 ### Dependencies
 
 * bash
@@ -80,14 +78,6 @@ A command line (XDG) application menu launcher, using fzf.
 * fzf
 * System Python 3
 * System pyxdg
-
-### TODO
-
-1. Can I support an analog in MacOS? `open -a` should be able to open a given
-   application. I believe that getting a list of applications is a matter of
-   using `find`, which is honestly easier than the XDG situation.
-2. Is `kbmenu` worth supporting? I don't use it much, if ever. But maybe I
-   would if it worked smoothly and I built the habit?
 
 ## kbopen
 
