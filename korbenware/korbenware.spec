@@ -1,5 +1,5 @@
 Name: korbenware
-Version: 0.6.1
+Version: 0.6.2
 Release: 1%{?dist}
 License: MPL-2.0
 Summary: linux/unix desktop cli software
@@ -43,6 +43,9 @@ install -p -m 755 bin/kbprev %{buildroot}%{_bindir}
 
 
 %changelog
+* Fri May 03 2024 Josh Holbrook <josh.holbrook@gmail.com> 0.6.2-1
+- Remove bins from files in korbenware spec (josh.holbrook@gmail.com)
+
 * Fri May 03 2024 Josh Holbrook <josh.holbrook@gmail.com> 0.6.1-1
 - korbenware requires viu (josh.holbrook@gmail.com)
 - Remove scripts not needed by Fedora Sway Spin (josh.holbrook@gmail.com)
