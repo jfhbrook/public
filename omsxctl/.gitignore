@@ -1,2 +1,4 @@
 systemroms.zip
+*.crate
+*.spec
 **/target
