@@ -24,15 +24,11 @@ tar -xzf %{SOURCE0}
 
 %install
 mkdir -p %{buildroot}%{_bindir}
-install -p -m 755 bin/kbconfig %{buildroot}%{_bindir}
 install -p -m 755 bin/kbbg %{buildroot}%{_bindir}
-install -p -m 755 bin/kbdesktop %{buildroot}%{_bindir}
-install -p -m 755 bin/kblock %{buildroot}%{_bindir}
+install -p -m 755 bin/kbconfig %{buildroot}%{_bindir}
 install -p -m 755 bin/kbmenu %{buildroot}%{_bindir}
-install -p -m 755 bin/kbnotify %{buildroot}%{_bindir}
 install -p -m 755 bin/kbopen %{buildroot}%{_bindir}
 install -p -m 755 bin/kbprev %{buildroot}%{_bindir}
-install -p -m 755 bin/kbscreenshot %{buildroot}%{_bindir}
 
 
 %check
