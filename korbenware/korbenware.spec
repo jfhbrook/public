@@ -1,5 +1,5 @@
 Name: korbenware
-Version: 0.7.0
+Version: 0.7.1
 Release: 1%{?dist}
 License: MPL-2.0
 Summary: linux/unix desktop cli software
@@ -43,6 +43,9 @@ install -p -m 755 bin/kbprev %{buildroot}%{_bindir}
 
 
 %changelog
+* Fri May 03 2024 Josh Holbrook <josh.holbrook@gmail.com> 0.7.1-1
+- kbconfig get handles missing section (josh.holbrook@gmail.com)
+
 * Fri May 03 2024 Josh Holbrook <josh.holbrook@gmail.com> 0.7.0-1
 - Updated kbconfig defaults
 - Addition of kbconfig init (josh.holbrook@gmail.com)
