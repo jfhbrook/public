@@ -1,4 +1,4 @@
-VERSION := "0.6.2"
+VERSION := "0.7.0"
 
 # Open a shell with bins in the PATH
 shell:
