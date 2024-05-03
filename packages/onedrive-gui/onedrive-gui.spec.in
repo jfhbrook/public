@@ -27,7 +27,7 @@ ls -l
 %install
 export DONT_STRIP=1
 mkdir -p %{buildroot}%{_bindir}
-mkdir -p %{buildroot}%{_datadir}
+mkdir -p %{buildroot}%{_datadir}/applications
 install -p -m 755 OneDriveGUI-%{version}-x86_64.AppImage %{buildroot}%{_bindir}/onedrive-gui
 install -p -m 644 onedrive-gui-%{version}/onedrive-gui.desktop %{buildroot}%{_datadir}/applications/onedrive-gui.desktop
 
