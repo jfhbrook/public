@@ -18,17 +18,17 @@ function log-debug {
 }
 
 function log-info {
-  echo "info: $1"
+  echo "info:" "$@"
 }
 
 function log-error {
-  echo "ERROR: $1" 1>&2
+  echo "ERROR:" "$@"  1>&2
 }
 
 log-info "Korby Jr. The File/Url Opener 🦜"
 log-info "programmed entirely while eating a spider plant"
 log-info '"open up or else!"'
-log-info "it worked if it ends with ok"
+log-debug "it worked if it ends with ok"
 
 function log-help {
   log-info "Open files and URLs with default and mime-appropriate XDG applications"
@@ -61,8 +61,8 @@ else
 fi
 
 while [ -d "${PATH_OR_URL}" ]; do
-  log-info "Searching in ${PATH_OR_URL} with fzf"
-  PATH_OR_URL="$(find "${PATH_OR_URL}" | fzf --preview "kbprev {}")"
+  log-debug "Searching in ${PATH_OR_URL} with fzf"
+  PATH_OR_URL="$(find "${PATH_OR_URL}" | fzf --preview "kbprev '{}'")"
 done
 
 log-debug "Path or URL: ${PATH_OR_URL}"
@@ -94,4 +94,4 @@ case $MIME_TYPE in
     eval "${OPEN_CMD} '${PATH_OR_URL}'"
 esac
 
-log-info "ok"
+log-debug "ok"

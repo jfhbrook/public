@@ -24,6 +24,9 @@ DEFAULTS = {
     "background": {
         "path": "/usr/share/backgrounds",
         "sway_args": "fill"
+    },
+    "menu": {
+        "python_path": ""
     }
 }
 

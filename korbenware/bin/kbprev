@@ -35,7 +35,8 @@ log-info "Korben's Cool Babysitter's File Preview 🦜"
 log-info "programmed while changing Korby Jr's diaper"
 log-info "it worked if it ends with ok"
 
-FILE="${1:-}"
+ARGS="$@"
+FILE=$(IFS=, ; echo "${ARGS[*]}")
 
 if [ -d "${FILE}" ]; then
   ls -l

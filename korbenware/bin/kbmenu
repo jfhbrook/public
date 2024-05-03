@@ -6,27 +6,27 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-PYTHON="${PYTHON:-/usr/bin/python3}"
+PYTHON="$(kbconfig get menu python_path)"
+if [ -z "${PYTHON}" ]; then
+  PYTHON=/usr/bin/python3
+fi
 DEBUG="${DEBUG:-}"
 
 function log-debug {
   if [ ! -z "${DEBUG}" ]; then
-    echo "debug: $1"
+    echo "debug:" "$@"
   fi
 }
 
 function log-info {
-  echo "info: $1"
+  echo "info:" "$@"
 }
 
-function log-error {
-  echo "ERROR: $1" 1>&2
-}
 
 log-info "Grandmaw Korben's XDG Menu Explorer 🦜"
 log-info '"nice work, pixel birdie!"'
 log-info "programmed entirely while unemployed"
-log-info "it worked if it ends with ok"
+log-debug "it worked if it ends with ok"
 
 __PRELUDE='
 import xdg.Menu
@@ -70,7 +70,7 @@ COMMENTS = dict()
 for path in __walk([], xdg.Menu.parse()):
     COMMENTS[__key(path)] = path[-1].DesktopEntry.getComment()
 
-print(COMMENTS[sys.argv[1]])
+print(COMMENTS[" ".join([arg for arg in sys.argv[1:] if arg])])
 '
 
 __COMMAND="${__PRELUDE}"'
@@ -86,8 +86,8 @@ for path in __walk([], xdg.Menu.parse()):
 print(COMMANDS[sys.argv[1]])
 '
 
-CHOICE="$(python -c "${__PREVIEW}" | fzf -m --preview "python -c '${__GET}' '{1}'")"
+CHOICE="$("${PYTHON}" -c "${__PREVIEW}" | fzf -m --preview '"'"${PYTHON}"'"'" -c '${__GET}' '{1}' '{2}' '{3}' '{4}' '{5}' '{6}' '{7}' '{8}'")"
 
-eval "nohup $(python -c "${__COMMAND}" "${CHOICE}") &> /dev/null &"
+eval "nohup $("${PYTHON}" -c "${__COMMAND}" "${CHOICE}") &> /dev/null &"
 
-log-info "ok"
+log-debug "ok"
