@@ -7,7 +7,7 @@ Requires: onedrive fuse
 
 URL: https://github.com/bpozdena/OneDriveGUI
 Source0: https://github.com/bpozdena/OneDriveGUI/releases/download/v%{version}/OneDriveGUI-%{version}-x86_64.AppImage
-Source1: onedrive.desktop
+Source1: onedrive-gui.desktop
 BuildArch: x86_64
 
 %description
@@ -29,7 +29,6 @@ export DONT_STRIP=1
 mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_datadir}
 install -p -m 755 OneDriveGUI-%{version}-x86_64.AppImage %{buildroot}%{_bindir}/onedrive-gui
-ls -l onedrive-gui-1.0.3
 install -p -m 644 onedrive-gui-%{version}/onedrive-gui.desktop %{buildroot}%{_datadir}/applications/onedrive-gui.desktop
 
 %check
