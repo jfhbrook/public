@@ -16,17 +16,17 @@ bundle:
 push:
   git push origin --follow-tags
 
-release: bundle
+release:
   bash ./scripts/release.sh '{{VERSION}}' '{{PATCH}}'
 
 apply-copr:
   coprctl apply -f ./package.yml
 
-build-copr: apply-copr
+build-copr:
   copr build-package jfhbrook/joshiverse --name 'korbenware'
 
 apply-homebrew:
   bash ./scripts/apply-homebrew.sh '{{VERSION}}' '{{PATCH}}'
 
 # Publish the release on GitHub, Homebrew, and Copr
-publish: tag push release apply-homebrew build-copr
+publish: tag push bundle release apply-homebrew apply-copr build-copr
