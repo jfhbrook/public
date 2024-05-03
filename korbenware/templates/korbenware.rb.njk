@@ -1,0 +1,15 @@
+class Korbenware < Formula
+  desc "linux/unix desktop cli software"
+  homepage "https://github.com/jfhbrook/public/tree/main/korbenware"
+  url "https://github.com/jfhbrook/public/releases/download/korbenware-{{ version }}-{{ patch }}/korbenware-{{ version }}.tar.gz"
+  sha256 "{{ sha }}"
+  license "MPL-2.0"
+
+  def install
+    bin.install Dir["bin/*"]
+  end
+
+  test do
+    system "false"
+  end
+end

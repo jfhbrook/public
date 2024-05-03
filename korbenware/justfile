@@ -1,11 +1,12 @@
 VERSION := "0.7.0"
 PATCH := "1"
 
+set dotenv-load := true
+
 # Open a shell with bins in the PATH
 shell:
   PATH="$(pwd)/bin:${PATH}" bash --login
 
-# Tag the release with tito
 tag:
   tito tag --use-version '{{VERSION}}'
 
@@ -18,12 +19,14 @@ push:
 release: bundle
   bash ./scripts/release.sh '{{VERSION}}' '{{PATCH}}'
 
-# Apply copr configuration
 apply-copr:
   coprctl apply -f ./package.yml
 
 build-copr: apply-copr
   copr build-package jfhbrook/joshiverse --name 'korbenware'
 
-# Publish the release with tito
-publish: tag push release build-copr
+apply-homebrew:
+  bash ./scripts/apply-homebrew.sh '{{VERSION}}' '{{PATCH}}'
+
+# Publish the release on GitHub, Homebrew, and Copr
+publish: tag push release apply-homebrew build-copr
