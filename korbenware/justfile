@@ -1,4 +1,5 @@
 VERSION := "0.7.0"
+PATCH := "1"
 
 # Open a shell with bins in the PATH
 shell:
@@ -8,8 +9,14 @@ shell:
 tag:
   tito tag --use-version '{{VERSION}}'
 
-_push_tag:
+bundle:
+  tar -czf korbenware-{{VERSION}}.tar.gz bin COPYING NOTICE README.md
+
+push:
   git push origin --follow-tags
+
+release: bundle
+  bash ./scripts/release.sh '{{VERSION}}' '{{PATCH}}'
 
 # Apply copr configuration
 apply-copr:
@@ -19,4 +26,4 @@ build-copr: apply-copr
   copr build-package jfhbrook/joshiverse --name 'korbenware'
 
 # Publish the release with tito
-publish: tag _push_tag build-copr
+publish: tag push release build-copr
