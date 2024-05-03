@@ -61,9 +61,6 @@ Change the background (in sway).
 
 ### TODO
 
-- Read background directories from kbconfig
-- Find through all background directories
-- Print note on how to make permanent in sway
 - Investigate [MacOS support](https://apple.stackexchange.com/questions/40644/how-do-i-change-desktop-background-with-a-terminal-command)
 
 ### Dependencies

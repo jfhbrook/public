@@ -6,6 +6,23 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-BACKGROUNDS_DIR="${BACKGROUNDS_DIR:-/usr/share/backgrounds}"
+BACKGROUNDS=""
+SWAY_ARGS="$(kbconfig get background sway_args)"
 
-swaymsg output '*' background "$(find "${BACKGROUNDS_DIR}" -name '*.png' | fzf --preview 'viu -b -w 60 {}')" fill
+IFS=: read -r -d '' -a BACKGROUND_PATH < <(printf '%s:\0' "$(kbconfig get background path)")
+
+for path in "${BACKGROUND_PATH[@]}"; do
+  if [ -n "${BACKGROUNDS}" ]; then
+    BACKGROUNDS="${BACKGROUNDS}
+"
+  fi
+  BACKGROUNDS="${BACKGROUNDS}$(find "${path}" -iname '*.png' -o -iname '*.jpg')"
+done
+
+SELECTED="$(echo "${BACKGROUNDS}" | fzf --preview 'viu -b -w 60 {}')"
+
+swaymsg output '*' bg "${SELECTED}" ${SWAY_ARGS}
+
+echo "To make the background permanent, add this your sway config:
+
+    output * bg ${SELECTED} ${SWAY_ARGS}"

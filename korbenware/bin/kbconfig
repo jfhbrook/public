@@ -22,7 +22,8 @@ CONFIG.read(CONFIG_PATH)
 
 DEFAULTS = {
     "background": {
-        "path": "/usr/share/backgrounds"
+        "path": "/usr/share/backgrounds",
+        "sway_args": "fill"
     }
 }
 
