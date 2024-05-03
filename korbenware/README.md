@@ -2,17 +2,50 @@
 
 ## What
 
-Korbenware is a collection of bash scripts intended for desktop usage. Some of
-them will work in MacOS, but some of them are Linux only and a few of them
-depend on [sway](https://swaywm.org/).
+Korbenware is a collection of tools for CLI-driven interaction with your
+desktop. They are meant to be paired with [Sway](https://swaywm.org/) in
+Linux. They should also, for the most part, work in MacOS.
 
-They're pretty messy right now and *wildly* inconsistent, but I'm using them
-on my Fedora Thinkpad running Sway, and a handful of them on MacOS as well.
+These scripts need a little help. They used to work, mostly, on my older
+Sway/Fedora setup that predates
+[Fedora Sway Spin](https://fedoraproject.org/spins/sway/). But I recently
+switched to Sway Spin and am in the process of tidying them up.
 
 ## Install
 
-You can copy the scripts in `./bin` wherever you like! Someday I'll make
-package manifests, but that day's not today.
+### Fedora
+
+**TODO:** Create `viu` package in COPR
+
+You should be able to install Korbenware from COPR:
+
+```bash
+sudo dnf copr enable jfhbrook/joshiverse
+dnf install korbenware
+```
+
+### MacOS
+
+**TODO:** Package korbenware in Homebrew tap. kbconfig, kbopen and kbprev
+should already work in MacOS.
+
+Once I create a Formula in my homebrew tap, you should be able to run:
+
+```bash
+brew install jfhbrook/joshiverse/korbenware
+```
+
+### Other Linux Distros
+
+The scripts in `./bin` should be portable. As long as you have the dependencies
+installed, you should be able to
+copy them onto your `PATH` and be
+set:
+
+```bash
+cp ./bin/* ~/.local/bin/
+chmod +x ~/.local/bin/kb*
+```
 
 ## kbconfig
 
@@ -24,41 +57,25 @@ Manage korbenware configs in `~/.config/korbenware/config.ini`.
 
 ## kbbg
 
-Change the background in sway.
+Change the background (in sway).
+
+### TODO
+
+- Read background directories from kbconfig
+- Find through all background directories
+- Print note on how to make permanent in sway
+- Investigate [MacOS support](https://apple.stackexchange.com/questions/40644/how-do-i-change-desktop-background-with-a-terminal-command)
 
 ### Dependencies
 
 * bash
 * fzf
-* swaymsg
+* sway
 * [viu](https://crates.io/crates/viu)
-
-## kbdesktop
-
-Basic interaction with .desktop files for both the
-[XDG application menu](https://specifications.freedesktop.org/menu-spec/menu-spec-latest.html)
-and [XDG autostart](https://specifications.freedesktop.org/autostart-spec/0.5/ar01s02.html).
-
-### Dependencies
-
-* System python3
-* System [pyxdg](https://www.freedesktop.org/wiki/Software/pyxdg/)
-
-## kblock
-
-A screen locking script. Works with swaylock and *probably* works with
-[physlock](https://github.com/muennich/physlock).
-
-### Dependencies
-
-* bash
-* Either swaylock or physlock
-* If using swaylock, cowsay and fortune-mod
-* `kbconfig`
 
 ## kbmenu
 
-A command line XDG application menu launcher, using fzf.
+A command line (XDG) application menu launcher, using fzf.
 
 ### Dependencies
 
@@ -67,61 +84,13 @@ A command line XDG application menu launcher, using fzf.
 * System Python 3
 * System pyxdg
 
-## kbnotify
+### TODO
 
-A collection of XDG notifications for things like volume/mute, screenshots, battery
-status.
-
-To hook up the battery, you can set up some [udev](https://wiki.archlinux.org/title/udev)
-rules. Adopting the strategy used in [Ventto/batify](https://github.com/Ventto/batify)
-gets you a file like this:
-
-```
-ACTION=="change", KERNEL=="BAT0", \
-SUBSYSTEM=="power_supply", \
-ATTR{status}=="Discharging", \
-ATTR{capacity}=="[0-9]", \
-IMPORT{program}="/usr/bin/xpub", \
-RUN+="/bin/su $env{XUSER} -c '/usr/bin/kbnotify battery-critical $attr{capacity}'"
-
-ACTION=="change", KERNEL=="BAT0", \
-SUBSYSTEM=="power_supply", \
-ATTR{status}=="Discharging", \
-ATTR{capacity}=="1[0-5]", \
-IMPORT{program}="/usr/bin/xpub", \
-RUN+="/bin/su $env{XUSER} -c '/usr/bin/kbnotify battery-low $attr{capacity}'"
-
-SUBSYSTEM=="power_supply", ACTION=="change", \
-ENV{POWER_SUPPLY_ONLINE}=="0", ENV{POWER}="off", \
-OPTIONS+="last_rule", \
-IMPORT{program}="/usr/bin/xpub", \
-RUN+="/bin/su $env{XUSER} -c '/usr/bin/kbnotify unplugged'"
-
-SUBSYSTEM=="power_supply", ACTION=="change", \
-ENV{POWER_SUPPLY_ONLINE}=="1", ENV{POWER}="on", \
-OPTIONS+="last_rule", \
-IMPORT{program}="/usr/bin/xpub", \
-RUN+="/bin/su $env{XUSER} -c '/usr/bin/kbnotify plugged-in'"
-```
-
-For volume notifications, you can call kbnotify after using a different tool
-(such as pactl) to adjust the volume. For example, I have something like
-this in my sway config:
-
-```
-bindsym XF86AudioRaiseVolume exec bash -c 'pactl set-sink-volume @DEFAULT_SINK@ +5% && kbnotify volume-up'
-bindsym XF86AudioLowerVolume exec bash -c 'pactl set-sink-volume @DEFAULT_SINK@ -5% && kbnotify volume-down'
-bindsym XF86AudioMute exec bash -c 'pactl set-sink-mute @DEFAULT_SINK@ toggle && kbnotify toggle-mute'
-b
-```
-
-For more, look at kbscreenshot.
-
-### Dependencies
-
-* bash
-* notify-send
-* pactl (volume hooks)
+1. Can I support an analog in MacOS? `open -a` should be able to open a given
+   application. I believe that getting a list of applications is a matter of
+   using `find`, which is honestly easier than the XDG situation.
+2. Is `kbmenu` worth supporting? I don't use it much, if ever. But maybe I
+   would if it worked smoothly and I built the habit?
 
 ## kbopen
 
@@ -150,28 +119,6 @@ Preview files in the terminal, using viu, bat and pdftotext. Used by kbopen.
 * pdftotext for (bad) pdf preview
 * cat, if any of these are missing
 
-## kbscreenshot
-
-A thin wrapper around [grim](https://github.com/emersion/grim), [slurp](https://github.com/emersion/slurp) and [wl-copy](https://github.com/bugaevc/wl-clipboard). Prints
-the created file to output, or `CLIPBOARD` if sent to the clipboard.
-
-kbnotify knows what to do with the output of kbscreenshot, so you can plumb
-them together pretty easy. For example, in sway:
-
-```
-bindsym Print exec bash -c 'kbnotify screenshot "$(kbscreenshot)"
-bindsym Shift+Print exec bash -c 'kbnotify screenshot "$(kbscreenshot --select)"
-bindsym $mod+Print exec bash -c 'kbnotify screenshot "$(kbscreenshot --clipboard)"
-bindsym $mod+Shift+Print exec bash -c 'kbnotify screenshot "$(kbscreenshot --select --clipboard)"
-```
-
-### Dependencies
-
-* bash
-* grim
-* slurp
-* wl-copy
-
 ## What Happened to the Python Korbenware?
 
 A few years ago, I attempted to write a bunch of Linux desktop environment
@@ -185,6 +132,37 @@ A few of them - namely the dbus framework, the session manager and an
 inheritance-based composition for XDG helpers - turned out to be bad. Someday
 I'll dust off the systemd Twisted logger and the Jupyter UX stuff. I still
 have the code, just in my attic.
+
+## What Happened to the Other Tools?
+
+A number of tools were removed from Korbenware because they're no longer
+necessary given you're using Fedora Sway Spin and/or its choice of tools:
+
+### kbdesktop
+
+Fedora uses sway-systemd to trigger XDG autostart:
+
+<https://github.com/alebastr/sway-systemd>
+
+### kblock
+
+`kblock` was originally a fun wrapper around
+[physlock](https://github.com/xyb3rt/physlock), and was later a wrapper around
+swaylock that introduced theming. However, I only have a need for swaylock,
+and my swaylock configuration needs are met through swaylock's config file.
+
+### kbnotify
+
+`kbnotify` was glue for various notifications in my sway desktop, such as
+volume changes. Fedora solves this in various ways depending on the particular
+binding. In the volume case, it uses a script located at
+`/usr/libexec/sway/volume-helper`.
+
+### kbscreenshot
+
+Fedora uses a tool called
+[grimshot](https://manpages.ubuntu.com/manpages/jammy/man1/grimshot.1.html)
+for taking screenshots.
 
 # Licensing
 
