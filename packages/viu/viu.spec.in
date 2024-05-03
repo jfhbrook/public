@@ -15,7 +15,6 @@ Terminal image viewer with native support for iTerm and Kitty
 
 %prep
 %autosetup
-%autosetup -a 1
 
 %build
 ls -l
