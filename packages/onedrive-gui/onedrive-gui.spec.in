@@ -30,12 +30,12 @@ mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_datadir}
 ls -l
 install -p -m 755 OneDriveGUI-%{version}-x86_64.AppImage %{buildroot}%{_bindir}/onedrive-gui
-install -p -m 644 onedrive-gui-%{version}/onedrive.desktop %{buildroot}%{_datadir}/onedrive.desktop
+install -p -m 644 onedrive-gui-%{version}/onedrive-gui.desktop %{buildroot}%{_datadir}/applications/onedrive-gui.desktop
 
 %check
 
 %files
 %{_bindir}/onedrive-gui
-%{_datadir}/onedrive.desktop
+%{_datadir}/applications/onedrive-gui.desktop
 
 %changelog
