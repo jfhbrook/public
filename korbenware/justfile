@@ -39,8 +39,12 @@ shell:
 # Publishing
 #
 
+check_tap:
+  if [ ! -d "${HOMEBREW_TAP}" ]; then echo "A HOMEBREW_TAP is required to publish."; exit 1; fi
+
 tag:
-  . ./venv/bin/activate && tito tag --use-version '{{VERSION}}'
+  if [[ "${OSTYPE}" == "darwin"* ]]; then echo "Must release on Fedora"; exit 1; fi
+  tito tag --use-version '{{VERSION}}'
 
 bundle:
   tar -czf korbenware-{{VERSION}}.tar.gz bin COPYING NOTICE README.md
@@ -55,10 +59,10 @@ apply-copr:
   if [[ "${OSTYPE}" == "darwin"* ]]; then echo "Skipping Copr apply on macOS"; else coprctl apply -f ./package.yml; fi
 
 build-copr:
-  if [[ "${OSTYPE}" == "darwin"* ]]; then echo "Visit https://copr.fedorainfracloud.org/coprs/jfhbrook/joshiverse/package/korbenware/ to build COPR package"; else copr build-package jfhbrook/joshiverse --name 'korbenware'; fi
+  copr build-package jfhbrook/joshiverse --name 'korbenware'; fi
 
 apply-homebrew:
   bash ./scripts/apply-homebrew.sh '{{VERSION}}' '{{PATCH}}'
 
 # Publish the release on GitHub, Homebrew, and Copr
-publish: tag push bundle release apply-homebrew apply-copr build-copr
+publish: check_tap tag push bundle release apply-homebrew apply-copr build-copr

@@ -99,15 +99,47 @@ Preview files in the terminal, using viu, bat and pdftotext. Used by kbopen.
 * pdftotext for (bad) pdf preview
 * cat, if any of these are missing
 
-## Publishing
+# Publishing
 
-### COPR
+The publishing process does the following:
 
-Korbenware uses [tito](https://github.com/rpm-software-management/tito) for
-managing COPR releases. To tag, release and build:
+1. Tags the release with [tito](https://github.com/rpm-software-management/tito)
+2. Pushes the tag to GitHub
+3. Creates a tarball including the scripts, license files and README
+4. Creates a GitHub release containing that tarball
+5. Generates an updated Homebrew formula
+6. Commits and pushes the Homebrew formula
+7. Applies the current COPR package configuration
+8. Triggers a build of the COPR package
 
-1. Open the `justfile` and update the `VERSION` variable
-2. Run `just publish`
+## Dependencies
+
+- `git`, of course
+- The `gh` CLI tool
+- [exercise-bike](https://npm.im/exercise-bike) - available on my COPR and
+  Homebrew tap
+- `tito`  - available on Fedora repositories
+- [copr-cli](https://developer.fedoraproject.org/deployment/copr/copr-cli.html) -
+  available on Fedora repositories
+- [coprctl](https://github.com/jfhbrook/public/tree/main/coprctl) - available
+  on my COPR
+- My [homebrew tap](https://github.com/jfhbrook/homebrew-joshiverse) cloned
+  with the `$HOMEBREW_TAP` environment variable set to its path
+
+## Process
+
+First, set up this project on a Fedora machine and install all the
+dependencies. Due to the dependencies on `tito` and `copr-cli`, releases can
+only be triggered on Fedora. **TODO**: Create a Docker image that can do the
+release in a cross-platform manner.
+
+Then, open the `justfile` and update the `VERSION` and `PATCH` variables.
+Generally, `PATCH` should be set to `1`, but may be incremented if a package
+itself has a bug.
+
+Second, run `just publish`. This should trigger the whole process.
+
+# History
 
 ## What Happened to the Python Korbenware?
 
