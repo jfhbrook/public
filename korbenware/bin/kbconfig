@@ -14,20 +14,12 @@ import platform
 import sys
 
 CONFIG_PATH = os.environ.get(
-    "KORBENWARE_CONFIG",
-    os.path.expanduser("~/.config/korbenware/config.ini")
+    "KORBENWARE_CONFIG", os.path.expanduser("~/.config/korbenware/config.ini")
 )
 
 CONFIG = ConfigParser()
 
-DEFAULTS = {
-    "background": {
-    },
-    "menu": {
-    },
-    "python": {
-    }
-}
+DEFAULTS = {"background": {}, "menu": {}, "python": {}}
 
 
 if platform.system() == "Darwin":
@@ -40,7 +32,9 @@ if platform.system() == "Darwin":
     for directory in [
         "/Library/Desktop Pictures",
         "/System/Library/Desktop Pictures",
-        os.path.expanduser("~/Library/Application Support/com.apple.mobileAssetDesktop")
+        os.path.expanduser(
+            "~/Library/Application Support/com.apple.mobileAssetDesktop"
+        ),
     ]:
         if os.path.isdir(directory):
             DEFAULTS["background"]["path"] += f":{directory}"
@@ -58,21 +52,11 @@ def log_info(msg):
 
 parser = ArgumentParser()
 parser.add_argument("action", choices=["init", "get", "set"])
-parser.add_argument(
-    "section",
-    nargs="?",
-    choices=list(DEFAULTS.keys()),
-    default=None
-)
+parser.add_argument("section", nargs="?", choices=list(DEFAULTS.keys()), default=None)
 parser.add_argument("key", nargs="?", default=None)
 parser.add_argument("value", nargs="?", default=None)
 parser.add_argument("--if-none", default=None)
-parser.add_argument(
-    "--force",
-    dest='force',
-    action='store_true',
-    default=False
-)
+parser.add_argument("--force", dest="force", action="store_true", default=False)
 
 log_info("Korben's Cool Petsitter's Configuration Manager 🦜")
 log_info("programmed entirely from the grave")
@@ -105,11 +89,7 @@ if not (args.section and args.key):
 if args.action == "get":
     value = {
         **DEFAULTS[args.section],
-        **(
-            CONFIG[args.section]
-            if CONFIG.has_section(args.section)
-            else {}
-        )
+        **(CONFIG[args.section] if CONFIG.has_section(args.section) else {}),
     }.get(args.key, args.if_none)
     print(value)
 elif args.action == "set":
