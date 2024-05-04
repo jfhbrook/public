@@ -1,5 +1,5 @@
 Name: korbenware
-Version: 0.7.1
+Version: 1.0.0
 Release: 1%{?dist}
 License: MPL-2.0
 Summary: linux/unix desktop cli software
@@ -43,6 +43,13 @@ install -p -m 755 bin/kbprev %{buildroot}%{_bindir}
 
 
 %changelog
+* Sat May 04 2024 Josh Holbrook <josh.holbrook@gmail.com> 1.0.0-1
+- kbbg, kbmenu and kbopen support MacOS (josh.holbrook@gmail.com)
+- kbconfig has extended options to support MacOS (josh.holbrook@gmail.com)
+- Release automatically posted to GitHub (josh.holbrook@gmail.com)
+- Homebrew package updated automatically (josh.holbrook@gmail.com)
+- Homebrew package includes dependencies (josh.holbrook@gmail.com)
+- kbconfig formatted with black (josh.holbrook@gmail.com)
 * Fri May 03 2024 Josh Holbrook <josh.holbrook@gmail.com> 0.7.1-1
 - kbconfig get handles missing section (josh.holbrook@gmail.com)
 
