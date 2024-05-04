@@ -24,13 +24,7 @@ dnf install korbenware
 
 ### MacOS
 
-**TODO:** Package korbenware in Homebrew tap. kbbg, kbconfig, kbopen and kbprev
-already work in MacOS. kbmenu should work with some love:
-
-- [detecting platform with python](https://stackoverflow.com/questions/1854/how-to-identify-which-os-python-is-running-on)
-- [list all applications](https://www.howtogeek.com/409377/how-to-list-all-applications-on-a-mac/)
-
-Once I create a Formula in my homebrew tap, you should be able to run:
+You should be able to install Korbenware from my Homebrew tap:
 
 ```bash
 brew install jfhbrook/joshiverse/korbenware
@@ -58,25 +52,25 @@ Manage korbenware configs in `~/.config/korbenware/config.ini`.
 
 ## kbbg
 
-Change the background (in sway).
+Change the background.
 
 ### Dependencies
 
 * bash
 * fzf
-* sway
+* sway (Linux)
 * [viu](https://crates.io/crates/viu)
 
 ## kbmenu
 
-A command line (XDG) application menu launcher, using fzf.
+A command line application menu launcher, using fzf.
 
 ### Dependencies
 
 * bash
 * fzf
 * System Python 3
-* System pyxdg
+* System pyxdg (Linux)
 
 ## kbopen
 

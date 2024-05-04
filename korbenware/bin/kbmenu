@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 
 # Copyright 2021 Josh Holbrook
 #
@@ -7,9 +7,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 PYTHON="$(kbconfig get python path)"
-if [ -z "${PYTHON}" ]; then
-  PYTHON=/usr/bin/python3
-fi
 DEBUG="${DEBUG:-}"
 
 function log-debug {
@@ -26,6 +23,29 @@ log-info "Grandmaw Korben's XDG Menu Explorer 🦜"
 log-info '"nice work, pixel birdie!"'
 log-info "programmed entirely while unemployed"
 log-debug "it worked if it ends with ok"
+
+if [[ "${OSTYPE}" == "darwin"* ]]; then
+  APPLICATIONS==''
+  DEPTH="$(./bin/kbconfig get menu depth)"
+
+  IFS=: read -r -d '' -a APP_PATH < <(printf '%s:\0' "$(kbconfig get menu path)")
+
+  for path in "${APP_PATH[@]}"; do
+    if [ -n "${APPLICATIONS}" ]; then
+      APPLICATIONS="${APPLICATIONS}
+"
+    fi
+    APPLICATIONS="${APPLICATIONS}$(find "${path}" -iname '*.app' -maxdepth "${DEPTH:-2}")"
+  done
+
+  CHOICE="$(echo "${APPLICATIONS}" | fzf -m --preview "kbprev '{1}' '{2}' '{3}' '{4}' '{5}' '{6}' '{7}' '{8}'")"
+
+  open -a "${CHOICE}"
+
+  log-debug "ok"
+
+  exit 0
+fi
 
 __PRELUDE='
 import xdg.Menu
