@@ -24,10 +24,9 @@ dnf install korbenware
 
 ### MacOS
 
-**TODO:** Package korbenware in Homebrew tap. kbconfig, kbopen and kbprev
-already work in MacOS. kbbg and kbmenu should work with some love:
+**TODO:** Package korbenware in Homebrew tap. kbbg, kbconfig, kbopen and kbprev
+already work in MacOS. kbmenu should work with some love:
 
-- [change background in macos](https://apple.stackexchange.com/questions/40644/how-do-i-change-desktop-background-with-a-terminal-command)
 - [detecting platform with python](https://stackoverflow.com/questions/1854/how-to-identify-which-os-python-is-running-on)
 - [list all applications](https://www.howtogeek.com/409377/how-to-list-all-applications-on-a-mac/)
 

@@ -7,7 +7,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 BACKGROUNDS=""
-SWAY_ARGS="$(kbconfig get background sway_args)"
 
 IFS=: read -r -d '' -a BACKGROUND_PATH < <(printf '%s:\0' "$(kbconfig get background path)")
 
@@ -21,8 +20,19 @@ done
 
 SELECTED="$(echo "${BACKGROUNDS}" | fzf --preview 'viu -b -w 60 {}')"
 
-swaymsg output '*' bg "${SELECTED}" ${SWAY_ARGS}
+if [[ "${OSTYPE}" == "darwin"* ]]; then
+  SANITIZED="$(echo "${SELECTED}" | sed 's/"/""/g')"
 
-echo "To make the background permanent, add this your sway config:
+  osascript -e 'tell application "Finder"
+    set desktop picture to POSIX file "'"${SANITIZED}"'"
+    end tell'
+else
+  SWAY_ARGS="$(kbconfig get background sway_args)"
 
-    output * bg ${SELECTED} ${SWAY_ARGS}"
+  swaymsg output '*' bg "${SELECTED}" ${SWAY_ARGS}
+
+  echo "To make the background permanent, add this your sway config:
+
+      output * bg ${SELECTED} ${SWAY_ARGS}"
+fi
+
