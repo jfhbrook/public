@@ -5,6 +5,12 @@ class Korbenware < Formula
   sha256 "{{ sha }}"
   license "MPL-2.0"
 
+  depends_on "bat" => :recommended
+  depends_on "fzf"
+  depends_on "poppler" => :recommended
+  depends_on "python"
+  depends_on "viu"
+
   def install
     bin.install Dir["bin/*"]
   end
