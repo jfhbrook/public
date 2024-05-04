@@ -3,12 +3,44 @@ PATCH := "1"
 
 set dotenv-load := true
 
+#
+# Installing, updating and upgrading dependencies
+#
+
+_venv:
+  if [ ! -d venv ]; then python3 -m venv venv; . ./venv/bin/activate && pip install pip wheel; fi
+
+_clean-venv:
+  rm -rf venv
+
+# Install all dependencies
+install:
+  @just _venv
+  . ./venv/bin/activate && pip install -r requirements_dev.txt
+
+#
+# Development
+#
+
+# Format Python with black
+format:
+  . ./venv/bin/activate &&  black ./bin/kbconfig
+
+# Lint with flake8 and shellcheck
+lint:
+  . ./venv/bin/activate && flake8 './bin/kbconfig'
+  shellcheck ./bin/*
+
 # Open a shell with bins in the PATH
 shell:
-  PATH="$(pwd)/bin:${PATH}" bash --login
+  . ./venv/bin/activate && PATH="$(pwd)/bin:${PATH}" bash --login
+
+#
+# Publishing
+#
 
 tag:
-  tito tag --use-version '{{VERSION}}'
+  . ./venv/bin/activate && tito tag --use-version '{{VERSION}}'
 
 bundle:
   tar -czf korbenware-{{VERSION}}.tar.gz bin COPYING NOTICE README.md
@@ -20,10 +52,10 @@ release:
   bash ./scripts/release.sh '{{VERSION}}' '{{PATCH}}'
 
 apply-copr:
-  coprctl apply -f ./package.yml
+  if [[ "${OSTYPE}" == "darwin"* ]]; then echo "Skipping Copr apply on macOS"; else coprctl apply -f ./package.yml; fi
 
 build-copr:
-  copr build-package jfhbrook/joshiverse --name 'korbenware'
+  if [[ "${OSTYPE}" == "darwin"* ]]; then echo "Visit https://copr.fedorainfracloud.org/coprs/jfhbrook/joshiverse/package/korbenware/ to build COPR package"; else copr build-package jfhbrook/joshiverse --name 'korbenware'; fi
 
 apply-homebrew:
   bash ./scripts/apply-homebrew.sh '{{VERSION}}' '{{PATCH}}'
