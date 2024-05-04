@@ -6,8 +6,12 @@ and leveraging [yq](https://github.com/mikefarah/yq).
 
 ## Install
 
-It's a portable bash script, but also I'm working on getting it up in my
-personal COPR.
+You should be able to install Korbenware from COPR:
+
+```bash
+sudo dnf copr enable jfhbrook/joshiverse
+dnf install coprctl
+```
 
 ## Config
 
