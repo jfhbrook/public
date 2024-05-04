@@ -23,6 +23,8 @@ CONFIG = ConfigParser()
 DEFAULTS = {
     "background": {
     },
+    "menu": {
+    },
     "python": {
     }
 }
@@ -30,6 +32,9 @@ DEFAULTS = {
 
 if platform.system() == "Darwin":
     DEFAULTS["background"]["path"] = "/System/Library/Desktop Pictures"
+    DEFAULTS["menu"]["path"] = "/Applications:/System/Applications:"
+    DEFAULTS["menu"]["path"] += os.path.expanduser("~/Applications")
+    DEFAULTS["menu"]["depth"] = "2"
     DEFAULTS["python"]["path"] = "/opt/homebrew/bin/python3"
 
     for directory in [
@@ -39,6 +44,7 @@ if platform.system() == "Darwin":
     ]:
         if os.path.isdir(directory):
             DEFAULTS["background"]["path"] += f":{directory}"
+
 else:
     DEFAULTS["background"]["path"] = "/usr/share/backgrounds"
     DEFAULTS["background"]["sway_args"] = "fill"
@@ -97,7 +103,6 @@ if not (args.section and args.key):
     sys.exit(1)
 
 if args.action == "get":
-
     value = {
         **DEFAULTS[args.section],
         **(
