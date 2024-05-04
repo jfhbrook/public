@@ -1,0 +1,10 @@
+- [X] Do up posh profile
+- [ ] Create secret with clickops in azure
+- [ ] Google a guide to apps with terraform
+- [ ] Create a new terraform project
+- [ ] Put terraform state in blob storage
+- [ ] Implement current project with terraform
+- [ ] Swap out hard-coded API key with secret
+- [ ] Refactor client into module
+- [ ] Publish module to posh gallery
+- [ ] Post release notes to twitters
