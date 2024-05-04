@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # Copyright 2023 Josh Holbrook
 #
@@ -10,6 +10,7 @@ from argparse import ArgumentParser
 from configparser import ConfigParser
 import os
 import os.path
+import platform
 import sys
 
 CONFIG_PATH = os.environ.get(
@@ -18,17 +19,30 @@ CONFIG_PATH = os.environ.get(
 )
 
 CONFIG = ConfigParser()
-CONFIG.read(CONFIG_PATH)
 
 DEFAULTS = {
     "background": {
-        "path": "/usr/share/backgrounds",
-        "sway_args": "fill"
     },
-    "menu": {
-        "python_path": ""
+    "python": {
     }
 }
+
+
+if platform.system() == "Darwin":
+    DEFAULTS["background"]["path"] = "/System/Library/Desktop Pictures"
+    DEFAULTS["python"]["path"] = "/opt/homebrew/bin/python3"
+
+    for directory in [
+        "/Library/Desktop Pictures",
+        "/System/Library/Desktop Pictures",
+        os.path.expanduser("~/Library/Application Support/com.apple.mobileAssetDesktop")
+    ]:
+        if os.path.isdir(directory):
+            DEFAULTS["background"]["path"] += f":{directory}"
+else:
+    DEFAULTS["background"]["path"] = "/usr/share/backgrounds"
+    DEFAULTS["background"]["sway_args"] = "fill"
+    DEFAULTS["python"]["path"] = "/usr/bin/python3"
 
 
 def log_info(msg):
@@ -75,6 +89,8 @@ if args.action == "init":
             CONFIG.write(f)
         print(f"Default configuration written to '{CONFIG_PATH}'.")
         sys.exit(0)
+
+CONFIG.read(CONFIG_PATH)
 
 if not (args.section and args.key):
     print("the following arguments are required: section, key")

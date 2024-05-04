@@ -6,7 +6,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-PYTHON="$(kbconfig get menu python_path)"
+PYTHON="$(kbconfig get python path)"
 if [ -z "${PYTHON}" ]; then
   PYTHON=/usr/bin/python3
 fi
@@ -21,7 +21,6 @@ function log-debug {
 function log-info {
   echo "info:" "$@"
 }
-
 
 log-info "Grandmaw Korben's XDG Menu Explorer 🦜"
 log-info '"nice work, pixel birdie!"'
