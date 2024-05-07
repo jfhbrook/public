@@ -13,10 +13,10 @@
     "undici": "^4.16.0"
   },
   "bin": {
-    "bbgurl": "main.js"
+    "bbgurl": "bin/bbgurl"
   },
   "scripts": {
-    "test": "tests-of-the-sierra-madre"
+    "test": "PATH=\"$(pwd)/bin:${PATH}\" bats --tap ./test"
   },
   "bugs": {
     "url": "https://github.com/jfhbrook/public/issues"

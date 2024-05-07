@@ -55,10 +55,11 @@ OPTIONS:
 
     -o/--output FILE         a file to write the response to. defaults to stdout.
 
-    -U/--user CREDENTIALS    specify basic auth credentials. ex: '-u user:pass'
+    -u/--user CREDENTIALS    specify basic auth credentials. ex: '-u user:pass'
 `;
 
 function parseArgs(argv) {
+  let error = null;
   const opts = minimist(argv, {
     string: [
       'method',
@@ -95,14 +96,16 @@ function parseArgs(argv) {
     default: {
       include: false,
       verbose: true
+    },
+    unknown: (arg) => {
+      if (! arg.startsWith('-')) {
+        return true;
+      }
+      error = `Unknown option: ${arg}`;
     }
   });
 
   let _url = opts._.length ? url.parse(opts._.join(' ')) : null;
-
-  if (opts.user) {
-    _url.auth = opts.user;
-  }
 
   const undiciOptions = {
     method: opts.method,
@@ -113,6 +116,12 @@ function parseArgs(argv) {
     headerstimeout: opts.headersTimeout ? parseInt(opts.headersTimeout, 10) : undefined,
     maxRedirections: opts.maxRedirections ? parseInt(opts.maxRedirections, 10) : undefined
   };
+
+  if (opts.user) {
+    const encoded = Buffer.from(opts.user).toString('base64');
+    undiciOptions.headers = undiciOptions.headers || {};
+    undiciOptions.headers.authorization = `Basic ${encoded}`;
+  }
 
   if (opts.body && opts.body[0] === '@' && fs.existsSync(opts.body.slice(1))) {
     undiciOptions.body = fs.createReadStream(opts.body.slice(1));
@@ -130,7 +139,8 @@ function parseArgs(argv) {
     verbose: !opts.quiet,
     include: opts.include,
     logfile: opts.logfile,
-    mixin: opts.mixin
+    mixin: opts.mixin,
+    error
   };
 
   return [[ _url, undiciOptions], appOptions ];
@@ -153,7 +163,7 @@ class IOManager {
 
     if (opts.output !== process.stdout) {
       this.output.on('close', () => {
-        this.log('data written to %s', opts.outputFile);
+        this.log('Data written to %s', opts.outputFile);
       });
     }
   }
@@ -199,6 +209,13 @@ class IOManager {
 async function main() {
   const [[url, undiciOpts], appOpts] = parseArgs(process.argv.slice(2));
   const io = new IOManager(appOpts);
+
+  if (appOpts.error) {
+    io.log(appOpts.error);
+    io.log('');
+    io.help();
+    process.exit(1);
+  }
 
   if (appOpts.help) {
     io.help();

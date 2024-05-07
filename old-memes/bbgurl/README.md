@@ -28,8 +28,7 @@ The document has moved
 
 ### set some headers
 
-(this example does *not* work and will be updated as soon as I write tests.
-the api is still like this though!)
+(this example does *not* work as that service no longer exists.)
 
 ```
 $ bbgurl http://whatismyip.jit.su -H '{ "accept": "application/json" }'
@@ -108,7 +107,10 @@ comprehensive:
 [♥] 
 ```
 
+## test
 
+There are tests using [bats](https://github.com/bats-core/bats-core). To run
+them, execute `npm test`.
 
 ## what happened to the request wrapper?
 
