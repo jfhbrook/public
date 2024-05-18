@@ -1,8 +1,4 @@
-- [ ] Set up managed identity for app <https://learn.microsoft.com/en-us/azure/app-service/overview-managed-identity?tabs=portal%2Chttp>
-- [ ] Create secret with clickops in azure
-- [ ] Pull API key from secret <https://learn.microsoft.com/en-us/azure/app-service/app-service-key-vault-references?tabs=azure-cli>
-- [ ] Set API key for local development
-- [ ] Create resources with terraform
+- [ ] Get app name and hostname from terraform as outputs
 - [ ] Publish app with azure functions core tools
 - [ ] Get production app working
 - [ ] Get client function working
