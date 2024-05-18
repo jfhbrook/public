@@ -1,0 +1,7 @@
+set dotenv-load := true
+
+start:
+  cd service && func start
+
+deploy:
+  cd service && func azure functionapp publish "${VERBTIONARY_APP_NAME}"

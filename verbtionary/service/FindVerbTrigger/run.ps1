@@ -3,8 +3,9 @@ using namespace System.Net
 param($Request, $TriggerMetadata)
 
 $VerbosePreference = 'Continue'
-# TODO: Pull this from Azure secrets
-$ThesaurusAPIKey = ''
+
+$KeyVaultName = $Env:VERBTIONARY_KEYVAULT_NAME
+$ThesaurusAPIKey = Get-AzKeyVaultSecret -VaultName $KeyVaultName -Name "merriam-webster-api-key" -AsPlainText
 
 $Ok = $False
 $ResError = $null
