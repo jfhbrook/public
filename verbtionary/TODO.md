@@ -1,10 +1,12 @@
-- [X] Do up posh profile
+- [ ] Set up managed identity for app <https://learn.microsoft.com/en-us/azure/app-service/overview-managed-identity?tabs=portal%2Chttp>
 - [ ] Create secret with clickops in azure
-- [ ] Google a guide to apps with terraform
-- [ ] Create a new terraform project
-- [ ] Put terraform state in blob storage
-- [ ] Implement current project with terraform
-- [ ] Swap out hard-coded API key with secret
+- [ ] Pull API key from secret <https://learn.microsoft.com/en-us/azure/app-service/app-service-key-vault-references?tabs=azure-cli>
+- [ ] Set API key for local development
+- [ ] Create resources with terraform
+- [ ] Publish app with azure functions core tools
+- [ ] Get production app working
+- [ ] Get client function working
+- [ ] Refactor terraform into a module
 - [ ] Refactor client into module
 - [ ] Publish module to posh gallery
 - [ ] Post release notes to twitters
