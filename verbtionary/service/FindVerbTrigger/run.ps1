@@ -201,11 +201,12 @@ if ($Query) {
             }
         }
 
-        Write-Verbose $Lookup
+        Write-Verbose 'Calling thesaurus API...'
 
         $Search = [uri]::EscapeDataString($Query.ToLower())
 
-        $ThesaurusResponse = Invoke-WebRequest "https://www.dictionaryapi.com/api/v3/references/thesaurus/json/${Search}?key=${ThesaurusAPIKey}"
+        # Disabling verbose output so we don't log the API key
+        $ThesaurusResponse = Invoke-WebRequest -Verbose:$false "https://www.dictionaryapi.com/api/v3/references/thesaurus/json/${Search}?key=${ThesaurusAPIKey}"
 
         $MerriamWebsterSynonyms = ( `
             $ThesaurusResponse.Content | `
@@ -215,12 +216,16 @@ if ($Query) {
             ForEach-Object { $_ } `
         )
 
+        Write-Verbose 'Finding synonyms...'
+
         $Synonyms = ($MerriamWebsterSynonyms + ($Query.ToLower())) | `
             ForEach-Object { $MicrosoftSynonyms[$_] } | `
             Where-Object { $_ } | `
             ForEach-Object { $_ }
 
         $ResBody = ($Synonyms | Sort-Object | Get-Unique | ForEach-Object { $Lookup[$_] } | Where-Object { $_ })
+
+        Write-Verbose 'Sending results.'
 
         $Status = [HttpStatusCode]::OK
         $Ok = $True
