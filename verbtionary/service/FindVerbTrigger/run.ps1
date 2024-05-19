@@ -4,8 +4,12 @@ param($Request, $TriggerMetadata)
 
 $VerbosePreference = 'Continue'
 
-$KeyVaultName = $Env:VERBTIONARY_KEYVAULT_NAME
-$ThesaurusAPIKey = Get-AzKeyVaultSecret -VaultName $KeyVaultName -Name "merriam-webster-api-key" -AsPlainText
+if ($Env:MERRIAM_WEBSTER_API_KEY) {
+  $ThesaurusAPIKey = $Env:MERRIAM_WEBSTER_API_KEY
+} else {
+  $KeyVaultName = $Env:VERBTIONARY_KEYVAULT_NAME
+  $ThesaurusAPIKey = Get-AzKeyVaultSecret -VaultName $KeyVaultName -Name "merriam-webster-api-key" -AsPlainText
+}
 
 $Ok = $False
 $ResError = $null
