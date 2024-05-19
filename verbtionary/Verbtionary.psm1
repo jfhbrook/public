@@ -18,6 +18,8 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+$Global:VerbtionaryUrl = "https://verbtionary-app.azurewebsites.net/api/findverbtrigger"
+
 function Find-Verb {
   <#
   .Synopsis
@@ -42,7 +44,7 @@ function Find-Verb {
     [string]$Query
   )
 
-  $Response = Invoke-WebRequest "https://verbtionary.azurewebsites.net/api/search?query=${Query}"
+  $Response = Invoke-WebRequest "${Global:VerbtionaryUrl}?query=${Query}"
 
   ($Response.Content | ConvertFrom-Json).Body | Write-Output
 }
