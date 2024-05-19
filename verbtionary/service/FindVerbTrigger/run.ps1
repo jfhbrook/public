@@ -205,10 +205,10 @@ if ($Query) {
 
         $Search = [uri]::EscapeDataString($Query.ToLower())
 
+        $ThesaurusResponse = Invoke-WebRequest "https://www.dictionaryapi.com/api/v3/references/thesaurus/json/${Search}?key=${ThesaurusAPIKey}"
+
         $MerriamWebsterSynonyms = ( `
-            ( `
-                Invoke-WebRequest "https://www.dictionaryapi.com/api/v3/references/thesaurus/json/${Search}?key=${ThesaurusAPIKey}" `
-            ).Content | `
+            $ThesaurusResponse.Content | `
             ConvertFrom-Json | `
             ForEach-Object { $_.meta.syns } | `
             Where-Object { $_ } | `
@@ -227,8 +227,8 @@ if ($Query) {
     } catch {
         $Status = [HttpStatusCode]::InternalServerError
         $ResError = @{
-            Type = $_.GetType()
-            Message = $_.Message
+            Type = $_.Exception.GetType().FullName
+            Message = $_.Exception.Message
         }
         Write-Warning $_
     }
