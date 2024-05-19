@@ -1,5 +1,4 @@
-- [ ] Refactor terraform into multiple files
-- [ ] Refactor terraform into a module
 - [ ] Refactor client into module
+- [ ] Update README
 - [ ] Publish module to posh gallery
 - [ ] Post release notes to twitters
