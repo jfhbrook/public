@@ -1,5 +1,5 @@
 resource "azurerm_resource_group" "verbtionary" {
-  name     = "verbtionary-v2"
+  name     = var.name
   location = "West US 2"
 }
 
