@@ -1,9 +1,5 @@
-- [ ] Get app name and hostname from terraform as outputs
-- [ ] Publish app with azure functions core tools
-- [ ] Get production app working
-- [ ] Parametrize vault name
-  - Set env var on app?
-- [ ] Get client function working
+- [ ] Document log stream
+- [ ] Clean up logging
 - [ ] Refactor terraform into a module
 - [ ] Refactor client into module
 - [ ] Publish module to posh gallery
