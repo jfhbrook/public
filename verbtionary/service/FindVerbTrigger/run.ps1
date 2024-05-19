@@ -1,4 +1,4 @@
-﻿using namespace System.Net
+using namespace System.Net
 
 param($Request, $TriggerMetadata)
 
