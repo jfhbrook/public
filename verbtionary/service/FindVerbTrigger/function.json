@@ -4,6 +4,7 @@
       "authLevel": "Function",
       "type": "httpTrigger",
       "direction": "in",
+      "authLevel": "anonymous",
       "name": "Request",
       "methods": [
         "get",
