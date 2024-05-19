@@ -20,7 +20,7 @@ resource "azurerm_key_vault_access_policy" "client" {
 
   secret_permissions = [
     "Delete",
-    // "Get",
+    "Get",
     "List",
     "Purge",
     "Set",
