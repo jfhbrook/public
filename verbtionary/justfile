@@ -1,0 +1,19 @@
+set dotenv-load := true
+
+install:
+  pwsh -c './scripts/Install.ps1'
+
+lint:
+  pwsh -c '& ./scripts/Activate.ps1; Invoke-ScriptAnalyzer -Path . -Recurse'
+
+format:
+  pwsh -c '& ./scripts/Activate.ps1; Invoke-ScriptAnalyzer -Fix -Path . -Recurse'
+
+start:
+  cd service && func start
+
+console:
+  pwsh -NoExit -Command "& ./scripts/Activate.ps1"
+
+deploy:
+  cd service && func azure functionapp publish "${VERBTIONARY_APP_NAME}"

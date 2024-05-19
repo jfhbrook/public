@@ -1,4 +1,4 @@
-# Copyright 2020 Josh Holbrook
+# Copyright 2024 Josh Holbrook
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to
@@ -18,30 +18,33 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-<#
-.Synopsis
-Search the Merriam-Webster thesaurus for synonyms that are also approved
-PowerShell verbs.
+$Global:VerbtionaryUrl = "https://verbtionary-app.azurewebsites.net/api/findverbtrigger"
 
-.Description
-Uses the Verbtionary API (an Azure Function) to search the Merriam-Webster
-thesaurus for synonyms that are also in the output of Get-Verb, parses the
-result, and presents it to the user.
+function Find-Verb {
+  <#
+  .Synopsis
+  Search the Merriam-Webster thesaurus for synonyms that are also approved
+  PowerShell verbs.
 
-.Parameter Query
-A word to search for synonyms.
+  .Description
+  Uses the Verbtionary API to search the Merriam-Webster thesaurus for synonyms
+  that are also in the output of Get-Verb.
 
-.Outputs
-The entries in the output of Get-Verb from the Verbtionary API's runtime.
+  .Parameter Query
+  A word to search for synonyms.
 
-.Notes
-Written by Josh Holbrook (@jfhbrook).
+  .Outputs
+  The entries in the output of the Verbtionary API.
+
+  .Notes
+  Written by Josh Holbrook (@jfhbrook).
 #>
 
-param(
-  [string]$Query
-)
+  param(
+    [string]$Query
+  )
 
-$Response = Invoke-WebRequest "https://verbtionary.azurewebsites.net/api/search?query=${Query}"
+  $Response = Invoke-WebRequest "${Global:VerbtionaryUrl}?query=${Query}"
 
-($Response.Content | ConvertFrom-Json).Body | Write-Output
+  ($Response.Content | ConvertFrom-Json).Body | Write-Output
+}
