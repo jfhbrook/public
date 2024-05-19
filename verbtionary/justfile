@@ -1,14 +1,13 @@
 set dotenv-load := true
-set shell := ["pwsh", "-c"]
 
 install:
-  ./scripts/Install.ps1
+  pwsh -c './scripts/Install.ps1'
 
 lint:
-  & ./scripts/Activate.ps1; Invoke-ScriptAnalyzer -Path . -Recurse
+  pwsh -c '& ./scripts/Activate.ps1; Invoke-ScriptAnalyzer -Path . -Recurse'
 
 format:
-  & ./scripts/Activate.ps1; Invoke-ScriptAnalyzer -Fix -Path . -Recurse
+  pwsh -c '& ./scripts/Activate.ps1; Invoke-ScriptAnalyzer -Fix -Path . -Recurse'
 
 start:
   cd service && func start
