@@ -1,4 +1,4 @@
-using namespace System.Net
+﻿using namespace System.Net
 
 param($Request, $TriggerMetadata)
 
@@ -190,7 +190,7 @@ if (-not $Query) {
 
 if ($Query) {
     $ErrorActionPreference = 'Stop'
-    
+
     try {
         $Lookup = @{}
 
@@ -226,7 +226,7 @@ if ($Query) {
             ForEach-Object { $_ }
 
         $ResBody = ($Synonyms | Sort-Object | Get-Unique | ForEach-Object { $Lookup[$_] } | Where-Object { $_ })
-        
+
         $Status = [HttpStatusCode]::OK
         $Ok = $True
     } catch {
