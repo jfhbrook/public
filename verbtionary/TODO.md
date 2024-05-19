@@ -1,5 +1,6 @@
 - [ ] Document log stream
 - [ ] Clean up logging
+- [ ] Refactor terraform into multiple files
 - [ ] Refactor terraform into a module
 - [ ] Refactor client into module
 - [ ] Publish module to posh gallery
