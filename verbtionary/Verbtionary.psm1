@@ -1,4 +1,4 @@
-# Copyright 2020 Josh Holbrook
+# Copyright 2024 Josh Holbrook
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to
@@ -18,30 +18,31 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-<#
-.Synopsis
-Search the Merriam-Webster thesaurus for synonyms that are also approved
-PowerShell verbs.
+function Find-Verb {
+  <#
+  .Synopsis
+  Search the Merriam-Webster thesaurus for synonyms that are also approved
+  PowerShell verbs.
 
-.Description
-Uses the Verbtionary API (an Azure Function) to search the Merriam-Webster
-thesaurus for synonyms that are also in the output of Get-Verb, parses the
-result, and presents it to the user.
+  .Description
+  Uses the Verbtionary API to search the Merriam-Webster thesaurus for synonyms
+  that are also in the output of Get-Verb.
 
-.Parameter Query
-A word to search for synonyms.
+  .Parameter Query
+  A word to search for synonyms.
 
-.Outputs
-The entries in the output of Get-Verb from the Verbtionary API's runtime.
+  .Outputs
+  The entries in the output of the Verbtionary API.
 
-.Notes
-Written by Josh Holbrook (@jfhbrook).
+  .Notes
+  Written by Josh Holbrook (@jfhbrook).
 #>
 
-param(
-  [string]$Query
-)
+  param(
+    [string]$Query
+  )
 
-$Response = Invoke-WebRequest "https://verbtionary.azurewebsites.net/api/search?query=${Query}"
+  $Response = Invoke-WebRequest "https://verbtionary.azurewebsites.net/api/search?query=${Query}"
 
-($Response.Content | ConvertFrom-Json).Body | Write-Output
+  ($Response.Content | ConvertFrom-Json).Body | Write-Output
+}

@@ -2,3 +2,4 @@
 
 Import-Module PSScriptAnalyzer
 Import-Module Pester -PassThru
+Import-Module ./Verbtionary.psd1
