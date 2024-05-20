@@ -18,7 +18,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-$Global:VerbtionaryUrl = "https://verbtionary-app.azurewebsites.net/api/findverbtrigger"
+$Global:VerbtionaryUrl = "https://verbtionary.azurewebsites.net/api/findverbtrigger"
 
 function Find-Verb {
   <#

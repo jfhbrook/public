@@ -1,5 +1,7 @@
 set dotenv-load := true
 
+app_name := env('VERBTIONARY_APP_NAME', 'verbtionary')
+
 install:
   pwsh -c './scripts/Install.ps1'
 
@@ -16,4 +18,4 @@ console:
   pwsh -NoExit -Command "& ./scripts/Activate.ps1"
 
 deploy:
-  cd service && func azure functionapp publish "${VERBTIONARY_APP_NAME}"
+  cd service && func azure functionapp publish '{{ app_name }}'
