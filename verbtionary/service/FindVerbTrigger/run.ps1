@@ -186,37 +186,55 @@ if (-not $Query) {
 if ($Query) {
     $ErrorActionPreference = 'Stop'
 
-    try {
-        $Lookup = @{}
+    $Lookup = @{}
 
-        Write-Verbose 'Collecting approved verbs...'
+    Write-Verbose 'Collecting approved verbs...'
 
-        Get-Verb | ForEach-Object {
-            $Key = $_.Verb.ToLower()
-            $Lookup[$Key] = $_
-            if ($MicrosoftSynonyms[$Key]) {
-              $MicrosoftSynonyms[$Key] += $Key
-            } else {
-              $MicrosoftSynonyms[$key] = @($Key)
-            }
+    Get-Verb | ForEach-Object {
+        $Key = $_.Verb.ToLower()
+        $Lookup[$Key] = $_
+        if ($MicrosoftSynonyms[$Key]) {
+          $MicrosoftSynonyms[$Key] += $Key
+        } else {
+          $MicrosoftSynonyms[$key] = @($Key)
         }
+    }
 
-        Write-Verbose 'Calling thesaurus API...'
+    Write-Verbose 'Calling thesaurus API...'
 
-        $Search = [uri]::EscapeDataString($Query.ToLower())
+    $Search = [uri]::EscapeDataString($Query.ToLower())
 
+    try {
         # Disabling verbose output so we don't log the API key
         $ThesaurusResponse = Invoke-WebRequest -Verbose:$false "https://www.dictionaryapi.com/api/v3/references/thesaurus/json/${Search}?key=${ThesaurusAPIKey}"
 
+        try {
+            $ThesaurusResults = $ThesaurusResponse.Content | ConvertFrom-Json
+        } catch {
+            $Status = [HttpStatusCode]::InternalServerError
+            $ResError = @{
+                Type = $_.Exception.GetType().FullName
+                Message = $ThesaurusResponse
+            }
+            Write-Warning $_
+        }
+    } catch {
+        $Status = [HttpStatusCode]::InternalServerError
+        $ResError = @{
+            Type = $_.Exception.GetType().FullName
+            Message = $_.Exception.Message
+        }
+        Write-Warning $_
+    }
+
+    if ($ThesaurusResults) {
+        Write-Verbose 'Finding synonyms...'
         $MerriamWebsterSynonyms = ( `
-            $ThesaurusResponse.Content | `
-            ConvertFrom-Json | `
+            $ThesaurusResults | `
             ForEach-Object { $_.meta.syns } | `
             Where-Object { $_ } | `
             ForEach-Object { $_ } `
         )
-
-        Write-Verbose 'Finding synonyms...'
 
         $Synonyms = ($MerriamWebsterSynonyms + ($Query.ToLower())) | `
             ForEach-Object { $MicrosoftSynonyms[$_] } | `
@@ -225,17 +243,9 @@ if ($Query) {
 
         $ResBody = ($Synonyms | Sort-Object | Get-Unique | ForEach-Object { $Lookup[$_] } | Where-Object { $_ })
 
-        Write-Verbose 'Sending results.'
 
         $Status = [HttpStatusCode]::OK
         $Ok = $True
-    } catch {
-        $Status = [HttpStatusCode]::InternalServerError
-        $ResError = @{
-            Type = $_.Exception.GetType().FullName
-            Message = $_.Exception.Message
-        }
-        Write-Warning $_
     }
 }
 else {
@@ -247,6 +257,8 @@ else {
         Message = 'You need to pass a ?query to the URL!'
     }
 }
+
+Write-Verbose 'Sending results.'
 
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $Status
