@@ -1,21 +1,25 @@
 # Verbtionary
 
-A problem I run into a lot while working with PowerShell is trying to find the right verb to use for a function. PowerShell functions are by convention named with the form `{Verb}-{Noun}`, and while the Noun can vary wildly (and is in fact often more "the rest of the sentence" than a noun *per se*), the Verb is supposed to conform to a [list of approved PowerShell verbs](https://docs.microsoft.com/en-us/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands?view=powershell-7). Sometimes finding the right verb is easy, especially if the verb you're looking for is already in the list, but sometimes it can be a challenge!
+Look up synonyms for a word that are also 
+[approved PowerShell verbs](https://docs.microsoft.com/en-us/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands?view=powershell-7)
+Uses the
+[Merriam-Webster thesaurus API](https://dictionaryapi.com/products/api-collegiate-thesaurus)
+via an Azure function app.
 
-I hacked up an [Azure function](https://azure.microsoft.com/en-us/services/functions/) that hits the [Merriam-Webster thesaurus API](https://dictionaryapi.com/products/api-collegiate-thesaurus) to look up synonyms for a given search and then sees which of them are included in the output of [Get-Verb](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/get-verb?view=powershell-7). In addition, I manually coded lookups for the synonyms/alternatives in Microsoft's list of approved PowerShell verbs and do a secondary lookup based on the results from Merriam-Webster. The results are a little broad, but it works!
+## Install
 
-The API itself is quite simple. It takes a single querystring parameter, `Query`, and returns a JSON response payload with the following fields:
-
-* Ok - `$True` for successful searches and `$False` for cases where something went horribly wrong
-* Error - A simple JSON representation of the Exception that I caught when trying to make the search
-* Body - A JSON representation of the filtered output of `Get-Verb` that matches a search term
-
-The attached script is a thin wrapper around that API. It just calls it and then extracts the Body, counting on PowerShell's non-terminating errors and my naive status codes to properly message any API issues. I wrapped it in a function and put it inside my `profile.ps1`.
-
-For an example: Let's say I have a function I want to write that looks at something, and I know that "look" isn't a PowerShell approved verb:
+You can install the client from PSGallery:
 
 ```powershell
-(base) PS C:\Users\Josh> Search-Verbtionary look
+Install-PSResource -Name Verbtionary -Repository PSGallery
+```
+
+## Usage
+
+Usage is simple:
+
+```powershell
+PS> Find-Verb look
 
 Verb    AliasPrefix Group          Description
 ----    ----------- -----          -----------
@@ -30,6 +34,32 @@ Unblock ul          Security       Removes restrictions to a resource
 Watch   wc          Common         Continually inspects or monitors a resource for changes
 ```
 
-In this case, the Verbtionary gave us a number of verbs, some of which seem more applicable than others. `Watch` might be the right idea, especially if we're looking at a resource and waiting for something to happen, as could `Measure`, if we're looking at something to ascertain some quality of it. This is also a good example of the limitations of this approach - the other verbs are less relevant, because Merriam-Webster casts a wide net and because the Microsoft synonyms/alternatives cause us to sometimes choose words two steps removed instead of just one. Moreover, `Search` doesn't show up in this list, even though if I was trying to look *for* something it would probably be a sensible choice. Such are computers and afternoon hack projects.
+## Development
 
-Cheers!
+The PSGallery package is in the root of this directory. Development is fairly
+straightforward. There's also a [justfile](https://github.com/casey/just) that
+includes some common recipes.
+
+`just install` will install powershell dev dependencies to your user. Right
+now, that's just ScriptAnalyzer.
+
+`just console` will start powershell with the module imported. From there, you
+can try running it against the production API.
+
+`just format` will format both the powershell and terraform code, in all
+parts of the project.
+
+`just publish` will publish the module to PSGallery. Note you'll need to set
+`NUGET_API_KEY` in `.env`.
+
+Recipes relevant to app development are `just start` and `just deploy`. See
+[the dedicated README](./service/README.md) for more details.
+
+Verbtionary also includes [an Azure function app](./service) and
+[accompanying infrastructure](./infrastructure). These have brief READMEs with
+more details of their use.
+
+## License
+
+I've released this under an MIT license. See the [LICENSE](./LICENSE) file for
+more details.
