@@ -20,3 +20,6 @@ console:
 
 deploy:
   cd service && func azure functionapp publish '{{ app_name }}'
+
+publish:
+  pwsh -c 'Publish-Module -Path . -NuGetApiKey $Env:NUGET_API_KEY -Repository PSGallery'
