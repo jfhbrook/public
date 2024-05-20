@@ -7,9 +7,7 @@ install:
 
 lint:
   pwsh -c '& ./scripts/Activate.ps1; Invoke-ScriptAnalyzer -Path . -Recurse'
-  # These fail because I haven't configured a provider
-  # cd infrastructure && terraform validate
-  # cd infrastructure && tflint --recursive
+  cd infrastructure && tflint --recursive
 
 format:
   pwsh -c '& ./scripts/Activate.ps1; Invoke-ScriptAnalyzer -Fix -Path . -Recurse'
