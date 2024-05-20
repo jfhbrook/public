@@ -44,7 +44,7 @@ give myself access to it. This is because Terraform creates the key vault and
 secret, but expects me to update the secret's value with clickops.
 
 Otherwise, it creates a resource group and a bunch of resources underneath it.
-The meat of things in in [app.tf](./app.tf).
+The meat of things is in [app.tf](./app.tf).
 
 ## Development
 
