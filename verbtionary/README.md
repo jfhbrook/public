@@ -26,7 +26,7 @@ Verb    AliasPrefix Group          Description
 Copy    cp          Common         Copies a resource to another name or to another container
 Get     g           Common         Specifies an action that retrieves a resource
 Grant   gr          Security       Allows access to a resource
-Measure ms          Diagnostic     Identifies resources that are consumed by a specified operation, or retrieves st...
+Measure ms          Diagnostic     Identifies resources that are consumed by a specified opera…
 New     n           Common         Creates a resource
 Receive rc          Communications Accepts information sent from a source
 Sync    sy          Data           Assures that two or more resources are in the same state
