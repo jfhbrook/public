@@ -1,7 +1,7 @@
 # Verbtionary
 
 Look up synonyms for a word that are also 
-[approved PowerShell verbs](https://docs.microsoft.com/en-us/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands?view=powershell-7)
+[approved PowerShell verbs](https://docs.microsoft.com/en-us/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands?view=powershell-7).
 Uses the
 [Merriam-Webster thesaurus API](https://dictionaryapi.com/products/api-collegiate-thesaurus)
 via an Azure function app.
