@@ -10,6 +10,7 @@ lint:
 
 format:
   pwsh -c '& ./scripts/Activate.ps1; Invoke-ScriptAnalyzer -Fix -Path . -Recurse'
+  cd infrastructure && terraform fmt
 
 start:
   cd service && func start
