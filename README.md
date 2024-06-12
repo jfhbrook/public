@@ -15,15 +15,46 @@ For my GPL-compatible free software, check out [my GPL-compatible software repos
 This project contains my masters thesis. It is licensed under the Community
 Research and Academic Programming License v0 Beta 0.
 
+### ansible-role-vim
+
+**<https://github.com/jfhbrook/ansible-role-vim>**
+
+A friendly fork of an Ansible role for installing vim. Licensed under the
+GPL v3.
+
 ### coprctl
 
 A bash script, using `copr-cli` and `yq`, to implement an infrastructure-as-code
 pattern similar to `kubectl apply`. It is licensed MIT.
 
+### dosapp
+
+**<https://github.com/jfhbrook/dosapp>**
+
+A small application for installing and running DOS applications in DOSBox.
+It's written in go. License is MIT.
+
 ### korbenware
 
 A collection of scripts I use to glue my Linux desktop and general CLI experience
 together. Available under a MPL v2.0 license.
+
+### matanuska
+
+**<https://github.com/jfhbrook/matanuska>**
+
+Matanuska is an ongoing project to implement my own programming language, in
+the BASIC family. It's currently written in TypeScript. Matanuska is a major
+undertaking, and still needs a lot of work! It's licensed under the MPL v2.0.
+
+#### crafting-interpreters
+
+**<https://github.com/jfhbrook/crafting-interpreters>**
+
+As part of this project, I worked through
+[Crafting Interpreters](https://craftinginterpreters.com/) by Robert Nystrom.
+It includes my implementation of `clox`, as well as a port of `jlox` to
+TypeScript.
 
 ### old-memes
 
@@ -32,6 +63,13 @@ of [flatiron](https://github.com/flatiron), a selection of classic [substack](ht
 things I personally wrote between roughly 2009 and 2016 - with a targeted
 dash of modern conveniences. It's a big project, so see [its README](./old-memes/README.md) for more
 details.
+
+#### hoarders
+
+**<https://github.com/jfhbrook/hoarders>**
+
+One of my old modules includes `hoarders`, Node.JS's most complete "utility
+grab bag."
 
 ### omsxctl
 
@@ -46,6 +84,21 @@ MPL v2.0 license.
 ### packages
 
 This folder contains files for configuring and building COPR packages.
+
+#### homebrew-joshiverse
+
+**<https://github.com/jfhbrook/homebrew-joshiverse>**
+
+I also have some homebrew packages in a separate repository.
+
+### plusdeck
+
+**<https://github.com/jfhbrook/plusdeck>**
+
+I own a [Plus Deck 2c PC Cassette Deck](https://www.frequencycast.co.uk/plusdeck.html),
+which is a casette player in a 5.25" drive bay form factor with rs-232 serial
+controls. This project contains library code for interacting with its serial
+interface over Python, including a Jupyter interface. It's licensed MIT.
 
 ### politics
 
@@ -63,8 +116,15 @@ coroutines and concurrent programming. It is licensed under an MIT license.
 
 **<https://github.com/jfhbrook/resume>**
 
-This is my resume! This repository contains PDFs for my standard one-page resume
-and a longer CV. It's written in LaTeX.
+This is my resume! This repository contains a .pdf and .docxPDFs version of
+my standard 2-page resume.
+
+### templates
+
+**<https://github.com/jfhbrook/templates>**
+
+A small collection of cookiecutter templates, MIT-licensed. These include
+templates for Python, Flask, TypeScript, Nest.js, and PowerShell.
 
 ### twisted_ipython
 
