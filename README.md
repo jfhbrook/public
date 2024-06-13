@@ -15,13 +15,6 @@ For my GPL-compatible free software, check out [my GPL-compatible software repos
 This project contains my masters thesis. It is licensed under the Community
 Research and Academic Programming License v0 Beta 0.
 
-### ansible-role-vim
-
-**<https://github.com/jfhbrook/ansible-role-vim>**
-
-A friendly fork of an Ansible role for installing vim. Licensed under the
-GPL v3.
-
 ### coprctl
 
 A bash script, using `copr-cli` and `yq`, to implement an infrastructure-as-code
