@@ -22,21 +22,21 @@ npx exercise-bike --help
 you can run this example in this repo:
 
 ```bash
-./exb input.html.njk --title hello --message world
+WORLD=world ./exb input.html.njk --title TITLE --hello hello
 ```
 
 that takes a template which looks like this:
 
 ```html
 <h1>{{title}}</h1>
-<p>{{message}}</p>
+<p>{{hello}} {{ENV.WORLD}}</p>
 ```
 
 and outputs something like this:
 
 ```html
-<h1>hello</h1>
-<p>world</h1>
+<h1>TITLE</h1>
+<p>hello world</h1>
 ```
 
 you can also read templates from stdin, and write to a file. for example, if
@@ -68,6 +68,8 @@ Options:
                     is ':stdin:', exb will populate the variable with the
                     value of stdin. if the value is valid JSON, it will be
                     parsed before getting passed to nunjucks.
+
+Environment variables are available in 'ENV'.
 ```
 
 # License

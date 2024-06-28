@@ -1,6 +1,6 @@
 {
   "name": "exercise-bike",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "a command line interface for nunjucks",
   "bin": {
     "exercise-bike": "exb",
@@ -12,7 +12,7 @@
     "nunjucks": "^3.2.3"
   },
   "scripts": {
-    "test": "cat ./input.html.njk | ./exb :stdin: --title hello --message world > output.html && cat output.html"
+    "test": "cat ./input.html.njk | WORLD=world ./exb :stdin: --title TITLE --hello hello > output.html && cat output.html"
   },
   "repository": {
     "type": "git",

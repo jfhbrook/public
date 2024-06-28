@@ -22,6 +22,8 @@ Options:
                     is ':stdin:', exb will populate the variable with the
                     value of stdin. if the value is valid JSON, it will be
                     parsed before getting passed to nunjucks.
+
+Environment variables are available in 'ENV'.
 `;
 
 async function parseArgs(argv) {
@@ -45,6 +47,7 @@ async function parseArgs(argv) {
 
   let input = opts._.shift();
   const output = opts._.length ? opts._.shift() : null;
+  opts.ENV = process.env;
   return [ input, output, opts ];
 }
 
