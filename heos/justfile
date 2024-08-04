@@ -1,0 +1,3 @@
+install:
+  mkdir -p ~/.local/bin
+  BIN_DIR="$(pwd)/bin"; cd ~/.local/bin && ln -s "${BIN_DIR}/heos" heos

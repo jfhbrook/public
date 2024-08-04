@@ -27,6 +27,12 @@ pattern similar to `kubectl apply`. It is licensed MIT.
 A small application for installing and running DOS applications in DOSBox.
 It's written in go. License is MIT.
 
+### heos
+
+The `heos` folder contains a simple CLI wrapper that connects to Denon HEOS
+devices over Telnet. For further documentation, run `./heos/bin/heos -h`.
+License is MIT.
+
 ### korbenware
 
 A collection of scripts I use to glue my Linux desktop and general CLI experience

@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+UPNP_TIMEOUT=1
+TELNET_ESCAPE_CHAR='^D'
+
+HELP='USAGE: heos [...OPTIONS]
+
+    Connect to a HEOS device on the network, using uPnP and Telnet.
+
+OPTIONS
+    -h, --help     Print this message and exit
+    -t, --timeout  Set how long to search for HEOS device, in seconds
+    -A, --address  Manually set the address to connect to, skipping discovery
+    -e, --escape   Set the escape character for telnet (Defaults to CTRL-D)
+
+ENVIRONMENT
+    UPNP_TIMEOUT  Set how long to search for HEOS device, in seconds
+    HEOS_ADDRESS  Manually set the address to connect to, skipping discovery
+    TELNET_ESCAPE_CHAR  Set the escape character for telnet (Defaults to CTRL-D)
+
+CONFIGURATION FILE
+    This tool will search for a .env file at ~/.config/heos.env. All standard
+    environment variables are respected.
+
+COMMANDS
+    Commands supported by HEOS may be found in Denon'\''s documentation:
+
+        https://rn.dmglobal.com/usmodel/HEOS_CLI_ProtocolSpecification-Version-1.17.pdf
+'
+
+if [ -f ~/.config/heos.env ]; then
+  source ~/.config/heos.env
+fi
+
+while [[ $# -gt 0 ]]; do
+  case ${1} in
+    -h|--help)
+      echo "${HELP}"
+      exit 0
+      ;;
+    -t|--timeout)
+      UPNP_TIMEOUT="${2}"
+      shift
+      shift
+      ;;
+    -A|--address)
+      HEOS_ADDRESS="${2}"
+      shift
+      shift
+      ;;
+    -e|--escape)
+      TELNET_ESCAPE_CHAR="${2}"
+      shift
+      shift
+      ;;
+    *)
+      echo "Unknown argument: ${1}"
+      echo ''
+      echo "${HELP}"
+      exit 1
+      ;;
+  esac
+done
+
+if [ -z "${HEOS_ADDRESS:-}" ]; then
+  HEOS_URLS="$(gssdp-discover --target 'urn:schemas-denon-com:device:ACT-Denon:1' --timeout "${UPNP_TIMEOUT}" | grep 'Location:' | sed 's/  Location: //')"
+  HEOS_URL_COUNT="$(echo "${HEOS_URLS}" | wc -l)"
+
+  if [ ${HEOS_URL_COUNT} -eq 0 ]; then
+    echo "HEOS device not found. Is it connected to WiFi?"
+    exit 1
+  elif [ ${HEOS_URL_COUNT} -gt 1 ]; then
+    HEOS_URL="$(echo "${HEOS_URLS}" | fzf)"
+  else
+    HEOS_URL="${HEOS_URLS}"
+  fi
+
+  HEOS_ADDRESS="$(echo "${HEOS_URL}" | awk -F[/:] '{ print $4 }')"
+fi
+
+echo "Connecting to ${HEOS_ADDRESS} over telnet..."
+echo "To exit, press CTRL-$(echo "${TELNET_ESCAPE_CHAR}" | sed 's/\^//') and type 'quit'"
+echo 'Commands supported by HEOS may be found in Denon'\''s documentation:'
+echo ''
+echo '    https://rn.dmglobal.com/usmodel/HEOS_CLI_ProtocolSpecification-Version-1.17.pdf'
+echo ''
+
+exec rlwrap telnet -e "${TELNET_ESCAPE_CHAR}" "${HEOS_ADDRESS}" 1255
