@@ -178,7 +178,7 @@ and my swaylock configuration needs are met through swaylock's config file.
 `kbnotify` was glue for various notifications in my sway desktop, such as
 volume changes. Fedora solves this in various ways depending on the particular
 binding. In the volume case, it uses a script located at
-`/usr/libexec/sway/volume-helper`.
+[/usr/libexec/sway/volume-helper](https://gitlab.com/fedora/sigs/sway/sway-config-fedora/-/blob/fedora/scripts/sway/volume-helper?ref_type=heads).
 
 ### kbscreenshot
 
