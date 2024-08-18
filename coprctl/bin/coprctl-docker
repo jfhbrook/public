@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+exec docker run \
+  -v "${HOME}/.config/coprctl:/root/.config/coprctl" \
+  -v "$(pwd):/workspace" \
+  -it coprctl "$@"

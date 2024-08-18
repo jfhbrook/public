@@ -8,6 +8,9 @@ lint:
 shell:
   PATH="$(pwd)/bin:${PATH}" bash --login
 
+build:
+  docker build -t coprctl .
+
 # Tag the release with tito
 tag:
   tito tag --use-version '{{VERSION}}'
