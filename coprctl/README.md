@@ -6,11 +6,28 @@ and leveraging [yq](https://github.com/mikefarah/yq).
 
 ## Install
 
+### Fedora
+
 You should be able to install Korbenware from COPR:
 
 ```bash
 sudo dnf copr enable jfhbrook/joshiverse
 dnf install coprctl
+```
+
+### MacOS and Other
+
+COPR tools only really work on Fedora. To work around that, I've published a
+Docker image:
+
+<https://hub.docker.com/repository/docker/jfhbrook/coprctl/general>
+
+I also wrote a script that wraps it. You can install that like so:
+
+```bash
+mkdir -p ~/.local/bin
+curl https://raw.githubusercontent.com/jfhbrook/public/main/coprctl/bin/coprctl-docker -o ~/.local/bin/coprctl
+chmod +X ~/.local/bin/coprctl
 ```
 
 ## Config
