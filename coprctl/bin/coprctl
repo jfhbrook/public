@@ -548,6 +548,21 @@ function load-property {
   fi
 }
 
+
+function load-flag {
+  local selector="${1}"
+  local name="${2}"
+
+  local value
+
+  value="$(yq "${DOC}"' | '"${selector}" "${FILENAME}")"
+
+  if [[ "${value}" == 'on' ]] || [[ "${value}" == 'true' ]] || [[ "${value}" == '1' ]]; then
+    ARGV+=("--${name}")
+  fi
+}
+
+
 function load-multi-arg-property {
   local selector="${1}"
   local name="${2}"
@@ -600,7 +615,7 @@ function load-project {
   load-property '.spec.delete-after-days' delete-after-days 
   load-property '.spec.module-hotfixes' module-hotfixes
   load-property '.spec.multilib' multilib
-  load-property '.spec.fedora-review' fedora-review
+  load-flag '.spec.fedora-review' fedora-review
   load-property '.spec.appstream' appstream
   load-property '.spec.follow-fedora-branching' follow-fedora-branching
   load-multi-specify-property '.spec.repos' repo
