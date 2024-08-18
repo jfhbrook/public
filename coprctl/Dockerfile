@@ -9,5 +9,6 @@ VOLUME /root/.config/coprctl
 
 RUN mkdir /workspace
 WORKDIR /workspace
+VOLUME /workspace
 
 CMD ["/usr/bin/coprctl"]

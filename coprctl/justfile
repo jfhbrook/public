@@ -10,7 +10,9 @@ shell:
 
 # Build the Docker image
 build:
-  docker build -t 'jfhbrook/coprctl:{{VERSION}}' .
+  docker build -t 'coprctl:{{VERSION}}' .
+  docker tag 'coprctl:{{VERSION}}' 'coprctl:latest'
+  docker tag 'coprctl:{{VERSION}}' 'jfhbrook/coprctl:{{VERSION}}'
   docker tag 'jfhbrook/coprctl:{{VERSION}}' 'jfhbrook/coprctl:latest'
 
 # Publish the Docker image to Docker Hub

@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
+COPRCTL_IMAGE="${COPRCTL_IMAGE:-jfhbrook/coprctl}"
 COPRCTL_VERSION="${COPRCTL_VERSION:-latest}"
 
 exec docker run \
   -v "${HOME}/.config/coprctl:/root/.config/coprctl" \
   -v "$(pwd):/workspace" \
-  -it "jfhbrook/coprctl:${COPRCTL_VERSION}" "$@"
+  -it "${COPRCTL_IMAGE}:${COPRCTL_VERSION}" coprctl "$@"
