@@ -6,4 +6,4 @@ COPRCTL_VERSION="${COPRCTL_VERSION:-latest}"
 exec docker run \
   -v "${HOME}/.config:/root/.config" \
   -v "$(pwd):/workspace" \
-  -it "${COPRCTL_IMAGE}:${COPRCTL_VERSION}" coprctl "$@"
+  -it "${COPRCTL_IMAGE}:${COPRCTL_VERSION}" copr "$@"

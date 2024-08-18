@@ -22,12 +22,18 @@ Docker image:
 
 <https://hub.docker.com/repository/docker/jfhbrook/coprctl/general>
 
-I also wrote a script that wraps it. You can install that like so:
+I also wrote some script that wrap it. You can install them like so:
 
 ```bash
 mkdir -p ~/.local/bin
+
+# Official COPR CLI
+curl https://raw.githubusercontent.com/jfhbrook/public/main/coprctl/bin/copr-docker -o ~/.local/bin/copr
+chmod +x ~/.local/bin/copr
+
+# coprctl itself
 curl https://raw.githubusercontent.com/jfhbrook/public/main/coprctl/bin/coprctl-docker -o ~/.local/bin/coprctl
-chmod +X ~/.local/bin/coprctl
+chmod +x ~/.local/bin/coprctl
 ```
 
 ## Config
