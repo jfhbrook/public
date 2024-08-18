@@ -8,8 +8,13 @@ lint:
 shell:
   PATH="$(pwd)/bin:${PATH}" bash --login
 
+# Build the Docker image
 build:
-  docker build -t coprctl .
+  docker build -t jfhbrook/coprctl:latest .
+
+# Publish the Docker image to Docker Hub
+publish:
+  docker push jfhbrook/coprctl:latest
 
 # Tag the release with tito
 tag:
