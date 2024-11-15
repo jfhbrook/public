@@ -33,6 +33,10 @@ The `heos` folder contains a simple CLI wrapper that connects to Denon HEOS
 devices over Telnet. For further documentation, run `./heos/bin/heos -h`.
 License is MIT.
 
+### korben
+
+RIP 2010-2022
+
 ### korbenware
 
 A collection of scripts I use to glue my Linux desktop and general CLI experience
