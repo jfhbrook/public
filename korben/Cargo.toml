@@ -1,0 +1,10 @@
+[package]
+name = "korben"
+version = "0.1.0"
+authors = ["Josh Holbrook <josh.holbrook@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.86"
+colored = "2.1.0"
+markov = "1.1.0"

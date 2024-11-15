@@ -1,0 +1,16 @@
+set dotenv-load := true
+
+check:
+  cargo check
+
+run bin:
+  cargo run --bin "{{ bin }}"
+
+build:
+  cargo build --release
+
+install:
+  cargo install --path .
+
+uninstall:
+  cargo uninstall korben
