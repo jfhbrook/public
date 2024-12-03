@@ -2,7 +2,7 @@
 name = "korben"
 description = "RIP 2010 - 2022"
 license = "Apache-2.0"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Josh Holbrook <josh.holbrook@gmail.com>"]
 edition = "2021"
 

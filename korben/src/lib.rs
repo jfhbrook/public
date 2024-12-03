@@ -24,7 +24,7 @@ impl Budgie {
         if burbles.len() > 0 {
             burbles
         } else {
-            String::from("...")
+            String::from("*beak grindies*")
         }
     }
 }
