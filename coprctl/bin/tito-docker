@@ -3,7 +3,35 @@
 COPRCTL_IMAGE="${COPRCTL_IMAGE:-jfhbrook/coprctl}"
 COPRCTL_VERSION="${COPRCTL_VERSION:-latest}"
 
+# Tito needs be inside a git repo, so the workspace needs to be mounted in the
+# repo's root
+HOST_PATH="$(pwd)"
+
+while [ ! -d .git ]; do
+  if [[ "$(pwd)" == "${HOME}" ]]; then
+    echo "error: Not in a git repository."
+    exit 1
+  fi
+  cd .. || exit 1
+done
+
+WORKSPACE_PATH="$(pwd)"
+
+# But tito needs to *run* in the current directory, so we pull some serious
+# shenanigans to figure out where that directory would be on the container
+CONTAINER_PATH="$(python3 -c '
+import os.path
+from pathlib import Path
+import sys
+
+_, host_path, workspace_path = sys.argv
+
+relative_path = os.path.relpath(host_path, workspace_path)
+
+print(Path("/workspace") / relative_path)
+' "${HOST_PATH}" "${WORKSPACE_PATH}")"
+
 exec docker run \
   -v "${HOME}/.config:/root/.config" \
   -v "$(pwd):/workspace" \
-  -it "${COPRCTL_IMAGE}:${COPRCTL_VERSION}" tito "$@"
+  -it "${COPRCTL_IMAGE}:${COPRCTL_VERSION}" bash -c "cd '${PATH_IN_WORKSPACE}'"' && tito "$@"' tito "$@"
