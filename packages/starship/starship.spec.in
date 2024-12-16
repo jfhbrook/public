@@ -17,7 +17,7 @@ The minimal, blazing-fast, and infinitely customizable prompt for any shell!
 %autosetup
 
 %build
-tar -xzf 'starship-aarch64-unknown-linux-musl.tar.gz'
+tar -xzf 'starship-x86_64-unknown-linux-musl.tar.gz'
 
 mkdir -p %{buildroot}%{_bindir}
 install -p -m 755 'starship' '%{buildroot}%{_bindir}/starship'
