@@ -51,4 +51,4 @@ build-copr:
   copr build-package jfhbrook/joshiverse --name 'coprctl'; fi
 
 # Publish the release on GitHub, Homebrew, Docker and Copr
-publish: check_tap tag push bundle gh-release apply-homebrew apply-homebrew apply-copr build-copr
+publish: check_tap tag push bundle gh-release apply-homebrew publish-docker apply-copr build-copr
