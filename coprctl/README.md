@@ -8,7 +8,7 @@ and leveraging [yq](https://github.com/mikefarah/yq).
 
 ### Fedora
 
-You should be able to install Korbenware from COPR:
+You should be able to install coprctl from COPR:
 
 ```bash
 sudo dnf copr enable jfhbrook/joshiverse
