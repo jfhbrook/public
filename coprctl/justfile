@@ -12,7 +12,7 @@ shell:
   PATH="$(pwd)/bin:${PATH}" bash --login
 
 # Build the Docker image
-build:
+build-docker:
   docker build -t 'coprctl:{{VERSION}}' .
   docker tag 'coprctl:{{VERSION}}' 'coprctl:latest'
   docker tag 'coprctl:{{VERSION}}' 'jfhbrook/coprctl:{{VERSION}}'

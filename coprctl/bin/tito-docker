@@ -32,6 +32,6 @@ print(Path("/workspace") / relative_path)
 ' "${HOST_PATH}" "${WORKSPACE_PATH}")"
 
 exec docker run \
-  -v "${HOME}/.config:/root/.config" \
+  -v "${HOME}:/root" \
   -v "$(pwd):/workspace" \
-  -it "${COPRCTL_IMAGE}:${COPRCTL_VERSION}" bash -c "cd '${PATH_IN_WORKSPACE}'"' && tito "$@"' tito "$@"
+  -it "${COPRCTL_IMAGE}:${COPRCTL_VERSION}" bash -c "cd '${CONTAINER_PATH}'"' && tito "$@"' tito "$@"

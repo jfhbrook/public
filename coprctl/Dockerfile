@@ -5,7 +5,7 @@ COPY bin/coprctl /usr/bin/coprctl
 RUN chmod +x /usr/bin/coprctl
 
 COPY example/config.yml /root/.config/coprctl/config.yml
-VOLUME /root/.config
+VOLUME /root
 
 RUN mkdir /workspace
 WORKDIR /workspace
