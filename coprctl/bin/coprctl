@@ -201,19 +201,19 @@ function get {
       # NOTE: Projects don't return an easily parseable format and most of the
       # properties are missing, womp womp
       log-fatal "not implemented: project"
-      log-info '(try "copr-cli get '"'${NAME}'"')'
+      log-info '(try "copr get '"'${NAME}'"')'
       exit 1
       ;;
     chroot)
       # TODO: This shows a yaml representation - great! - but I haven't
       # implemented the apply half of this, and I'd expect the format to change
       # significantly
-      res="$(copr-cli get-chroot "${NAMESPACE}/${PROJECT}/${NAME}" | yq .)"
+      res="$(copr get-chroot "${NAMESPACE}/${PROJECT}/${NAME}" | yq .)"
 
       res="${res}" name="${NAME}" yq '.kind = "chroot" | .metadata.dname = env(name) | .spec = env(res) | del(.spec.name)' -P <<< "${base}"
       ;;
     package-pypi)
-      res="$(copr-cli get-package "${PROJECT}" --name "${NAME}" | yq .)"
+      res="$(copr get-package "${PROJECT}" --name "${NAME}" | yq .)"
 
       log-debug 'response:' "${res}"
 
@@ -258,7 +258,7 @@ function get {
           | .spec.template = env(template)' -P <<< "${base}"
       ;;
     package-scm)
-      res="$(copr-cli get-package "${PROJECT}" --name "${NAME}" | yq .)"
+      res="$(copr get-package "${PROJECT}" --name "${NAME}" | yq .)"
 
       log-debug 'response:' "${res}"
 
@@ -312,7 +312,7 @@ function get {
       exit 1
       ;;
     package-rubygems)
-      res="$(copr-cli get-package "${PROJECT}" --name "${NAME}" | yq .)"
+      res="$(copr get-package "${PROJECT}" --name "${NAME}" | yq .)"
 
       log-debug 'response:' "${res}"
 
@@ -341,7 +341,7 @@ function get {
           | .spec.gem = env(gem)' -P <<< "${base}"
       ;;
     package-custom)
-      res="$(copr-cli get-package "${PROJECT}" --name "${NAME}" | yq .)"
+      res="$(copr get-package "${PROJECT}" --name "${NAME}" | yq .)"
 
       log-debug 'response:' "${res}"
 
@@ -438,10 +438,10 @@ function apply {
     load-document
 
     if [[ "${DRY_RUN}" != 'none' ]]; then
-      log-info 'dry-run:' copr-cli "${ARGV[@]}"
+      log-info 'dry-run:' copr "${ARGV[@]}"
     else
-      log-debug 'running:' copr-cli "${ARGV[@]}"
-      copr-cli "${ARGV[@]}"
+      log-debug 'running:' copr "${ARGV[@]}"
+      copr "${ARGV[@]}"
     fi
   done
 }
@@ -591,11 +591,11 @@ function load-project {
   name="$(yq "${DOC}"' | .metadata.name' "${FILENAME}")"
 
   if [[ "${DRY_RUN}" == 'client' ]]; then
-    log-info 'dry-run:' copr-cli get "${name}"
+    log-info 'dry-run:' copr get "${name}"
     action="create"
   else
     log-debug "checking if project ${name} exists"
-    if ! copr-cli get "${name}" &> /dev/null; then
+    if ! copr get "${name}" &> /dev/null; then
       log-debug "project ${name} does not exist"
       action="create"
     fi
@@ -637,7 +637,7 @@ function load-package {
   action="edit-package-${type}"
 
   if [[ "${DRY_RUN}" == 'client' ]]; then
-    log-info 'dry-run:' copr-cli get-package "${copr}" --name "${name}"
+    log-info 'dry-run:' copr get-package "${copr}" --name "${name}"
     action="add-package-${type}"
   else
     log-debug "checking if package ${copr} --name ${name} exists"
@@ -750,9 +750,9 @@ function delete-resource {
   esac
 
   if [[ "${DRY_RUN}" != 'none' ]]; then
-    log-info 'dry-run:' copr-cli "${argv[@]}"
+    log-info 'dry-run:' copr "${argv[@]}"
   else
-    copr-cli "${argv[@]}"
+    copr "${argv[@]}"
   fi
 }
 
