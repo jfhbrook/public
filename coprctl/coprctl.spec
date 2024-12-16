@@ -1,5 +1,5 @@
 Name: coprctl
-Version: 0.2.2
+Version: 0.3.0
 Release: 1%{?dist}
 License: MIT
 Summary: infrastructure-as-code for COPR
@@ -36,6 +36,11 @@ install -p -m 755 bin/coprctl %{buildroot}%{_bindir}
 
 
 %changelog
+- Mount entire homedir (josh.holbrook@gmail.com)
+- tito-docker script (josh.holbrook@gmail.com)
+- Build coprctl on fedora 41 (josh.holbrook@gmail.com)
+- Publish coprctl to homebrew tap (josh.holbrook@gmail.com)
+
 * Tue Jun 13 2023 Josh Holbrook <josh.holbrook@gmail.com> 0.2.2-1
 - Forgot to pull packagename for pypi COPR builds (josh.holbrook@gmail.com)
 
