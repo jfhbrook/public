@@ -6,10 +6,10 @@ class Copr < Formula
   license "MIT"
 
   depends_on "bash" => :recommended
-  depends_on "docker" => :recommended
+  depends_on "docker" => :optional
 
   def install
-    bin.install Dir["bin/copr-docker"] => "copr"
+    bin.install "bin/copr-docker" => "copr"
   end
 
   test do

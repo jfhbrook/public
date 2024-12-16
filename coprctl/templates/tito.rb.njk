@@ -6,10 +6,10 @@ class Tito < Formula
   license "MIT"
 
   depends_on "bash" => :recommended
-  depends_on "docker" => :recommended
+  depends_on "docker" => :optional
 
   def install
-    bin.install Dir["bin/tito-docker"] => "tito"
+    bin.install "bin/tito-docker" => "tito"
   end
 
   test do
