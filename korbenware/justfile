@@ -43,7 +43,6 @@ check_tap:
   if [ ! -d "${HOMEBREW_TAP}" ]; then echo "A HOMEBREW_TAP is required to publish."; exit 1; fi
 
 tag:
-  if [[ "${OSTYPE}" == "darwin"* ]]; then echo "Must release on Fedora"; exit 1; fi
   tito tag --use-version '{{VERSION}}'
 
 bundle:
@@ -52,11 +51,11 @@ bundle:
 push:
   git push origin --follow-tags
 
-release:
+gh-release:
   bash ./scripts/release.sh '{{VERSION}}' '{{PATCH}}'
 
 apply-copr:
-  if [[ "${OSTYPE}" == "darwin"* ]]; then echo "Skipping Copr apply on macOS"; else coprctl apply -f ./package.yml; fi
+  coprctl apply -f ./package.yml; fi
 
 build-copr:
   copr build-package jfhbrook/joshiverse --name 'korbenware'; fi
@@ -65,4 +64,4 @@ apply-homebrew:
   bash ./scripts/apply-homebrew.sh '{{VERSION}}' '{{PATCH}}'
 
 # Publish the release on GitHub, Homebrew, and Copr
-publish: check_tap tag push bundle release apply-homebrew apply-copr build-copr
+publish: check_tap tag push bundle gh-release apply-homebrew apply-copr build-copr
