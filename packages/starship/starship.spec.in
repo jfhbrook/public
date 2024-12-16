@@ -5,7 +5,7 @@ License: MIT
 Summary: The minimal, blazing-fast, and infinitely customizable prompt for any shell!
 
 URL: https://github.com/starship/starship
-Source0: https://github.com/starship/starship/releases/download/v%{version}/starship-aarch64-unknown-linux-musl.tar.gz
+Source0: https://github.com/starship/starship/releases/download/v%{version}/starship-x86_64-unknown-linux-musl.tar.gz
 BuildArch: x86_64
 
 %description

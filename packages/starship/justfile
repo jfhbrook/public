@@ -28,4 +28,4 @@ apply-copr:
 
 build-copr: apply-copr
   git push origin
-  copr build-package 'joshiverse --name "$(sed 's/\.spec//' <<< '{{SPEC}}')"
+  copr build-package joshiverse --name "$(sed 's/\.spec//' <<< '{{SPEC}}')"
