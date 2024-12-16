@@ -4,8 +4,8 @@ metadata:
   name: joshiverse
 spec:
   chroots:
-    - "fedora-39-x86_64"
     - "fedora-40-x86_64"
+    - "fedora-41-x86_64"
   # TODO: allow specifying initial-pkgs on create
   # initial-pkgs: []
   description: "Josh Holbrook's personal package registry"
