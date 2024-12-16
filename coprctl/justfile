@@ -45,10 +45,10 @@ apply-homebrew:
   bash ./scripts/apply-homebrew.sh '{{VERSION}}' '{{PATCH}}'
 
 apply-copr:
-  coprctl apply -f ./package.yml; fi
+  coprctl apply -f ./package.yml
 
 build-copr:
-  copr build-package jfhbrook/joshiverse --name 'coprctl'; fi
+  copr build-package jfhbrook/joshiverse --name 'coprctl'
 
 # Publish the release on GitHub, Homebrew, Docker and Copr
 publish: check_tap tag push bundle gh-release apply-homebrew publish-docker apply-copr build-copr

@@ -55,10 +55,10 @@ gh-release:
   bash ./scripts/release.sh '{{VERSION}}' '{{PATCH}}'
 
 apply-copr:
-  coprctl apply -f ./package.yml; fi
+  coprctl apply -f ./package.yml
 
 build-copr:
-  copr build-package jfhbrook/joshiverse --name 'korbenware'; fi
+  copr build-package jfhbrook/joshiverse --name 'korbenware'
 
 apply-homebrew:
   bash ./scripts/apply-homebrew.sh '{{VERSION}}' '{{PATCH}}'
