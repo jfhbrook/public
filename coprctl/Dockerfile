@@ -1,6 +1,6 @@
 FROM fedora:41
 
-RUN dnf install -y copr-cli yq
+RUN dnf install -y copr-cli tito yq
 COPY bin/coprctl /usr/bin/coprctl
 RUN chmod +x /usr/bin/coprctl
 
