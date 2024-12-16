@@ -1,0 +1,18 @@
+class CoprCtl < Formula
+  desc "IaC for COPR"
+  homepage "https://github.com/jfhbrook/public/tree/main/coprctl"
+  url "https://github.com/jfhbrook/public/releases/download/coprctl-{{ version }}-{{ patch }}/coprctl-{{ version }}.tar.gz"
+  sha256 "{{ sha }}"
+  license "MIT"
+
+  depends_on "bash" => :recommended
+  depends_on "docker" => :recommended
+
+  def install
+    bin.install Dir["bin/coprctl-docker"] => "coprctl"
+  end
+
+  test do
+    system "false"
+  end
+end

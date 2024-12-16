@@ -1,4 +1,7 @@
 VERSION := "0.3.0"
+PATCH := "1"
+
+set dotenv-load := true
 
 # Lint with shellcheck
 lint:
@@ -15,25 +18,37 @@ build:
   docker tag 'coprctl:{{VERSION}}' 'jfhbrook/coprctl:{{VERSION}}'
   docker tag 'jfhbrook/coprctl:{{VERSION}}' 'jfhbrook/coprctl:latest'
 
-# Publish the Docker image to Docker Hub
-publish:
-  docker push 'jfhbrook/coprctl:{{VERSION}}'
-  docker push jfhbrook/coprctl:latest
+#
+# Publishing
+#
 
-# Tag the release with tito
+check_tap:
+  if [ ! -d "${HOMEBREW_TAP}" ]; then echo "A HOMEBREW_TAP is required to publish."; exit 1; fi
+
 tag:
   tito tag --use-version '{{VERSION}}'
 
-_push_tag:
+bundle:
+  tar -czf coprctl-{{VERSION}}.tar.gz bin LICENSE README.md
+
+push:
   git push origin --follow-tags
 
-# Apply COPR configuration
+gh-release:
+  bash ./scripts/release.sh '{{VERSION}}' '{{PATCH}}'
+
+publish-docker:
+  docker push 'jfhbrook/coprctl:{{VERSION}}'
+  docker push jfhbrook/coprctl:latest
+
+apply-homebrew:
+  bash ./scripts/apply-homebrew.sh '{{VERSION}}' '{{PATCH}}'
+
 apply-copr:
-  ./bin/coprctl apply -f ./package.yml
+  coprctl apply -f ./package.yml; fi
 
-# Trigger a COPR build
-build-copr: apply-copr
-  copr build-package jfhbrook/joshiverse --name coprctl
+build-copr:
+  copr build-package jfhbrook/joshiverse --name 'coprctl'; fi
 
-# Tag and push a release with Tito and trigger a COPR build
-release: tag _push_tag build-copr
+# Publish the release on GitHub, Homebrew, Docker and Copr
+publish: check_tap tag push bundle gh-release apply-homebrew apply-homebrew apply-copr build-copr
