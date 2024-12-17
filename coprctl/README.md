@@ -90,9 +90,9 @@ all, and this way it's less mapping.
 
 ## Status
 
-This project is a proof-of-concept that I wrote over a weekend to scratch my
-very specific itches. Many/most package types are unimplemented (though
-adding them is easy and I'll do so as I need them).
+This project is something I wrote over a weekend to scratch my very specific
+itches. Many/most package types are unimplemented (though adding them is easy
+and I'll do so as I need them).
 
 Moreover, limitations of `copr-cli` make implementing get/apply for all
 resources very challenging! For instance, projects don't have a `get` because
@@ -102,13 +102,11 @@ to `dnf`?
 Finally, I haven't implemented config commands at *all*. This is just a matter
 of me being lazy - it's definitely doable!
 
-## Future
-
-I plan on using this project as-is for my own needs. However, long term I think
-the right answer might be to add this sort of functionality directly to
-`copr-cli`. I made an issue here:
-
-**<https://github.com/fedora-copr/copr/issues/2767>**
+I plan on using this project as-is for my own needs, cowpathing it over time,
+and adjusting it as needed. I considered the possibility of
+[adding this sort of thing to the official tooling](https://github.com/fedora-copr/copr/issues/2767),
+but it's just too opinionated to foist on people. In the meantime, my itches
+are scratched.
 
 ## License
 
