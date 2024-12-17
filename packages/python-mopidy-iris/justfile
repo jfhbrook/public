@@ -1,4 +1,4 @@
-SPEC := "mopidy-iris.spec"
+SPEC := "python-mopidy-iris.spec"
 
 # Build the source rpm
 srpm:

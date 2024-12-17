@@ -1,4 +1,4 @@
-Name:           python3-mopidy-iris
+Name:           python-mopidy-iris
 Version:        3.69.3
 Release:        2
 Summary:        Fully-featured Mopidy frontend client
