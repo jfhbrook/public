@@ -1,4 +1,4 @@
-Name:           python-mopidy-ytmusic
+Name:           mopidy-ytmusic
 Version:        0.3.8
 Release:        %autorelease
 # Fill in the actual package summary to submit package to Fedora
