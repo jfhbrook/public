@@ -1,5 +1,11 @@
 SPEC := "mopidy-ytmusic.spec"
 
+# Generate spec file and config
+pyp2spec:
+  if [ ! -d .venv ]; then python3 -m venv .venv; fi
+  . .venv/bin/activate && pip install pyp2spec
+  . .venv/bin/activate && pyp2spec mopidy-ytmusic
+
 # Build the source rpm
 srpm:
   spec="$(pwd)/{{SPEC}}" outdir="$(pwd)" topdir="$(pwd)/build" downloaddir="$(pwd)/downloads" make -f ../../.copr/Makefile srpm

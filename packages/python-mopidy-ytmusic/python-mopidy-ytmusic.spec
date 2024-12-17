@@ -1,4 +1,4 @@
-Name:           mopidy-ytmusic
+Name:           python-mopidy-ytmusic
 Version:        0.3.8
 Release:        %autorelease
 # Fill in the actual package summary to submit package to Fedora
@@ -9,7 +9,6 @@ Summary:        Mopidy extension for playling music/managing playlists in Youtub
 License:        Apache-2.0
 URL:            https://pypi.org/project/mopidy-ytmusic/
 Source:         %{pypi_source mopidy_ytmusic}
-
 Requires:       python3-ytmusicapi python3-pytube
 BuildArch:      noarch
 BuildRequires:  python3-devel
