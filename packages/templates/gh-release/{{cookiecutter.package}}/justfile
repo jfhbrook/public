@@ -28,4 +28,4 @@ apply-copr:
 
 build-copr: apply-copr
   git push origin
-  copr build-package '{{cookiecutter.copr}} --name "$(sed 's/\.spec//' <<< '{% raw %}{{SPEC}}{% endraw %}')"
+  copr build-package '{{cookiecutter.copr}}' --name "$(sed 's/\.spec//' <<< '{% raw %}{{SPEC}}{% endraw %}')"
