@@ -22,11 +22,6 @@ Summary:        %{summary}
 
 %description -n python3-mopidy-iris %_description
 
-# For official Fedora packages, review which extras should be actually packaged
-# See: https://docs.fedoraproject.org/en-US/packaging-guidelines/Python/#Extras
-%pyproject_extras_subpkg -n python3-mopidy-iris dev,lint,release,test
-
-
 %prep
 %autosetup -p1 -n Mopidy-Iris-%{version}
 
