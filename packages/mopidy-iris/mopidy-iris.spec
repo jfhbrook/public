@@ -17,10 +17,10 @@ This is package 'mopidy-iris' generated automatically by pyp2spec.}
 
 %description %_description
 
-%package -n     python3-mopidy-iris
+%package -n     mopidy-iris
 Summary:        %{summary}
 
-%description -n python3-mopidy-iris %_description
+%description -n mopidy-iris %_description
 
 %prep
 %autosetup -p1 -n Mopidy-Iris-%{version}
@@ -44,7 +44,7 @@ Summary:        %{summary}
 %pyproject_check_import
 
 
-%files -n python3-mopidy-iris -f %{pyproject_files}
+%files -n mopidy-iris -f %{pyproject_files}
 
 
 %changelog
