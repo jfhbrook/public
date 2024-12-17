@@ -1,0 +1,31 @@
+SPEC := "mopidy-ytmusic.spec"
+
+# Build the source rpm
+srpm:
+  spec="$(pwd)/{{SPEC}}" outdir="$(pwd)" topdir="$(pwd)/build" downloaddir="$(pwd)/downloads" make -f ../../.copr/Makefile srpm
+
+# Verify the source rpm
+verify:
+  spec="$(pwd)/{{SPEC}}" outdir="$(pwd)" topdir="$(pwd)/build" downloaddir="$(pwd)/downloads" make -f ../../.copr/Makefile verify
+
+lint:
+  shellcheck ./copr/srpm.sh
+
+# Build and verify
+test: clean srpm verify
+
+# Clean files created from building and verifying
+clean:
+  rm -f '{{SPEC}}'
+  rm -rf ./build
+  rm -rf ./downloads
+  rm -f *.src.rpm
+  rm -f *.tar.gz
+
+# Apply copr configuration
+apply-copr:
+  coprctl apply -f ./package.yml
+
+build-copr: apply-copr
+  git push origin
+  copr build-package 'joshiverse --name "$(sed 's/\.spec//' <<< '{{SPEC}}')"
