@@ -1,4 +1,4 @@
-SPEC := "mopidy-ytmusic.spec"
+SPEC := "python-mopidy-ytmusic.spec"
 
 # Generate spec file and config
 pyp2spec:
