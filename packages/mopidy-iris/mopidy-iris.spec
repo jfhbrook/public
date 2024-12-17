@@ -1,5 +1,5 @@
 Name:           mopidy-iris
-Version:        3.69.3
+Version:        3.69.3-1
 Release:        %autorelease
 Summary:        Fully-featured Mopidy frontend client
 
