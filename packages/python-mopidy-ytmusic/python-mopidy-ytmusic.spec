@@ -11,7 +11,7 @@ URL:            https://pypi.org/project/mopidy-ytmusic/
 Source:         %{pypi_source mopidy_ytmusic}
 Requires:       python3-ytmusicapi python3-pytube
 BuildArch:      noarch
-BuildRequires:  python3-devel python3-packaging python3-pip python3-poetry-core python3-ytmusicapi python3-pytube
+BuildRequires:  python3-devel python3-packaging python3-pip python3-setuptools python3-poetry-core python3-ytmusicapi python3-pytube
 
 
 # Fill in the actual package description to submit package to Fedora
