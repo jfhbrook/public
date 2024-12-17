@@ -1,4 +1,4 @@
-Name:           mopidy-iris
+Name:           python3-mopidy-iris
 Version:        3.69.3
 Release:        %autorelease
 Summary:        Fully-featured Mopidy frontend client
@@ -17,10 +17,10 @@ This is package 'mopidy-iris' generated automatically by pyp2spec.}
 
 %description %_description
 
-%package -n     mopidy-iris
+%package -n     python3-mopidy-iris
 Summary:        %{summary}
 
-%description -n mopidy-iris %_description
+%description -n python3-mopidy-iris %_description
 
 %prep
 %autosetup -p1 -n Mopidy-Iris-%{version}
@@ -44,7 +44,7 @@ Summary:        %{summary}
 %pyproject_check_import
 
 
-%files -n mopidy-iris -f %{pyproject_files}
+%files -n python3-mopidy-iris -f %{pyproject_files}
 
 
 %changelog

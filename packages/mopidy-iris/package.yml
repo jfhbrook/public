@@ -1,7 +1,7 @@
 apiVersion: coprctl/v1alpha1
 kind: package-scm
 metadata:
-  name: mopidy-iris
+  name: python3-mopidy-iris
 spec:
   auto_rebuild: false
   projectname: "joshiverse"
