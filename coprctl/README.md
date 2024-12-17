@@ -22,18 +22,12 @@ Docker image:
 
 <https://hub.docker.com/repository/docker/jfhbrook/coprctl/general>
 
-I also wrote some script that wrap it. You can install them like so:
+I also wrote some scripts that use it to run `coprctl`, as well as `copr` and `tito`. You can install them from [my Homebrew tap](https://github.com/jfhbrook/homebrew-joshiverse) on MacOS:
 
 ```bash
-mkdir -p ~/.local/bin
-
-# Official COPR CLI
-curl https://raw.githubusercontent.com/jfhbrook/public/main/coprctl/bin/copr-docker -o ~/.local/bin/copr
-chmod +x ~/.local/bin/copr
-
-# coprctl itself
-curl https://raw.githubusercontent.com/jfhbrook/public/main/coprctl/bin/coprctl-docker -o ~/.local/bin/coprctl
-chmod +x ~/.local/bin/coprctl
+brew install jfhbrook/joshiverse/coprctl
+brew install jfhbrook/joshiverse/copr
+brew install jfhbrook/joshiverse/tito
 ```
 
 ## Config
