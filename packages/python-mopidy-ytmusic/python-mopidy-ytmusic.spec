@@ -9,7 +9,7 @@ Summary:        Mopidy extension for playling music/managing playlists in Youtub
 License:        Apache-2.0
 URL:            https://pypi.org/project/mopidy-ytmusic/
 Source:         %{pypi_source mopidy_ytmusic}
-Requires:       python3-ytmusicapi python3-pytube
+Requires:       mopidy python3-ytmusicapi python3-pytube
 BuildArch:      noarch
 BuildRequires:  python3-devel python3-packaging python3-pip python3-setuptools python3-poetry-core python3-ytmusicapi python3-pytube
 
