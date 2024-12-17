@@ -1,4 +1,4 @@
-SPEC := "mopidy-ytmusic.spec"
+SPEC := "python-mopidy-ytmusic.spec"
 
 # Build the source rpm
 srpm:

@@ -1,14 +1,14 @@
 apiVersion: coprctl/v1alpha1
 kind: package-scm
 metadata:
-  name: mopidy-ytmusic
+  name: python-mopidy-ytmusic
 spec:
   auto_rebuild: false
   projectname: "joshiverse"
   clone-url: "https://github.com/jfhbrook/public"
   commit: null
-  subdir: "packages/mopidy-ytmusic"
-  spec: "mopidy-ytmusic.spec"
+  subdir: "packages/python-mopidy-ytmusic"
+  spec: "python-mopidy-ytmusic.spec"
   type: git
   method: make_srpm
   enable_net: true

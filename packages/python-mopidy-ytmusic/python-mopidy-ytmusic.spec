@@ -1,4 +1,4 @@
-Name:           mopidy-ytmusic
+Name:           python-mopidy-ytmusic
 Version:        0.3.8
 Release:        %autorelease
 # Fill in the actual package summary to submit package to Fedora
@@ -16,7 +16,7 @@ BuildRequires:  python3-devel python3-packaging python3-pip python3-setuptools p
 
 # Fill in the actual package description to submit package to Fedora
 %global _description %{expand:
-This is package 'mopidy-ytmusic' generated automatically by pyp2spec.}
+This is package 'python-mopidy-ytmusic' generated automatically by pyp2spec.}
 
 %description %_description
 
