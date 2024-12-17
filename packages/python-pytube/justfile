@@ -4,5 +4,5 @@ apply-copr:
 
 # Build the package on COPR
 build-copr:
-  copr build-package 'jfhbrook/joshiverse' --name 'python3-pytube'
+  copr build-package 'jfhbrook/joshiverse' --name 'python-pytube'
 
