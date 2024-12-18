@@ -1,5 +1,5 @@
 Name:           python-mopidy-local
-Version:        3.2.1
+Version:        3.3.0
 Release:        %autorelease
 # Fill in the actual package summary to submit package to Fedora
 Summary:        Mopidy extension for playing music from your local music archive
