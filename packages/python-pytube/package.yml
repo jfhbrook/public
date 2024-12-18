@@ -6,7 +6,7 @@ spec:
   auto_rebuild: true
   projectname: jfhbrook/joshiverse
   packagename: pytube
-  packageversion: 15.0.0
+  packageversion: 12.1.3
   pythonversions:
     - "3"
   spec-generator: pyp2spec
