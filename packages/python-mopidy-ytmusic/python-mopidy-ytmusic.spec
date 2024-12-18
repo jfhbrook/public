@@ -1,6 +1,6 @@
 Name:           python-mopidy-ytmusic
 Version:        0.3.8
-Release:        2
+Release:        %autorelease
 # Fill in the actual package summary to submit package to Fedora
 Summary:        Mopidy extension for playling music/managing playlists in Youtube Music
 
