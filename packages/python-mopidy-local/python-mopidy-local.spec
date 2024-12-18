@@ -7,7 +7,7 @@ Summary:        Mopidy extension for playing music from your local music archive
 # No license information obtained, it's up to the packager to fill it in
 License:        Apache-2.0
 URL:            https://github.com/mopidy/mopidy-local
-Source:         %{pypi_source Mopidy-Local}
+Source:         %{pypi_source mopidy_local}
 
 BuildArch:      noarch
 BuildRequires:  python3-devel
@@ -25,7 +25,7 @@ Summary:        %{summary}
 %description -n python3-mopidy-local %_description
 
 %prep
-%autosetup -p1 -n Mopidy-Local-%{version}
+%autosetup -p1 -n mopidy_local-%{version}
 
 
 %generate_buildrequires
