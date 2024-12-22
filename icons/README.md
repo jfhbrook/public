@@ -48,19 +48,9 @@ Yet others were for different kinds of programs I had, or programs I ran without
 
 As for the rest? For the most part, I don't really remember. Some of them might have just been for fun, honestly.
 
-## Viewing
+## Modern Renders
 
-The .ico files are readily viewable in most image viewers. The `.ani` file may be a bigger challenge. I previewed it using this website:
-
-<https://capt.dev/open-ani-online/>
-
-## Converting
-
-You may have an intended use for these icons in a modern context. If you need to convert them to, say, png, `imagemagick` has you covered. For example:
-
-```sh
-magick EHM.ico EHM.png
-```
+The .ico format has support in many image viewers, but not necessarily online. The `.ani` file struggles everywhere but a couple of web tools ([like this viewer](https://capt.dev/open-ani-online/)). For convenience, I converted them to modern formats (using ImageMagick and [this .ani to gif converter](https://ezgif.com/ani-to-gif)) and place them in [the ./img folder](./img).
 
 ## License
 
