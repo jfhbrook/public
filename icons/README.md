@@ -55,3 +55,5 @@ The .ico format has support in many image viewers, but not necessarily online. T
 ## License
 
 Not that anyone would want to use these, but if you do, the license is cc-by-sa-4.0. For more details, look at the `LICENSE` file.
+
+A word of warning: The vast majority of these were created entirely by my own hand. But a few of them may have used resources from elsewhere - I was not careful about this stuff at age 16. For those files, my humble license obviously doesn't apply. If it looks like it wasn't hand-crafted, it might not be.
