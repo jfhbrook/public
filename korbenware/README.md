@@ -19,7 +19,7 @@ You should be able to install Korbenware from COPR:
 
 ```bash
 sudo dnf copr enable jfhbrook/joshiverse
-dnf install korbenware
+sudo dnf install korbenware
 ```
 
 ### MacOS
