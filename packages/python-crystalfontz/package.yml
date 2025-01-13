@@ -6,7 +6,7 @@ spec:
   auto_rebuild: true
   projectname: jfhbrook/joshiverse
   packagename: crystalfontz
-  packageversion: 3.0.1
+  packageversion: 4.0.0
   pythonversions:
     - "3"
   spec-generator: pyp2spec
