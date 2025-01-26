@@ -20,6 +20,12 @@ Research and Academic Programming License v0 Beta 0.
 A bash script, using `copr-cli` and `yq`, to implement an infrastructure-as-code
 pattern similar to `kubectl apply`. It is licensed MIT.
 
+### crystalfontz
+
+**<https://github.com/jfhbrook/crystalfontz>**
+
+A client library for Crystalfontz LCD displays.
+
 ### dosapp
 
 **<https://github.com/jfhbrook/dosapp>**
@@ -111,6 +117,12 @@ interface over Python, including a Jupyter interface. It's licensed MIT.
 
 These are projects I've done for political organizations. For more information,
 see [its README](./politics/README.md).
+
+### plusdeck
+
+**<https://github.com/jfhbrook/plusdeck>**
+
+A client library for the Plus Deck 2C Cassette Drive.
 
 ### pyee
 
