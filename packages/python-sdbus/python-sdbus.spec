@@ -42,7 +42,7 @@ Summary:        %{summary}
 
 %install
 %pyproject_install
-%pyproject_save_files -l sdbus
+%pyproject_save_files -l sdbus sdbus_async sbus_block
 
 
 %check
