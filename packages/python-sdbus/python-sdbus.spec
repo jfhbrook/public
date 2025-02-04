@@ -13,6 +13,7 @@ Source:         %{pypi_source sdbus}
 BuildRequires:  python3-devel
 BuildRequires:  systemd-devel
 BuildRequires:  gcc
+BuildRequires:  python3-sphinx
 Requires: dbus-daemon
 
 
