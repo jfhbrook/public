@@ -16,7 +16,6 @@ BuildRequires:  gcc
 Requires: dbus-daemon
 
 
-# Fill in the actual package description to submit package to Fedora
 %global _description %{expand:
 This is package 'sdbus' generated automatically by pyp2spec.}
 
@@ -42,8 +41,7 @@ Summary:        %{summary}
 
 %install
 %pyproject_install
-# Add top-level Python module names here as arguments, you can use globs
-%pyproject_save_files -l ...
+%pyproject_save_files -l sdbus
 
 
 %check
