@@ -1,0 +1,14 @@
+apiVersion: coprctl/v1alpha1
+kind: package-scm
+metadata:
+  name: dbus-iface-markdown
+spec:
+  auto_rebuild: true
+  ownername: jfhbrook
+  projectname: joshiverse
+  clone-url: https://github.com/jfhbrook/public
+  commit: null
+  subdir: dbus-iface-markdown
+  spec: dbus-iface-markdown.spec
+  type: git
+  method: tito

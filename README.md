@@ -26,6 +26,10 @@ pattern similar to `kubectl apply`. It is licensed MIT.
 
 A client library for Crystalfontz LCD displays.
 
+### dbus-iface-markdown
+
+This is a little perl script I used for generating markdown documentation from a live dbus interface. I'm using this in [plusdeck](https://github.com/jfhbrook/plusdeck) to generate documentation for the Dbus interface. This is an alternative to reflecting off the Python objects that captures the true state of the service as seen by Dbus/Systemd.
+
 ### dosapp
 
 **<https://github.com/jfhbrook/dosapp>**

@@ -1,0 +1,33 @@
+VERSION := "1.0.0"
+PATCH := "1"
+
+set dotenv-load := true
+
+# Format with perltidy
+format:
+  perltidy -b -bext='/' bin/dbus-iface-markdown
+
+#
+# Publishing
+#
+
+tag:
+  tito tag --use-version '{{VERSION}}'
+
+bundle:
+  tar -czf dbus-iface-markdown-{{VERSION}}.tar.gz bin COPYING NOTICE README.md
+
+push:
+  git push origin --follow-tags
+
+gh-release:
+  bash ./scripts/release.sh '{{VERSION}}' '{{PATCH}}'
+
+apply-copr:
+  coprctl apply -f ./copr.yml
+
+build-copr:
+  copr build-package jfhbrook/joshiverse --name 'dbus-iface-markdown'
+
+# Publish the release on GitHub and Copr
+publish: tag push bundle gh-release apply-copr build-copr
