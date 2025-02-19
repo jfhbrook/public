@@ -32,8 +32,7 @@ OPTIONS:
 my $help        = '';
 my $bus_address = '';
 my $dest;
-my $out_file      = '';
-my $out           = \*STDOUT;
+my $out           = '';
 my $peer_address  = '';
 my $reply_timeout = -1;
 my $sender        = '';
@@ -44,13 +43,13 @@ GetOptions(
     "help"            => \$help,
     "bus=s"           => \$bus_address,
     "dest=s"          => \$dest,
-    "out=s"           => \$out_file,
+    "out=s"           => \$out,
     "peer=s"          => \$peer_address,
     "reply-timeout=i" => \$reply_timeout,
     "sender=s"        => \$sender,
     "session"         => \$session,
     "system"          => \$system
-) or die($HELP);
+) or die $HELP;
 
 my $object_path = "/";
 
@@ -63,8 +62,10 @@ if ($help) {
     exit 0;
 }
 
-if ($out_file) {
-    open( $out, '>', $out_file ) or die("Can not write to $out_file $!");
+if ($out) {
+    open( my $out_fh, '>:encoding(UTF-8)', $out )
+      or die "Can not write to $out $!";
+    select $out_fh;
 }
 
 my $send_args = '';
@@ -102,8 +103,6 @@ my $doc = &response($res);
 
 &visit_node( @{ $doc->[1] } );
 
-close $out;
-
 sub response {
     my ($raw) = @_;
     $raw =~ s/\"$//;
@@ -117,7 +116,7 @@ sub response {
 }
 
 sub visit_node {
-    print $out "# $dest ($object_path)\n\n";
+    print "# $dest ($object_path)\n\n";
     while (@_) {
         my $child = shift;
         if ( $child eq 'interface' ) {
@@ -133,7 +132,7 @@ sub visit_iface {
     if ( $props{'name'} =~ /^org.freedesktop/ ) {
         return;
     }
-    print $out "## Interface: $props{'name'}\n\n";
+    print "## Interface: $props{'name'}\n\n";
     while (@_) {
         my $child = shift;
         if ( $child eq 0 ) {
@@ -157,7 +156,7 @@ sub visit_iface {
 
 sub visit_method {
     my %props = %{ shift @_ };
-    print $out "### Method: $props{'name'}\n\n";
+    print "### Method: $props{'name'}\n\n";
     my @args;
     my $ret = 'void';
     my @anns;
@@ -191,24 +190,24 @@ sub visit_method {
     }
 
     if (@args) {
-        print $out '**Arguments:** ';
-        print $out join( ", ", map { "`$_`" } @args ) . "\n";
-        print $out "\n";
+        print '**Arguments:** ';
+        print join( ", ", map { "`$_`" } @args ) . "\n";
+        print "\n";
     }
-    print $out "**Returns:** `$ret`\n\n";
+    print "**Returns:** `$ret`\n\n";
 
-    print_annotations(@anns);
+    &print_annotations(@anns);
 }
 
 sub visit_property {
     my %props = %{ shift @_ };
-    print $out "### Property: $props{'name'}\n\n";
+    print "### Property: $props{'name'}\n\n";
     my $type   = $props{'type'};
     my $access = $props{'access'};
     my @anns;
 
-    print $out "**Type:** `$type`\n\n";
-    print $out "**Access:** `$access`\n";
+    print "**Type:** `$type`\n\n";
+    print "**Access:** `$access`\n\n";
 
     while (@_) {
         my $child = shift;
@@ -225,16 +224,12 @@ sub visit_property {
         }
     }
 
-    if (@anns) {
-        print $out "\n";
-    }
-
-    print_annotations(@anns);
+    &print_annotations(@anns);
 }
 
 sub visit_signal {
     my %props = %{ shift @_ };
-    print $out "### Signal: $props{'name'}\n\n";
+    print "### Signal: $props{'name'}\n\n";
     my $type = 'void';
     my @anns;
 
@@ -258,13 +253,13 @@ sub visit_signal {
         }
     }
 
-    print $out "**Type**: `$type`\n\n";
-    print_annotations(@anns);
+    print "**Type**: `$type`\n\n";
+    &print_annotations(@anns);
 }
 
 sub visit_annotation {
     my %props = %{ shift @_ };
-    "- $props{'name'}: `$props{'value'}`";
+    "- $props{'name'}: `$props{'value'}`\n";
 }
 
 sub print_annotations {
@@ -272,17 +267,15 @@ sub print_annotations {
         return;
     }
 
-    print $out "**Annotations:**\n\n";
-    foreach (@_) {
-        print $out "$_\n";
-    }
-    print $out "\n";
+    print "**Annotations:**\n\n";
+    print @_;
+    print "\n";
 }
 
 sub dump {
     my $obj = shift;
 
-    print $out "\n```\n";
-    print $out Dumper($obj);
-    print $out "```\n\n";
+    print "\n```\n";
+    print Dumper($obj);
+    print "```\n\n";
 }
