@@ -15,7 +15,7 @@ tag:
   tito tag --use-version '{{VERSION}}'
 
 bundle:
-  tar -czf dbus-iface-markdown-{{VERSION}}.tar.gz bin COPYING NOTICE README.md
+  tar -czf dbus-iface-markdown-{{VERSION}}.tar.gz bin LICENSE README.md
 
 push:
   git push origin --follow-tags
