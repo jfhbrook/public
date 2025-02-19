@@ -1,5 +1,5 @@
 VERSION := "1.0.0"
-PATCH := "1"
+RELEASE := "1"
 
 set dotenv-load := true
 
@@ -12,7 +12,7 @@ format:
 #
 
 tag:
-  tito tag --use-version '{{VERSION}}'
+  tito tag --use-version '{{VERSION}}' --use-release '{{RELEASE}}'
 
 bundle:
   tar -czf dbus-iface-markdown-{{VERSION}}.tar.gz bin LICENSE README.md
@@ -21,7 +21,7 @@ push:
   git push origin --follow-tags
 
 gh-release:
-  bash ./scripts/release.sh '{{VERSION}}' '{{PATCH}}'
+  bash ./scripts/release.sh '{{VERSION}}' '{{RELEASE}}'
 
 apply-copr:
   coprctl apply -f ./copr.yml
