@@ -12,7 +12,7 @@ EDITOR="${EDITOR:-nano}"
 DEBUG="${DEBUG:-}"
 
 function log-debug {
-  if [ ! -z "${DEBUG}" ]; then
+  if [ -n "${DEBUG}" ]; then
     echo "debug: $1"
   fi
 }
@@ -45,13 +45,13 @@ if [ -z "${PATH_OR_URL}" ]; then
   exit 1
 fi
 
-if [ ! -z "$(command -v open)" ]; then
+if [ -n "$(command -v open)" ]; then
   OPEN_CMD="open"
   log-debug "Found open"
-elif [ ! -z "$(command -v gio)" ]; then
+elif [ -n "$(command -v gio)" ]; then
   OPEN_CMD="gio open"
   log-debug "Found gio"
-elif [ ! -z "$(command -v xdg-open)" ]; then
+elif [ -n "$(command -v xdg-open)" ]; then
   OPEN_CMD="xdg-open"
   log-debug "Found xdg-open"
 else
@@ -78,7 +78,7 @@ log-debug "Protocol: ${PROTOCOL}"
 MIME_TYPE="url"
 
 if [[ "${PROTOCOL}" == "file://" ]]; then
-  MIME_TYPE="$(file -b --mime-type ${PATH_OR_URL})"
+  MIME_TYPE="$(file -b --mime-type "${PATH_OR_URL}")"
 fi
 
 log-debug "Mime Type: ${MIME_TYPE}"
