@@ -1,8 +1,10 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
+mod commands;
 mod lockfile;
 mod manifest;
+
 use crate::lockfile::{Lockfile, get_lockfile};
 use crate::manifest::{Manifest, get_manifest};
 
