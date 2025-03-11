@@ -1,9 +1,11 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
+mod cache;
 mod commands;
 mod lockfile;
 mod manifest;
+mod solver;
 
 use crate::commands::add::add_command;
 use crate::commands::cache::{cache_clean_command, cache_show_command};
