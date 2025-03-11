@@ -5,6 +5,13 @@ mod commands;
 mod lockfile;
 mod manifest;
 
+use crate::commands::add::add_command;
+use crate::commands::cache::{cache_clean_command, cache_show_command};
+use crate::commands::init::init_command;
+use crate::commands::install::install_command;
+use crate::commands::remove::remove_command;
+use crate::commands::show::show_command;
+use crate::commands::update::update_command;
 use crate::lockfile::{Lockfile, get_lockfile};
 use crate::manifest::{Manifest, get_manifest};
 
@@ -42,7 +49,7 @@ enum Commands {
 enum CacheCommand {
     // Add,
     Clean,
-    List,
+    Show,
     // Verify,
 }
 
@@ -50,19 +57,19 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::Add => Ok(()),
+        Commands::Add => add_command(),
         Commands::Cache { command } => match &command {
-            CacheCommand::Clean => Ok(()),
-            CacheCommand::List => Ok(()),
+            CacheCommand::Clean => cache_clean_command(),
+            CacheCommand::Show => cache_show_command(),
         },
         Commands::Completion => {
             // TODO: https://docs.rs/clap_complete/latest/clap_complete/
             Ok(())
         }
-        Commands::Init => Ok(()),
-        Commands::Install => Ok(()),
-        Commands::Update => Ok(()),
-        Commands::Show => Ok(()),
-        Commands::Remove => Ok(()),
+        Commands::Init => init_command(),
+        Commands::Install => install_command(),
+        Commands::Update => update_command(),
+        Commands::Show => show_command(),
+        Commands::Remove => remove_command(),
     }
 }
