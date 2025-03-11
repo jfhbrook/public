@@ -7,4 +7,5 @@ edition = "2024"
 anyhow = "1.0.97"
 clap = { version = "4.5.32", features = ["derive"] }
 config = "0.15.9"
+serde = { version = "1.0.219", features = ["derive"] }
 thiserror = "2.0.12"
