@@ -1,6 +1,11 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
+mod lockfile;
+mod manifest;
+use crate::lockfile::{Lockfile, get_lockfile};
+use crate::manifest::{Manifest, get_manifest};
+
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {

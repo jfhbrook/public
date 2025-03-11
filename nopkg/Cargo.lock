@@ -367,6 +367,7 @@ dependencies = [
  "anyhow",
  "clap",
  "config",
+ "serde",
  "thiserror",
 ]
 
