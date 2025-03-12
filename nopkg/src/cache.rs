@@ -3,7 +3,7 @@ use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
-use anyhow::{bail, Result};
+use anyhow::Result;
 use camino::Utf8Path;
 use serde_json::Value;
 use sha3::{Digest, Sha3_256};
@@ -30,6 +30,36 @@ fn read_index<P: AsRef<Path>>(path: P) -> Result<CacheIndex> {
     Ok(index)
 }
 
+fn write_index<P: AsRef<Path>>(path: P, index: &CacheIndex) -> Result<()> {
+    let file = fs::File::open(path)?;
+    let writer = io::BufWriter::new(file);
+
+    serde_json::to_writer_pretty(writer, index)?;
+
+    Ok(())
+}
+
+fn cache_path(dirs: &BaseDirectories) -> Result<PathBuf> {
+    let path = dirs.place_cache_file("index.json")?;
+    Ok(path)
+}
+
+fn hash_url(url: &String) -> Result<String> {
+    let mut hasher = Sha3_256::new();
+    hasher.update(url);
+    let hash = hasher.finalize();
+    let hash = std::str::from_utf8(&hash)?;
+    Ok(hash.to_string())
+}
+
+fn file_path(url: &String) -> Result<PathBuf> {
+    let hash = hash_url(url)?;
+
+    let path = format!("file/{}", hash.as_str());
+    let path = Path::new(&path);
+    Ok(path.to_path_buf())
+}
+
 pub(crate) struct Cache {
     dirs: BaseDirectories,
     index: CacheIndex,
@@ -38,23 +68,26 @@ pub(crate) struct Cache {
 impl Cache {
     pub(crate) fn new() -> Result<Self> {
         let dirs = BaseDirectories::with_prefix("nopkg")?;
-        let index_path = dirs.place_cache_file("index.json")?;
+        let path = cache_path(&dirs)?;
 
-        let index = read_index(&index_path)?;
+        let index = read_index(&path)?;
         Ok(Cache { dirs, index })
     }
 
     pub(crate) fn place_file(&self, url: &String) -> Result<PathBuf> {
-        let mut hasher = Sha3_256::new();
-        hasher.update(url);
-        let hash = hasher.finalize();
-        let hash = std::str::from_utf8(&hash)?;
-
-        let path = format!("file/{}", hash);
-        let path = Utf8Path::new(&path);
-
+        let path = file_path(url)?;
         let path = self.dirs.place_cache_file(path)?;
         Ok(path)
+    }
+
+    fn update_index(&mut self, url: &String) -> Result<()> {
+        let hash = hash_url(url)?;
+        let path = cache_path(&self.dirs)?;
+
+        self.index.insert(url.clone(), hash);
+        write_index(path, &self.index)?;
+
+        Ok(())
     }
 }
 

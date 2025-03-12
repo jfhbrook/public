@@ -1,6 +1,6 @@
 use std::fs;
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use camino::{Utf8Path, Utf8PathBuf};
 use config::{Config, FileFormat};
 use serde::{Deserialize, Serialize};
