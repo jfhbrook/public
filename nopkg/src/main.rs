@@ -4,6 +4,7 @@ use clap_complete::Shell;
 
 mod cache;
 mod commands;
+mod init;
 mod lockfile;
 mod manifest;
 mod solver;
@@ -41,7 +42,13 @@ enum Commands {
         shell: Option<Shell>,
     },
     // Initialize a new project
-    Init,
+    Init {
+        #[arg(long)]
+        path: Option<String>,
+
+        #[arg(long)]
+        overwrite: bool,
+    },
     // Install configured resources
     Install,
     // Update configured resources
@@ -73,7 +80,13 @@ fn main() -> Result<()> {
             let mut command = Cli::command();
             return completion_command(*shell, &mut command);
         }
-        Commands::Init => init_command(),
+        Commands::Init { path, overwrite } => {
+            let path = match path {
+                Some(path) => path.clone(),
+                None => "./unpkg.toml".to_string(),
+            };
+            init_command(&path, *overwrite)
+        }
         Commands::Install => install_command(),
         Commands::Update => update_command(),
         Commands::Show => show_command(),
