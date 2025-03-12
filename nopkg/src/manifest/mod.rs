@@ -4,6 +4,7 @@ use anyhow::{Result, bail};
 use camino::{Utf8Path, Utf8PathBuf};
 use config::{Config, FileFormat};
 use serde::{Deserialize, Serialize};
+use toml;
 
 #[derive(Deserialize, Serialize)]
 pub(crate) struct Manifest {
@@ -42,6 +43,15 @@ pub(crate) fn get_manifest<P: AsRef<Utf8Path>>(path: P) -> Result<Manifest> {
     let manifest = cfg.try_deserialize::<Manifest>()?;
 
     Ok(manifest)
+}
+
+pub(crate) fn write_manifest<P: AsRef<Utf8Path>>(path: P, manifest: &Manifest) -> Result<()> {
+    let path = path.as_ref();
+    let manifest = toml::to_string(manifest)?;
+
+    fs::write(path, manifest)?;
+
+    Ok(())
 }
 
 pub(crate) fn init_manifest<P: AsRef<Utf8Path>>(path: P, overwrite: bool) -> Result<()> {
