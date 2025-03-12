@@ -1,5 +1,6 @@
 use anyhow::Result;
-use clap::{Parser, Subcommand};
+use clap::{Args, CommandFactory, Parser, Subcommand, ValueHint};
+use clap_complete::Shell;
 
 mod cache;
 mod commands;
@@ -35,7 +36,10 @@ enum Commands {
         command: CacheCommand,
     },
     // Generate a shell completion script
-    Completion,
+    Completion {
+        #[arg(long, value_enum)]
+        shell: Option<Shell>,
+    },
     // Initialize a new project
     Init,
     // Install configured resources
@@ -65,7 +69,10 @@ fn main() -> Result<()> {
             CacheCommand::Clean => cache_clean_command(),
             CacheCommand::Show => cache_show_command(),
         },
-        Commands::Completion => completion_command(),
+        Commands::Completion { shell } => {
+            let mut command = Cli::command();
+            return completion_command(*shell, &mut command);
+        }
         Commands::Init => init_command(),
         Commands::Install => install_command(),
         Commands::Update => update_command(),
