@@ -4,7 +4,6 @@ use clap_complete::Shell;
 
 mod cache;
 mod commands;
-mod init;
 mod lockfile;
 mod manifest;
 mod solver;

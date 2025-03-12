@@ -1,4 +1,6 @@
-use anyhow::Result;
+use std::fs;
+
+use anyhow::{Result, bail};
 use camino::{Utf8Path, Utf8PathBuf};
 use config::{Config, FileFormat};
 use serde::{Deserialize, Serialize};
@@ -15,6 +17,8 @@ pub(crate) struct Dependency {
     file: Option<String>,
     unpack: Option<bool>,
 }
+
+const TEMPLATE: &str = include_str!("./nopkg.toml");
 
 pub(crate) fn manifest_path(path: &Utf8Path) -> Utf8PathBuf {
     match path.extension() {
@@ -38,4 +42,15 @@ pub(crate) fn get_manifest<P: AsRef<Utf8Path>>(path: P) -> Result<Manifest> {
     let manifest = cfg.try_deserialize::<Manifest>()?;
 
     Ok(manifest)
+}
+
+pub(crate) fn init_manifest<P: AsRef<Utf8Path>>(path: P, overwrite: bool) -> Result<()> {
+    let path = path.as_ref();
+    if !overwrite && path.is_file() {
+        bail!("Cowardly refusing to overwrite {}", path);
+    }
+
+    fs::write(path, TEMPLATE)?;
+
+    Ok(())
 }
