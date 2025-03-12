@@ -9,6 +9,7 @@ mod solver;
 
 use crate::commands::add::add_command;
 use crate::commands::cache::{cache_clean_command, cache_show_command};
+use crate::commands::completion::completion_command;
 use crate::commands::init::init_command;
 use crate::commands::install::install_command;
 use crate::commands::remove::remove_command;
@@ -64,10 +65,7 @@ fn main() -> Result<()> {
             CacheCommand::Clean => cache_clean_command(),
             CacheCommand::Show => cache_show_command(),
         },
-        Commands::Completion => {
-            // TODO: https://docs.rs/clap_complete/latest/clap_complete/
-            Ok(())
-        }
+        Commands::Completion => completion_command(),
         Commands::Init => init_command(),
         Commands::Install => install_command(),
         Commands::Update => update_command(),

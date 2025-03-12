@@ -1,5 +1,6 @@
 pub(crate) mod add;
 pub(crate) mod cache;
+pub(crate) mod completion;
 pub(crate) mod init;
 pub(crate) mod install;
 pub(crate) mod remove;
