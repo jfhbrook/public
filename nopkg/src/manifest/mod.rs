@@ -7,15 +7,15 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]
 pub(crate) struct Manifest {
-    dependencies: Vec<Dependency>,
+    pub(crate) dependencies: Option<Vec<Dependency>>,
 }
 
 #[derive(Deserialize, Serialize)]
 pub(crate) struct Dependency {
-    name: Option<String>,
-    url: String,
-    file: Option<String>,
-    unpack: Option<bool>,
+    pub(crate) name: Option<String>,
+    pub(crate) url: String,
+    pub(crate) file: Option<String>,
+    pub(crate) unpack: Option<bool>,
 }
 
 const TEMPLATE: &str = include_str!("./nopkg.toml");
@@ -25,7 +25,7 @@ pub(crate) fn manifest_path(path: &Utf8Path) -> Utf8PathBuf {
         Some(ext) if ext == "toml" => path.to_path_buf(),
         _ => {
             let mut buf = path.to_path_buf();
-            buf.push("unpkg.toml");
+            buf.push("nopkg.toml");
             buf
         }
     }
@@ -36,7 +36,7 @@ pub(crate) fn get_manifest<P: AsRef<Utf8Path>>(path: P) -> Result<Manifest> {
     let path = manifest_path(path);
 
     let cfg = Config::builder()
-        .add_source(config::File::from_str(path.as_str(), FileFormat::Toml))
+        .add_source(config::File::new(path.as_str(), FileFormat::Toml))
         .build()?;
 
     let manifest = cfg.try_deserialize::<Manifest>()?;

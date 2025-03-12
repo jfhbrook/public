@@ -39,7 +39,7 @@ enum Commands {
         #[arg(short, long, default_value_t = false)]
         unpack: bool,
 
-        #[arg(short, long, default_value = "./unpkg.toml")]
+        #[arg(short, long, default_value = "./nopkg.toml")]
         manifest_path: String,
     },
     // Work with the artifact cache
@@ -54,7 +54,7 @@ enum Commands {
     },
     // Initialize a new project
     Init {
-        #[arg(short, long, default_value = "./unpkg.toml")]
+        #[arg(short, long, default_value = "./nopkg.toml")]
         path: String,
 
         #[arg(long)]

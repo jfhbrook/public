@@ -551,6 +551,7 @@ dependencies = [
  "config",
  "serde",
  "thiserror",
+ "toml",
  "url",
 ]
 
