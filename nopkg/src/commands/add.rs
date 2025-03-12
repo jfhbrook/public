@@ -1,7 +1,10 @@
 use anyhow::Result;
 
+use crate::url::parse_url;
+
 pub(crate) fn add_file_command(url: &String, file: &Option<String>) -> Result<()> {
-    println!("url: {}", url);
+    let url = parse_url(url.as_str())?;
+    println!("url: {:?}", url);
     if let Some(file) = file {
         println!("file: {}", file);
     }

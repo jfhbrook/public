@@ -8,6 +8,7 @@ mod init;
 mod lockfile;
 mod manifest;
 mod solver;
+mod url;
 
 use crate::commands::add::add_file_command;
 use crate::commands::cache::{cache_clean_command, cache_show_command};
