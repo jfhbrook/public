@@ -1,10 +1,7 @@
-use std::fs;
-
 use anyhow::Result;
 use camino::Utf8Path;
-use toml;
 
-use crate::manifest::{Dependency, get_manifest};
+use crate::manifest::{Dependency, get_manifest, write_manifest};
 
 pub(crate) fn add_command(
     url: &String,
@@ -26,9 +23,7 @@ pub(crate) fn add_command(
 
     manifest.dependencies = Some(dependencies);
 
-    let manifest = toml::to_string(&manifest)?;
-
-    fs::write(manifest_path, manifest)?;
+    write_manifest(manifest_path, &manifest)?;
 
     Ok(())
 }
