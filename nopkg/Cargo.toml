@@ -11,4 +11,5 @@ clap_complete = "4.5.46"
 config = "0.15.9"
 serde = { version = "1.0.219", features = ["derive"] }
 thiserror = "2.0.12"
+toml = "0.8.20"
 url = "2.5.4"
