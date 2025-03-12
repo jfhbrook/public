@@ -10,7 +10,7 @@ mod manifest;
 mod solver;
 mod url;
 
-use crate::commands::add::add_file_command;
+use crate::commands::add::add_command;
 use crate::commands::cache::{cache_clean_command, cache_show_command};
 use crate::commands::completion::completion_command;
 use crate::commands::init::init_command;
@@ -32,8 +32,13 @@ struct Cli {
 enum Commands {
     // Add a new resource
     Add {
-        #[command(subcommand)]
-        command: AddCommand,
+        url: String,
+
+        #[arg(short, long)]
+        file: Option<String>,
+
+        #[arg(short, long, default_value_t = false)]
+        unpack: bool,
     },
     // Work with the artifact cache
     Cache {
@@ -73,24 +78,11 @@ enum CacheCommand {
     Show,
 }
 
-#[derive(Subcommand)]
-enum AddCommand {
-    // Add a file
-    File {
-        url: String,
-
-        #[arg(short, long)]
-        file: Option<String>,
-    },
-}
-
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::Add { command } => match &command {
-            AddCommand::File { url, file } => add_file_command(url, file),
-        },
+        Commands::Add { url, file, unpack } => add_command(url, file, unpack),
         Commands::Cache { command } => match &command {
             CacheCommand::Clear => cache_clean_command(),
             CacheCommand::Show => cache_show_command(),
