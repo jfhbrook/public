@@ -39,6 +39,9 @@ enum Commands {
 
         #[arg(short, long, default_value_t = false)]
         unpack: bool,
+
+        #[arg(short, long, default_value = "./unpkg.toml")]
+        manifest_path: String,
     },
     // Work with the artifact cache
     Cache {
@@ -52,8 +55,8 @@ enum Commands {
     },
     // Initialize a new project
     Init {
-        #[arg(long)]
-        path: Option<String>,
+        #[arg(short, long, default_value = "./unpkg.toml")]
+        path: String,
 
         #[arg(long)]
         overwrite: bool,
@@ -82,7 +85,12 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::Add { url, file, unpack } => add_command(url, file, unpack),
+        Commands::Add {
+            url,
+            file,
+            unpack,
+            manifest_path,
+        } => add_command(url, file, unpack, manifest_path),
         Commands::Cache { command } => match &command {
             CacheCommand::Clear => cache_clean_command(),
             CacheCommand::Show => cache_show_command(),
