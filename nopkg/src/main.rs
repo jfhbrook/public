@@ -9,7 +9,7 @@ mod lockfile;
 mod manifest;
 mod solver;
 
-use crate::commands::add::add_command;
+use crate::commands::add::add_file_command;
 use crate::commands::cache::{cache_clean_command, cache_show_command};
 use crate::commands::completion::completion_command;
 use crate::commands::init::init_command;
@@ -30,7 +30,10 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     // Add a new resource
-    Add,
+    Add {
+        #[command(subcommand)]
+        command: AddCommand,
+    },
     // Work with the artifact cache
     Cache {
         #[command(subcommand)]
@@ -61,32 +64,41 @@ enum Commands {
 
 #[derive(Subcommand)]
 enum CacheCommand {
-    // Add,
-    Clean,
+    // Clear the cache
+    #[clap(alias = "nuke")]
+    Clear,
+
+    // Show the state of the cache
     Show,
-    // Verify,
+}
+
+#[derive(Subcommand)]
+enum AddCommand {
+    // Add a file
+    File {
+        url: String,
+
+        #[arg(short, long)]
+        file: Option<String>,
+    },
 }
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::Add => add_command(),
+        Commands::Add { command } => match &command {
+            AddCommand::File { url, file } => add_file_command(url, file),
+        },
         Commands::Cache { command } => match &command {
-            CacheCommand::Clean => cache_clean_command(),
+            CacheCommand::Clear => cache_clean_command(),
             CacheCommand::Show => cache_show_command(),
         },
         Commands::Completion { shell } => {
             let mut command = Cli::command();
             return completion_command(*shell, &mut command);
         }
-        Commands::Init { path, overwrite } => {
-            let path = match path {
-                Some(path) => path.clone(),
-                None => "./unpkg.toml".to_string(),
-            };
-            init_command(&path, *overwrite)
-        }
+        Commands::Init { path, overwrite } => init_command(path, *overwrite),
         Commands::Install => install_command(),
         Commands::Update => update_command(),
         Commands::Show => show_command(),
