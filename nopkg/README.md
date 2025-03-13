@@ -3,9 +3,14 @@
 ## TODO
 
 - Customize logging output
-  - `plain` should implement no-color output
-  - `default` should not include timestamps
+  - `text` should implement no-color output
+  - `cli` should not include timestamps
   - `extended` should more or less just use the "pretty" formatter
+- Customize CLI
+  - Descriptions for arguments
+  - Descriptions for commands
+  - Aliases for commands
+  - Default behavior for no command
 - Cache
   - Use [sqlite](https://github.com/rusqlite/rusqlite) for index
   - Implement file downloader with reqwest and tokio
