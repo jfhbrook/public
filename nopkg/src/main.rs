@@ -1,6 +1,7 @@
 use anyhow::Result;
 use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum, ValueHint};
 use clap_complete::Shell;
+use tracing::{error, info};
 
 mod cache;
 mod commands;
@@ -25,10 +26,10 @@ use crate::manifest::{Manifest, get_manifest};
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
-    #[arg(short, long, value_enum, default_value_t = LogLevel::Debug)]
+    #[arg(short, long, value_enum, default_value_t = LogLevel::Info)]
     log_level: LogLevel,
 
-    #[arg(short, long, value_enum, default_value_t = LogFormat::Pretty)]
+    #[arg(short, long, value_enum, default_value_t = LogFormat::Cli)]
     format: LogFormat,
 
     #[command(subcommand)]
@@ -91,9 +92,15 @@ enum CacheCommand {
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    configure_logging(&cli.log_level, &cli.format);
-
     match &cli.command {
+        Commands::Completion { shell } => {}
+        _ => {
+            configure_logging(&cli.log_level, &cli.format);
+            info!("it worked if it ends with ok");
+        }
+    };
+
+    let result = match &cli.command {
         Commands::Add {
             url,
             file,
@@ -113,5 +120,19 @@ fn main() -> Result<()> {
         Commands::Update => update_command(),
         Commands::Show => show_command(),
         Commands::Remove => remove_command(),
-    }
+    };
+
+    if let Err(err) = result {
+        error!("{}", err);
+        error!("not ok");
+    } else {
+        match &cli.command {
+            Commands::Completion { shell } => {}
+            _ => {
+                info!("ok");
+            }
+        };
+    };
+
+    Ok(())
 }
