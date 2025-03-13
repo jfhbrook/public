@@ -2,15 +2,6 @@
 
 ## TODO
 
-- Customize logging output
-  - `text` should implement no-color output
-  - `cli` should not include timestamps
-  - `extended` should more or less just use the "pretty" formatter
-- Customize CLI
-  - Descriptions for arguments
-  - Descriptions for commands
-  - Aliases for commands
-  - Default behavior for no command
 - Cache
   - Use [sqlite](https://github.com/rusqlite/rusqlite) for index
   - Implement file downloader with reqwest and tokio
@@ -44,9 +35,21 @@
   - Call install on remove
 - Update
   - A special case of install
+- Customize logging output
+  - `text` should implement no-color output
+  - `cli` should not include timestamps
+  - `text` and `cli` should probably print full errors
+  - `extended` should more or less just use the "pretty" formatter
+- Customize CLI
+  - Descriptions for arguments
+  - Descriptions for commands
+  - Aliases for commands
+  - Default behavior for no command
 - Cache commands
   - Implement `nopkg cache remove`
   - Implement `nopkg cache clear`
   - Implement `nopkg cache repair`
 - Implement archive unpacking
 - Implement git repos
+- Move away from `anyhow`
+  - Presumably `thiserror`
