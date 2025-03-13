@@ -8,6 +8,8 @@ use anyhow::Result;
 use sha3::{Digest, Sha3_256};
 use xdg::BaseDirectories;
 
+mod download;
+
 /// A map between URL and hash
 type CacheIndex = HashMap<String, String>;
 
