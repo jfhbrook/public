@@ -1,10 +1,11 @@
 use anyhow::Result;
-use clap::{Args, CommandFactory, Parser, Subcommand, ValueHint};
+use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum, ValueHint};
 use clap_complete::Shell;
 
 mod cache;
 mod commands;
 mod lockfile;
+mod log;
 mod manifest;
 mod solver;
 mod url;
@@ -18,11 +19,18 @@ use crate::commands::remove::remove_command;
 use crate::commands::show::show_command;
 use crate::commands::update::update_command;
 use crate::lockfile::{Lockfile, get_lockfile};
+use crate::log::{LogFormat, LogLevel, configure_logging};
 use crate::manifest::{Manifest, get_manifest};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
+    #[arg(short, long, value_enum, default_value_t = LogLevel::Debug)]
+    log_level: LogLevel,
+
+    #[arg(short, long, value_enum, default_value_t = LogFormat::Pretty)]
+    format: LogFormat,
+
     #[command(subcommand)]
     command: Commands,
 }
@@ -82,6 +90,8 @@ enum CacheCommand {
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
+
+    configure_logging(&cli.log_level, &cli.format);
 
     match &cli.command {
         Commands::Add {
