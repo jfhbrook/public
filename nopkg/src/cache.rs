@@ -80,7 +80,7 @@ impl Cache {
         Ok(path)
     }
 
-    fn update_index(&mut self, url: &String) -> Result<()> {
+    pub(crate) fn update_index(&mut self, url: &String) -> Result<()> {
         let hash = hash_url(url)?;
         let path = cache_path(&self.dirs)?;
 
@@ -89,9 +89,14 @@ impl Cache {
 
         Ok(())
     }
+
+    pub(crate) fn open_file(&self, url: &String) -> Result<fs::File> {
+        let path = self.place_file(url)?;
+        let file = fs::File::open(path)?;
+        Ok(file)
+    }
 }
 
-// TODO: load/save to index
 // TODO: file download
 // TODO: git clone
 // TODO: git checkout
