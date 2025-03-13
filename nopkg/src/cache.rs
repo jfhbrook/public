@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
+use tracing::trace;
 
 use anyhow::Result;
 use sha3::{Digest, Sha3_256};
@@ -40,6 +41,9 @@ fn write_index<P: AsRef<Path>>(path: P, index: &CacheIndex) -> Result<()> {
 fn place_index(dirs: &BaseDirectories) -> Result<PathBuf> {
     /// Get the path to the index, and create any needed directories.
     let path = dirs.place_cache_file("index.json")?;
+
+    trace!("Placing index at {:?}", path);
+
     Ok(path)
 }
 
@@ -48,7 +52,11 @@ fn hash_url(url: &String) -> Result<String> {
     hasher.update(url);
     let hash = hasher.finalize();
     let hash = std::str::from_utf8(&hash)?;
-    Ok(hash.to_string())
+    let hash = hash.to_string();
+
+    trace!("{} -> {}", url, hash);
+
+    Ok(hash)
 }
 
 fn file_path(url: &String) -> Result<PathBuf> {
@@ -56,6 +64,7 @@ fn file_path(url: &String) -> Result<PathBuf> {
 
     let path = format!("file/{}", hash.as_str());
     let path = Path::new(&path);
+
     Ok(path.to_path_buf())
 }
 
@@ -98,13 +107,19 @@ impl Cache {
     pub(crate) fn place_file(&self, url: &String) -> Result<PathBuf> {
         let path = file_path(url)?;
         let path = self.dirs.place_cache_file(path)?;
+
+        trace!("Placing {} at {:?}", url, path);
+
         Ok(path)
     }
 
     pub(crate) fn place_unpacked_file(&self, url: &String, path: &String) -> Result<PathBuf> {
-        let path = unpacked_file_path(url, path)?;
-        let path = self.dirs.place_cache_file(path)?;
-        Ok(path)
+        let unpacked_path = unpacked_file_path(url, path)?;
+        let unpacked_path = self.dirs.place_cache_file(unpacked_path)?;
+
+        trace!("Placing {} from {} at {:?}", path, url, unpacked_path);
+
+        Ok(unpacked_path)
     }
 
     pub(crate) fn update_index(&mut self, url: &String) -> Result<()> {
@@ -119,13 +134,19 @@ impl Cache {
 
     pub(crate) fn open_file(&self, url: &String) -> Result<fs::File> {
         let path = self.place_file(url)?;
+
+        trace!("Opening {:?}", path);
+
         let file = fs::File::open(path)?;
         Ok(file)
     }
 
     pub(crate) fn open_unpacked_file(&self, url: &String, path: &String) -> Result<fs::File> {
-        let path = self.place_unpacked_file(url, path)?;
-        let file = fs::File::open(path)?;
+        let unpacked_path = self.place_unpacked_file(url, path)?;
+
+        trace!("Opening {:?} from {}", path, url);
+
+        let file = fs::File::open(unpacked_path)?;
         Ok(file)
     }
 }

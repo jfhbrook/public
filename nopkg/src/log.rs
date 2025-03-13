@@ -26,9 +26,9 @@ impl Into<LevelFilter> for &LogLevel {
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub(crate) enum LogFormat {
-    Full,
-    Compact,
-    Pretty,
+    Plain,
+    Cli,
+    Extended,
     Json,
 }
 
@@ -36,13 +36,15 @@ pub(crate) fn configure_logging(level: &LogLevel, format: &LogFormat) -> () {
     let fmt = tracing_subscriber::fmt().with_max_level(level);
 
     match format {
-        LogFormat::Full => {
-            fmt.init();
-        }
-        LogFormat::Compact => {
+        LogFormat::Plain => {
+            // TODO: Should not have colors
             fmt.compact().init();
         }
-        LogFormat::Pretty => {
+        LogFormat::Cli => {
+            // TODO: Should not have timestamps
+            fmt.compact().init();
+        }
+        LogFormat::Extended => {
             fmt.pretty().init();
         }
         LogFormat::Json => {

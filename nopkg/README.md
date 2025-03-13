@@ -2,14 +2,46 @@
 
 ## TODO
 
-- Logging - `tracing` and `tracing_subscriber`
-- Create cache
-  - `~/.local/cache/nopkg/files`
-  - `~/.local/cache/nopkg/index.json`
-    - url -> hash
-  - Store file in `~/.local/cache/nopkg/files/{{ hash }}`
-  - `get_file(url) -> Utf8PathBuf`
-  - `has_file(url) -> bool`
-  - `download_file(url) -> Utf8PathBuf`
+- Customize logging output
+  - `plain` should implement no-color output
+  - `default` should not include timestamps
+  - `extended` should more or less just use the "pretty" formatter
+- Cache
+  - Use [sqlite](https://github.com/rusqlite/rusqlite) for index
+  - Implement file downloader with reqwest and tokio
+  - Implement `nopkg cache add`
+  - Implement `nopkg cache show`
 - Install
-  - For each dependency, `get_file_path(hash(url))`
+  - Load manifest
+  - Load lockfile
+  - For each dependency...
+    - Is it in the lockfile? Does the ostensive file actually exist?
+      - If so, leave alone (unless updating)
+      - If not...
+        - Is the file in the cache?
+          - If not, download it
+        - If an archive, is it unpacked?
+          - If not, unpack it
+        - Copy from cache to project
+  - For each lock entry...
+    - Is it represented by a dependency?
+      - If not...
+        - Remove it from the project (unless `--no-remove`)
+        - Remove it from the lockfile (unless `--no-remove`)
+- Handle TOML awkwardness
+  - Option 1: Name each dependency
+  - Option 2: Switch to YAML
+- Add command improvements
+  - Update options on existing URLs
+  - Call install on add
+- Remove command
+  - Actually implement
+  - Call install on remove
+- Update
+  - A special case of install
+- Cache commands
+  - Implement `nopkg cache remove`
+  - Implement `nopkg cache clear`
+  - Implement `nopkg cache repair`
+- Implement archive unpacking
+- Implement git repos
