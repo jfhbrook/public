@@ -3,7 +3,6 @@
 ## TODO
 
 - Cache
-  - Use [sqlite](https://github.com/rusqlite/rusqlite) for index
   - Implement `nopkg cache add`
   - Implement `nopkg cache show`
 - Install
