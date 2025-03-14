@@ -94,7 +94,7 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::Completion { shell } => {}
+        Commands::Completion { shell: _ } => {}
         _ => {
             configure_logging(&cli.log_level, &cli.format);
             info!("it worked if it ends with ok");
@@ -128,7 +128,7 @@ async fn main() -> Result<()> {
         error!("not ok");
     } else {
         match &cli.command {
-            Commands::Completion { shell } => {}
+            Commands::Completion { shell: _ } => {}
             _ => {
                 info!("ok");
             }
