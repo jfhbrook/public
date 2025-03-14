@@ -90,7 +90,7 @@ pub(crate) async fn get_file(cache: &mut Cache, client: &Client, url: &str) -> R
 
     download_file(client, url, &file).await?;
 
-    cache.index.update(url)?;
+    cache.index.add(url)?;
 
     Ok(file)
 }

@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use anyhow::Result;
+use refinery::embed_migrations;
 use rusqlite::Connection;
 use tracing::trace;
 use xdg::BaseDirectories;
@@ -24,13 +25,24 @@ pub(crate) struct Index {
 impl Index {
     pub(crate) fn new(dirs: &BaseDirectories) -> Result<Self> {
         let path = place_index(dirs)?;
-        let db = Connection::open(&path)?;
+        let mut db = Connection::open(&path)?;
+
+        migrations::runner().run(&mut db)?;
+
         Ok(Index { path, db })
     }
 
-    pub(crate) fn update(&mut self, url: &str) -> Result<()> {
-        let hash = get_id(url)?;
+    pub(crate) fn add(&mut self, url: &str) -> Result<()> {
+        let id = get_id(url)?;
+
+        self.db.execute(
+            "insert into entities (url, id) values (?1, ?2) \
+            on conflict(id) do update set url = ?1",
+            (url, &id)
+        )?;
 
         Ok(())
     }
 }
+
+embed_migrations!("src/cache/migrations");
