@@ -41,5 +41,3 @@ pub(crate) async fn download_file<P: AsRef<Path>>(
 
     Ok(())
 }
-
-// TODO: https://github.com/console-rs/indicatif/blob/HEAD/examples/yarnish.rs
