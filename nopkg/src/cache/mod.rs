@@ -4,11 +4,14 @@ use std::io;
 use std::path::{Path, PathBuf};
 use tracing::trace;
 
-use anyhow::Result;
+use anyhow::{Result, bail};
+use reqwest::Client;
 use sha3::{Digest, Sha3_256};
 use xdg::BaseDirectories;
 
 mod download;
+
+use crate::cache::download::download_file;
 
 /// A map between URL and hash
 type CacheIndex = HashMap<String, String>;
@@ -49,7 +52,7 @@ fn place_index(dirs: &BaseDirectories) -> Result<PathBuf> {
     Ok(path)
 }
 
-fn hash_url(url: &String) -> Result<String> {
+fn hash_url(url: &str) -> Result<String> {
     let mut hasher = Sha3_256::new();
     hasher.update(url);
     let hash = hasher.finalize();
@@ -61,7 +64,7 @@ fn hash_url(url: &String) -> Result<String> {
     Ok(hash)
 }
 
-fn file_path(url: &String) -> Result<PathBuf> {
+fn file_path(url: &str) -> Result<PathBuf> {
     let hash = hash_url(url)?;
 
     let path = format!("file/{}", hash.as_str());
@@ -70,7 +73,7 @@ fn file_path(url: &String) -> Result<PathBuf> {
     Ok(path.to_path_buf())
 }
 
-fn unpacked_file_path(url: &String, path: &String) -> Result<PathBuf> {
+fn unpacked_file_path(url: &str, path: &str) -> Result<PathBuf> {
     let hash = hash_url(url)?;
 
     let path = format!("unpacked/{}/{}", hash, path);
@@ -78,7 +81,7 @@ fn unpacked_file_path(url: &String, path: &String) -> Result<PathBuf> {
     Ok(path.to_path_buf())
 }
 
-fn repo_path(url: &String) -> Result<PathBuf> {
+fn repo_path(url: &str) -> Result<PathBuf> {
     let hash = hash_url(url)?;
 
     let path = format!("repos/{}", hash);
@@ -106,7 +109,7 @@ impl Cache {
     }
 
     // TODO: Should these take &str?
-    pub(crate) fn place_file(&self, url: &String) -> Result<PathBuf> {
+    pub(crate) fn place_file(&self, url: &str) -> Result<PathBuf> {
         let path = file_path(url)?;
         let path = self.dirs.place_cache_file(path)?;
 
@@ -115,7 +118,7 @@ impl Cache {
         Ok(path)
     }
 
-    pub(crate) fn place_unpacked_file(&self, url: &String, path: &String) -> Result<PathBuf> {
+    pub(crate) fn place_unpacked_file(&self, url: &str, path: &str) -> Result<PathBuf> {
         let unpacked_path = unpacked_file_path(url, path)?;
         let unpacked_path = self.dirs.place_cache_file(unpacked_path)?;
 
@@ -124,36 +127,35 @@ impl Cache {
         Ok(unpacked_path)
     }
 
-    pub(crate) fn update_index(&mut self, url: &String) -> Result<()> {
+    pub(crate) fn update_index(&mut self, url: &str) -> Result<()> {
         let hash = hash_url(url)?;
         let path = place_index(&self.dirs)?;
 
-        self.index.insert(url.clone(), hash);
+        self.index.insert(url.to_string(), hash);
         write_index(path, &self.index)?;
 
         Ok(())
     }
-
-    pub(crate) fn open_file(&self, url: &String) -> Result<fs::File> {
-        let path = self.place_file(url)?;
-
-        trace!("Opening {:?}", path);
-
-        let file = fs::File::open(path)?;
-        Ok(file)
-    }
-
-    pub(crate) fn open_unpacked_file(&self, url: &String, path: &String) -> Result<fs::File> {
-        let unpacked_path = self.place_unpacked_file(url, path)?;
-
-        trace!("Opening {:?} from {}", path, url);
-
-        let file = fs::File::open(unpacked_path)?;
-        Ok(file)
-    }
 }
 
-// TODO: file download
+pub(crate) async fn get_file(cache: &mut Cache, client: &Client, url: &str) -> Result<PathBuf> {
+    let file = cache.place_file(url)?;
+
+    if file.is_file() {
+        return Ok(file);
+    }
+
+    if file.exists() {
+        bail!("Entity at path exists but is not a file");
+    }
+
+    download_file(client, url, &file).await?;
+
+    cache.update_index(url)?;
+
+    Ok(file)
+}
+
 // TODO: git clone
 // TODO: git checkout
 // TODO: git pull
