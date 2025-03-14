@@ -32,13 +32,13 @@ impl Index {
         Ok(Index { path, db })
     }
 
-    pub(crate) fn add(&mut self, url: &str) -> Result<()> {
+    pub(crate) fn add_file(&mut self, url: &str) -> Result<()> {
         let id = get_id(url)?;
 
         self.db.execute(
             "insert into entities (url, id) values (?1, ?2) \
             on conflict(id) do update set url = ?1",
-            (url, &id)
+            (url, &id),
         )?;
 
         Ok(())
