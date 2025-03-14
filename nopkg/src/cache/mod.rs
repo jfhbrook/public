@@ -6,105 +6,54 @@ use tracing::trace;
 
 use anyhow::{Result, bail};
 use reqwest::Client;
-use sha3::{Digest, Sha3_256};
 use xdg::BaseDirectories;
 
 mod download;
+mod id;
+mod index;
 
 use crate::cache::download::download_file;
-
-/// A map between URL and hash
-type CacheIndex = HashMap<String, String>;
-
-fn read_index<P: AsRef<Path>>(path: P) -> Result<CacheIndex> {
-    /// Read an index file.
-    let path = path.as_ref();
-
-    if !path.is_file() {
-        return Ok(HashMap::new());
-    }
-
-    let file = fs::File::open(path)?;
-    let reader = io::BufReader::new(file);
-
-    // TODO: Use SQLITE?
-    let index: CacheIndex = serde_json::from_reader(reader)?;
-
-    Ok(index)
-}
-
-fn write_index<P: AsRef<Path>>(path: P, index: &CacheIndex) -> Result<()> {
-    /// Write out an index file.
-    let file = fs::File::open(path)?;
-    let writer = io::BufWriter::new(file);
-
-    serde_json::to_writer_pretty(writer, index)?;
-
-    Ok(())
-}
-
-fn place_index(dirs: &BaseDirectories) -> Result<PathBuf> {
-    /// Get the path to the index, and create any needed directories.
-    let path = dirs.place_cache_file("index.json")?;
-
-    trace!("Placing index at {:?}", path);
-
-    Ok(path)
-}
-
-fn hash_url(url: &str) -> Result<String> {
-    let mut hasher = Sha3_256::new();
-    hasher.update(url);
-    let hash = hasher.finalize();
-    let hash = std::str::from_utf8(&hash)?;
-    let hash = hash.to_string();
-
-    trace!("{} -> {}", url, hash);
-
-    Ok(hash)
-}
+use crate::cache::id::get_id;
+use crate::cache::index::Index;
 
 fn file_path(url: &str) -> Result<PathBuf> {
-    let hash = hash_url(url)?;
+    let id = get_id(url)?;
 
-    let path = format!("file/{}", hash.as_str());
+    let path = format!("file/{}", id.as_str());
     let path = Path::new(&path);
 
     Ok(path.to_path_buf())
 }
 
 fn unpacked_file_path(url: &str, path: &str) -> Result<PathBuf> {
-    let hash = hash_url(url)?;
+    let id = get_id(url)?;
 
-    let path = format!("unpacked/{}/{}", hash, path);
+    let path = format!("unpacked/{}/{}", id, path);
     let path = Path::new(&path);
     Ok(path.to_path_buf())
 }
 
 fn repo_path(url: &str) -> Result<PathBuf> {
-    let hash = hash_url(url)?;
+    let id = get_id(url)?;
 
-    let path = format!("repos/{}", hash);
+    let path = format!("repos/{}", id);
     let path = Path::new(&path);
     Ok(path.to_path_buf())
 }
 
 pub(crate) struct Cache {
     dirs: BaseDirectories,
-    index: CacheIndex,
+    index: Index,
 }
 
+///
+/// A resource cache. Handles flat files, unpacked archives and git repos.
+///
 impl Cache {
-    ///
-    /// A resource cache. Handles flat files, unpacked archives and git repos.
-    ///
-
+    /// Create a new resource cache.
     pub(crate) fn new() -> Result<Self> {
-        /// Create a new resource cache.
         let dirs = BaseDirectories::with_prefix("nopkg")?;
-        let path = place_index(&dirs)?;
-
-        let index = read_index(&path)?;
+        let index = Index::new(&dirs)?;
         Ok(Cache { dirs, index })
     }
 
@@ -126,16 +75,6 @@ impl Cache {
 
         Ok(unpacked_path)
     }
-
-    pub(crate) fn update_index(&mut self, url: &str) -> Result<()> {
-        let hash = hash_url(url)?;
-        let path = place_index(&self.dirs)?;
-
-        self.index.insert(url.to_string(), hash);
-        write_index(path, &self.index)?;
-
-        Ok(())
-    }
 }
 
 pub(crate) async fn get_file(cache: &mut Cache, client: &Client, url: &str) -> Result<PathBuf> {
@@ -151,7 +90,7 @@ pub(crate) async fn get_file(cache: &mut Cache, client: &Client, url: &str) -> R
 
     download_file(client, url, &file).await?;
 
-    cache.update_index(url)?;
+    cache.index.update(url)?;
 
     Ok(file)
 }
