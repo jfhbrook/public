@@ -18,9 +18,7 @@ pub(crate) async fn download_file<P: AsRef<Path>>(
     let res = client.get(url).send().await?;
 
     // TODO: Gracefully handle when total size is unknown?
-    let total_size = res
-        .content_length()
-        .ok_or(anyhow!("No content length specified"))?;
+    let total_size = res.content_length().unwrap_or(1024);
 
     // TODO: Customize style
     let bar = ProgressBar::new(total_size);
