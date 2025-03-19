@@ -24,16 +24,13 @@ pub(crate) fn add_command(
     let manifest_path = Utf8Path::new(manifest_path);
     let mut manifest = get_manifest(manifest_path)?;
 
-    let mut dependencies = manifest.dependencies.unwrap_or(vec![]);
+    let mut dependencies = manifest.dependencies;
+    // let mut dev_dependencies = manifest.dev_dependencies.unwrap_or(vec![]);
 
-    dependencies.push(Dependency {
-        name: None,
-        url: url.clone(),
-        file: file.clone(),
-        unpack: Some(*unpack),
-    });
+    // TODO: Handle file, unpack, etc
+    dependencies.push(Dependency::Url(url.clone()));
 
-    manifest.dependencies = Some(dependencies);
+    manifest.dependencies = dependencies;
 
     write_manifest(manifest_path, &manifest)?;
 
