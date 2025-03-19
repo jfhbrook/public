@@ -2,8 +2,10 @@ use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use anyhow::Result;
+use chrono::{DateTime, Utc};
 use refinery::embed_migrations;
-use rusqlite::Connection;
+use rusqlite::{Connection, Row, Statement};
+use tabled::Tabled;
 use tracing::trace;
 use xdg::BaseDirectories;
 
@@ -16,6 +18,27 @@ fn place_index(dirs: &BaseDirectories) -> Result<PathBuf> {
     trace!("Placing index at {:?}", path);
 
     Ok(path)
+}
+
+#[derive(Tabled)]
+pub(crate) struct Entry {
+    url: String,
+    id: String,
+    modified_at: DateTime<Utc>,
+}
+
+pub(crate) fn map_entry(row: &Row) -> std::result::Result<Entry, rusqlite::Error> {
+    let url = row.get(0)?;
+    let id = row.get(1)?;
+    let timestamp: f64 = row.get(2)?;
+    let timestamp = (timestamp * 1000.0) as i64;
+    let modified_at = DateTime::from_timestamp_millis(timestamp);
+    let modified_at = modified_at.unwrap();
+    Ok(Entry {
+        url,
+        id,
+        modified_at,
+    })
 }
 
 pub(crate) struct Index {
@@ -45,6 +68,11 @@ impl Index {
         )?;
 
         Ok(())
+    }
+
+    pub(crate) fn entries(&self) -> Result<Statement> {
+        let stmt = self.db.prepare("select url, id, modified_at from files;")?;
+        Ok(stmt)
     }
 }
 
