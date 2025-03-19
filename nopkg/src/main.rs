@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum, ValueHint};
+use clap::{CommandFactory, Parser, Subcommand}; // ValueHint
 use clap_complete::Shell;
 use tracing::{error, info};
 
@@ -12,16 +12,14 @@ mod solver;
 mod url;
 
 use crate::commands::add::add_command;
-use crate::commands::cache::{cache_clean_command, cache_show_command};
+use crate::commands::cache::{cache_add_command, cache_clean_command, cache_show_command};
 use crate::commands::completion::completion_command;
 use crate::commands::init::init_command;
 use crate::commands::install::install_command;
 use crate::commands::remove::remove_command;
 use crate::commands::show::show_command;
 use crate::commands::update::update_command;
-use crate::lockfile::{Lockfile, get_lockfile};
 use crate::log::{LogFormat, LogLevel, configure_logging};
-use crate::manifest::{Manifest, get_manifest};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -81,6 +79,11 @@ enum Commands {
 
 #[derive(Subcommand)]
 enum CacheCommand {
+    /// Add a url to the cache
+    Add {
+        url: String,
+    },
+
     // Clear the cache
     #[clap(alias = "nuke")]
     Clear,
@@ -109,6 +112,7 @@ async fn main() -> Result<()> {
             manifest_path,
         } => add_command(url, file, unpack, manifest_path),
         Commands::Cache { command } => match &command {
+            CacheCommand::Add { url } => cache_add_command(url).await,
             CacheCommand::Clear => cache_clean_command(),
             CacheCommand::Show => cache_show_command(),
         },

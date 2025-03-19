@@ -1,11 +1,7 @@
-use std::collections::HashMap;
-use std::fs;
-use std::io;
 use std::path::{Path, PathBuf};
 use tracing::trace;
 
 use anyhow::{Result, bail};
-use reqwest::Client;
 use xdg::BaseDirectories;
 
 mod download;
@@ -25,6 +21,7 @@ fn file_path(url: &str) -> Result<PathBuf> {
     Ok(path.to_path_buf())
 }
 
+/*
 fn unpacked_file_path(url: &str, path: &str) -> Result<PathBuf> {
     let id = get_id(url)?;
 
@@ -32,6 +29,7 @@ fn unpacked_file_path(url: &str, path: &str) -> Result<PathBuf> {
     let path = Path::new(&path);
     Ok(path.to_path_buf())
 }
+*/
 
 fn repo_path(url: &str) -> Result<PathBuf> {
     let id = get_id(url)?;
@@ -67,6 +65,7 @@ impl Cache {
         Ok(path)
     }
 
+    /*
     pub(crate) fn place_unpacked_file(&self, url: &str, path: &str) -> Result<PathBuf> {
         let unpacked_path = unpacked_file_path(url, path)?;
         let unpacked_path = self.dirs.place_cache_file(unpacked_path)?;
@@ -75,24 +74,25 @@ impl Cache {
 
         Ok(unpacked_path)
     }
+    */
 }
 
-pub(crate) async fn get_file(cache: &mut Cache, client: &Client, url: &str) -> Result<PathBuf> {
-    let file = cache.place_file(url)?;
+pub(crate) async fn get_file(cache: &mut Cache, url: &str) -> Result<PathBuf> {
+    let path = cache.place_file(url)?;
 
-    if file.is_file() {
-        return Ok(file);
+    if path.is_file() {
+        return Ok(path);
     }
 
-    if file.exists() {
+    if path.exists() {
         bail!("Entity at path exists but is not a file");
     }
 
-    download_file(client, url, &file).await?;
+    download_file(url, &path).await?;
 
     cache.index.add_file(url)?;
 
-    Ok(file)
+    Ok(path)
 }
 
 // TODO: git clone
