@@ -1,6 +1,5 @@
 use anyhow::Result;
-use tabled::Table;
-use tabled::settings::Style;
+use tabled::{builder::Builder, settings::Style};
 
 use crate::cache::index::{Entry, map_entry};
 use crate::cache::{Cache, get_file};
@@ -21,13 +20,30 @@ pub(crate) fn cache_show_command() -> Result<()> {
     let mut stmt = cache.index.entries()?;
 
     let entries = stmt.query_map([], map_entry)?;
-    let entries: std::result::Result<Vec<Entry>, rusqlite::Error> = entries.collect();
-    let entries = entries?;
 
-    let mut table = Table::new(entries);
-    table.with(Style::modern());
+    let mut root_builder = Builder::default();
 
-    println!("{}", table);
+    root_builder.push_record(["cache entries"]);
+
+    for entry in entries {
+        let entry = entry?;
+
+        let mut entry_builder = Builder::default();
+        entry_builder.push_record(["", "value"]);
+        entry_builder.push_record(["url", entry.url.as_str()]);
+        entry_builder.push_record(["id", entry.id.as_str()]);
+        entry_builder.push_record(["modified_at", entry.modified_at.to_string().as_str()]);
+
+        let mut entry_table = entry_builder.build();
+        entry_table.with(Style::rounded());
+
+        root_builder.push_record([format!("{}", entry_table)]);
+    }
+
+    let mut root_table = root_builder.build();
+    root_table.with(Style::rounded());
+
+    println!("{}", root_table);
 
     Ok(())
 }

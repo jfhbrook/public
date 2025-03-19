@@ -4,6 +4,7 @@
 
 - Cache
   - Implement `nopkg cache show`
+    - Add `--since` and `--max-age` flags
   - Implement `nopkg cache remove`
   - Implement `nopkg cache nuke`
   - Implement `nopkg cache update`
@@ -35,10 +36,11 @@
   - Call install on remove
 - Update
   - A special case of install
-- Customize logging output
-  - `text` should implement no-color output
-  - `cli` should not include timestamps
-  - `extended` should more or less just use the "pretty" formatter
+- Logging/formatting
+  - `text` format should implement no-color log output
+  - `cli` format should not include timestamps
+  - `extended` format should more or less just use the "pretty" formatter
+  - `json` format in `cache show` should print JSON, not a table
 - Customize CLI
   - Descriptions for arguments
   - Descriptions for commands

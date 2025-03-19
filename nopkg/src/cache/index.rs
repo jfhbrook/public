@@ -5,7 +5,6 @@ use anyhow::Result;
 use chrono::{DateTime, Utc};
 use refinery::embed_migrations;
 use rusqlite::{Connection, Row, Statement};
-use tabled::Tabled;
 use tracing::trace;
 use xdg::BaseDirectories;
 
@@ -20,11 +19,10 @@ fn place_index(dirs: &BaseDirectories) -> Result<PathBuf> {
     Ok(path)
 }
 
-#[derive(Tabled)]
 pub(crate) struct Entry {
-    url: String,
-    id: String,
-    modified_at: DateTime<Utc>,
+    pub(crate) url: String,
+    pub(crate) id: String,
+    pub(crate) modified_at: DateTime<Utc>,
 }
 
 pub(crate) fn map_entry(row: &Row) -> std::result::Result<Entry, rusqlite::Error> {
