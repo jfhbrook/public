@@ -3,8 +3,9 @@
 ## TODO
 
 - Cache
-  - Implement `nopkg cache add`
   - Implement `nopkg cache show`
+  - Implement `nopkg cache remove`
+  - Implement `nopkg cache nuke`
 - Install
   - Load manifest
   - Load lockfile
