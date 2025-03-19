@@ -29,7 +29,7 @@ pub(crate) fn cache_show_command() -> Result<()> {
         let entry = entry?;
 
         let mut entry_builder = Builder::default();
-        entry_builder.push_record(["", "value"]);
+        entry_builder.push_record(["property", "value"]);
         entry_builder.push_record(["url", entry.url.as_str()]);
         entry_builder.push_record(["id", entry.id.as_str()]);
         entry_builder.push_record(["modified_at", entry.modified_at.to_string().as_str()]);
