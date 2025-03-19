@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use anyhow::Result;
 use refinery::embed_migrations;
@@ -34,11 +35,13 @@ impl Index {
 
     pub(crate) fn add_file(&mut self, url: &str) -> Result<()> {
         let id = get_id(url)?;
+        let duration = SystemTime::now().duration_since(UNIX_EPOCH)?;
+        let timestamp = duration.as_secs();
 
         self.db.execute(
-            "insert into entities (url, id) values (?1, ?2) \
-            on conflict(id) do update set url = ?1",
-            (url, &id),
+            "insert into entities (url, id, modified_at) values (?1, ?2, ?3) \
+            on conflict(id) do update set url = ?1, modified_at = ?2",
+            (url, &id, &timestamp),
         )?;
 
         Ok(())
