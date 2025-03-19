@@ -5,7 +5,7 @@ use std::path::Path;
 
 use anyhow::{Result, anyhow};
 use futures_util::StreamExt;
-use indicatif::ProgressBar;
+use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 use reqwest;
 use tracing::debug;
 
@@ -15,6 +15,26 @@ fn rm_f(path: &Path) -> () {
     if let Err(err) = res {
         debug!("{:?}", err);
     };
+}
+
+// TODO: Customize
+fn progress_bar(total_size: u64) -> ProgressBar {
+    let bar = ProgressBar::new(total_size);
+
+    let style = ProgressStyle::with_template(
+        "{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {bytes}/{total_bytes} ({eta})"
+    ).unwrap();
+    let style = style.with_key(
+        "eta",
+        |state: &ProgressState, w: &mut dyn std::fmt::Write| {
+            write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap()
+        },
+    );
+    let style = style.progress_chars("#>-");
+
+    bar.set_style(style);
+
+    bar
 }
 
 pub(crate) async fn download_file<P: AsRef<Path>>(url: &str, path: P) -> Result<()> {
@@ -37,8 +57,7 @@ async fn _download_file(url: &str, path: &Path) -> Result<()> {
     // TODO: Gracefully handle when total size is unknown?
     let total_size = res.content_length().unwrap_or(1024);
 
-    // TODO: Customize style
-    let bar = ProgressBar::new(total_size);
+    let bar = progress_bar(total_size);
     let msg = format!("Downloading {}", url);
     bar.set_message(msg);
 
