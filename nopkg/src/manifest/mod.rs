@@ -4,30 +4,36 @@ use anyhow::{Result, bail};
 use camino::{Utf8Path, Utf8PathBuf};
 use config::{Config, FileFormat};
 use serde::{Deserialize, Serialize};
-use toml;
+use serde_yaml;
 use tracing::{debug, debug_span};
 
 #[derive(Deserialize, Serialize)]
 pub(crate) struct Manifest {
-    pub(crate) dependencies: Option<Vec<Dependency>>,
+    pub(crate) dependencies: Vec<Dependency>,
+    pub(crate) dev_dependencies: Option<Vec<Dependency>>,
 }
 
 #[derive(Deserialize, Serialize)]
-pub(crate) struct Dependency {
-    pub(crate) name: Option<String>,
-    pub(crate) url: String,
-    pub(crate) file: Option<String>,
-    pub(crate) unpack: Option<bool>,
+pub(crate) enum Dependency {
+    Url(String),
+    Spec(Spec),
 }
 
-const TEMPLATE: &str = include_str!("./nopkg.toml");
+#[derive(Deserialize, Serialize)]
+pub(crate) enum Spec {
+    FileSpec { output: String },
+    // TODO: DSL
+    ArchiveSpec { unpack: Vec<String> },
+}
+
+const TEMPLATE: &str = include_str!("./nopkg.yaml");
 
 pub(crate) fn manifest_path(path: &Utf8Path) -> Utf8PathBuf {
     let path = match path.extension() {
-        Some(ext) if ext == "toml" => path.to_path_buf(),
+        Some(ext) if ext == "yaml" || ext == "yml" => path.to_path_buf(),
         _ => {
             let mut buf = path.to_path_buf();
-            buf.push("nopkg.toml");
+            buf.push("nopkg.yaml");
             buf
         }
     };
@@ -44,7 +50,7 @@ pub(crate) fn get_manifest<P: AsRef<Utf8Path>>(path: P) -> Result<Manifest> {
     let path = manifest_path(path);
 
     let cfg = Config::builder()
-        .add_source(config::File::new(path.as_str(), FileFormat::Toml))
+        .add_source(config::File::new(path.as_str(), FileFormat::Yaml))
         .build()?;
 
     let manifest = cfg.try_deserialize::<Manifest>()?;
@@ -58,7 +64,7 @@ pub(crate) fn write_manifest<P: AsRef<Utf8Path>>(path: P, manifest: &Manifest) -
     debug_span!("Writing manifest");
 
     let path = path.as_ref();
-    let manifest = toml::to_string(manifest)?;
+    let manifest = serde_yaml::to_string(manifest)?;
 
     fs::write(path, manifest)?;
 
