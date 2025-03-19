@@ -6,7 +6,7 @@ use xdg::BaseDirectories;
 
 mod download;
 mod id;
-mod index;
+pub(crate) mod index;
 
 use crate::cache::download::download_file;
 use crate::cache::id::get_id;
@@ -41,7 +41,7 @@ fn repo_path(url: &str) -> Result<PathBuf> {
 
 pub(crate) struct Cache {
     dirs: BaseDirectories,
-    index: Index,
+    pub(crate) index: Index,
 }
 
 ///
