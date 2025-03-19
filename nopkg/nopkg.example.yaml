@@ -1,0 +1,8 @@
+dependencies:
+  - https://example.com/file.txt
+      output: dir/
+  - https://example.com/file.zip:
+      unpack:
+        - "*.js -> dir/"
+        - src/*.{txt,md}
+        - include/*.h =~ s/.../
