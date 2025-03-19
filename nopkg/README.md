@@ -36,7 +36,6 @@
 - Customize logging output
   - `text` should implement no-color output
   - `cli` should not include timestamps
-  - `text` and `cli` should probably print full errors
   - `extended` should more or less just use the "pretty" formatter
 - Customize CLI
   - Descriptions for arguments
