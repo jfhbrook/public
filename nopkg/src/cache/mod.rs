@@ -81,6 +81,7 @@ pub(crate) async fn get_file(cache: &mut Cache, url: &str) -> Result<PathBuf> {
     let path = cache.place_file(url)?;
 
     if path.is_file() {
+        trace!("File {:?} already downloaded", path);
         return Ok(path);
     }
 
