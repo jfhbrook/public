@@ -91,6 +91,27 @@ enum CacheCommand {
     Show,
 }
 
+fn log_result(cli: &Cli, result: Result<()>) -> Result<()> {
+    if let Err(err) = result {
+        return match &cli.format {
+            LogFormat::Json => {
+                error!("{}", err);
+                Ok(())
+            }
+            _ => Err(err),
+        };
+    };
+
+    match &cli.command {
+        Commands::Completion { shell: _ } => {}
+        _ => {
+            info!("ok");
+        }
+    };
+
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
@@ -126,17 +147,6 @@ async fn main() -> Result<()> {
         Commands::Remove => remove_command(),
     };
 
-    if let Err(err) = result {
-        error!("{}", err);
-        error!("not ok");
-    } else {
-        match &cli.command {
-            Commands::Completion { shell: _ } => {}
-            _ => {
-                info!("ok");
-            }
-        };
-    };
-
+    log_result(&cli, result)?;
     Ok(())
 }
