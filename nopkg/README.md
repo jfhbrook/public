@@ -6,6 +6,7 @@
   - Implement `nopkg cache show`
   - Implement `nopkg cache remove`
   - Implement `nopkg cache nuke`
+  - Implement `nopkg cache update`
 - Install
   - Load manifest
   - Load lockfile
