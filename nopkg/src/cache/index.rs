@@ -39,7 +39,7 @@ impl Index {
         let timestamp = duration.as_secs();
 
         self.db.execute(
-            "insert into entities (url, id, modified_at) values (?1, ?2, ?3) \
+            "insert into files (url, id, modified_at) values (?1, ?2, ?3) \
             on conflict(id) do update set url = ?1, modified_at = ?2",
             (url, &id, &timestamp),
         )?;

@@ -1,4 +1,5 @@
 use anyhow::Result;
+use tracing::trace;
 
 use crate::cache::{Cache, get_file};
 
