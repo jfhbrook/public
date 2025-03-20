@@ -12,13 +12,17 @@ use crate::cache::download::download_file;
 use crate::cache::id::get_id;
 use crate::cache::index::Index;
 
-fn file_path(url: &str) -> Result<PathBuf> {
-    let id = get_id(url)?;
-
-    let path = format!("file/{}", id.as_str());
+fn id_path(id: &str) -> Result<PathBuf> {
+    let path = format!("file/{}", id);
     let path = Path::new(&path);
 
     Ok(path.to_path_buf())
+}
+
+fn url_path(url: &str) -> Result<PathBuf> {
+    let id = get_id(url)?;
+    let path = id_path(id.as_str())?;
+    Ok(path)
 }
 
 /*
@@ -40,7 +44,7 @@ fn repo_path(url: &str) -> Result<PathBuf> {
 }
 
 pub(crate) struct Cache {
-    dirs: BaseDirectories,
+    pub(crate) dirs: BaseDirectories,
     pub(crate) index: Index,
 }
 
@@ -55,14 +59,39 @@ impl Cache {
         Ok(Cache { dirs, index })
     }
 
-    // TODO: Should these take &str?
+    pub(crate) fn destroy(&self) -> Result<()> {
+        let path = self.dirs.get_cache_home();
+        std::fs::remove_dir_all(path)?;
+        Ok(())
+    }
+
     pub(crate) fn place_file(&self, url: &str) -> Result<PathBuf> {
-        let path = file_path(url)?;
+        let path = url_path(url)?;
         let path = self.dirs.place_cache_file(path)?;
 
         trace!("Placing {} at {:?}", url, path);
 
         Ok(path)
+    }
+
+    pub(crate) fn find_file(&self, url_or_id: &str) -> Result<Option<PathBuf>> {
+        let path = self.find_file_by_id(url_or_id)?;
+
+        if let Some(path) = path {
+            return Ok(Some(path));
+        }
+
+        Ok(self.find_file_by_url(url_or_id)?)
+    }
+
+    pub(crate) fn find_file_by_id(&self, id: &str) -> Result<Option<PathBuf>> {
+        let path = id_path(id)?;
+        Ok(self.dirs.find_cache_file(path))
+    }
+
+    pub(crate) fn find_file_by_url(&self, url: &str) -> Result<Option<PathBuf>> {
+        let path = url_path(url)?;
+        Ok(self.dirs.find_cache_file(path))
     }
 
     /*
@@ -94,6 +123,17 @@ pub(crate) async fn get_file(cache: &mut Cache, url: &str) -> Result<PathBuf> {
     cache.index.add_file(url)?;
 
     Ok(path)
+}
+
+pub(crate) fn remove_file(cache: &mut Cache, url_or_id: &str) -> Result<()> {
+    let path = cache.find_file(url_or_id)?;
+
+    if let Some(path) = path {
+        std::fs::remove_file(path)?;
+    }
+
+    cache.index.remove_file(url_or_id)?;
+    Ok(())
 }
 
 // TODO: git clone

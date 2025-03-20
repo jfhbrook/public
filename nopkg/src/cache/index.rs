@@ -5,7 +5,7 @@ use anyhow::Result;
 use chrono::{DateTime, Utc};
 use refinery::embed_migrations;
 use rusqlite::{Connection, Row, Statement};
-use tracing::trace;
+use tracing::debug;
 use xdg::BaseDirectories;
 
 use crate::cache::id::get_id;
@@ -14,7 +14,7 @@ use crate::cache::id::get_id;
 fn place_index(dirs: &BaseDirectories) -> Result<PathBuf> {
     let path = dirs.place_cache_file("index.json")?;
 
-    trace!("Placing index at {:?}", path);
+    debug!("Placing index at {:?}", path);
 
     Ok(path)
 }
@@ -40,6 +40,7 @@ fn from_timestamp(timestamp: f64) -> DateTime<Utc> {
 pub(crate) fn map_entry(row: &Row) -> std::result::Result<Entry, rusqlite::Error> {
     let url = row.get(0)?;
     let id = row.get(1)?;
+    debug!("mapping entry");
     let modified_at = from_timestamp(row.get(2)?);
 
     Ok(Entry {
@@ -70,9 +71,16 @@ impl Index {
 
         self.db.execute(
             "insert into files (url, id, modified_at) values (?1, ?2, ?3) \
-            on conflict(id) do update set url = ?1, modified_at = ?2",
+            on conflict(id) do update set url = ?1, modified_at = ?3;",
             (url, &id, &modified_at),
         )?;
+
+        Ok(())
+    }
+
+    pub(crate) fn remove_file(&mut self, url_or_id: &str) -> Result<()> {
+        self.db
+            .execute("delete from files where url = ?1 or id = ?1;", (url_or_id,))?;
 
         Ok(())
     }

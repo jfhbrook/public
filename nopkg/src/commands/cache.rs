@@ -3,7 +3,7 @@ use chrono::{DateTime, Local};
 use tabled::{builder::Builder, settings::Style};
 
 use crate::cache::index::map_entry;
-use crate::cache::{Cache, get_file};
+use crate::cache::{Cache, get_file, remove_file};
 
 pub(crate) async fn cache_add_command(url: &String) -> Result<()> {
     let mut cache = Cache::new()?;
@@ -11,7 +11,15 @@ pub(crate) async fn cache_add_command(url: &String) -> Result<()> {
     Ok(())
 }
 
-pub(crate) fn cache_clean_command() -> Result<()> {
+pub(crate) fn cache_remove_command(url: &String) -> Result<()> {
+    let mut cache = Cache::new()?;
+    remove_file(&mut cache, url)?;
+    Ok(())
+}
+
+pub(crate) fn cache_destroy_command() -> Result<()> {
+    let cache = Cache::new()?;
+    cache.destroy()?;
     Ok(())
 }
 
@@ -26,7 +34,10 @@ pub(crate) fn cache_show_command() -> Result<()> {
 
     root_builder.push_record(["cache entries"]);
 
+    let mut seen = false;
+
     for entry in entries {
+        seen = true;
         let entry = entry?;
 
         // TODO: Flag for when to do this conversion
@@ -43,6 +54,10 @@ pub(crate) fn cache_show_command() -> Result<()> {
         entry_table.with(Style::rounded());
 
         root_builder.push_record([format!("{}", entry_table)]);
+    }
+
+    if !seen {
+        root_builder.push_record(["(the cache is empty)"]);
     }
 
     let mut root_table = root_builder.build();
