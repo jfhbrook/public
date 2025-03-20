@@ -23,7 +23,7 @@ use crate::log::{LogFormat, LogLevel, configure_logging};
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
-    #[arg(short, long, value_enum, default_value_t = LogLevel::Info)]
+    #[arg(short, long, value_enum, default_value_t = LogLevel::Warn)]
     log_level: LogLevel,
 
     #[arg(short, long, value_enum, default_value_t = LogFormat::Cli)]
