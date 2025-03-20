@@ -1,4 +1,5 @@
 use anyhow::Result;
+use chrono::{DateTime, Local};
 use tabled::{builder::Builder, settings::Style};
 
 use crate::cache::index::map_entry;
@@ -28,11 +29,15 @@ pub(crate) fn cache_show_command() -> Result<()> {
     for entry in entries {
         let entry = entry?;
 
+        // TODO: Flag for when to do this conversion
+        let modified_at: DateTime<Local> = DateTime::from(entry.modified_at);
+        let modified_at = modified_at.to_string();
+
         let mut entry_builder = Builder::default();
         entry_builder.push_record(["property", "value"]);
         entry_builder.push_record(["url", entry.url.as_str()]);
         entry_builder.push_record(["id", entry.id.as_str()]);
-        entry_builder.push_record(["modified_at", entry.modified_at.to_string().as_str()]);
+        entry_builder.push_record(["modified_at", modified_at.as_str()]);
 
         let mut entry_table = entry_builder.build();
         entry_table.with(Style::rounded());
