@@ -11,7 +11,9 @@ mod manifest;
 mod solver;
 
 use crate::commands::add::add_command;
-use crate::commands::cache::{cache_add_command, cache_clean_command, cache_show_command};
+use crate::commands::cache::{
+    cache_add_command, cache_destroy_command, cache_remove_command, cache_show_command,
+};
 use crate::commands::completion::completion_command;
 use crate::commands::init::init_command;
 use crate::commands::install::install_command;
@@ -83,9 +85,14 @@ enum CacheCommand {
         url: String,
     },
 
+    /// Remove a url from the cache
+    Remove {
+        url: String,
+    },
+
     // Clear the cache
     #[clap(alias = "nuke")]
-    Clear,
+    Destroy,
 
     // Show the state of the cache
     Show,
@@ -133,7 +140,8 @@ async fn main() -> Result<()> {
         } => add_command(url, file, unpack, manifest_path),
         Commands::Cache { command } => match &command {
             CacheCommand::Add { url } => cache_add_command(url).await,
-            CacheCommand::Clear => cache_clean_command(),
+            CacheCommand::Remove { url } => cache_remove_command(url),
+            CacheCommand::Destroy => cache_destroy_command(),
             CacheCommand::Show => cache_show_command(),
         },
         Commands::Completion { shell } => {
