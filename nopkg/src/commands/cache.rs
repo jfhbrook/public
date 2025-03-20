@@ -1,7 +1,7 @@
 use anyhow::Result;
 use tabled::{builder::Builder, settings::Style};
 
-use crate::cache::index::{Entry, map_entry};
+use crate::cache::index::map_entry;
 use crate::cache::{Cache, get_file};
 
 pub(crate) async fn cache_add_command(url: &String) -> Result<()> {
