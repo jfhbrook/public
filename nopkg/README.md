@@ -5,6 +5,7 @@
 - Cache
   - Implement `nopkg cache show`
     - Add `--since` and `--max-age` flags
+    - Add time zone conversion flag
   - Implement `nopkg cache remove`
   - Implement `nopkg cache nuke`
   - Implement `nopkg cache update`
