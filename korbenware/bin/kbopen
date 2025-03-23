@@ -46,13 +46,13 @@ if [ -z "${PATH_OR_URL}" ]; then
 fi
 
 if [ -n "$(command -v open)" ]; then
-  OPEN_CMD="open"
+  OPEN_CMD=(open)
   log-debug "Found open"
 elif [ -n "$(command -v gio)" ]; then
-  OPEN_CMD="gio open"
+  OPEN_CMD=(gio open)
   log-debug "Found gio"
 elif [ -n "$(command -v xdg-open)" ]; then
-  OPEN_CMD="xdg-open"
+  OPEN_CMD=(xdg-open)
   log-debug "Found xdg-open"
 else
   log-error "Could not find one of: gio, open, xdg-open"
@@ -85,13 +85,13 @@ log-debug "Mime Type: ${MIME_TYPE}"
 
 case $MIME_TYPE in
   url)
-    eval "${OPEN_CMD} '${PATH_OR_URL}'"
+    "${OPEN_CMD[@]}" "${PATH_OR_URL}"
     ;;
   text/plain|text/x-tex)
-    eval "${EDITOR} '${PATH_OR_URL}'"
+    ${EDITOR} "$PATH_OR_URL"
     ;;
   *)
-    eval "${OPEN_CMD} '${PATH_OR_URL}'"
+    "${OPEN_CMD[@]}" "${PATH_OR_URL}"
 esac
 
 log-debug "ok"
