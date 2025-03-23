@@ -13,6 +13,7 @@ It is currently not useful. Stay tuned.
   - Add `--since` and `--max-age` flags to relevant commands
   - Add TZ conversion to `nopkg cache show`
     - Add time zone conversion flag
+  - Store and respect [etags](https://en.wikipedia.org/wiki/HTTP_ETag)
 - Install
   - Load manifest
   - Load lockfile
