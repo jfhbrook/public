@@ -1,5 +1,5 @@
 Name: korbenware
-Version: 1.0.0
+Version: 1.0.1
 Release: 1%{?dist}
 License: MPL-2.0
 Summary: linux/unix desktop cli software
@@ -43,6 +43,11 @@ install -p -m 755 bin/kbprev %{buildroot}%{_bindir}
 
 
 %changelog
+* Sun Mar 23 2025 Josh Holbrook <josh.holbrook@gmail.com> 1.0.1-1
+- Overhauled korbenware publish flow
+- README updates
+- kbopen has more robust handling of command construction
+- shellcheck passes on kbopen
 * Sat May 04 2024 Josh Holbrook <josh.holbrook@gmail.com> 1.0.0-1
 - kbbg, kbmenu and kbopen support MacOS (josh.holbrook@gmail.com)
 - kbconfig has extended options to support MacOS (josh.holbrook@gmail.com)
