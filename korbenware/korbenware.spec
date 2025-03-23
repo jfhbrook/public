@@ -1,5 +1,5 @@
 Name: korbenware
-Version: 1.0.1
+Version: 1.0.2
 Release: 1%{?dist}
 License: MPL-2.0
 Summary: linux/unix desktop cli software
@@ -43,6 +43,8 @@ install -p -m 755 bin/kbprev %{buildroot}%{_bindir}
 
 
 %changelog
+* Sun Mar 23 2025 Josh Holbrook <josh.holbrook@gmail.com> 1.0.2-1
+- Released wrong branch in 1.0.1
 * Sun Mar 23 2025 Josh Holbrook <josh.holbrook@gmail.com> 1.0.1-1
 - Overhauled korbenware publish flow
 - README updates
