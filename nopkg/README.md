@@ -1,5 +1,11 @@
 # nopkg
 
+`nopkg` is a work in progress project to write a dependency manager for things which don't have packages. It will support pulling files downloaded over http, files unpacked from archives downloaded over http, and files copied from git repos.
+
+Its initial empetus was managing dependencies for [love2d](https://love2d.org/) and [openscad](https://openscad.org/), but it's intended to be general purpose.
+
+It is currently not useful. Stay tuned.
+
 ## TODO
 
 - Cache
