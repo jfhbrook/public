@@ -31,12 +31,6 @@ It is currently not useful. Stay tuned.
       - If not...
         - Remove it from the project (unless `--no-remove`)
         - Remove it from the lockfile (unless `--no-remove`)
-- Handle TOML awkwardness
-  - Option 1: Name each dependency
-  - Option 2: Switch to YAML
-- Add command improvements
-  - Update options on existing URLs
-  - Call install on add
 - Remove command
   - Actually implement
   - Call install on remove
@@ -52,10 +46,7 @@ It is currently not useful. Stay tuned.
   - Descriptions for commands
   - Aliases for commands
   - Default behavior for no command
-- Cache commands
-  - Implement `nopkg cache remove`
-  - Implement `nopkg cache clear`
-  - Implement `nopkg cache repair`
+- `nopkg cache repair`
 - Implement archive unpacking
 - Implement git repos
 - Move away from `anyhow`
