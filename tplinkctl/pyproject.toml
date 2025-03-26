@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tplinkctl"
+version = "1.0.0"
+authors = [
+  {name = "Josh Holbrook", email = "josh.holbrook@gmail.com"}
+]
+description = "TP-Link Archer AX1800 Home Router"
+readme = "README.md"
+keywords = []
+
+dependencies = [
+  "click",
+  "rich",
+  "tplinkrouterc6u",
+]
+
+[project.scripts]
+tplinkctl = "router:main"
+
+[project.optional-dependencies]
+dev = [
+  "flake8",
+  "flake8-black",
+  "pytest",
+  "black",
+  "click",
+  "isort",
+  "jupyter-console",
+  "mkdocs",
+  "mkdocs-bootstrap386",
+  "mkdocstrings[python]",
+  "tox",
+  "twine",
+  "validate-pyproject[all]",
+]
+
+[tool.isort]
+profile = "appnexus"
+known_application = "tplinkctl"
+
+[tool.pyright]
+include = ["tplinkctl", "tests"]
+
+[tool.pytest]
+addopts = "--verbose -s"
+testpaths = [ "tests" ]
+
+[tool.setuptools]
+packages = [ "tplinkctl" ]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+optional-dependencies.dev = { file = ["requirements_dev.txt"] }

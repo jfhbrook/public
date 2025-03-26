@@ -1,0 +1,94 @@
+set dotenv-load := true
+
+# By default, run checks and tests, then format and lint
+default:
+  if [ ! -d .venv ]; then just install; fi
+  @just format
+  @just check
+  @just test
+  @just lint
+
+#
+# Installing, updating and upgrading dependencies
+#
+
+venv:
+  if [ ! -d .venv ]; then uv venv; fi
+
+clean-venv:
+  rm -rf .venv
+
+# Install all dependencies
+install:
+  @just venv
+  if [[ "$(uname -s)" == Linux ]]; then uv sync --dev --extra dbus; else uv sync --dev; fi
+  uv pip install -e .
+
+# Update all dependencies
+update:
+  @just install
+
+# Update all dependencies and rebuild the environment
+upgrade:
+  if [ -d venv ]; then just update && just check && just _upgrade; else just update; fi
+
+_upgrade:
+  @just clean-venv
+  @just venv
+  @just install
+
+# Generate locked requirements files based on dependencies in pyproject.toml
+compile:
+  uv pip compile -o requirements.txt pyproject.toml
+  cp requirements.txt requirements_dev.txt
+  python3 -c 'import toml; print("\n".join(toml.load(open("pyproject.toml"))["dependency-groups"]["dev"]))' >> requirements_dev.txt
+
+clean-compile:
+  rm -f requirements.txt
+  rm -f requirements_dev.txt
+
+# Run a command or script
+run *argv:
+  uv run {{ argv }}
+
+# Run the tplinkctl cli
+start *argv:
+  uv run -- tplinkctl {{ argv }}
+
+#
+# Development tooling - linting, formatting, etc
+#
+
+# Format with black and isort
+format:
+  uv run black './tplinkctl' ./tests ./scripts
+  uv run isort --settings-file . './tplinkctl' ./tests ./scripts
+
+# Lint with flake8
+lint:
+  uv run flake8 './tplinkctl' ./tests ./scripts
+  uv run validate-pyproject ./pyproject.toml
+
+# Check type annotations with pyright
+check:
+  uv run npx pyright@latest
+
+# Run tests with pytest
+test:
+  uv run pytest -vvv ./tests
+  @just clean-test
+
+
+_clean-test:
+  rm -f pytest_runner-*.egg
+  rm -rf tests/__pycache__
+
+#
+# Shell and console
+#
+
+shell:
+  uv run bash
+
+console:
+  uv run console
