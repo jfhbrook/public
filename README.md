@@ -149,6 +149,10 @@ my standard 2-page resume.
 A small collection of cookiecutter templates, MIT-licensed. These include
 templates for Python, Flask, TypeScript, Nest.js, and PowerShell.
 
+### tplinkctl
+
+A simple CLI tool for interacting with my TP-Link home router.
+
 ### twisted_ipython
 
 This is a module that makes autoawait work in IPython using Twisted. It is
