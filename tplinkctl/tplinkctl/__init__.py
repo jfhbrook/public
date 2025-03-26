@@ -52,11 +52,17 @@ class Obj:
             self.router.logout()
 
 
-class ConnectionChoice(click.Choice):
+class WifiConnectionChoice(click.Choice):
     name = "connection"
 
     def __init__(self: Self) -> None:
-        super().__init__([conn.name for conn in Connection])
+        super().__init__(
+            [
+                conn.name
+                for conn in Connection
+                if conn not in {Connection.WIRED, Connection.UNKNOWN}
+            ]
+        )
 
     def convert(
         self: Self,
@@ -69,7 +75,7 @@ class ConnectionChoice(click.Choice):
         return Connection[choice]
 
 
-CONNECTION = ConnectionChoice()
+WIFI_CONNECTION = WifiConnectionChoice()
 
 
 @click.group()
@@ -102,13 +108,6 @@ class WifiError(Exception):
     pass
 
 
-def assert_wifi_connection(action: str, connection: Connection) -> None:
-    if connection == Connection.WIRED:
-        raise WifiError(f"Can not {action} wired connection")
-    if connection == Connection.UNKNOWN:
-        raise WifiError(f"Can not {action} unknown connection")
-
-
 @main.group()
 def wifi() -> None:
     """
@@ -119,28 +118,24 @@ def wifi() -> None:
 
 
 @wifi.command()
-@click.argument("connection", type=CONNECTION)
+@click.argument("connection", type=WIFI_CONNECTION)
 @click.pass_obj
 def enable(obj: Obj, connection: Connection) -> None:
     """
     Enable a WiFi connection
     """
 
-    assert_wifi_connection("enable", connection)
-
     with obj.session() as router:
         router.set_wifi(connection, True)
 
 
 @wifi.command()
-@click.argument("connection", type=CONNECTION)
+@click.argument("connection", type=WIFI_CONNECTION)
 @click.pass_obj
 def disable(obj: Obj, connection: Connection) -> None:
     """
     Disable a WiFi connection
     """
-
-    assert_wifi_connection("disable", connection)
 
     with obj.session() as router:
         router.set_wifi(connection, False)
