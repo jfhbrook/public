@@ -12,7 +12,11 @@ from tplinkrouterc6u import TplinkRouterProvider
 class Context:
     def __init__(self):
         url = os.environ.get("ROUTER_URL", "https://tplinkwifi.net")
-        password = os.environ["ROUTER_PASSWORD"]
+        password: str = (
+            os.environ["ROUTER_PASSWORD"]
+            if "ROUTER_PASSWORD" in os.environ
+            else click.prompt("Password", type=str, hide_input=True)
+        )
 
         self.console = Console()
         self.router = TplinkRouterProvider.get_client(url, password, verify_ssl=False)
