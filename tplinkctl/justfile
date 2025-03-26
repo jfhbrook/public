@@ -61,12 +61,12 @@ start *argv:
 
 # Format with black and isort
 format:
-  uv run black './tplinkctl' ./tests ./scripts
-  uv run isort --settings-file . './tplinkctl' ./tests ./scripts
+  uv run black './tplinkctl' ./tests
+  uv run isort --settings-file . './tplinkctl' ./tests
 
 # Lint with flake8
 lint:
-  uv run flake8 './tplinkctl' ./tests ./scripts
+  uv run flake8 './tplinkctl' ./tests
   uv run validate-pyproject ./pyproject.toml
 
 # Check type annotations with pyright
