@@ -2,15 +2,22 @@
 
 from contextlib import contextmanager
 import os
+from typing import Generator, Optional, Self
 
 import click
 from rich.console import Console
 from rich.table import Table
-from tplinkrouterc6u import TplinkRouterProvider
+from tplinkrouterc6u import (
+    AbstractRouter,
+    Connection,
+    Firmware,
+    Status,
+    TplinkRouterProvider,
+)
 
 
-class Context:
-    def __init__(self):
+class Obj:
+    def __init__(self: Self) -> None:
         url = os.environ.get("ROUTER_URL", "https://tplinkwifi.net")
         password: str = (
             os.environ["ROUTER_PASSWORD"]
@@ -22,7 +29,7 @@ class Context:
         self.router = TplinkRouterProvider.get_client(url, password, verify_ssl=False)
 
     @contextmanager
-    def session(self):
+    def session(self: Self) -> Generator[AbstractRouter, None, None]:
         if not self.router:
             return
         try:
@@ -32,7 +39,27 @@ class Context:
             self.router.logout()
 
 
-def system_table(firmware, status):
+class ConnectionChoice(click.Choice):
+    name = "connection"
+
+    def __init__(self: Self) -> None:
+        super().__init__([conn.name for conn in Connection])
+
+    def convert(
+        self: Self,
+        value: str,
+        param: Optional[click.Parameter],
+        ctx: Optional[click.Context],
+    ) -> Connection:
+        choice = super().convert(value, param, ctx)
+
+        return Connection[choice]
+
+
+CONNECTION = ConnectionChoice()
+
+
+def system_table(firmware: Firmware, status: Status) -> Table:
     table = Table(title="System Info")
 
     table.add_row("Model", firmware.model)
@@ -48,7 +75,7 @@ def system_table(firmware, status):
     return table
 
 
-def wifi_enabled_table(status):
+def wifi_enabled_table(status: Status) -> Table:
     wifi_status = Table(title="WiFi Status")
 
     wifi_status.add_column("Type")
@@ -90,7 +117,7 @@ def wifi_enabled_table(status):
     return wifi_status
 
 
-def connection_counts_table(status):
+def connection_counts_table(status: Status) -> Table:
     counts = Table(title="Active Connections")
 
     counts.add_column("Type")
@@ -104,7 +131,7 @@ def connection_counts_table(status):
     return counts
 
 
-def device_table(status):
+def device_table(status: Status) -> Table:
     devices = Table(title="Devices")
 
     devices.add_column("MAC Address")
@@ -131,24 +158,82 @@ def device_table(status):
 
 @click.group()
 @click.pass_context
-def main(ctx):
-    ctx.obj = Context()
+def main(ctx: click.Context) -> None:
+    ctx.obj = Obj()
 
 
 @main.command()
-@click.pass_context
-def status(ctx):
-    console = ctx.obj.console
+@click.pass_obj
+def status(obj: Obj) -> None:
+    """
+    Get a simple status report
+    """
 
-    with ctx.obj.session() as router:
+    console = obj.console
 
-        firmware = router.get_firmware()
-        status = router.get_status()
+    with obj.session() as router:
+
+        firmware: Firmware = router.get_firmware()
+        status: Status = router.get_status()
 
         console.print(system_table(firmware, status))
         console.print(wifi_enabled_table(status))
         console.print(connection_counts_table(status))
         console.print(device_table(status))
+
+
+class WifiError(Exception):
+    pass
+
+
+@main.group()
+def wifi() -> None:
+    """
+    Commands involving WiFi
+    """
+
+    pass
+
+
+@wifi.command()
+@click.argument("connection", type=CONNECTION)
+@click.pass_obj
+def enable(obj: Obj, connection: Connection) -> None:
+    """
+    Enable a WiFi connection
+    """
+
+    if connection == Connection.WIRED:
+        raise WifiError("Can not enable wired connection")
+
+    with obj.session() as router:
+        router.set_wifi(connection, True)
+
+
+@wifi.command()
+@click.argument("connection", type=CONNECTION)
+@click.pass_obj
+def disable(obj: Obj, connection: Connection) -> None:
+    """
+    Disable a WiFi connection
+    """
+
+    if connection == Connection.WIRED:
+        raise WifiError("Can not disable wired connection")
+
+    with obj.session() as router:
+        router.set_wifi(connection, False)
+
+
+@main.command()
+@click.pass_obj
+def reboot(obj: Obj) -> None:
+    """
+    Reboot the router
+    """
+
+    with obj.session() as router:
+        router.reboot()
 
 
 if __name__ == "__main__":
