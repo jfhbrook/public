@@ -23,7 +23,8 @@ from tplinkctl.status import (
 
 
 class Obj:
-    def __init__(self: Self) -> None:
+    def __init__(self: Self, url: Optional[str]) -> None:
+        self._url: Optional[str] = url
         self._router: Optional[AbstractRouter] = None
         self.console = Console()
 
@@ -32,10 +33,10 @@ class Obj:
         if self._router:
             return self._router
 
-        url = os.environ.get("ROUTER_URL", "https://tplinkwifi.net")
+        url = self._url if self._url else os.environ.get("TPLINK_URL", "https://tplinkwifi.net")
         password: str = (
-            os.environ["ROUTER_PASSWORD"]
-            if "ROUTER_PASSWORD" in os.environ
+            os.environ["TPLINK_PASSWORD"]
+            if "TPLINK_PASSWORD" in os.environ
             else click.prompt("Password", type=str, hide_input=True)
         )
 
@@ -79,9 +80,10 @@ WIFI_CONNECTION = WifiConnectionChoice()
 
 
 @click.group()
+@click.option("--url", type=str)
 @click.pass_context
-def main(ctx: click.Context) -> None:
-    ctx.obj = Obj()
+def main(ctx: click.Context, url: Optional[str]) -> None:
+    ctx.obj = Obj(url)
 
 
 @main.command()
