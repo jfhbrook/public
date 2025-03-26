@@ -20,7 +20,7 @@ dependencies = [
 ]
 
 [project.scripts]
-tplinkctl = "router:main"
+tplinkctl = "tplinkctl:main"
 
 [dependency-groups]
 dev = [
