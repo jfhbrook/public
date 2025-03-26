@@ -24,6 +24,14 @@ from tplinkctl.status import (
 
 class Obj:
     def __init__(self: Self) -> None:
+        self._router: Optional[AbstractRouter] = None
+        self.console = Console()
+
+    @property
+    def router(self: Self) -> AbstractRouter:
+        if self._router:
+            return self._router
+
         url = os.environ.get("ROUTER_URL", "https://tplinkwifi.net")
         password: str = (
             os.environ["ROUTER_PASSWORD"]
@@ -31,13 +39,12 @@ class Obj:
             else click.prompt("Password", type=str, hide_input=True)
         )
 
-        self.console = Console()
-        self.router = TplinkRouterProvider.get_client(url, password, verify_ssl=False)
+        self._router = TplinkRouterProvider.get_client(url, password, verify_ssl=False)
+
+        return self._router
 
     @contextmanager
     def session(self: Self) -> Generator[AbstractRouter, None, None]:
-        if not self.router:
-            return
         try:
             self.router.authorize()
             yield self.router
