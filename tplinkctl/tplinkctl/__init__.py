@@ -102,6 +102,13 @@ class WifiError(Exception):
     pass
 
 
+def assert_wifi_connection(action: str, connection: Connection) -> None:
+    if connection == Connection.WIRED:
+        raise WifiError(f"Can not {action} wired connection")
+    if connection == Connection.UNKNOWN:
+        raise WifiError(f"Can not {action} unknown connection")
+
+
 @main.group()
 def wifi() -> None:
     """
@@ -119,8 +126,7 @@ def enable(obj: Obj, connection: Connection) -> None:
     Enable a WiFi connection
     """
 
-    if connection == Connection.WIRED:
-        raise WifiError("Can not enable wired connection")
+    assert_wifi_connection("enable", connection)
 
     with obj.session() as router:
         router.set_wifi(connection, True)
@@ -134,8 +140,7 @@ def disable(obj: Obj, connection: Connection) -> None:
     Disable a WiFi connection
     """
 
-    if connection == Connection.WIRED:
-        raise WifiError("Can not disable wired connection")
+    assert_wifi_connection("disable", connection)
 
     with obj.session() as router:
         router.set_wifi(connection, False)
