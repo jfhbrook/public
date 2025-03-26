@@ -12,6 +12,7 @@ description = "TP-Link Archer AX1800 Home Router"
 readme = "README.md"
 keywords = []
 
+requires-python = ">=3.11"
 dependencies = [
   "click",
   "rich",
@@ -21,22 +22,19 @@ dependencies = [
 [project.scripts]
 tplinkctl = "router:main"
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
   "flake8",
   "flake8-black",
   "pytest",
   "black",
-  "click",
   "isort",
   "jupyter-console",
-  "mkdocs",
-  "mkdocs-bootstrap386",
-  "mkdocstrings[python]",
-  "tox",
-  "twine",
   "validate-pyproject[all]",
 ]
+
+[tool.uv]
+package = true
 
 [tool.isort]
 profile = "appnexus"
