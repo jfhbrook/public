@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gaktest"
+version = "1.0.0"
+authors = [
+  {name = "Josh Holbrook", email = "josh.holbrook@gmail.com"}
+]
+description = "A framework for \"Geek At Keyboard\" testing"
+readme = "README.md"
+keywords = []
+license = { text = "Apache-2.0" }
+requires-python = ">=3.11"
+dependencies = [
+  "click",
+  "rich",
+]
+
+[project.scripts]
+gak = "gaktest.main:main"
+
+[dependency-groups]
+dev = [
+  "flake8",
+  "flake8-black",
+  "pytest",
+  "black",
+  "click",
+  "isort",
+  "jupyter-console",
+  "mkdocs",
+  "mkdocs-include-markdown-plugin",
+  "mkdocstrings[python]",
+  "tox",
+  "validate-pyproject[all]",
+]
+
+[tool.uv]
+package = true
+
+[tool.isort]
+profile = "appnexus"
+known_application = "gaktest"
+
+[tool.pyright]
+include = ["gaktest", "tests"]
+
+[tool.pytest]
+addopts = "--verbose -s"
+testpaths = [ "tests" ]
+
+[tool.setuptools]
+packages = [ "gaktest" ]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }

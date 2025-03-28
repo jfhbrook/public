@@ -1,0 +1,8 @@
+site_name: gak_test
+
+theme:
+  name: readthedocs
+
+plugins:
+  - include-markdown
+  - mkdocstrings
