@@ -4,7 +4,7 @@ build/*
 .cache
 .eggs
 .python-version
-gaktest.egg-info/
+pytest_gak.egg-info/
 .tox/
 venv
 .env

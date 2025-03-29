@@ -3,14 +3,17 @@ requires = ["setuptools", "setuptools-scm", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "gaktest"
+name = "pytest-gak"
 version = "1.0.0"
 authors = [
   {name = "Josh Holbrook", email = "josh.holbrook@gmail.com"}
 ]
-description = "A framework for \"Geek At Keyboard\" testing"
+description = "A Pytest plugin and command line tool for interactive testing with Pytest"
 readme = "README.md"
 keywords = []
+classifiers = [
+  "Framework :: Pytest"
+]
 license = { text = "Apache-2.0" }
 requires-python = ">=3.11"
 dependencies = [
@@ -19,7 +22,10 @@ dependencies = [
 ]
 
 [project.scripts]
-gak = "gaktest.main:main"
+gaktest = "gak:main"
+
+[project.entry-points.pytest11]
+pytest-gak = "gak.plugin"
 
 [dependency-groups]
 dev = [
@@ -42,17 +48,14 @@ package = true
 
 [tool.isort]
 profile = "appnexus"
-known_application = "gaktest"
+known_application = "gak"
 
 [tool.pyright]
-include = ["gaktest", "tests"]
+include = ["gak", "tests"]
 
 [tool.pytest]
 addopts = "--verbose -s"
 testpaths = [ "tests" ]
 
 [tool.setuptools]
-packages = [ "gaktest" ]
-
-[tool.setuptools.dynamic]
-dependencies = { file = ["requirements.txt"] }
+packages = [ "gak" ]

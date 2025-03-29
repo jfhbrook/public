@@ -67,12 +67,12 @@ start *argv:
 
 # Format with black and isort
 format:
-  uv run black './gaktest' ./tests
-  uv run isort --settings-file . './gaktest' ./tests
+  uv run black './gak' ./tests
+  uv run isort --settings-file . './gak' ./tests
 
 # Lint with flake8
 lint:
-  uv run flake8 './gaktest' ./tests
+  uv run flake8 './gak' ./tests
   uv run validate-pyproject ./pyproject.toml
 
 # Check type annotations with pyright
@@ -87,14 +87,6 @@ test:
 _clean-test:
   rm -f pytest_runner-*.egg
   rm -rf tests/__pycache__
-
-# Run tests using tox
-tox:
-  uv run tox
-  @just _clean-tox
-
-_clean-tox:
-  rm -rf .tox
 
 #
 # Shell and console
@@ -138,7 +130,7 @@ publish: build
   uv publish
 
 # Clean up loose files
-clean: _clean-venv _clean-compile _clean-test _clean-tox
-  rm -rf gaktest.egg-info
-  rm -f gaktest/*.pyc
-  rm -rf gaktest/__pycache__
+clean: _clean-venv _clean-compile _clean-test
+  rm -rf gak.egg-info
+  rm -f gak/*.pyc
+  rm -rf gak/__pycache__
