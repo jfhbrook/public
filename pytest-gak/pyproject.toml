@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pytest-gak"
-version = "1.0.0"
+version = "1.0.1"
 authors = [
   {name = "Josh Holbrook", email = "josh.holbrook@gmail.com"}
 ]
@@ -36,10 +36,6 @@ dev = [
   "click",
   "isort",
   "jupyter-console",
-  "mkdocs",
-  "mkdocs-include-markdown-plugin",
-  "mkdocstrings[python]",
-  "tox",
   "validate-pyproject[all]",
 ]
 
