@@ -135,6 +135,10 @@ A client library for the Plus Deck 2C Cassette Drive.
 This is a loose port of the Node.js EventEmitter with special support for
 coroutines and concurrent programming. It is licensed under an MIT license.
 
+### pytest-gak
+
+A Pytest plugin and CLI helper for running interactive, prompt-based tests.
+
 ### resume
 
 **<https://github.com/jfhbrook/resume>**
