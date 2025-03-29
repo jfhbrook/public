@@ -13,7 +13,7 @@ def test_deny(confirm) -> None:
 
 
 def test_take_action(take_action) -> None:
-    take_action("Press continue")
+    take_action("Say continue")
 
 
 def test_abort_action(take_action) -> None:
