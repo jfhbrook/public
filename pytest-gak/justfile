@@ -100,18 +100,6 @@ console:
 
 
 #
-# Documentation
-#
-
-# Live generate docs and host on a development webserver
-docs:
-  uv run mkdocs serve
-
-# Build the documentation
-build-docs:
-  uv run mkdocs build
-
-#
 # Package publishing
 #
 
