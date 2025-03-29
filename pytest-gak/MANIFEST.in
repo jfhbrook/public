@@ -3,5 +3,5 @@ include README.md
 include CHANGELOG.md
 # include CONTRIBUTORS.md
 include DEVELOPMENT.md
-include gak_test/py.typed
+include gak/py.typed
 recursive-include tests *.py
