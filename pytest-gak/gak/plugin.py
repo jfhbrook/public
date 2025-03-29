@@ -1,33 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from typing import Callable, Never
+from typing import Callable
 
 import pytest
 from rich.prompt import Prompt
 
 
-class AbortError(AssertionError):
-    """
-    An exception raised when manual testing step has been aborted.
-    """
-
-    pass
-
-
 @pytest.fixture
-def abort() -> Callable[[], Never]:
-    """
-    Abort a GAK test.
-    """
-
-    def _abort() -> Never:
-        raise AbortError("Aborted.")
-
-    return _abort
-
-
-@pytest.fixture
-def confirm(abort, capsys) -> Callable[[str], None]:
+def confirm(capsys) -> Callable[[str], None]:
     """
     Manually confirm an expected state.
     """
@@ -35,16 +15,15 @@ def confirm(abort, capsys) -> Callable[[str], None]:
     def _confirm(text: str) -> None:
         with capsys.disabled():
             print("")
-            res = Prompt.ask(text, choices=["confirm", "abort"])
+            res = Prompt.ask(text, choices=["confirm", "deny"])
 
-        if res == "abort":
-            abort()
+        assert res == "confirm", "State was confirmed"
 
     return _confirm
 
 
 @pytest.fixture
-def take_action(abort, capsys) -> Callable[[str], None]:
+def take_action(capsys) -> Callable[[str], None]:
     """
     Take a manual action before continuing.
     """
@@ -54,25 +33,21 @@ def take_action(abort, capsys) -> Callable[[str], None]:
             print("")
             res = Prompt.ask(text, choices=["continue", "abort"])
 
-        if res == "abort":
-            abort()
+        assert res == "continue", "Action was completed"
 
     return _take_action
 
 
 @pytest.fixture
-def check(abort, capsys) -> Callable[[str, str], None]:
+def check(capsys) -> Callable[[str, str], None]:
     """
     Manually check whether or not an expected state is so.
     """
 
-    def _check(text: str, expected: str) -> None:
+    def _check(text: str, expected: str = "Everything is as expected") -> None:
         with capsys.disabled():
             print("")
-            res = Prompt.ask(text, choices=["yes", "no", "abort"])
-
-        if res == "abort":
-            abort()
+            res = Prompt.ask(text, choices=["yes", "no"])
 
         assert res == "yes", expected
 

@@ -81,7 +81,7 @@ check:
 
 # Run tests with pytest
 test:
-  uv run pytest ./tests
+  uv run gaktest ./tests
   @just _clean-test
 
 _clean-test:
