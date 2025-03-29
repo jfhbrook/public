@@ -1,3 +1,3 @@
-yyyy/mm/dd Version x.y.z
+2025/03/29 Version 1.0.0
 ------------------------
-- TK
+- Refactored the `plusdeck` interactive test suite into a Pytest plugin
