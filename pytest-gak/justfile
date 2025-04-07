@@ -41,7 +41,7 @@ _upgrade:
 compile:
   uv pip compile -o requirements.txt pyproject.toml
   cp requirements.txt requirements_dev.txt
-  python3 -c 'import toml; print("\n".join(toml.load(open("pyproject.toml"))["dependency-groups"]["dev"]))' >> requirements_dev.txt
+  python3 -c 'import tomllib; print("\n".join(tomllib.load(open("pyproject.toml", "rb"))["dependency-groups"]["dev"]))' >> requirements_dev.txt
 
 _clean-compile:
   rm -f requirements.txt
@@ -67,12 +67,12 @@ start *argv:
 
 # Format with black and isort
 format:
-  uv run black './gak' ./tests
-  uv run isort --settings-file . './gak' ./tests
+  uv run black './pytest_gak' ./gaktest ./tests
+  uv run isort --settings-file . './pytest_gak' ./gaktest ./tests
 
 # Lint with flake8
 lint:
-  uv run flake8 './gak' ./tests
+  uv run flake8 './pytest_gak' ./gaktest ./tests
   uv run validate-pyproject ./pyproject.toml
 
 # Check type annotations with pyright
@@ -85,6 +85,7 @@ test:
   @just _clean-test
 
 _clean-test:
+  rm -rf .pytest_cache
   rm -f pytest_runner-*.egg
   rm -rf tests/__pycache__
 
@@ -119,6 +120,8 @@ publish: build
 
 # Clean up loose files
 clean: _clean-venv _clean-compile _clean-test
-  rm -rf gak.egg-info
-  rm -f gak/*.pyc
-  rm -rf gak/__pycache__
+  rm -rf pytest_gak.egg-info
+  rm -f pytest_gak/*.pyc
+  rm -f gaktest/*.pyc
+  rm -rf pytest_gak/__pycache__
+  rm -rf gaktest/__pycache__

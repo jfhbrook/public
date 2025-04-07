@@ -22,10 +22,10 @@ dependencies = [
 ]
 
 [project.scripts]
-gaktest = "gak:main"
+gaktest = "gaktest:main"
 
 [project.entry-points.pytest11]
-pytest-gak = "gak.plugin"
+pytest-gak = "pytest_gak"
 
 [dependency-groups]
 dev = [
@@ -44,14 +44,14 @@ package = true
 
 [tool.isort]
 profile = "appnexus"
-known_application = "gak"
+known_application = "pytest_gak"
 
 [tool.pyright]
-include = ["gak", "tests"]
+include = ["pytest_gak", "gaktest", "tests"]
 
 [tool.pytest]
 addopts = "--verbose -s"
 testpaths = [ "tests" ]
 
 [tool.setuptools]
-packages = [ "gak" ]
+packages = [ "pytest_gak", "gaktest" ]
