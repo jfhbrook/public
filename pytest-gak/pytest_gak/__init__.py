@@ -7,17 +7,13 @@ from rich.prompt import Prompt
 
 
 @pytest.fixture
-def confirm(capsys) -> Callable[[str], None]:
+def confirm(check) -> Callable[[str], None]:
     """
     Manually confirm an expected state.
     """
 
     def _confirm(text: str) -> None:
-        with capsys.disabled():
-            print("")
-            res = Prompt.ask(text, choices=["confirm", "deny"])
-
-        assert res == "confirm", "State was confirmed"
+        check(text, "Confirmed!")
 
     return _confirm
 
@@ -31,7 +27,7 @@ def take_action(capsys) -> Callable[[str], None]:
     def _take_action(text: str) -> None:
         with capsys.disabled():
             print("")
-            res = Prompt.ask(text, choices=["continue", "abort"])
+            res = Prompt.ask(text, choices=["continue", "abort"], default="continue")
 
         assert res == "continue", "Action was completed"
 
@@ -47,8 +43,8 @@ def check(capsys) -> Callable[[str, str], None]:
     def _check(text: str, expected: str = "Everything is as expected") -> None:
         with capsys.disabled():
             print("")
-            res = Prompt.ask(text, choices=["yes", "no"])
+            res = Prompt.ask(text, choices=["y", "n"], default="y")
 
-        assert res == "yes", expected
+        assert res == "y", expected
 
     return _check
