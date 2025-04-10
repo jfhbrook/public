@@ -116,7 +116,7 @@ tag:
   uv run git tag -a "$(python3 -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')" -m "Release $(python3 -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
 
 publish: build
-  uv publish
+  uv publish -t "$(op item get 'PyPI' --fields 'API Token' --reveal)"
 
 # Clean up loose files
 clean: _clean-venv _clean-compile _clean-test
