@@ -1,3 +1,8 @@
+2025/04/10 Version 2.0.1
+------------------------
+- `gaktest` now calls `pytest` in a subprocess
+  - See [#7](https://github.com/jfhbrook/public/issues/7)
+
 2025/04/07 Version 2.0.0
 ------------------------
 - Renamed `gak` to `pytest_gak`

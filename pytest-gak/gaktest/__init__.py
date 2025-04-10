@@ -1,7 +1,6 @@
+from subprocess import run
 import sys
 from typing import List
-
-from pytest import console_main
 
 
 def parse_args(raw_args: List[str] = sys.argv[1:]) -> List[str]:
@@ -48,7 +47,8 @@ def main() -> int:
     sys.argv = args
 
     # Call the standard pytest entry point with modified args
-    return console_main()
+    proc = run(args)
+    return proc.returncode
 
 
 if __name__ == "__main__":
