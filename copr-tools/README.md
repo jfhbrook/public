@@ -1,134 +1,51 @@
 # copr-tools
 
-This repo contains:
+This repo packages a bunch of tools for working with Fedora RPMs and [COPR](https://copr.fedorainfracloud.org/) for Docker and MacOS. It contains the following:
 
-1. A declarative IaC wrapper around [copr-cli](https://developer.fedoraproject.org/deployment/copr/copr-cli.html) named `coprctl`
-2. A Docker image which contains a number of RPM and COPR related tools, including `coprctl`
-3. Scripts, intended for non-Fedora operating systems - particularly MacOS - which use the Docker image to run these tools
+- [`copr`](https://github.com/fedora-copr/copr)
+- `copr-rpmbuild`
+- [`coprctl`](../coprctl)
+- `go2rpm`
+- `pyp2spec`
+- `rust2rpm`
+- [`tito`](https://github.com/rpm-software-management/tito)
 
-## Install
+## Docker
 
-### Fedora
+The Docker image may be found here:
 
-You should be able to install `coprctl` from COPR:
+<https://hub.docker.com/repository/docker/jfhbrook/copr-tools/general>
+
+It may be used to run tools like `coprctl`, as in this example:
 
 ```bash
-sudo dnf copr enable jfhbrook/joshiverse
-dnf install coprctl
-```
-
-Other tools are already available in the standard Fedora repositories
-
-### Docker
-
-A Docker image, [jfhbrook/copr-tools](https://hub.docker.com/repository/docker/jfhbrook/copr-tools/general), which contains a number of RPM and COPR related tools, including `coprctl`
-
-```
 exec docker run \
   -v "${HOME}:/root" \
   -v "$(pwd):/workspace" \
   -it "${COPR_TOOLS_IMAGE}:${COPR_TOOLS_VERSION}" coprctl "$@"
 ```
 
-### MacOS
+Note that `~` is being mounted under root's home, and that the current directory is being mounted under `/workspace`. The image is configured to treat `/workspace` as the current project, and most tools read configuration out of the container's uer home directly.
 
-COPR tools only really work on Fedora. To work around that, I've published a
-Docker image:
+## Homebrew
 
-<https://hub.docker.com/repository/docker/jfhbrook/coprctl/general>
-
-I also wrote some scripts that use it to run `coprctl`, as well as `copr` and `tito`. You can install them from [my Homebrew tap](https://github.com/jfhbrook/homebrew-joshiverse) on MacOS:
+I have a number of packages in [my Homebrew tap](https://github.com/jfhbrook/homebrew-joshiverse) which install shims that wrap this use of Docker for MacOS. They may be installed like so:
 
 ```bash
-brew install jfhbrook/joshiverse/coprctl
 brew install jfhbrook/joshiverse/copr
+brew install jfhbrook/joshiverse/copr-rpmbuild
+brew install jfhbrook/joshiverse/coprctl
+brew install jfhbrook/joshiverse/go2rpm
+brew install jfhbrook/joshiverse/pyp2spec
+brew install jfhbrook/joshiverse/rust2rpm
 brew install jfhbrook/joshiverse/tito
 ```
 
+Note that Docker must be running in order for these scripts to work.
 
+## Other Operating Systems
 
-## coprctl
-
-`coprctl` is a thin wrapper around [copr-cli](https://developer.fedoraproject.org/deployment/copr/copr-cli.html)
-which implements a `coprctl apply` command, inspired by [kubectl](https://kubernetes.io/docs/reference/kubectl/)
-and leveraging [yq](https://github.com/mikefarah/yq).
-## Config
-
-You'll need to create a config file at `~/.config/coprctl/config.yml`. Someday
-I'll add commands to `coprctl` to initialize and manage the config - but for
-today, my config is in [./example/config.yml](./example/config.yml).
-
-## Usage
-
-The basics are:
-
-```bash
-coprctl apply -f ./copr.yml
-```
-
-where `copr.yml` has a list of resources. For example:
-
-```yaml
----
-apiVersion: coprctl/v1alpha1
-kind: project
-metadata:
-  name: "do-not-delete-me-2"
-spec:
-  description: "a test COPR"
----
-apiVersion: coprctl/v1alpha1
-kind: package-pypi
-metadata:
-  name: "python3-pyee"
-spec:
-  projectname: "do-not-delete-me-2"
-  specGenerator: "pyp2spec"
-  pythonversions:
-    - "3"
----
-apiVersion: coprctl/v1alpha1
-kind: package-rubygems
-metadata:
-  name: "rubygem-t"
-spec:
-  projectname: "do-not-delete-me-2"
-  gem: "t"
-```
-
-The commands have mostly-right documentation with the `--help` flag. Another
-example of this format can be seen at
-[./example/resources.yml](./example/resources.yml).
-
-## File Format
-
-I did my best to make properties match the options in the CLI. They aren't the
-same as the ones in the API responses, but this way you can look at the help
-for `copr-cli` as a guide for what the properties should be.
-
-Kinds are lowercase. This is **not** how Kubernetes does it - they distinguish
-between a lowercase type and a pascal-case Kind, but COPR doesn't do that at
-all, and this way it's less mapping.
-
-## Status
-
-This project is something I wrote over a weekend to scratch my very specific
-itches. Many/most package types are unimplemented (though adding them is easy
-and I'll do so as I need them).
-
-Moreover, limitations of `copr-cli` make implementing get/apply for all
-resources very challenging! For instance, projects don't have a `get` because
-the response format isn't in JSON or YAML - possibly it's a format useful
-to `dnf`?
-
-Finally, I haven't implemented config commands at *all*. This is just a matter
-of me being lazy - it's definitely doable!
-
-I plan on using this project as-is for my own needs, cowpathing it over time,
-and adjusting it as needed. I considered the possibility of
-[adding this sort of thing to the official tooling](https://github.com/fedora-copr/copr/issues/2767),
-but it's just too opinionated to foist on people. In the meantime, my itches
-are scratched.
+All of the Homebrew shims are implemented as Bash scripts in [the ./bin directory](./bin), and should work on any operating system supporting Docker and Bash.
 
 ## License
 
