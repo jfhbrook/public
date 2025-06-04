@@ -1,5 +1,5 @@
 Name: coprctl
-Version: 0.3.0
+Version: 1.0.0
 Release: 1%{?dist}
 License: MIT
 Summary: infrastructure-as-code for COPR
