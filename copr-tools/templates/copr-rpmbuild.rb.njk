@@ -1,7 +1,7 @@
 class CoprRpmbuild < Formula
   desc "Provides command capable of running COPR build-tasks."
   homepage "https://github.com/fedora-copr/copr"
-  url "https://github.com/jfhbrook/public/releases/download/copr-tools-{{ version }}-{{ patch }}/copr-tools-{{ version }}.tar.gz"
+  url "https://github.com/jfhbrook/public/releases/download/copr-tools-{{ version }}/copr-tools-{{ version }}.tar.gz"
   sha256 "{{ sha }}"
   license "MIT"
 
@@ -9,7 +9,7 @@ class CoprRpmbuild < Formula
   depends_on "docker" => :optional
 
   def install
-    bin.install "bin/copr-rpmbuild-docker" => "copr-rpmbuild"
+    bin.install "bin/copr-rpmbuild" => "copr-rpmbuild"
   end
 
   test do

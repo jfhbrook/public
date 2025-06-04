@@ -1,7 +1,7 @@
 class Pyp2spec < Formula
   desc "pyp2spec is a tech preview. It is a tool generating Fedora RPM spec files for Python distributions."
 homepage "https://github.com/befeleme/pyp2spec"
-  url "https://github.com/jfhbrook/public/releases/download/copr-tools-{{ version }}-{{ patch }}/copr-tools-{{ version }}.tar.gz"
+  url "https://github.com/jfhbrook/public/releases/download/copr-tools-{{ version }}/copr-tools-{{ version }}.tar.gz"
   sha256 "{{ sha }}"
   license "MIT"
 
@@ -9,7 +9,7 @@ homepage "https://github.com/befeleme/pyp2spec"
   depends_on "docker" => :optional
 
   def install
-    bin.install "bin/pyp2spec-docker" => "pyp2spec"
+    bin.install "bin/pyp2spec" => "pyp2spec"
   end
 
   test do

@@ -1,57 +1,28 @@
-# copr-tools
+# coprctl
 
-This repo contains:
-
-1. A declarative IaC wrapper around [copr-cli](https://developer.fedoraproject.org/deployment/copr/copr-cli.html) named `coprctl`
-2. A Docker image which contains a number of RPM and COPR related tools, including `coprctl`
-3. Scripts, intended for non-Fedora operating systems - particularly MacOS - which use the Docker image to run these tools
+`coprctl` is a thin wrapper around [copr-cli](https://developer.fedoraproject.org/deployment/copr/copr-cli.html) which implements a `coprctl apply` command, inspired by [kubectl](https://kubernetes.io/docs/reference/kubectl/) and leveraging [yq](https://github.com/mikefarah/yq).
 
 ## Install
 
 ### Fedora
 
-You should be able to install `coprctl` from COPR:
+You should be able to install coprctl from COPR:
 
 ```bash
 sudo dnf copr enable jfhbrook/joshiverse
 dnf install coprctl
 ```
 
-Other tools are already available in the standard Fedora repositories
-
 ### Docker
 
-A Docker image, [jfhbrook/copr-tools](https://hub.docker.com/repository/docker/jfhbrook/copr-tools/general), which contains a number of RPM and COPR related tools, including `coprctl`
-
-```
-exec docker run \
-  -v "${HOME}:/root" \
-  -v "$(pwd):/workspace" \
-  -it "${COPR_TOOLS_IMAGE}:${COPR_TOOLS_VERSION}" coprctl "$@"
-```
-
-### MacOS
-
-COPR tools only really work on Fedora. To work around that, I've published a
-Docker image:
+I have a simple Docker image containing `coprctl`, which may be found here:
 
 <https://hub.docker.com/repository/docker/jfhbrook/coprctl/general>
 
-I also wrote some scripts that use it to run `coprctl`, as well as `copr` and `tito`. You can install them from [my Homebrew tap](https://github.com/jfhbrook/homebrew-joshiverse) on MacOS:
+### MacOS and Other Operating Systems
 
-```bash
-brew install jfhbrook/joshiverse/coprctl
-brew install jfhbrook/joshiverse/copr
-brew install jfhbrook/joshiverse/tito
-```
+Many dependencies for Fedora development, including `coprctl` dependencies, are only really available in Fedora. To support other operating systems, I have a Docker based solution, which may be found in [the `copr-tools` project](../copr-tools).
 
-
-
-## coprctl
-
-`coprctl` is a thin wrapper around [copr-cli](https://developer.fedoraproject.org/deployment/copr/copr-cli.html)
-which implements a `coprctl apply` command, inspired by [kubectl](https://kubernetes.io/docs/reference/kubectl/)
-and leveraging [yq](https://github.com/mikefarah/yq).
 ## Config
 
 You'll need to create a config file at `~/.config/coprctl/config.yml`. Someday

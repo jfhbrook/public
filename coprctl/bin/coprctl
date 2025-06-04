@@ -1,0 +1,780 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Logging
+
+function log-debug {
+  if [ -n "${DEBUG:-}" ]; then
+    echo 'debug:' "$@" 1>&2
+  fi
+}
+
+function log-info {
+  echo 'info:' "$@" 1>&2
+}
+
+function log-warn {
+  echo 'warn:' "$@" 1>&2
+}
+
+function log-error {
+  echo 'error:' "$@" 1>&2
+}
+
+function log-fatal {
+  echo 'fatal:' "$@" 1>&2
+}
+
+HELP_MAIN='coprctl uses copr-cli and yq to manage COPR resources using yaml, like Kubernetes.
+
+ Find more information at: https://github.com/jfhbrook/public/tree/main/coprctl
+
+Commands:
+  get             Display a resource
+  apply           Apply a configuration to a resource by file name or stdin
+
+Usage:
+  coprctl [flags] [options]
+
+Use "coprctl <command> --help" for more information about a given command.'
+
+function main {
+  NAMESPACE=""
+  COMMAND=""
+  TYPE=""
+  NAME=""
+
+  DRY_RUN="none"
+  FILENAME=""
+
+  local apiVersion
+  local kind
+
+  apiVersion="$(yq '.apiVersion' ~/.config/coprctl/config.yml)"
+  kind="$(yq '.kind' ~/.config/coprctl/config.yml)"
+
+  if [ -f ~/.config/coprctl/config.yml ]; then
+    if [[ "${apiVersion}" != 'coprctl/v1alpha1' ]]; then
+      log-fatal "Unknown apiVersion: ${apiVersion}"
+      log-info "Supported versions are: coprctl/v1aplha1"
+      exit 1
+    fi
+
+    if [[ "${kind}" != 'config' ]]; then
+      log-fatal "Unknown kind: ${kind}"
+      log-info "Kind must be: config"
+      exit 1
+    fi
+
+    NAMESPACE="$(yq '.spec.namespace' ~/.config/coprctl/config.yml)"
+    PROJECT="$(yq '.spec.project' ~/.config/coprctl/config.yml)"
+  fi
+
+  local show_help=""
+
+  while [[ $# -gt 0 ]]; do
+    case ${1} in
+      --help)
+        show_help=1
+        shift
+        ;;
+      -n|--namespace)
+        NAMESPACE="${2}"
+        shift
+        shift
+        ;;
+      -p|--project)
+        PROJECT="${2}"
+        shift
+        shift
+        ;;
+      --dry-run)
+        if [[ "${2}" =~ ^(none|server|client)$ ]]; then
+          DRY_RUN="${2}"
+          shift
+          shift
+        else
+          log-fatal "--dry-run must be one of: none, server, client"
+          exit 1
+        fi
+        ;;
+      -f|--filename)
+        FILENAME="${2}"
+        shift
+        shift
+        ;;
+      -*)
+        log-fatal "Unknown option: ${1}"
+        exit 1
+        ;;
+      *)
+        if [ -z "${COMMAND}" ]; then
+          COMMAND="${1}"
+          shift
+        elif [ -z "${TYPE}" ]; then
+          TYPE="${1}"
+          shift
+        elif [ -z "${NAME}" ] && [[ "${COMMAND}" == 'get' ]]; then
+          NAME="${1}"
+          shift
+        else
+          log-fatal "Unknown argument: ${1}"
+          exit 1
+        fi
+        ;;
+    esac
+  done
+
+  log-debug "Command: ${COMMAND:-NULL}"
+  log-debug "Type: ${TYPE:-NULL}"
+
+  case "${COMMAND}" in
+    get)
+      if [ -n "${show_help}" ]; then
+        echo "${HELP_GET}"
+        exit
+      fi
+      get
+      ;;
+    apply)
+      if [ -n "${show_help}" ]; then
+        echo "${HELP_APPLY}"
+        exit
+      fi
+
+      apply
+      ;;
+    delete)
+      if [ -n "${show_help}" ]; then
+        echo "${HELP_DELETE}"
+        exit
+      fi
+
+      delete
+      ;;
+    api-resources)
+      if [ -n "${show_help}" ]; then
+        echo "${HELP_API_RESOURCES}"
+        exit
+      fi
+      api-resources
+      ;;
+    config)
+      log-fatal "Config management is not supported."
+      log-info "(Try editing ~/.config/coprctl/config.yml in a text editor)"
+      exit 1
+      ;;
+    *)
+      if [ -n "${COMMAND}" ]; then
+        log-error "Unknown command: ${COMMAND}"
+      fi
+      echo "${HELP_MAIN}"
+      exit
+      ;;
+  esac
+}
+
+# Get command
+
+HELP_GET='Display a resource.
+
+Prints a yaml representation of the selected resource, intended for easy insertion into a resources file. Currently very limited, but may be expanded to offer more kubectl-like capabilities in the future.
+
+Use "coprctl api-resources" for a complete list of supported resources.
+
+Examples:
+  # Show a pypi package called "python3-pyee"
+  coprctl get package-pypi python3-pyee
+
+Usage:
+  coprctl get TYPE NAME [flags] [options]'
+
+function get {
+  local base='{"apiVersion": "coprctl/v1alpha1"}'
+  local res
+  local type
+  local name
+
+  case "${TYPE}" in
+    project)
+      # NOTE: Projects don't return an easily parseable format and most of the
+      # properties are missing, womp womp
+      log-fatal "not implemented: project"
+      log-info '(try "copr get '"'${NAME}'"')'
+      exit 1
+      ;;
+    chroot)
+      # TODO: This shows a yaml representation - great! - but I haven't
+      # implemented the apply half of this, and I'd expect the format to change
+      # significantly
+      res="$(copr get-chroot "${NAMESPACE}/${PROJECT}/${NAME}" | yq .)"
+
+      res="${res}" name="${NAME}" yq '.kind = "chroot" | .metadata.dname = env(name) | .spec = env(res) | del(.spec.name)' -P <<< "${base}"
+      ;;
+    package-pypi)
+      res="$(copr get-package "${PROJECT}" --name "${NAME}" | yq .)"
+
+      log-debug 'response:' "${res}"
+
+      type="package-$(yq '.source_type' <<< "${res}")"
+      name="$(yq '.name' <<< "${res}")"
+
+      if [[ "${type}" != "${TYPE}" ]]; then
+        log-fatal "unexpected type: ${type} (expected: ${TYPE})"
+        exit 1
+      fi
+
+      local packagename
+      local packageversion
+      local pythonversions
+      local spec_generator
+      local template
+
+      packagename="$(yq '.source_dict.pypi_package_name' <<< "${res}")"
+      packageversion="$(yq -o json '.source_dict.pypi_package_version' <<< "${res}")"
+      pythonversions="$(yq '.source_dict.python_versions' <<< "${res}")"
+      spec_generator="$(yq -o json '.source_dict.spec_generator' <<< "${res}")"
+      template="$(yq -o json '.source_dict.spec_template' <<< "${res}")"
+
+      res="${res}" \
+      kind="${type}" \
+      name="${name}" \
+      packagename="${packagename}" \
+      packageversion="${packageversion}" \
+      pythonversions="${pythonversions}" \
+      spec_generator="${spec_generator}" \
+      template="${template}" yq '
+        .kind = env(kind)
+          | .metadata.name = env(name)
+          | .spec = env(res)
+          | del(.spec.name)
+          | del(.spec.source_type)
+          | del(.spec.source_dict)
+          | .spec.packagename = env(packagename)
+          | .spec.packageversion = env(packageversion)
+          | .spec.pythonversions = env(pythonversions)
+          | .spec.spec-generator = env(spec_generator)
+          | .spec.template = env(template)' -P <<< "${base}"
+      ;;
+    package-scm)
+      res="$(copr get-package "${PROJECT}" --name "${NAME}" | yq .)"
+
+      log-debug 'response:' "${res}"
+
+      type="package-$(yq '.source_type' <<< "${res}")"
+      name="$(yq '.name' <<< "${res}")"
+
+      if [[ "${type}" != "${TYPE}" ]]; then
+        log-fatal "unexpected type: ${type} (expected: ${TYPE})"
+        exit 1
+      fi
+
+      local clone_url
+      local commit
+      local subdir
+      local spec
+      local scm_type
+      local method
+
+      clone_url="$(yq '.source_dict.clone_url' <<< "${res}")"
+      commit="$(yq '.source_dict.commitish' <<< "${res}")"
+      subdir="$(yq '.source_dict.subdirectory' <<< "${res}")"
+      spec="$(yq '.source_dict.spec' <<< "${res}")"
+      scm_type="$(yq '.source_dict.type' <<< "${res}")"
+      method="$(yq '.source_dict.source_build_method' <<< "${res}")"
+
+      res="${res}" \
+      kind="${type}" \
+      name="${name}" \
+      clone_url="${clone_url}" \
+      commit="${commit}" \
+      subdir="${subdir}" \
+      spec="${spec}" \
+      scm_type="${scm_type}" \
+      method="${method}" yq '
+        .kind = env(kind)
+          | .metadata.name = env(name)
+          | .spec = env(res)
+          | del(.spec.name)
+          | del(.spec.source_type)
+          | del(.spec.source_dict)
+          | .spec.clone-url = env(clone_url)
+          | .spec.commit = env(commit)
+          | .spec.subdir = env(subdir)
+          | .spec.spec = env(spec)
+          | .spec.type = env(scm_type)
+          | .spec.method = env(method)' -P <<< "${base}"
+
+      ;;
+    package-distgit)
+      log-fatal "Unsupported kind: package-distgit"
+      exit 1
+      ;;
+    package-rubygems)
+      res="$(copr get-package "${PROJECT}" --name "${NAME}" | yq .)"
+
+      log-debug 'response:' "${res}"
+
+      type="package-$(yq '.source_type' <<< "${res}")"
+      name="$(yq '.name' <<< "${res}")"
+
+      if [[ "${type}" != "${TYPE}" ]]; then
+        log-fatal "unexpected type: ${type} (expected: ${TYPE})"
+        exit 1
+      fi
+
+      local gem
+
+      gem="$(yq '.source_dict.gem_name' <<< "${res}")"
+
+      res="${res}" \
+      kind="${type}" \
+      name="${name}" \
+      gem="${gem}" yq '
+        .kind = env(kind)
+          | .metadata.name = env(name)
+          | .spec = env(res)
+          | del(.spec.name)
+          | del(.spec.source_type)
+          | del(.spec.source_dict)
+          | .spec.gem = env(gem)' -P <<< "${base}"
+      ;;
+    package-custom)
+      res="$(copr get-package "${PROJECT}" --name "${NAME}" | yq .)"
+
+      log-debug 'response:' "${res}"
+
+      type="package-$(yq '.source_type' <<< "${res}")"
+      name="$(yq '.name' <<< "${res}")"
+
+      if [[ "${type}" != "${TYPE}" ]]; then
+        log-fatal "unexpected type: ${type} (expected: ${TYPE})"
+        exit 1
+      fi
+
+      local script_builddeps
+      local script_chroot
+      local script_repos
+      local script_resultdir
+      local script
+
+      script_builddeps="$(yq '.source_dict.builddeps' <<< "${res}")"
+      script_chroot="$(yq '.source_dict.chroot' <<< "${res}")"
+      script_repos="$(yq -o json '.source_dict.repos' <<< "${res}")"
+      script_resultdir="$(yq -o json '.source_dict.resultdir' <<< "${res}")"
+      script="$(yq -o json '.source_dict.script' <<< "${res}")"
+
+      res="${res}" \
+      kind="${type}" \
+      name="${name}" \
+      script_builddeps="${script_builddeps}" \
+      script_chroot="${script_chroot}" \
+      script_repos="${script_repos}" \
+      script_resultdir="${script_resultdir}" \
+      script="${script}" yq '.kind = env(kind)
+          | .metadata.name = env(name)
+          | .spec = env(res)
+          | del(.spec.name)
+          | del(.spec.source_type)
+          | del(.spec.source_dict)
+          | .spec.script-builddeps = env(script_builddeps)
+          | .spec.script-chroot = env(script_chroot)
+          | .spec.script-repos = env(script_repos)
+          | .spec.script-resultdir = env(script_resultdir)
+          | .spec.script = env(script)' -P <<< "${base}"
+      ;;
+    permissions)
+      log-fatal "not implemented: permissions"
+      exit 1
+      ;;
+    *)
+      log-fatal "unknown type: ${TYPE}"
+      exit 1
+      ;;
+  esac
+}
+
+# Apply command
+
+HELP_APPLY='Apply a configuration to a resource by file name or stdin. The resource name must be specified. This resource will be created if it doesn'"'"'t exist yet. To use '"'"'apply'"'"', always create the resource initially with either '"'"'apply'"'"' or '"'"'create --save-config'"'"'.
+
+ Formats understood by yq are accepted.
+
+Examples:
+  # Apply the configuration in copr.yaml
+  coprctl apply -f ./copr.json
+  
+Options:
+    --namespace:
+  Set the namespace for the COPR, of the format (username|organization)/project.
+    --dry-run='"'"'none'"'"':
+	Must be "none", "server", or "client". If client strategy, only print the object that would be sent, without sending it. If server strategy, submit server-side request without persisting the resource.
+
+    -f, --filename=[]:
+	The file that contains the configurations to apply.
+
+Usage:
+  coprctl apply (-f FILENAME) [options]
+
+Use "coprctl <command> --help" for more information about a given command.'
+
+function apply {
+  # TODO: This won't clean up the tmpfile on exit. It's not a huge deal - the
+  # OS should clean it up on boots - but it's *improper*.
+  if [ -z "${FILENAME}" ]; then
+    FILENAME="$(mktemp)"
+    "${FILENAME}" < /dev/stdin
+  fi
+
+  # file, doc selector and argv set globally to avoid DI Hell. Luckily this
+  # is the only call site we have to be careful about.
+  yq --no-doc 'document_index' "${FILENAME}" | while read -r i; do
+    DOC='select(document_index == '"${i}"')'
+    ARGV=()
+
+    log-debug 'doc:' "${DOC}"
+
+    load-document
+
+    if [[ "${DRY_RUN}" != 'none' ]]; then
+      log-info 'dry-run:' copr "${ARGV[@]}"
+    else
+      log-debug 'running:' copr "${ARGV[@]}"
+      copr "${ARGV[@]}"
+    fi
+  done
+}
+
+function load-document {
+  local kind
+  local apiVersion
+
+  kind="$(yq "${DOC}"' | .kind' "./${FILENAME}")"
+
+  log-debug "kind: ${kind}"
+  apiVersion="$(yq "${DOC}"' | .apiVersion' "./${FILENAME}")"
+
+  # because we're classy like that
+  if [[ "${apiVersion}" != 'coprctl/v1alpha1' ]]; then
+    log-fatal "Unknown apiVersion: ${apiVersion}"
+    log-info "Supported versions are: coprctl/v1aplha1"
+    exit 1
+  fi
+
+  case "${kind}" in
+    project)
+      load-project
+      ;;
+    chroot)
+      # TODO: Chroots have an odd mechanic around "comps", which involve .xml
+      # files. Implement this when I actually need it.
+      log-fatal "not implemented: chroot"
+      exit 1
+      ;;
+    package-pypi)
+      load-package pypi
+      load-multi-arg-property '.spec.pythonversions' pythonversions
+      load-property '.spec.packagename' packagename
+      load-property '.spec.packageversion' packageversion
+      load-property '.spec.spec-generator' spec-generator
+      load-property '.spec.template' template
+      ;;
+    package-scm)
+      load-package scm
+      load-property '.spec.clone-url' clone-url
+      load-property '.spec.commit' commit
+      load-property '.spec.subdir' subdir
+      load-property '.spec.spec' spec
+      load-property '.spec.type' type
+      load-property '.spec.method' method
+      ;;
+    package-distgit)
+      load-package distgit
+
+      log-fatal 'not implemented: package-distgit'
+      exit 1
+      ;;
+    package-rubygems)
+      load-package rubygems
+      load-property '.spec.gem' gem
+      ;;
+    package-custom)
+      load-package custom
+
+      local file=''
+      local script
+
+      script="$(yq "${DOC}"' | .spec.script' "${FILENAME}")"
+
+      if [ ! -f "${script}" ]; then
+        file="$(mktemp)"
+        echo "${script}" > "${file}"
+        script="${file}"
+      fi
+
+      ARGV+=(--script "${script}")
+
+      load-property '.spec.script-chroot' script-chroot
+      load-property '.spec.script-builddeps' script-builddeps
+      load-property '.spec.script-resultdir' script-resultdir
+      load-property '.spec.script-repos' script-repos
+      ;;
+    permissions)
+      log-fatal "not implemented: permissions"
+      exit 1
+      ;;
+    *)
+      log-fatal "unknown kind: ${kind}"
+      exit 1
+      ;;
+  esac
+}
+
+
+function load-property {
+  local selector="${1}"
+  local name="${2}"
+
+  local value
+
+  value="$(yq "${DOC}"' | '"${selector}" "${FILENAME}")"
+
+  # TODO: Ideally I'd get yq to return a blank instead of the string "null".
+  # Unfortunately, alternatives and doc filtering combined can have strange
+  # results.
+  if [[ "${value}" != 'null' ]]; then
+    ARGV+=("--${name}" "${value}")
+  fi
+}
+
+
+function load-flag {
+  local selector="${1}"
+  local name="${2}"
+
+  local value
+
+  value="$(yq "${DOC}"' | '"${selector}" "${FILENAME}")"
+
+  if [[ "${value}" == 'on' ]] || [[ "${value}" == 'true' ]] || [[ "${value}" == '1' ]]; then
+    ARGV+=("--${name}")
+  fi
+}
+
+
+function load-multi-arg-property {
+  local selector="${1}"
+  local name="${2}"
+
+  ARGV+=("--${name}")
+
+  for value in $(yq "${DOC}"' | '"${selector}"' | .[]' "${FILENAME}"); do
+    ARGV+=("${value}")
+  done
+}
+
+function load-multi-specify-property {
+  local selector="${1}"
+  local name="${2}"
+
+  for value in $(yq "${DOC}"' | '"${selector}"' | .[]' "${FILENAME}"); do
+    ARGV+=("--${name}" "${value}")
+  done
+}
+
+
+function load-project {
+  local name
+  local action="modify"
+
+  name="$(yq "${DOC}"' | .metadata.name' "${FILENAME}")"
+
+  if [[ "${DRY_RUN}" == 'client' ]]; then
+    log-info 'dry-run:' copr get "${name}"
+    action="create"
+  else
+    log-debug "checking if project ${name} exists"
+    if ! copr get "${name}" &> /dev/null; then
+      log-debug "project ${name} does not exist"
+      action="create"
+    fi
+  fi
+
+  ARGV+=("${action}" "${name}")
+
+  load-multi-specify-property '.spec.chroots' chroot
+  load-property '.spec.description' description
+  load-property '.spec.instructions' instructions
+  load-property '.spec.disable_createrepo' disable_createrepo
+  load-property '.spec.enable-net' enable-net
+  load-property '.spec.unlisted-on-hp' unlisted-on-hp
+  # NOTE: auto-prune is admin-only
+  load-property '.spec.isolation' isolation
+  load-property '.spec.bootstrap' bootstrap
+  load-property '.spec.delete-after-days' delete-after-days 
+  load-property '.spec.module-hotfixes' module-hotfixes
+  load-property '.spec.multilib' multilib
+  load-flag '.spec.fedora-review' fedora-review
+  load-property '.spec.appstream' appstream
+  load-property '.spec.follow-fedora-branching' follow-fedora-branching
+  load-multi-specify-property '.spec.repos' repo
+  load-multi-specify-property '.spec.runtime-repo-dependencies' runtime-repo-dependency
+  load-multi-specify-property '.spec.packit-forge-projects-allowed' packit-forge-project-allowed
+}
+
+function load-package {
+  local type="${1}"
+
+  local copr
+  local name
+  local action
+
+  # TODO: should this property be on .metadata?
+  copr="$(yq "${DOC}"' | .spec.projectname' "${FILENAME}")"
+  name="$(yq "${DOC}"' | .metadata.name' "${FILENAME}")"
+
+  action="edit-package-${type}"
+
+  if [[ "${DRY_RUN}" == 'client' ]]; then
+    log-info 'dry-run:' copr get-package "${copr}" --name "${name}"
+    action="add-package-${type}"
+  else
+    log-debug "checking if package ${copr} --name ${name} exists"
+    if ! copr get-package "${copr}" --name "${name}" &> /dev/null; then
+      log-debug "package ${copr} --name ${name} does not exist"
+      action="add-package-${type}"
+    fi
+  fi
+
+  ARGV+=("${action}" "${copr}" --name "${name}")
+
+  load-property '.spec.webhook-rebuild' webhook-rebuild
+  load-property '.spec.max-builds' max-builds
+}
+
+HELP_DELETE='
+Delete resources by file names, stdin, resources and names, or by resources and label selector.
+
+ Only one type of argument may be specified: file names, resources and names, or resources and label selector.
+
+
+Examples:
+  # Delete resources using the types and names specified in copr.yml
+  kubectl delete -f ./copr.yml
+  
+  # Delete a resource based on the type and name in the YAML passed into stdin
+  cat copr.yml | kubectl delete -f -
+  
+  # Delete the scm package foo
+  kubectl delete package-scm foo
+
+Options:
+    --namespace:
+  Set the namespace for the COPR, of the format (username|organization)/project.
+    --dry-run='"'"'none'"'"':
+	Must be "none", "server", or "client". If client strategy, only print the object that would be sent, without sending it. If server strategy, submit server-side request without persisting the resource.
+
+    -f, --filename=[]:
+	The file that contains the configurations to apply.
+
+Usage:
+  coprctl delete ([-f FILENAME] | TYPE [NAME]) [options]'
+
+function delete {
+  # TODO: This won't clean up the tmpfile on exit. It's not a huge deal - the
+  # OS should clean it up on boots - but it's *improper*.
+  if [[ "${FILENAME}" == '-' ]]; then
+    FILENAME="$(mktemp)"
+    "${FILENAME}" < /dev/stdin
+  fi
+
+  if [ -z "${FILENAME}" ]; then
+    delete-resource "${TYPE}" "${NAME}"
+  else
+    yq --no-doc 'document_index' "${FILENAME}" | while read -r i; do
+      DOC='select(document_index == '"${i}"')'
+
+      local kind
+      local apiVersion
+      local name
+
+      kind="$(yq "${DOC}"' | .kind' "./${FILENAME}")"
+
+      log-debug "kind: ${kind}"
+      apiVersion="$(yq "${DOC}"' | .apiVersion' "./${FILENAME}")"
+
+      # because we're classy like that
+      if [[ "${apiVersion}" != 'coprctl/v1alpha1' ]]; then
+        log-fatal "Unknown apiVersion: ${apiVersion}"
+        log-info "Supported versions are: coprctl/v1aplha1"
+        exit 1
+      fi
+
+      name="$(yq "${DOC}"' | .metadata.name' "${FILENAME}")"
+
+      log-debug 'doc:' "${DOC}"
+
+      delete-resource "${kind}" "${name}"
+    done
+  fi
+}
+
+function delete-resource {
+  local type="${1}"
+  local name="${2}"
+
+  local argv=()
+
+  case "${type}" in
+    project)
+      argv+=(delete "${name}")
+      ;;
+    chroot)
+      # NOTE: No obvious delete function for chroots
+      log-fatal "not implemented: chroot"
+      exit 1
+      ;;
+    package-*)
+      argv+=(delete-package "${PROJECT}" --name "${name}")
+      ;;
+    permissions)
+      # NOTE: No obvious delete function for permissions
+      log-fatal "not implemented: permissions"
+      exit 1
+      ;;
+    *)
+      log-fatal "unknown kind: ${type}"
+      exit 1
+      ;;
+  esac
+
+  if [[ "${DRY_RUN}" != 'none' ]]; then
+    log-info 'dry-run:' copr "${argv[@]}"
+  else
+    copr "${argv[@]}"
+  fi
+}
+
+
+HELP_API_RESOURCES='Print supported API resources.
+
+Examples:
+  # Print supported API resources
+  coprctl api-resources
+  
+Usage:
+  coprctl api-resources'
+
+function api-resources {
+  echo "NAME
+project
+package-pypi
+package-scm
+package-distgit
+package-rubygems
+package-custom"
+}
+
+# giddyup
+main "$@"

@@ -1,7 +1,7 @@
 class Tito < Formula
   desc "A tool for managing rpm based git projects"
   homepage "https://github.com/rpm-software-management/tito"
-  url "https://github.com/jfhbrook/public/releases/download/copr-tools-{{ version }}-{{ patch }}/copr-tools-{{ version }}.tar.gz"
+  url "https://github.com/jfhbrook/public/releases/download/copr-tools-{{ version }}/copr-tools-{{ version }}.tar.gz"
   sha256 "{{ sha }}"
   license "MIT"
 
@@ -9,7 +9,7 @@ class Tito < Formula
   depends_on "docker" => :optional
 
   def install
-    bin.install "bin/tito-docker" => "tito"
+    bin.install "bin/tito" => "tito"
   end
 
   test do
