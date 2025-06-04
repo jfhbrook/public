@@ -36,6 +36,9 @@ install -p -m 755 bin/coprctl %{buildroot}%{_bindir}
 
 
 %changelog
+* Wed Jun 04 2025 Josh Holbrook <josh.holbrook@gmail.com> 1.0.0-1
+- Split COPR tools out of coprctl and into copr-tools (josh.holbrook@gmail.com)
+
 - Mount entire homedir (josh.holbrook@gmail.com)
 - tito-docker script (josh.holbrook@gmail.com)
 - Build coprctl on fedora 41 (josh.holbrook@gmail.com)
