@@ -1,6 +1,6 @@
 FROM fedora:41
 
-RUN dnf install -y copr-cli tito yq
+RUN dnf install -y copr-cli copr-rpmbuild go2rpm pyp2spec rust2rpm tito yq
 COPY bin/coprctl /usr/bin/coprctl
 RUN chmod +x /usr/bin/coprctl
 
@@ -11,4 +11,4 @@ RUN mkdir /workspace
 WORKDIR /workspace
 VOLUME /workspace
 
-CMD ["/usr/bin/coprctl"]
+CMD []
