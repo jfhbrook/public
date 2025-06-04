@@ -1,0 +1,18 @@
+class Rust2rpm < Formula
+  desc "rust2rpm is a tool that automates the generation of RPM spec files for Rust crates."
+  homepage "https://pagure.io/fedora-rust/rust2rpm"
+  url "https://github.com/jfhbrook/public/releases/download/copr-tools-{{ version }}-{{ patch }}/copr-tools-{{ version }}.tar.gz"
+  sha256 "{{ sha }}"
+  license "MIT"
+
+  depends_on "bash" => :recommended
+  depends_on "docker" => :optional
+
+  def install
+    bin.install "bin/rust2rpm-docker" => "rust2rpm"
+  end
+
+  test do
+    system "false"
+  end
+end

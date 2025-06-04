@@ -1,0 +1,18 @@
+class Go2rpm < Formula
+  desc "Convert Go packages to RPM."
+  homepage "https://gitlab.com/fedora/sigs/go/go2rpm"
+  url "https://github.com/jfhbrook/public/releases/download/copr-tools-{{ version }}-{{ patch }}/copr-tools-{{ version }}.tar.gz"
+  sha256 "{{ sha }}"
+  license "MIT"
+
+  depends_on "bash" => :recommended
+  depends_on "docker" => :optional
+
+  def install
+    bin.install "bin/go2rpm-docker" => "go2rpm"
+  end
+
+  test do
+    system "false"
+  end
+end
