@@ -20,6 +20,10 @@ Research and Academic Programming License v0 Beta 0.
 A bash script, using `copr-cli` and `yq`, to implement an infrastructure-as-code
 pattern similar to `kubectl apply`. It is licensed MIT.
 
+### copr-tools
+
+A Docker image, plus some Bash scripts, for running RPM and COPR related tools - including `coprctl` - on other operating systems, namely MacOS.
+
 ### crystalfontz
 
 **<https://github.com/jfhbrook/crystalfontz>**
