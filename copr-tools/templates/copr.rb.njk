@@ -1,7 +1,7 @@
 class Copr < Formula
   desc "COPR is lightweight build system. It allows you to create new project in WebUI, and submit new builds and COPR will create yum repository from latests builds."
   homepage "https://github.com/fedora-copr/copr"
-  url "https://github.com/jfhbrook/public/releases/download/copr-tools-{{ version }}-{{ patch }}/copr-tools-{{ version }}.tar.gz"
+  url "https://github.com/jfhbrook/public/releases/download/copr-tools-{{ version }}/copr-tools-{{ version }}.tar.gz"
   sha256 "{{ sha }}"
   license "MIT"
 
@@ -9,7 +9,7 @@ class Copr < Formula
   depends_on "docker" => :optional
 
   def install
-    bin.install "bin/copr-docker" => "copr"
+    bin.install "bin/copr" => "copr"
   end
 
   test do

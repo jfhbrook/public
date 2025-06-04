@@ -1,0 +1,48 @@
+VERSION := "0.3.0"
+PATCH := "1"
+
+set dotenv-load := true
+
+# Lint with shellcheck
+lint:
+  shellcheck ./bin/coprctl
+
+# Open a shell with bin in the PATH
+shell:
+  PATH="$(pwd)/bin:${PATH}" bash --login
+
+# Build the Docker image
+build-docker:
+  docker build -t 'coprctl:{{VERSION}}' .
+  docker tag 'coprctl:{{VERSION}}' 'coprctl:latest'
+  docker tag 'coprctl:{{VERSION}}' 'jfhbrook/coprctl:{{VERSION}}'
+  docker tag 'jfhbrook/coprctl:{{VERSION}}' 'jfhbrook/coprctl:latest'
+
+#
+# Publishing
+#
+
+tag:
+  tito tag --use-version '{{VERSION}}'
+
+bundle:
+  tar -czf coprctl-{{VERSION}}.tar.gz bin LICENSE README.md
+
+push:
+  git push origin --follow-tags
+
+gh-release:
+  bash ./scripts/release.sh '{{VERSION}}' '{{PATCH}}'
+
+publish-docker:
+  docker push 'jfhbrook/coprctl:{{VERSION}}'
+  docker push jfhbrook/coprctl:latest
+
+apply-copr:
+  coprctl apply -f ./coprctl.yml
+
+build-copr:
+  copr build-package jfhbrook/joshiverse --name 'coprctl'
+
+# Publish the release on GitHub, Docker and Copr
+publish: tag push bundle gh-release publish-docker apply-copr build-copr

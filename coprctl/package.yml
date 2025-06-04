@@ -8,7 +8,7 @@ spec:
   projectname: joshiverse
   clone-url: https://github.com/jfhbrook/public
   commit: null
-  subdir: copr-tools
+  subdir: coprctl
   spec: coprctl.spec
   type: git
   method: tito

@@ -1,13 +1,9 @@
-FROM fedora:41
+FROM jfhbrook/coprctl:0.3.0
 
-RUN dnf install -y copr-cli copr-rpmbuild go2rpm pyp2spec rust2rpm tito yq
-COPY bin/coprctl /usr/bin/coprctl
-RUN chmod +x /usr/bin/coprctl
+RUN dnf install -y copr-rpmbuild go2rpm pyp2spec rust2rpm tito
 
-COPY example/config.yml /root/.config/coprctl/config.yml
 VOLUME /root
 
-RUN mkdir /workspace
 WORKDIR /workspace
 VOLUME /workspace
 

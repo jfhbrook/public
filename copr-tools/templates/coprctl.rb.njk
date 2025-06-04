@@ -1,7 +1,7 @@
 class Coprctl < Formula
   desc "IaC for COPR"
   homepage "https://github.com/jfhbrook/public/tree/main/copr-tools"
-  url "https://github.com/jfhbrook/public/releases/download/copr-tools-{{ version }}-{{ patch }}/copr-tools-{{ version }}.tar.gz"
+  url "https://github.com/jfhbrook/public/releases/download/copr-tools-{{ version }}/copr-tools-{{ version }}.tar.gz"
   sha256 "{{ sha }}"
   license "MIT"
 
@@ -9,7 +9,7 @@ class Coprctl < Formula
   depends_on "docker" => :optional
 
   def install
-    bin.install "bin/coprctl-docker" => "coprctl"
+    bin.install "bin/coprctl" => "coprctl"
   end
 
   test do
