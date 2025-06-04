@@ -44,4 +44,4 @@ apply-homebrew:
   bash ./scripts/apply-homebrew.sh '{{VERSION}}'
 
 # Publish the release on GitHub, Homebrew and Docker
-publish: check_tap tag push bundle gh-release publish-docker apply-homebrew
+publish: check_tap build-docker tag push bundle gh-release publish-docker apply-homebrew
