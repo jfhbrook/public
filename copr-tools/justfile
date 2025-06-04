@@ -13,10 +13,10 @@ shell:
 
 # Build the Docker image
 build-docker:
-  docker build -t 'coprctl:{{VERSION}}' .
-  docker tag 'coprctl:{{VERSION}}' 'coprctl:latest'
-  docker tag 'coprctl:{{VERSION}}' 'jfhbrook/coprctl:{{VERSION}}'
-  docker tag 'jfhbrook/coprctl:{{VERSION}}' 'jfhbrook/coprctl:latest'
+  docker build -t 'copr-tools:{{VERSION}}' .
+  docker tag 'copr-tools:{{VERSION}}' 'copr-tools:latest'
+  docker tag 'copr-tools:{{VERSION}}' 'jfhbrook/copr-tools:{{VERSION}}'
+  docker tag 'jfhbrook/copr-tools:{{VERSION}}' 'jfhbrook/copr-tools:latest'
 
 #
 # Publishing
@@ -29,7 +29,7 @@ tag:
   tito tag --use-version '{{VERSION}}'
 
 bundle:
-  tar -czf coprctl-{{VERSION}}.tar.gz bin LICENSE README.md
+  tar -czf copr-tools-{{VERSION}}.tar.gz bin LICENSE README.md
 
 push:
   git push origin --follow-tags
@@ -38,14 +38,14 @@ gh-release:
   bash ./scripts/release.sh '{{VERSION}}' '{{PATCH}}'
 
 publish-docker:
-  docker push 'jfhbrook/coprctl:{{VERSION}}'
-  docker push jfhbrook/coprctl:latest
+  docker push 'jfhbrook/copr-tools:{{VERSION}}'
+  docker push jfhbrook/copr-tools:latest
 
 apply-homebrew:
   bash ./scripts/apply-homebrew.sh '{{VERSION}}' '{{PATCH}}'
 
 apply-copr:
-  coprctl apply -f ./package.yml
+  coprctl apply -f ./coprctl.yml
 
 build-copr:
   copr build-package jfhbrook/joshiverse --name 'coprctl'

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-COPRCTL_IMAGE="${COPRCTL_IMAGE:-jfhbrook/coprctl}"
-COPRCTL_VERSION="${COPRCTL_VERSION:-latest}"
+COPR_TOOLS_IMAGE="${COPR_TOOLS_IMAGE:-jfhbrook/copr-tools}"
+COPR_TOOLS_VERSION="${COPR_TOOLS_VERSION:-latest}"
 
 # Tito needs be inside a git repo, so the workspace needs to be mounted in the
 # repo's root
@@ -34,4 +34,4 @@ print(Path("/workspace") / relative_path)
 exec docker run \
   -v "${HOME}:/root" \
   -v "$(pwd):/workspace" \
-  -it "${COPRCTL_IMAGE}:${COPRCTL_VERSION}" bash -c "cd '${CONTAINER_PATH}'"' && tito "$@"' tito "$@"
+  -it "${COPR_TOOLS_IMAGE}:${COPR_TOOLS_VERSION}" bash -c "cd '${CONTAINER_PATH}'"' && tito "$@"' tito "$@"
