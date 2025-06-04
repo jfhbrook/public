@@ -39,10 +39,10 @@ publish-docker:
   docker push jfhbrook/coprctl:latest
 
 apply-copr:
-  coprctl apply -f ./coprctl.yml
+  coprctl apply -f ./package.yml
 
 build-copr:
   copr build-package jfhbrook/joshiverse --name 'coprctl'
 
 # Publish the release on GitHub, Docker and Copr
-publish: tag push bundle gh-release publish-docker apply-copr build-copr
+publish: build-docker tag push bundle gh-release publish-docker apply-copr build-copr
