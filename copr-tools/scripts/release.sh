@@ -18,7 +18,7 @@ ${line}"
   fi
 done < coprctl.spec
 
-gh release create "coprctl-${VERSION}-${PATCH}" \
-  -t "coprctl v${VERSION}" \
+gh release create "copr-tools-${VERSION}-${PATCH}" \
+  -t "copr-tools v${VERSION}" \
   -n "${NOTES}" \
-  "coprctl-${VERSION}.tar.gz"
+  "copr-tools-${VERSION}.tar.gz"

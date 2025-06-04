@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+COPR_TOOLS_IMAGE="${COPR_TOOLS_IMAGE:-jfhbrook/copr-tools}"
+COPR_TOOLS_VERSION="${COPR_TOOLS_VERSION:-latest}"
+
+exec docker run \
+  -v "${HOME}:/root" \
+  -v "$(pwd):/workspace" \
+  -it "${COPR_TOOLS_IMAGE}:${COPR_TOOLS_VERSION}" coprctl "$@"
