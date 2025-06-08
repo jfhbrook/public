@@ -102,15 +102,12 @@ It can be useful if you're doing retro [MSX](https://en.wikipedia.org/wiki/MSX) 
 These are files I've written for OpenSCAD. So far, these are available under a
 MPL v2.0 license.
 
-### packages
+### Packages
 
-This folder contains files for configuring and building COPR packages.
+I post packages on a couple of personal registries:
 
-#### homebrew-joshiverse
-
-**<https://github.com/jfhbrook/homebrew-joshiverse>**
-
-I also have some homebrew packages in a separate repository.
+* **COPR:** <https://github.com/jfhbrook/copr>
+* **Homebrew:** <https://github.com/jfhbrook/homebrew-joshiverse>
 
 ### plusdeck
 

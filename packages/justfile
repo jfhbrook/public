@@ -1,7 +1,0 @@
-# Apply the COPR registry configuration
-apply-copr:
-  coprctl apply -f registry.yml
-
-new TEMPLATE:
-  if [ ! -d './templates/{{TEMPLATE}}' ]; then echo "Unknown template {{TEMPLATE}}. Available templates are: $(ls ./templates)"; exit 1; fi
-  cookiecutter './templates/{{TEMPLATE}}'

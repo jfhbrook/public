@@ -1,8 +1,0 @@
-{
-  "gh_repository": "some_user/some_repository",
-  "package": "some_project",
-  "copr": "joshiverse",
-  "summary": "A COPR package for {{cookiecutter.package}}",
-  "description": "A COPR package for {{cookiecutter.package}}",
-  "artifact": "FIXME.tar.gz"
-}

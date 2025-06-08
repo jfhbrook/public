@@ -1,8 +1,0 @@
-# Apply the COPR configuration
-apply-copr:
-  coprctl apply -f ./package.yml
-
-# Build the package on COPR
-build-copr:
-  copr build-package 'jfhbrook/joshiverse' --name 'python-crystalfontz'
-

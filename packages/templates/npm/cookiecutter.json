@@ -1,8 +1,0 @@
-{
-  "package": "my_package",
-  "strategy": "bundle",
-  "builddeps": "",
-  "repos": "",
-  "chroot": "fedora-latest-x86_64",
-  "copr": "jfhbrook/joshiverse"
-}
