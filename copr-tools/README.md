@@ -4,9 +4,11 @@ This repo packages a bunch of tools for working with Fedora RPMs and [COPR](http
 
 - [`copr`](https://github.com/fedora-copr/copr)
 - `copr-rpmbuild`
+- `copr-tools` entry point for arbitrary commands in the Docker container
 - [`coprctl`](../coprctl)
 - `go2rpm`
 - `pyp2spec`
+- `rpmbuild`
 - `rust2rpm`
 - [`tito`](https://github.com/rpm-software-management/tito)
 
@@ -34,9 +36,11 @@ I have a number of packages in [my Homebrew tap](https://github.com/jfhbrook/hom
 ```bash
 brew install jfhbrook/joshiverse/copr
 brew install jfhbrook/joshiverse/copr-rpmbuild
+brew install jfhbrook/joshiverse/copr-tools
 brew install jfhbrook/joshiverse/coprctl
 brew install jfhbrook/joshiverse/go2rpm
 brew install jfhbrook/joshiverse/pyp2spec
+brew install jfhbrook/joshiverse/rpmbuild
 brew install jfhbrook/joshiverse/rust2rpm
 brew install jfhbrook/joshiverse/tito
 ```
