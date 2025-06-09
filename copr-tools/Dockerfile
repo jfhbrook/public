@@ -7,4 +7,4 @@ VOLUME /root
 WORKDIR /workspace
 VOLUME /workspace
 
-CMD []
+CMD ["/bin/bash"]
