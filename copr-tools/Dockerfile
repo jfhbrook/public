@@ -7,4 +7,6 @@ VOLUME /root
 WORKDIR /workspace
 VOLUME /workspace
 
+ENV PS1='[\u@copr-tools \W]\$ '
+
 CMD ["/bin/bash"]
