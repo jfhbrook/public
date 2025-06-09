@@ -1,4 +1,4 @@
-VERSION := "1.0.0"
+VERSION := "1.1.0"
 
 set dotenv-load := true
 
@@ -11,7 +11,7 @@ shell:
   PATH="$(pwd)/bin:${PATH}" bash --login
 
 # Build the Docker image
-build-docker:
+build:
   docker build -t 'copr-tools:{{VERSION}}' .
   docker tag 'copr-tools:{{VERSION}}' 'copr-tools:latest'
   docker tag 'copr-tools:{{VERSION}}' 'jfhbrook/copr-tools:{{VERSION}}'
@@ -44,4 +44,4 @@ apply-homebrew:
   bash ./scripts/apply-homebrew.sh '{{VERSION}}'
 
 # Publish the release on GitHub, Homebrew and Docker
-publish: check_tap build-docker tag push bundle gh-release publish-docker apply-homebrew
+publish: check_tap build tag push bundle gh-release publish-docker apply-homebrew
