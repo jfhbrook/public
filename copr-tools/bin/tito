@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+#
+# Run tito in Docker
+#
+
 COPR_TOOLS_IMAGE="${COPR_TOOLS_IMAGE:-jfhbrook/copr-tools}"
 COPR_TOOLS_VERSION="${COPR_TOOLS_VERSION:-latest}"
 

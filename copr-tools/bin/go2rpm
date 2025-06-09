@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+#
+# Run go2rpm in Docker
+#
+
 COPR_TOOLS_IMAGE="${COPR_TOOLS_IMAGE:-jfhbrook/copr-tools}"
 COPR_TOOLS_VERSION="${COPR_TOOLS_VERSION:-latest}"
 

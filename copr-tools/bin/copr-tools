@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 #
-# 
+# Run an arbitrary command in the copr-tools image
+#
+# By default, will open a bash shell
 #
 
 COPR_TOOLS_IMAGE="${COPR_TOOLS_IMAGE:-jfhbrook/copr-tools}"
