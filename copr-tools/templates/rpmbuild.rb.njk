@@ -1,0 +1,18 @@
+class Rpmbuild < Formula
+desc "Build RPM Package(s)"
+  homepage "http://www.rpm.org/"
+  url "https://github.com/jfhbrook/public/releases/download/copr-tools-{{ version }}/copr-tools-{{ version }}.tar.gz"
+  sha256 "{{ sha }}"
+  license "GPL-2.0-or-later"
+
+  depends_on "bash" => :recommended
+  depends_on "docker" => :optional
+
+  def install
+    bin.install "bin/rpmbuild" => "rpmbuild"
+  end
+
+  test do
+    system "false"
+  end
+end
