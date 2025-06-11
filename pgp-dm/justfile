@@ -1,0 +1,5 @@
+start *argv:
+  ./bin/pgp-dm {{ argv }}
+
+lint:
+  shellcheck ./bin/pgp-dm
