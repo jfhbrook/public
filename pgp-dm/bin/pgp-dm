@@ -1,0 +1,66 @@
+#!/usr/bin/env -S just --dotenv-filename ~/.config/pgp-dm/dotenv --justfile
+
+# https://blog.nthia.dev/pgp-dm.html
+
+set dotenv-load := true
+
+# show this help text
+help:
+  just --dotenv-filename ~/.config/pgp-dm/dotenv --justfile "$(which pgp-dm)" --list
+
+# generate a pgp primary key
+primary-key:
+  gpg --quick-generate-key "${NAME} <${EMAIL}>" ed25519 cert never
+
+# generate a pgp signing key
+signing-key:
+  fp=$(gpg --list-options show-only-fpr-mbox --list-secret-keys | awk '{print $1}'); gpg --batch --passphrase '' --quick-add-key $fp ed25519 sign 0
+
+# generate a pgp encryption key
+encryption-key:
+  fp=$(gpg --list-options show-only-fpr-mbox --list-secret-keys | awk '{print $1}'); gpg --batch --passphrase '' --quick-add-key $fp cv25519 encrypt 0
+
+# export your public pgp key
+export *ARGS:
+  mkdir -p ~/.local/share/pgp-dm
+  gpg --armor --export "${NAME}" > ~/.local/share/pgp-dm/pubkey.gpg
+  if [[ "{{ARGS}}" == *"--clipboard"* ]]; then cat ~/.local/share/pgp-dm/pubkey.gpg | wl-copy && rm -f ~/.local/share/pgp-dm/pubkey.gpg && echo "Exported key copied to clipboard."; else mv ~/.local/share/pgp-dm/pubkey.gpg ~/Desktop/pubkey.gpg && echo "Exported key saved to ~/Desktop/pubkey.gpg"; fi
+
+# import a pgp key from a URL
+import URL:
+  curl '{{URL}}' | gpg --import
+
+# trust a pgp key by name
+trust NAME:
+  gpg --edit-key '{{NAME}}' trust quit
+
+# list public pgp keys
+list:
+  gpg --list-public
+
+# encrypt a text message
+encrypt RECIPIENT *ARGS:
+  mkdir -p ~/.local/share/pgp-dm
+  vim ~/.local/share/pgp-dm/msg.txt
+  <~/.local/share/pgp-dm/msg.txt gpg -aesr '{{RECIPIENT}}' > ~/.local/share/pgp-dm/encrypted.txt
+  if [[ "{{ARGS}}" == *"--no-clean"* ]]; then echo "unencrypted message saved to ~/.local/share/pgp-dm/msg.txt"; else rm -f ~/.local/share/pgp-dm/msg.txt; fi
+  DATE="$(date +%Y-%m-%d-%H%M%S)"; if [[ "{{ARGS}}" == *"--no-clipboard"* ]]; then mv ~/.local/share/pgp-dm/encrypted.txt ~/Desktop/"encrypted-${DATE}.txt" && echo "Encrypted message saved to ~/Desktop/encrypted-${DATE}.txt"; else cat ~/.local/share/pgp-dm/encrypted.txt | wl-copy && rm -f ~/.local/share/pgp-dm/encrypted.txt && echo "encrypted message copied to clipboard"; fi
+
+# encrypt a message to a QR code image
+encrypt-qr RECIPIENT *ARGS:
+  mkdir -p ~/.local/share/pgp-dm
+  vim ~/.local/share/pgp-dm/msg.txt
+  <~/.local/share/pgp-dm/msg.txt gpg -aesr '{{RECIPIENT}}' | qrencode -o ~/.local/share/pgp-dm/encrypted.png
+  if [[ "{{ARGS}}" == *"--no-clean"* ]]; then echo "unencrypted message saved to ~/.local/share/pgp-dm/msg.txt"; else rm -f ~/.local/share/pgp-dm/msg.txt; fi
+  DATE="$(date +%Y-%m-%d-%H%M%S)"; if [[ "{{ARGS}}" == *"--no-clipboard"* ]]; then mv ~/.local/share/pgp-dm/encrypted.png ~/Desktop/"encrypted-${DATE}.png" && echo "Encrypted QR-encoded message saved to ~/Desktop/encrypted-${DATE}.png"; else cat ~/.local/share/pgp-dm/encrypted.png | wl-copy && rm -f ~/.local/share/pgp-dm/encrypted.png && echo "Encrypted QR-encoded message copied to clipboard"; fi
+
+# decrypt a text message from clipboard
+decrypt FILE="":
+  if [ -z "{{FILE}}" ]; then wl-paste | gpg -d; else cat "{{FILE}}" | gpg -d; fi
+
+# decrypt a QR code from clipboard
+decrypt-qr FILE="":
+  mkdir -p ~/.local/share/pgp-dm
+  if [ -z "{{FILE}}" ]; then wl-paste > ~/.local/share/pgp-dm/encrypted.png; else cp "{{FILE}}" ~/.local/share/pgp-dm/encrypted.png; fi
+  zbarimg -q --raw ~/.local/share/pgp-dm/encrypted.png | gpg -d
+  rm -f ~/.local/share/pgp-dm/encrypted.png
