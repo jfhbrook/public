@@ -1,8 +1,16 @@
-var core = require('./core');
+import type {Opts as MinimistOpts} from 'minimist';
+
+import * as core from './core';
+
+interface Opts extends MinimistOpts {
+  'log-level'?: string;
+  v?: boolean;
+  verbose?: boolean;
+}
 
 // A helper to take --verbose and -v flags from minimist and use them to
 // adjust the level
-exports.verbosity = function verbosity(opts, defaultLevel) {
+export function verbosity(opts: Opts, defaultLevel: string) {
   if (opts['log-level']) {
     if (typeof core.levels[opts['log-level']] !== 'number') {
       throw new Error('invalid log level!');
@@ -22,4 +30,4 @@ exports.verbosity = function verbosity(opts, defaultLevel) {
   }
 
   return core.priorities[adjustedLevel];
-};
+}
