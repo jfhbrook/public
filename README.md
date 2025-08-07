@@ -123,12 +123,6 @@ interface over Python, including a Jupyter interface. It's licensed MIT.
 These are projects I've done for political organizations. For more information,
 see [its README](./politics/README.md).
 
-### plusdeck
-
-**<https://github.com/jfhbrook/plusdeck>**
-
-A client library for the Plus Deck 2C Cassette Drive.
-
 ### pyee
 
 **<https://github.com/jfhbrook/pyee>**
@@ -153,6 +147,18 @@ my standard 2-page resume.
 
 A small collection of cookiecutter templates, MIT-licensed. These include
 templates for Python, Flask, TypeScript, Nest.js, and PowerShell.
+
+### tfmod
+
+**<https://github.com/jfhbrook/tfmod>**
+
+A CLI tool for publishing Terraform modules to the public registry.
+
+#### tf-registry
+
+**<https://github.com/jfhbrook/tf-registry>**
+
+A Python client for the public Terraform registry.
 
 ### tplinkctl
 
