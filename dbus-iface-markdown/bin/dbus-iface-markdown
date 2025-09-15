@@ -108,7 +108,13 @@ sub response {
     $raw =~ s/\"$//;
 
     my @res = split /\n/, $raw;
-    @res = splice @res, 3;
+
+    while ( my $line = shift @res ) {
+        if ( $line =~ /<node>/ ) {
+            unshift @res, $line;
+            last;
+        }
+    }
 
     my $doc    = join "\n", @res;
     my $parser = XML::Parser->new( Style => 'Tree' );
