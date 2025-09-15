@@ -36,6 +36,9 @@ install -p -m 755 bin/dbus-iface-markdown %{buildroot}%{_bindir}
 
 
 %changelog
+* Mon Sep 15 2025 Josh Holbrook <josh.holbrook@gmail.com>
+- Slightly more robust error handling (josh.holbrook@gmail.com)
+
 * Wed Feb 19 2025 Josh Holbrook <josh.holbrook@gmail.com> 1.0.1-1
 - More idiomatic perl
 * Wed Feb 19 2025 Josh Holbrook <josh.holbrook@gmail.com> 1.0.0-1
