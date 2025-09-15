@@ -1,5 +1,5 @@
 Name: dbus-iface-markdown
-Version: 1.0.1
+Version: 1.0.2
 Release: 1
 License: MIT
 Summary: Generate markdown documentation from a live Dbus interface
@@ -36,6 +36,9 @@ install -p -m 755 bin/dbus-iface-markdown %{buildroot}%{_bindir}
 
 
 %changelog
+* Mon Sep 15 2025 Josh Holbrook <josh.holbrook@gmail.com> 1.0.2-1
+- Slightly more robust error handling (josh.holbrook@gmail.com)
+
 * Mon Sep 15 2025 Josh Holbrook <josh.holbrook@gmail.com>
 - Slightly more robust error handling (josh.holbrook@gmail.com)
 
