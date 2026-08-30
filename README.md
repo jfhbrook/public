@@ -160,10 +160,6 @@ A CLI tool for publishing Terraform modules to the public registry.
 
 A Python client for the public Terraform registry.
 
-### tplinkctl
-
-A simple CLI tool for interacting with my TP-Link home router.
-
 ### twisted_ipython
 
 This is a module that makes autoawait work in IPython using Twisted. It is
